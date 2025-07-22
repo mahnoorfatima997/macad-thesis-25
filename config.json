@@ -1,0 +1,38 @@
+{
+  "project_name": "Architectural AI Analysis System",
+  "version": "2.0.0",
+  "description": "Comprehensive AI-powered architectural analysis and critique system",
+  "paths": {
+    "models": "src/models/",
+    "data": "data/",
+    "outputs": "outputs/",
+    "cache": "outputs/cache/"
+  },
+  "models": {
+    "yolo": {
+      "path": "src/models/yolo/yolov8n.pt",
+      "type": "object_detection"
+    },
+    "sam": {
+      "path": "src/models/sam/sam_vit_h_4b8939.pth",
+      "type": "segmentation"
+    },
+    "blip": {
+      "path": "src/models/blip/",
+      "type": "image_understanding"
+    },
+    "clip": {
+      "path": "src/models/clip/",
+      "type": "image_text_matching"
+    }
+  },
+  "features": {
+    "object_detection": true,
+    "segmentation": true,
+    "image_understanding": false,
+    "text_matching": false,
+    "criticism_generation": true,
+    "visual_annotations": true,
+    "compliance_checking": true
+  }
+}

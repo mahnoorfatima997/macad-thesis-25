@@ -1,0 +1,2997 @@
+{
+  "analysis_id": "unified_analysis_20250721_211015",
+  "timestamp": "20250721_211015",
+  "input_image": "./data/raw/sample_plan.jpg",
+  "yolo_detection": {
+    "detections": [
+      {
+        "bbox": [
+          633,
+          0,
+          932,
+          219
+        ],
+        "confidence": 0.9445857405662537,
+        "class_id": 6,
+        "class_name": "dining_room",
+        "area": "65452.703"
+      },
+      {
+        "bbox": [
+          614,
+          1768,
+          823,
+          1939
+        ],
+        "confidence": 0.5536224842071533,
+        "class_id": 3,
+        "class_name": "bathroom",
+        "area": "35703.4"
+      },
+      {
+        "bbox": [
+          416,
+          145,
+          664,
+          368
+        ],
+        "confidence": 0.4796317517757416,
+        "class_id": 6,
+        "class_name": "dining_room",
+        "area": "55349.734"
+      },
+      {
+        "bbox": [
+          427,
+          141,
+          667,
+          369
+        ],
+        "confidence": 0.39580240845680237,
+        "class_id": 7,
+        "class_name": "kitchen",
+        "area": "54721.2"
+      },
+      {
+        "bbox": [
+          676,
+          503,
+          839,
+          674
+        ],
+        "confidence": 0.3156067132949829,
+        "class_id": 9,
+        "class_name": "corridor",
+        "area": "27854.639"
+      }
+    ],
+    "total_detections": 5,
+    "model_path": "plan_images_training\\runs\\detect\\improved_architectural_yolo\\weights\\best.pt",
+    "confidence_threshold": 0.3
+  },
+  "sam_segmentation": {
+    "segments": [
+      {
+        "type": "point_prompt",
+        "prompt_id": 0,
+        "point": [
+          64,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9721047878265381,
+        "area": "389826"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 1,
+        "point": [
+          64,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9568488597869873,
+        "area": "2682588"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 2,
+        "point": [
+          64,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9579188823699951,
+        "area": "2667005"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 3,
+        "point": [
+          64,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9745779037475586,
+        "area": "2710065"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 4,
+        "point": [
+          64,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9779226779937744,
+        "area": "2718689"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 5,
+        "point": [
+          64,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9773340225219727,
+        "area": "2699904"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 6,
+        "point": [
+          64,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.98016357421875,
+        "area": "2635489"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 7,
+        "point": [
+          64,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9803348779678345,
+        "area": "2625707"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 8,
+        "point": [
+          64,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9762274026870728,
+        "area": "2638599"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 9,
+        "point": [
+          64,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9739251136779785,
+        "area": "2625331"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 10,
+        "point": [
+          64,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9733176231384277,
+        "area": "2573474"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 11,
+        "point": [
+          64,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9747781753540039,
+        "area": "2612088"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 12,
+        "point": [
+          64,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9631998538970947,
+        "area": "2680784"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 13,
+        "point": [
+          64,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9627265930175781,
+        "area": "1172477"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 14,
+        "point": [
+          64,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9637978076934814,
+        "area": "1199976"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 15,
+        "point": [
+          192,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9632951021194458,
+        "area": "119321"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 16,
+        "point": [
+          192,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9819889068603516,
+        "area": "7313"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 17,
+        "point": [
+          192,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9512679576873779,
+        "area": "1986907"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 18,
+        "point": [
+          192,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8687669038772583,
+        "area": "1948622"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 19,
+        "point": [
+          192,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9104705452919006,
+        "area": "88955"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 20,
+        "point": [
+          192,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8984326124191284,
+        "area": "1899814"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 21,
+        "point": [
+          192,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9805504679679871,
+        "area": "16008"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 22,
+        "point": [
+          192,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9613408446311951,
+        "area": "8681"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 23,
+        "point": [
+          192,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9520582556724548,
+        "area": "61290"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 24,
+        "point": [
+          192,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9811773300170898,
+        "area": "1998953"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 25,
+        "point": [
+          192,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9870045185089111,
+        "area": "1997234"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 26,
+        "point": [
+          192,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9940993785858154,
+        "area": "1998859"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 27,
+        "point": [
+          192,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.966071367263794,
+        "area": "2003542"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 28,
+        "point": [
+          192,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9570016860961914,
+        "area": "1125953"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 29,
+        "point": [
+          192,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9572133421897888,
+        "area": "122122"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 30,
+        "point": [
+          320,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.956082820892334,
+        "area": "117194"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 31,
+        "point": [
+          320,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9691327810287476,
+        "area": "2003867"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 32,
+        "point": [
+          320,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9615716934204102,
+        "area": "2004383"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 33,
+        "point": [
+          320,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8802556991577148,
+        "area": "1919839"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 34,
+        "point": [
+          320,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9136406183242798,
+        "area": "88026"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 35,
+        "point": [
+          320,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9077991247177124,
+        "area": "1939447"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 36,
+        "point": [
+          320,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9639726877212524,
+        "area": "2003010"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 37,
+        "point": [
+          320,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9814976453781128,
+        "area": "2002806"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 38,
+        "point": [
+          320,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.948672890663147,
+        "area": "7528"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 39,
+        "point": [
+          320,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9675616025924683,
+        "area": "2406270"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 40,
+        "point": [
+          320,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9408583641052246,
+        "area": "2007596"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 41,
+        "point": [
+          320,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9845579862594604,
+        "area": "2004256"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 42,
+        "point": [
+          320,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9411368370056152,
+        "area": "2008852"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 43,
+        "point": [
+          320,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9489200115203857,
+        "area": "1162660"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 44,
+        "point": [
+          320,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9522582292556763,
+        "area": "122333"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 45,
+        "point": [
+          448,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9535797834396362,
+        "area": "117311"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 46,
+        "point": [
+          448,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9737366437911987,
+        "area": "2015610"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 47,
+        "point": [
+          448,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9750967621803284,
+        "area": "21545"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 48,
+        "point": [
+          448,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9108109474182129,
+        "area": "1963282"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 49,
+        "point": [
+          448,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9197584390640259,
+        "area": "87846"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 50,
+        "point": [
+          448,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9190255403518677,
+        "area": "1972057"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 51,
+        "point": [
+          448,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9950926303863525,
+        "area": "14920"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 52,
+        "point": [
+          448,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8419166803359985,
+        "area": "1996490"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 53,
+        "point": [
+          448,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9708867073059082,
+        "area": "60601"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 54,
+        "point": [
+          448,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9740701913833618,
+        "area": "2273211"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 55,
+        "point": [
+          448,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9428864121437073,
+        "area": "1625"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 56,
+        "point": [
+          448,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9381240606307983,
+        "area": "2023152"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 57,
+        "point": [
+          448,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9885668754577637,
+        "area": "2005969"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 58,
+        "point": [
+          448,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9709861278533936,
+        "area": "43950"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 59,
+        "point": [
+          448,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9711875915527344,
+        "area": "43884"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 60,
+        "point": [
+          576,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.952393651008606,
+        "area": "117298"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 61,
+        "point": [
+          576,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9527177810668945,
+        "area": "11821"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 62,
+        "point": [
+          576,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9765356183052063,
+        "area": "21559"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 63,
+        "point": [
+          576,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8806077241897583,
+        "area": "1988285"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 64,
+        "point": [
+          576,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9075979590415955,
+        "area": "89621"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 65,
+        "point": [
+          576,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9685962796211243,
+        "area": "12813"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 66,
+        "point": [
+          576,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9894587993621826,
+        "area": "2045365"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 67,
+        "point": [
+          576,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8759877681732178,
+        "area": "1949020"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 68,
+        "point": [
+          576,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.965111255645752,
+        "area": "60496"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 69,
+        "point": [
+          576,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9742729663848877,
+        "area": "2404663"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 70,
+        "point": [
+          576,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.957586407661438,
+        "area": "41658"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 71,
+        "point": [
+          576,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9799548387527466,
+        "area": "2109128"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 72,
+        "point": [
+          576,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9430315494537354,
+        "area": "2004947"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 73,
+        "point": [
+          576,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9865238666534424,
+        "area": "44126"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 74,
+        "point": [
+          576,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9832837581634521,
+        "area": "44063"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 75,
+        "point": [
+          704,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9499747157096863,
+        "area": "117089"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 76,
+        "point": [
+          704,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9687886834144592,
+        "area": "14293"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 77,
+        "point": [
+          704,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9903395175933838,
+        "area": "2829112"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 78,
+        "point": [
+          704,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9895675182342529,
+        "area": "2884760"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 79,
+        "point": [
+          704,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9907212257385254,
+        "area": "2829247"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 80,
+        "point": [
+          704,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9914952516555786,
+        "area": "2779634"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 81,
+        "point": [
+          704,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9435738325119019,
+        "area": "2222482"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 82,
+        "point": [
+          704,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9827566146850586,
+        "area": "2728116"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 83,
+        "point": [
+          704,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.980089545249939,
+        "area": "2797298"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 84,
+        "point": [
+          704,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9736462831497192,
+        "area": "2914911"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 85,
+        "point": [
+          704,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9745336771011353,
+        "area": "1993971"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 86,
+        "point": [
+          704,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9659250974655151,
+        "area": "1990171"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 87,
+        "point": [
+          704,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9631866216659546,
+        "area": "13499"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 88,
+        "point": [
+          704,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9248154163360596,
+        "area": "880175"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 89,
+        "point": [
+          704,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9665753841400146,
+        "area": "912602"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 90,
+        "point": [
+          832,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9512444138526917,
+        "area": "117085"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 91,
+        "point": [
+          832,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.920737087726593,
+        "area": "16730"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 92,
+        "point": [
+          832,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9265602231025696,
+        "area": "17172"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 93,
+        "point": [
+          832,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8475262522697449,
+        "area": "15277"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 94,
+        "point": [
+          832,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8551347255706787,
+        "area": "997449"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 95,
+        "point": [
+          832,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9586130976676941,
+        "area": "7473"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 96,
+        "point": [
+          832,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9458847641944885,
+        "area": "24591"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 97,
+        "point": [
+          832,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9154302477836609,
+        "area": "24753"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 98,
+        "point": [
+          832,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9211153984069824,
+        "area": "2014366"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 99,
+        "point": [
+          832,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9761254787445068,
+        "area": "2009433"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 100,
+        "point": [
+          832,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9784846305847168,
+        "area": "2005535"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 101,
+        "point": [
+          832,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9740225076675415,
+        "area": "2005845"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 102,
+        "point": [
+          832,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.974200963973999,
+        "area": "2007913"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 103,
+        "point": [
+          832,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9787061214447021,
+        "area": "912412"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 104,
+        "point": [
+          832,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9762417078018188,
+        "area": "914147"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 105,
+        "point": [
+          960,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9463610053062439,
+        "area": "116924"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 106,
+        "point": [
+          960,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9568185210227966,
+        "area": "236931"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 107,
+        "point": [
+          960,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9588471055030823,
+        "area": "233162"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 108,
+        "point": [
+          960,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9631229043006897,
+        "area": "240039"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 109,
+        "point": [
+          960,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.933427095413208,
+        "area": "1937185"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 110,
+        "point": [
+          960,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9516458511352539,
+        "area": "98647"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 111,
+        "point": [
+          960,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9028823971748352,
+        "area": "10476"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 112,
+        "point": [
+          960,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9618471264839172,
+        "area": "553334"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 113,
+        "point": [
+          960,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9666987061500549,
+        "area": "547343"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 114,
+        "point": [
+          960,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9721848964691162,
+        "area": "965184"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 115,
+        "point": [
+          960,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9830790758132935,
+        "area": "922976"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 116,
+        "point": [
+          960,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9834557771682739,
+        "area": "550695"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 117,
+        "point": [
+          960,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9753086566925049,
+        "area": "2020967"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 118,
+        "point": [
+          960,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9813016653060913,
+        "area": "912742"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 119,
+        "point": [
+          960,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9835529327392578,
+        "area": "914016"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 120,
+        "point": [
+          1088,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.946776807308197,
+        "area": "117175"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 121,
+        "point": [
+          1088,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9547033905982971,
+        "area": "233163"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 122,
+        "point": [
+          1088,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9538385272026062,
+        "area": "231962"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 123,
+        "point": [
+          1088,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9568825960159302,
+        "area": "233594"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 124,
+        "point": [
+          1088,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9432321786880493,
+        "area": "1977545"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 125,
+        "point": [
+          1088,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9525766968727112,
+        "area": "98545"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 126,
+        "point": [
+          1088,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8746998310089111,
+        "area": "36521"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 127,
+        "point": [
+          1088,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9652341604232788,
+        "area": "550532"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 128,
+        "point": [
+          1088,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9710555672645569,
+        "area": "547190"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 129,
+        "point": [
+          1088,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8540951609611511,
+        "area": "1634"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 130,
+        "point": [
+          1088,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9831352233886719,
+        "area": "909740"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 131,
+        "point": [
+          1088,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9950900673866272,
+        "area": "8825"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 132,
+        "point": [
+          1088,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8925513029098511,
+        "area": "11446"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 133,
+        "point": [
+          1088,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9850420951843262,
+        "area": "909557"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 134,
+        "point": [
+          1088,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9799151420593262,
+        "area": "911694"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 135,
+        "point": [
+          1216,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9591785669326782,
+        "area": "2613178"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 136,
+        "point": [
+          1216,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9563578367233276,
+        "area": "231179"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 137,
+        "point": [
+          1216,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9359315633773804,
+        "area": "3089"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 138,
+        "point": [
+          1216,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9604728817939758,
+        "area": "231526"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 139,
+        "point": [
+          1216,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9518147706985474,
+        "area": "1983913"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 140,
+        "point": [
+          1216,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.956386148929596,
+        "area": "98933"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 141,
+        "point": [
+          1216,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8803601264953613,
+        "area": "36893"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 142,
+        "point": [
+          1216,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9711634516716003,
+        "area": "550469"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 143,
+        "point": [
+          1216,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9745343327522278,
+        "area": "548187"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 144,
+        "point": [
+          1216,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.809486985206604,
+        "area": "1609"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 145,
+        "point": [
+          1216,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9798475503921509,
+        "area": "915452"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 146,
+        "point": [
+          1216,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9601067304611206,
+        "area": "862639"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 147,
+        "point": [
+          1216,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9581937789916992,
+        "area": "2032970"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 148,
+        "point": [
+          1216,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9803270101547241,
+        "area": "911268"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 149,
+        "point": [
+          1216,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9768980741500854,
+        "area": "910371"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 150,
+        "point": [
+          1344,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9452405571937561,
+        "area": "116606"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 151,
+        "point": [
+          1344,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9540005326271057,
+        "area": "232562"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 152,
+        "point": [
+          1344,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.963618278503418,
+        "area": "1995254"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 153,
+        "point": [
+          1344,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9657094478607178,
+        "area": "1995880"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 154,
+        "point": [
+          1344,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9620363712310791,
+        "area": "1990277"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 155,
+        "point": [
+          1344,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.968990683555603,
+        "area": "98542"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 156,
+        "point": [
+          1344,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9691969752311707,
+        "area": "551113"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 157,
+        "point": [
+          1344,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9690113663673401,
+        "area": "549323"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 158,
+        "point": [
+          1344,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9711723327636719,
+        "area": "553315"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 159,
+        "point": [
+          1344,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9710351824760437,
+        "area": "548369"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 160,
+        "point": [
+          1344,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9775474071502686,
+        "area": "933563"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 161,
+        "point": [
+          1344,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9997266530990601,
+        "area": "18190"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 162,
+        "point": [
+          1344,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9566233158111572,
+        "area": "2038970"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 163,
+        "point": [
+          1344,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9796611070632935,
+        "area": "908899"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 164,
+        "point": [
+          1344,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9755823612213135,
+        "area": "909434"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 165,
+        "point": [
+          1472,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9576831459999084,
+        "area": "116897"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 166,
+        "point": [
+          1472,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9265286922454834,
+        "area": "1898678"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 167,
+        "point": [
+          1472,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9380816221237183,
+        "area": "1962986"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 168,
+        "point": [
+          1472,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9333531856536865,
+        "area": "1965393"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 169,
+        "point": [
+          1472,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8526589870452881,
+        "area": "1621940"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 170,
+        "point": [
+          1472,
+          711
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8339236974716187,
+        "area": "103252"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 171,
+        "point": [
+          1472,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.7982072830200195,
+        "area": "1633326"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 172,
+        "point": [
+          1472,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9595285058021545,
+        "area": "2186"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 173,
+        "point": [
+          1472,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9659701585769653,
+        "area": "2009594"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 174,
+        "point": [
+          1472,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9465017318725586,
+        "area": "2012664"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 175,
+        "point": [
+          1472,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.8595719337463379,
+        "area": "2001481"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 176,
+        "point": [
+          1472,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9480206370353699,
+        "area": "8595"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 177,
+        "point": [
+          1472,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9469111561775208,
+        "area": "8637"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 178,
+        "point": [
+          1472,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9744681119918823,
+        "area": "909902"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 179,
+        "point": [
+          1472,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9740080833435059,
+        "area": "908622"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 180,
+        "point": [
+          1600,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9687225818634033,
+        "area": "376182"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 181,
+        "point": [
+          1600,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9680724143981934,
+        "area": "376221"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 182,
+        "point": [
+          1600,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9642740488052368,
+        "area": "378814"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 183,
+        "point": [
+          1600,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9648747444152832,
+        "area": "384964"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 184,
+        "point": [
+          1600,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9707344770431519,
+        "area": "387639"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 185,
+        "point": [
+          1600,
+          711
+        ],
+        "mask": "[[ True  True  True ... False False False]\n [ True  True  True ... False False False]\n [ True  True  True ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9580274820327759,
+        "area": "410468"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 186,
+        "point": [
+          1600,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.952333390712738,
+        "area": "693804"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 187,
+        "point": [
+          1600,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9480158090591431,
+        "area": "911538"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 188,
+        "point": [
+          1600,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9550400972366333,
+        "area": "913549"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 189,
+        "point": [
+          1600,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9590343236923218,
+        "area": "913954"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 190,
+        "point": [
+          1600,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.959986686706543,
+        "area": "912200"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 191,
+        "point": [
+          1600,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9576699733734131,
+        "area": "914547"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 192,
+        "point": [
+          1600,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.939476490020752,
+        "area": "906517"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 193,
+        "point": [
+          1600,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.957520604133606,
+        "area": "905515"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 194,
+        "point": [
+          1600,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9756280183792114,
+        "area": "898137"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 195,
+        "point": [
+          1728,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9727870225906372,
+        "area": "378811"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 196,
+        "point": [
+          1728,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9708504676818848,
+        "area": "379463"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 197,
+        "point": [
+          1728,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9680501222610474,
+        "area": "380504"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 198,
+        "point": [
+          1728,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.965560793876648,
+        "area": "384982"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 199,
+        "point": [
+          1728,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9707769155502319,
+        "area": "389686"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 200,
+        "point": [
+          1728,
+          711
+        ],
+        "mask": "[[ True  True  True ... False False False]\n [ True  True  True ... False False False]\n [ True  True  True ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9626091718673706,
+        "area": "399338"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 201,
+        "point": [
+          1728,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9489995241165161,
+        "area": "691801"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 202,
+        "point": [
+          1728,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.949055552482605,
+        "area": "909577"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 203,
+        "point": [
+          1728,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9499623775482178,
+        "area": "913486"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 204,
+        "point": [
+          1728,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9382360577583313,
+        "area": "1328"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 205,
+        "point": [
+          1728,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9633944034576416,
+        "area": "915122"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 206,
+        "point": [
+          1728,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9630484580993652,
+        "area": "916505"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 207,
+        "point": [
+          1728,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9643800258636475,
+        "area": "905406"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 208,
+        "point": [
+          1728,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9768650531768799,
+        "area": "905610"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 209,
+        "point": [
+          1728,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9744241237640381,
+        "area": "879902"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 210,
+        "point": [
+          1856,
+          64
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9719580411911011,
+        "area": "379905"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 211,
+        "point": [
+          1856,
+          194
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9701610803604126,
+        "area": "379692"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 212,
+        "point": [
+          1856,
+          323
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9670531749725342,
+        "area": "380527"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 213,
+        "point": [
+          1856,
+          452
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9643326997756958,
+        "area": "386375"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 214,
+        "point": [
+          1856,
+          582
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9707952737808228,
+        "area": "390895"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 215,
+        "point": [
+          1856,
+          711
+        ],
+        "mask": "[[ True  True  True ... False False False]\n [ True  True  True ... False False False]\n [ True  True  True ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9606815576553345,
+        "area": "400486"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 216,
+        "point": [
+          1856,
+          841
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9524095058441162,
+        "area": "706479"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 217,
+        "point": [
+          1856,
+          970
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9504786729812622,
+        "area": "885441"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 218,
+        "point": [
+          1856,
+          1099
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9496780633926392,
+        "area": "900260"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 219,
+        "point": [
+          1856,
+          1229
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9548811912536621,
+        "area": "892746"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 220,
+        "point": [
+          1856,
+          1358
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9618265628814697,
+        "area": "913443"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 221,
+        "point": [
+          1856,
+          1488
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9613150358200073,
+        "area": "912220"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 222,
+        "point": [
+          1856,
+          1617
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9650530815124512,
+        "area": "909368"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 223,
+        "point": [
+          1856,
+          1746
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.9798376560211182,
+        "area": "904538"
+      },
+      {
+        "type": "point_prompt",
+        "prompt_id": 224,
+        "point": [
+          1856,
+          1876
+        ],
+        "mask": "[[False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]\n ...\n [False False False ... False False False]\n [False False False ... False False False]\n [False False False ... False False False]]",
+        "confidence": 0.950480580329895,
+        "area": "873056"
+      }
+    ],
+    "total_segments": 225,
+    "image_shape": [
+      1941,
+      1920,
+      3
+    ],
+    "model_path": "src\\models\\sam\\sam_vit_h_4b8939.pth"
+  },
+  "clip_blip_analysis": {
+    "analysis": {
+      "blip_caption": "a floor plan for a small house",
+      "clip_concepts": {
+        "modern building": 8.392171002924442e-05,
+        "traditional architecture": 0.00010721760190790519,
+        "residential building": 0.000410508771892637,
+        "commercial building": 0.0001018222319544293,
+        "open floor plan": 0.1064251959323883,
+        "closed floor plan": 0.8669127821922302,
+        "large windows": 0.00015524585614912212,
+        "small windows": 9.646626131143421e-05,
+        "natural lighting": 5.528723932002322e-07,
+        "artificial lighting": 5.388625595514895e-06,
+        "spacious rooms": 0.005693268496543169,
+        "compact rooms": 0.016008516773581505,
+        "high ceilings": 0.00012369088653940707,
+        "low ceilings": 1.785014865163248e-05,
+        "wooden materials": 1.6726784451748244e-05,
+        "concrete materials": 8.090584742603824e-05,
+        "glass facade": 1.6355241314158775e-05,
+        "brick facade": 2.2295476810541004e-05,
+        "sustainable design": 0.00020850168948527426,
+        "luxury design": 0.00030293044983409345,
+        "minimalist design": 9.085600322578102e-05,
+        "ornate design": 6.855358515167609e-05,
+        "good circulation": 1.8793366507452447e-06,
+        "poor circulation": 7.006299256318016e-07,
+        "accessible design": 0.002781560644507408,
+        "inaccessible design": 9.158186730928719e-05,
+        "energy efficient": 2.391823181824293e-05,
+        "energy inefficient": 1.6855586864039651e-06,
+        "well organized": 7.554412877652794e-05,
+        "poorly organized": 7.353127875830978e-05
+      },
+      "combined_insights": {
+        "overall_description": "a floor plan for a small house",
+        "key_characteristics": [
+          "closed floor plan",
+          "open floor plan"
+        ],
+        "design_quality": {},
+        "architectural_style": {},
+        "functional_aspects": {},
+        "environmental_aspects": {}
+      }
+    },
+    "models_used": [
+      "CLIP",
+      "BLIP"
+    ],
+    "image_path": "./data/raw/sample_plan.jpg"
+  },
+  "combined_analysis": {
+    "total_elements_detected": 5,
+    "key_insights": [
+      "Detected 5 architectural elements",
+      "closed floor plan",
+      "open floor plan"
+    ],
+    "design_quality_score": 4.509915261981697e-07,
+    "architectural_style": [],
+    "critical_issues": [],
+    "recommendations": [],
+    "compliance_status": "unknown"
+  },
+  "summary": {
+    "analysis_overview": {
+      "total_models_used": 3,
+      "successful_analyses": 3,
+      "failed_analyses": 0
+    },
+    "key_findings": [
+      "Detected 5 architectural elements",
+      "closed floor plan",
+      "open floor plan"
+    ],
+    "model_performance": {},
+    "recommendations": [],
+    "risk_assessment": "low"
+  },
+  "comprehensive_analysis": {
+    "spatial_analysis": {
+      "circulation_efficiency": 38.56579947471619,
+      "adjacency_analysis": {
+        "score": 38.349397256970406,
+        "details": {
+          "kitchen_dining": {
+            "present": true,
+            "kitchen_confidence": 0.39580240845680237,
+            "dining_confidence": 0.7121087461709976,
+            "score": 16.618667319417
+          },
+          "bathroom_accessibility": {
+            "present": true,
+            "confidence": 0.5536224842071533,
+            "score": 13.840562105178833
+          },
+          "corridor_connectivity": {
+            "present": true,
+            "confidence": 0.3156067132949829,
+            "score": 7.890167832374573
+          }
+        },
+        "kitchen_dining": true,
+        "bathroom_present": true,
+        "corridor_present": true
+      },
+      "density_calculation": 5.624121755162367,
+      "proportional_analysis": {
+        "area_consistency": "71.0116",
+        "average_element_size": "47816.336",
+        "size_variation": "0.28988403",
+        "room_size_distribution": {
+          "dining_room": {
+            "count": 2,
+            "avg_size": "60401.22",
+            "size_variation": "0.083632156"
+          },
+          "bathroom": {
+            "count": 1,
+            "avg_size": "35703.4",
+            "size_variation": "0.0"
+          },
+          "kitchen": {
+            "count": 1,
+            "avg_size": "54721.2",
+            "size_variation": "0.0"
+          },
+          "corridor": {
+            "count": 1,
+            "avg_size": "27854.639",
+            "size_variation": "0.0"
+          }
+        }
+      },
+      "spatial_relationships": {
+        "proximity_analysis": {
+          "average_distance": 806.3879019904363,
+          "distance_variation": 633.3936386825042,
+          "closest_elements": 7.158910531638177,
+          "farthest_elements": 1745.1739168346517
+        },
+        "layout_pattern": "spread_out",
+        "spatial_efficiency": 0.0
+      },
+      "room_distribution": {
+        "total_rooms": 5,
+        "room_types": {
+          "dining_room": 2,
+          "bathroom": 1,
+          "kitchen": 1,
+          "corridor": 1
+        },
+        "functional_balance": 80.0
+      },
+      "issues": [
+        "Limited circulation elements detected (efficiency: 38.6%)"
+      ],
+      "recommendations": [
+        "Consider adding more doors, corridors, or circulation nodes"
+      ]
+    },
+    "functional_analysis": {
+      "room_functionality": 100,
+      "accessibility": 35.780335664749146,
+      "lighting_quality": 15,
+      "ventilation": 37.092469930648804,
+      "functional_efficiency": 46.96820139884949,
+      "space_utilization": {
+        "bathroom": {
+          "count": 1,
+          "avg_confidence": 0.5536224842071533,
+          "total_area": "35703.4",
+          "avg_area": "35703.4"
+        },
+        "kitchen": {
+          "count": 1,
+          "avg_confidence": 0.39580240845680237,
+          "total_area": "54721.2",
+          "avg_area": "54721.2"
+        },
+        "dining_room": {
+          "count": 2,
+          "avg_confidence": 0.7121087461709976,
+          "total_area": "120802.44",
+          "avg_area": "60401.22"
+        }
+      },
+      "issues": [
+        "No lighting elements detected",
+        "Bathroom detection confidence is low",
+        "Corridor detection confidence is low"
+      ],
+      "recommendations": [
+        "Add windows for natural lighting",
+        "Good kitchen-dining room adjacency detected",
+        "Verify bathroom layout and accessibility",
+        "Improve corridor definition and connectivity"
+      ]
+    },
+    "technical_analysis": {
+      "structural_integrity": 0.0,
+      "code_compliance": 50,
+      "energy_efficiency": 0.0,
+      "material_analysis": {
+        "material_diversity": 0.0,
+        "materials_detected": []
+      },
+      "issues": [
+        "Insufficient structural elements",
+        "Potential code compliance issues"
+      ],
+      "recommendations": [
+        "Ensure adequate structural support",
+        "Review building code requirements"
+      ]
+    },
+    "aesthetic_analysis": {
+      "proportional_harmony": 0.0,
+      "visual_balance": 0.0,
+      "style_consistency": 0.0,
+      "contextual_fit": 0.0,
+      "issues": [
+        "Poor proportional harmony",
+        "Inconsistent design style"
+      ],
+      "recommendations": [
+        "Review design proportions and relationships",
+        "Maintain consistent architectural style throughout"
+      ]
+    },
+    "accessibility_analysis": {
+      "wheelchair_accessibility": 30.0,
+      "wayfinding": 0.0,
+      "clearance_spaces": 80,
+      "ramp_access": 80,
+      "issues": [
+        "Poor wheelchair accessibility"
+      ],
+      "recommendations": [
+        "Improve circulation and access for wheelchair users"
+      ]
+    },
+    "sustainability_analysis": {
+      "energy_efficiency": 0.0,
+      "sustainable_materials": 0.0,
+      "site_response": 0.0,
+      "passive_design": 0.0,
+      "issues": [
+        "Poor energy efficiency",
+        "Limited passive design features"
+      ],
+      "recommendations": [
+        "Add energy-efficient features like shading devices",
+        "Consider passive solar design strategies"
+      ]
+    },
+    "circulation_analysis": {
+      "circulation_efficiency": 40.0,
+      "flow_patterns": {
+        "linear": true,
+        "radial": false,
+        "vertical": false,
+        "horizontal": false
+      },
+      "bottlenecks": [],
+      "connectivity": 20,
+      "issues": [
+        "Poor circulation efficiency",
+        "Poor space connectivity"
+      ],
+      "recommendations": [
+        "Improve circulation patterns and add more access points",
+        "Improve connections between spaces"
+      ]
+    },
+    "lighting_analysis": {
+      "natural_lighting": 0.0,
+      "artificial_lighting": 0.0,
+      "glare_control": 20,
+      "light_distribution": 20,
+      "issues": [
+        "Insufficient natural lighting",
+        "Poor glare control"
+      ],
+      "recommendations": [
+        "Add more windows for natural light",
+        "Consider adding shading devices"
+      ]
+    },
+    "acoustics_analysis": {
+      "sound_isolation": 0.0,
+      "echo_control": 20,
+      "acoustic_comfort": 10.0,
+      "noise_control": 0.0,
+      "issues": [
+        "Poor sound isolation"
+      ],
+      "recommendations": [
+        "Improve wall and door construction for better sound isolation"
+      ]
+    },
+    "thermal_analysis": {
+      "thermal_comfort": 0.0,
+      "insulation": 20,
+      "thermal_bridges": 0.0,
+      "climate_response": 0.0,
+      "issues": [
+        "Poor thermal comfort",
+        "Poor climate response"
+      ],
+      "recommendations": [
+        "Improve thermal design and insulation",
+        "Consider climate-responsive design strategies"
+      ]
+    },
+    "overall_assessment": {
+      "total_score": 0.0,
+      "risk_level": "critical",
+      "strengths": [],
+      "weaknesses": [],
+      "priority_areas": []
+    },
+    "critical_issues": [
+      "Limited circulation elements detected (efficiency: 38.6%)",
+      "No lighting elements detected",
+      "Bathroom detection confidence is low",
+      "Corridor detection confidence is low",
+      "Insufficient structural elements",
+      "Potential code compliance issues",
+      "Poor proportional harmony",
+      "Inconsistent design style",
+      "Poor wheelchair accessibility",
+      "Poor energy efficiency"
+    ],
+    "recommendations": [
+      "Consider adding more doors, corridors, or circulation nodes",
+      "Add windows for natural lighting",
+      "Good kitchen-dining room adjacency detected",
+      "Verify bathroom layout and accessibility",
+      "Improve corridor definition and connectivity",
+      "Ensure adequate structural support",
+      "Review building code requirements",
+      "Review design proportions and relationships",
+      "Maintain consistent architectural style throughout",
+      "Improve circulation and access for wheelchair users",
+      "Add energy-efficient features like shading devices",
+      "Consider passive solar design strategies",
+      "Improve circulation patterns and add more access points",
+      "Improve connections between spaces",
+      "Add more windows for natural light"
+    ]
+  },
+  "detailed_explanation": {
+    "image_overview": "a floor plan for a small house",
+    "architectural_elements": [
+      {
+        "type": "dining_room",
+        "confidence": 0.9445857405662537,
+        "location": [
+          633,
+          0,
+          932,
+          219
+        ],
+        "area": "65452.703"
+      },
+      {
+        "type": "bathroom",
+        "confidence": 0.5536224842071533,
+        "location": [
+          614,
+          1768,
+          823,
+          1939
+        ],
+        "area": "35703.4"
+      },
+      {
+        "type": "dining_room",
+        "confidence": 0.4796317517757416,
+        "location": [
+          416,
+          145,
+          664,
+          368
+        ],
+        "area": "55349.734"
+      },
+      {
+        "type": "kitchen",
+        "confidence": 0.39580240845680237,
+        "location": [
+          427,
+          141,
+          667,
+          369
+        ],
+        "area": "54721.2"
+      },
+      {
+        "type": "corridor",
+        "confidence": 0.3156067132949829,
+        "location": [
+          676,
+          503,
+          839,
+          674
+        ],
+        "area": "27854.639"
+      }
+    ],
+    "design_analysis": {
+      "overall_quality": 0.0,
+      "quality_aspects": {}
+    },
+    "functional_analysis": {
+      "circulation_quality": 0.0,
+      "lighting_quality": 0.0,
+      "organization_quality": 0.0,
+      "all_functional_aspects": {}
+    },
+    "style_characteristics": {
+      "primary_style": "unknown",
+      "style_confidence": 0.0,
+      "all_styles": {}
+    },
+    "recommendations": [
+      "Consider adding windows for natural lighting",
+      "Consider improving overall design quality",
+      "Improve circulation patterns"
+    ],
+    "technical_details": {
+      "total_elements_detected": 5,
+      "segments_generated": 225,
+      "analysis_confidence": 1.0
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "phases": {
+    "discover": {
+      "description": "Understand the context and constraints",
+      "duration_minutes": 15,
+      "questions_per_phase": 5,
+      "focus": "observation and understanding",
+      "icon": "🔍",
+      "color": "#667eea"
+    },
+    "define": {
+      "description": "Identify key problems and opportunities",
+      "duration_minutes": 10,
+      "questions_per_phase": 3,
+      "focus": "problem identification",
+      "icon": "🎯",
+      "color": "#764ba2"
+    },
+    "ideate": {
+      "description": "Generate creative solutions",
+      "duration_minutes": 20,
+      "questions_per_phase": 4,
+      "focus": "creative thinking",
+      "icon": "💡",
+      "color": "#f093fb"
+    },
+    "prototype": {
+      "description": "Create and test solutions",
+      "duration_minutes": 25,
+      "questions_per_phase": 4,
+      "focus": "solution development",
+      "icon": "🔧",
+      "color": "#4facfe"
+    },
+    "test": {
+      "description": "Evaluate and refine solutions",
+      "duration_minutes": 15,
+      "questions_per_phase": 3,
+      "focus": "evaluation and refinement",
+      "icon": "🧪",
+      "color": "#43e97b"
+    },
+    "reflect": {
+      "description": "Learn from the process",
+      "duration_minutes": 10,
+      "questions_per_phase": 2,
+      "focus": "learning and improvement",
+      "icon": "🤔",
+      "color": "#fa709a"
+    }
+  },
+  "interaction": {
+    "enable_hints": true,
+    "enable_follow_up": true,
+    "enable_sketching": true,
+    "enable_analysis": true,
+    "min_response_length": 10,
+    "max_response_length": 1000,
+    "show_progress": true,
+    "enable_decisions_log": true
+  },
+  "analysis": {
+    "confidence_threshold": 0.5,
+    "enable_spatial_analysis": true,
+    "enable_critique": false,
+    "enable_suggestions": false,
+    "focus_on_guidance": true
+  },
+  "feedback": {
+    "encourage_deeper_thinking": true,
+    "provide_contextual_hints": true,
+    "acknowledge_effort": true,
+    "suggest_expansion": true,
+    "positive_reinforcement": true
+  },
+  "question_types": {
+    "observation": {
+      "description": "Questions that encourage careful observation",
+      "icon": "👁️",
+      "focus": "noticing details and patterns"
+    },
+    "analysis": {
+      "description": "Questions that promote analytical thinking",
+      "icon": "🔍",
+      "focus": "breaking down complex information"
+    },
+    "synthesis": {
+      "description": "Questions that encourage creative synthesis",
+      "icon": "🧠",
+      "focus": "combining ideas and creating new solutions"
+    },
+    "evaluation": {
+      "description": "Questions that promote critical evaluation",
+      "icon": "⚖️",
+      "focus": "assessing options and making judgments"
+    },
+    "reflection": {
+      "description": "Questions that encourage metacognitive reflection",
+      "icon": "🤔",
+      "focus": "thinking about thinking and learning"
+    }
+  },
+  "architectural_elements": {
+    "spatial": ["circulation", "adjacency", "proximity", "orientation"],
+    "functional": ["rooms", "spaces", "functions", "activities"],
+    "environmental": ["lighting", "ventilation", "thermal", "acoustic"],
+    "structural": ["walls", "columns", "beams", "foundations"],
+    "accessibility": ["ramps", "elevators", "doorways", "corridors"],
+    "sustainability": ["energy", "materials", "water", "waste"]
+  },
+  "design_principles": {
+    "functionalism": "Form follows function",
+    "proportion": "Harmonious proportions and scale",
+    "circulation": "Efficient movement patterns",
+    "lighting": "Effective use of natural and artificial light",
+    "accessibility": "Universal design principles",
+    "sustainability": "Environmental responsibility",
+    "context": "Response to site and culture",
+    "structure": "Sound structural approach"
+  },
+  "learning_objectives": {
+    "discover": [
+      "Develop observational skills",
+      "Understand context and constraints",
+      "Identify key stakeholders and needs"
+    ],
+    "define": [
+      "Frame problems effectively",
+      "Prioritize design challenges",
+      "Define success criteria"
+    ],
+    "ideate": [
+      "Generate creative solutions",
+      "Think divergently",
+      "Explore multiple alternatives"
+    ],
+    "prototype": [
+      "Develop concrete solutions",
+      "Test assumptions",
+      "Iterate on ideas"
+    ],
+    "test": [
+      "Evaluate solutions critically",
+      "Gather feedback effectively",
+      "Refine based on evidence"
+    ],
+    "reflect": [
+      "Learn from the process",
+      "Develop metacognitive awareness",
+      "Improve future approaches"
+    ]
+  }
+} 

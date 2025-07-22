@@ -1,0 +1,99 @@
+====================================================================================================
+COMPREHENSIVE ARCHITECTURAL ANALYSIS REPORT
+====================================================================================================
+
+Analysis ID: unified_analysis_20250721_211305
+Timestamp: 20250721_211305
+Input Image: ./data/raw/sample_plan.jpg
+
+EXECUTIVE SUMMARY
+------------------------------
+Risk Assessment: LOW
+Successful Analyses: 3/3
+Overall Score: 0.0/100
+Risk Level: CRITICAL
+Total Issues Identified: 10
+Total Recommendations: 15
+
+YOLO DETECTION RESULTS
+------------------------------
+Total Elements Detected: 5
+Model Used: plan_images_training\runs\detect\improved_architectural_yolo\weights\best.pt
+Confidence Threshold: 0.3
+
+DETECTED ELEMENTS:
+--------------------
+1. DINING_ROOM
+   Confidence: 0.945 (94.5%)
+   Location: [633, 0, 932, 219]
+   Area: 65453 pixels
+
+2. BATHROOM
+   Confidence: 0.554 (55.4%)
+   Location: [614, 1768, 823, 1939]
+   Area: 35703 pixels
+
+3. DINING_ROOM
+   Confidence: 0.480 (48.0%)
+   Location: [416, 145, 664, 368]
+   Area: 55350 pixels
+
+4. KITCHEN
+   Confidence: 0.396 (39.6%)
+   Location: [427, 141, 667, 369]
+   Area: 54721 pixels
+
+5. CORRIDOR
+   Confidence: 0.316 (31.6%)
+   Location: [676, 503, 839, 674]
+   Area: 27855 pixels
+
+CLIP/BLIP ANALYSIS RESULTS
+------------------------------
+Image Description: a floor plan for a small house
+
+DETECTED CONCEPTS (Top 10):
+-------------------------
+• Closed Floor Plan: 0.866913
+• Open Floor Plan: 0.106425
+• Compact Rooms: 0.016009
+• Spacious Rooms: 0.005693
+• Accessible Design: 0.002782
+• Residential Building: 0.000411
+• Luxury Design: 0.000303
+• Sustainable Design: 0.000209
+• Large Windows: 0.000155
+• High Ceilings: 0.000124
+
+KEY INSIGHTS:
+---------------
+Key Characteristics:
+  - Closed Floor Plan
+  - Open Floor Plan
+
+SAM SEGMENTATION RESULTS
+------------------------------
+Total Segments Generated: 225
+Segmentation Method: auto
+Number of Points Used: N/A
+
+SEGMENT DETAILS (First 10):
+-------------------------
+1. Type: point_prompt, Confidence: 0.972, Area: 389826 pixels
+2. Type: point_prompt, Confidence: 0.957, Area: 2682588 pixels
+3. Type: point_prompt, Confidence: 0.958, Area: 2667005 pixels
+4. Type: point_prompt, Confidence: 0.975, Area: 2710065 pixels
+5. Type: point_prompt, Confidence: 0.978, Area: 2718689 pixels
+6. Type: point_prompt, Confidence: 0.977, Area: 2699904 pixels
+7. Type: point_prompt, Confidence: 0.980, Area: 2635489 pixels
+8. Type: point_prompt, Confidence: 0.980, Area: 2625707 pixels
+9. Type: point_prompt, Confidence: 0.976, Area: 2638599 pixels
+10. Type: point_prompt, Confidence: 0.974, Area: 2625331 pixels
+
+COMPREHENSIVE ANALYSIS RESULTS
+----------------------------------------
+SPATIAL ANALYSIS:
+--------------------
+Circulation Efficiency: 38.6/100
+Density Calculation: 5.6/100
+Adjacency Score: 38.3/100

@@ -1,0 +1,12 @@
+🏗️ ARCHITECTURAL ANALYSIS SUMMARY
+========================================
+
+📊 DETECTED ELEMENTS (0 total):
+
+🎨 STYLE ANALYSIS:
+   • a residential floor plan: 38.23%
+   • a contemporary design: 16.11%
+   • a modern building facade: 13.03%
+
+📝 IMAGE DESCRIPTION:
+   a black and white drawing of an apartment building

@@ -1,0 +1,11 @@
+names:
+- building
+- room
+- corridor
+- entrance
+- exit
+nc: 5
+path: datasets\reco_training
+test: images/test
+train: images/train
+val: images/val
