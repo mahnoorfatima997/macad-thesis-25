@@ -1,0 +1,65 @@
+# Mega Architectural Mentor - Complete Requirements
+# Core dependencies for the unified AI system
+
+# Streamlit and web interface
+streamlit>=1.28.0
+pillow>=10.0.0
+
+# Computer Vision and Image Processing
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# AI and Machine Learning
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.30.0
+openai>=1.0.0
+
+# SAM (Segment Anything Model) dependencies
+segment-anything @ git+https://github.com/facebookresearch/segment-anything.git
+
+# Multi-agent orchestration
+langgraph>=0.0.20
+langchain>=0.1.0
+langchain-openai>=0.0.5
+
+# Vector database for knowledge management
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+
+# Data processing and utilities
+pandas>=2.0.0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# File handling and utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+aiohttp>=3.8.0
+
+# Development and testing
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Additional vision processing
+albumentations>=1.3.0
+imageio>=2.31.0
+
+# Web scraping for knowledge base (optional)
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# JSON and data serialization
+orjson>=3.9.0
+
+# Async support
+asyncio-mqtt>=0.13.0
+
+# Environment and configuration
+python-decouple>=3.8
+
+# Optional: GPU acceleration
+# cuda-python>=12.0.0  # Uncomment if using CUDA
+# cupy-cuda12x>=12.0.0  # Uncomment if using CUDA 12.x 
