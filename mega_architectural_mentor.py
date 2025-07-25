@@ -139,6 +139,32 @@ def main():
         **Step 5**: 📊 Display comprehensive results and insights
         """)
         
+        # Data export section
+        st.subheader("📊 Data Collection")
+        
+        # Export session data button
+        if st.session_state.interaction_logger and hasattr(st.session_state.interaction_logger, 'interactions') and len(st.session_state.interaction_logger.interactions) > 0:
+            if st.button("💾 Export Session Data"):
+                try:
+                    # Export data for thesis analysis
+                    st.session_state.interaction_logger.export_for_thesis_analysis()
+                    
+                    # Get session summary
+                    summary = st.session_state.interaction_logger.get_session_summary()
+                    
+                    st.success(f"✅ Session data exported to ./thesis_data/")
+                    st.info(f"Session ID: {st.session_state.interaction_logger.session_id}")
+                    st.info(f"Total interactions: {len(st.session_state.interaction_logger.interactions)}")
+                    
+                    # Show key metrics
+                    if summary:
+                        st.metric("Cognitive Offloading Prevention", f"{summary.get('cognitive_offloading_prevention_rate', 0):.1%}")
+                        st.metric("Deep Thinking Engagement", f"{summary.get('deep_thinking_encouragement_rate', 0):.1%}")
+                except Exception as e:
+                    st.error(f"Error exporting data: {str(e)}")
+        else:
+            st.info("No interaction data to export yet. Start a conversation to generate data.")
+        
         # Reset button
         if st.button("🔄 Start New Project"):
             st.session_state.analysis_complete = False
@@ -148,6 +174,7 @@ def main():
             st.session_state.gpt_sam_results = None
             st.session_state.uploaded_image_path = None
             st.session_state.orchestrator = None
+            st.session_state.interaction_logger = InteractionLogger()  # Create new logger for new session
             st.rerun()
     
     # Main interface
@@ -631,6 +658,23 @@ def main():
                             "role": "assistant",
                             "content": result["response"]
                         })
+                        
+                        # Log interaction for thesis data collection
+                        if st.session_state.interaction_logger:
+                            st.session_state.interaction_logger.log_interaction(
+                                student_input=user_input,
+                                agent_response=result["response"],
+                                routing_path=result["routing_path"],
+                                agents_used=result["metadata"]["agents_used"],
+                                response_type=result["metadata"]["response_type"],
+                                cognitive_flags=result["classification"].get("cognitive_flags", []),
+                                student_skill_level=st.session_state.arch_state.student_profile.skill_level,
+                                confidence_score=result["classification"].get("confidence", 0.5),
+                                sources_used=result["metadata"]["sources"],
+                                response_time=result["metadata"].get("response_time", 0),
+                                context_classification=result["classification"],
+                                metadata=result["metadata"]
+                            )
                         
                     except Exception as e:
                         # Fallback response
