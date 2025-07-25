@@ -20,11 +20,17 @@ source mega_env/bin/activate
 # Install dependencies
 pip install -r requirements_mega.txt    # Full dependencies with SAM
 pip install -r requirements.txt         # Core dependencies only
+pip install -r benchmarking/requirements_benchmarking.txt  # Benchmarking dependencies
 
 # Run applications
 streamlit run mega_architectural_mentor.py    # Main unified app (GPT+SAM+Agents)
 streamlit run thesis-agents/app.py            # Multi-agent system only
 python main.py                                 # Simple unified engine
+
+# Run cognitive benchmarking
+python benchmarking/run_benchmarking.py       # Full benchmarking pipeline
+python benchmarking/run_benchmarking.py --no-visualizations  # Skip visualizations
+python benchmarking/run_benchmarking.py --data-dir ./custom_data  # Custom data directory
 
 # Development tools
 black .                    # Code formatting
@@ -34,7 +40,7 @@ pytest                    # Run tests (no test files currently exist)
 
 ## High-Level Architecture
 
-The system consists of three major components working together:
+The system consists of four major components working together:
 
 ### 1. Computer Vision Pipeline (`src/core/detection/`)
 - **GPT-4 Vision**: Analyzes architectural drawings for elements, composition, and design principles
@@ -55,6 +61,13 @@ The system consists of three major components working together:
 - **Vector Store**: ChromaDB for semantic search of architectural references
 - **Documents**: 40+ architecture PDFs in `knowledge_base/downloaded_pdfs/`
 - **Manager**: `knowledge_base/knowledge_manager.py` handles indexing and retrieval
+
+### 4. Cognitive Benchmarking System (`benchmarking/`)
+- **Graph ML Analysis**: `graph_ml_benchmarking.py` - Converts interactions to graphs and applies GNNs
+- **Evaluation Metrics**: `evaluation_metrics.py` - Measures cognitive development and educational effectiveness
+- **Visualization Tools**: `visualization_tools.py` - Creates interactive dashboards and analysis charts
+- **Proficiency Classifier**: `user_proficiency_classifier.py` - ML-based user proficiency assessment
+- **Pipeline Runner**: `run_benchmarking.py` - Orchestrates the complete benchmarking analysis
 
 ## Key Integration Points
 
@@ -85,10 +98,42 @@ When modifying the system:
 2. **Agent Behavior**: Modify individual agents in `thesis-agents/agents/`
 3. **Orchestration Logic**: Update `orchestration/langgraph_orchestrator.py`
 4. **UI/UX**: Changes in `mega_architectural_mentor.py` or `thesis-agents/app.py`
+5. **Benchmarking Analysis**: Modify components in `benchmarking/` for evaluation changes
 
 ## Research Components
 
-The system includes thesis-specific data collection:
+The system includes comprehensive thesis-specific data collection and analysis:
+
+### Data Collection
 - **Interaction Logger**: `data_collection/interaction_logger.py` tracks all user interactions
 - **Metrics**: Response times, question types, cognitive load indicators
 - **Export**: Use `export_thesis_ready_data()` for research analysis
+
+### Cognitive Benchmarking
+- **Graph ML Pipeline**: Analyzes interaction patterns using Graph Neural Networks
+- **Proficiency Classification**: Categorizes users into beginner/intermediate/advanced/expert
+- **Evaluation Metrics**: Measures cognitive offloading prevention, deep thinking engagement, scaffolding effectiveness
+- **Visualization Suite**: Interactive dashboards, cognitive flow diagrams, temporal analysis
+- **Benchmark Generation**: Creates proficiency-based benchmarks with progression indicators
+
+### Running Benchmarking Analysis
+```bash
+# Full analysis pipeline
+python benchmarking/run_benchmarking.py
+
+# Output structure:
+benchmarking/results/
+├── benchmark_report.json              # Detailed benchmarks
+├── comprehensive_benchmark_report.json # Full analysis
+├── benchmark_summary.md              # Human-readable summary
+├── gnn_model.pkl                    # Trained GNN model
+├── proficiency_classifier.pkl       # Trained classifier
+├── evaluation_reports/              # Per-session evaluations
+└── visualizations/                  # Generated charts and graphs
+```
+
+### Key Thesis Metrics
+- **Cognitive Offloading Prevention Rate**: Target >70%
+- **Deep Thinking Engagement**: Target >60%
+- **Improvement over Baseline**: Comparing to traditional tutoring methods
+- **Learning Progression**: Tracking skill development across sessions
