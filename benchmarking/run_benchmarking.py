@@ -74,6 +74,13 @@ class BenchmarkingPipeline:
         print(f"✅ Found {len(session_files)} session files")
         self.results['sessions_analyzed'] = len(session_files)
         
+        # Warn about minimum data requirements
+        if len(session_files) < 3:
+            print("\n⚠️  Warning: Limited data available")
+            print("   - Clustering will use rule-based assignment instead of ML clustering")
+            print("   - For best results, collect at least 3-5 sessions")
+            print("   - Proficiency classifier requires at least 5 sessions\n")
+        
         # Step 2: Process data into graphs
         print("\nStep 2: Processing data into interaction graphs...")
         graphs = self._process_interaction_graphs(session_files)

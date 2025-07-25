@@ -45,6 +45,25 @@ The benchmarking system consists of four main components:
 
 ## Usage
 
+### Data Requirements
+
+The benchmarking system has minimum data requirements for different features:
+
+- **Basic Analysis**: 1+ sessions (limited functionality)
+- **Clustering & Benchmarks**: 3+ sessions recommended
+- **Proficiency Classifier**: 5+ sessions required
+- **Optimal Results**: 10+ sessions with varied user interactions
+
+### Generating Test Data
+
+For testing or when you don't have enough real sessions yet:
+
+```bash
+python benchmarking/generate_test_data.py
+```
+
+This creates 5 synthetic sessions with varied skill levels and interaction patterns.
+
 ### Running the Complete Benchmarking Pipeline
 
 The easiest way to run the full benchmarking analysis:
@@ -59,7 +78,7 @@ This will:
 - Train the GNN model
 - Generate cognitive benchmarks
 - Evaluate all sessions
-- Train the proficiency classifier
+- Train the proficiency classifier (if 5+ sessions available)
 - Generate comprehensive visualizations
 - Export a detailed report
 
@@ -205,8 +224,23 @@ self.gnn_model = CognitiveGNN(
 ### No Data Found
 Ensure you have run some tutoring sessions first. The system needs interaction data in `./thesis_data/interactions_*.csv` format.
 
+**Solution**: 
+1. Run the main app and have some conversations: `streamlit run mega_architectural_mentor.py`
+2. Click "Export Session Data" in the sidebar after each session
+3. Or generate test data: `python benchmarking/generate_test_data.py`
+
 ### Insufficient Data for Training
 The proficiency classifier needs at least 5 sessions. The GNN model works best with 10+ sessions.
+
+**Error**: `ValueError: max() iterable argument is empty`
+- This occurs when trying to cluster with less than 3 sessions
+- The system now handles this gracefully with rule-based assignment
+
+### Session Data Not Saving
+Make sure you:
+1. Have interactions with the AI (not just uploading an image)
+2. Click the "Export Session Data" button in the sidebar
+3. Check that `./thesis_data/` directory exists and contains CSV files
 
 ### Memory Issues
 For large datasets, you can process sessions in batches:

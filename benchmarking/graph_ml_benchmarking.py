@@ -353,18 +353,42 @@ class CognitiveBenchmarkGenerator:
         graph_features = np.array(graph_features)
         graph_features_scaled = self.scaler.fit_transform(graph_features)
         
-        # Find optimal number of clusters
-        silhouette_scores = []
-        for n_clusters in range(2, min(10, len(graphs))):
-            kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-            labels = kmeans.fit_predict(graph_features_scaled)
-            score = silhouette_score(graph_features_scaled, labels)
-            silhouette_scores.append(score)
-        
-        # Use best number of clusters
-        optimal_clusters = silhouette_scores.index(max(silhouette_scores)) + 2
-        self.proficiency_clusters = KMeans(n_clusters=optimal_clusters, random_state=42)
-        cluster_labels = self.proficiency_clusters.fit_predict(graph_features_scaled)
+        # Handle cases with insufficient data
+        if len(graphs) < 3:
+            # For very small datasets, assign proficiency based on metrics
+            cluster_labels = []
+            for i, features in enumerate(graph_features):
+                # Simple rule-based assignment
+                avg_learning = features[1]  # learning effectiveness
+                avg_offload_prevention = features[3]  # cognitive offloading prevention
+                
+                if avg_learning > 0.7 and avg_offload_prevention > 0.7:
+                    cluster_labels.append(2)  # Advanced
+                elif avg_learning > 0.5 or avg_offload_prevention > 0.5:
+                    cluster_labels.append(1)  # Intermediate
+                else:
+                    cluster_labels.append(0)  # Beginner
+            
+            cluster_labels = np.array(cluster_labels)
+            optimal_clusters = len(np.unique(cluster_labels))
+            
+            # Create mock clustering for consistency
+            self.proficiency_clusters = KMeans(n_clusters=optimal_clusters, random_state=42)
+            self.proficiency_clusters.fit(graph_features_scaled)
+            self.proficiency_clusters.labels_ = cluster_labels
+        else:
+            # Find optimal number of clusters for larger datasets
+            silhouette_scores = []
+            for n_clusters in range(2, min(10, len(graphs))):
+                kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+                labels = kmeans.fit_predict(graph_features_scaled)
+                score = silhouette_score(graph_features_scaled, labels)
+                silhouette_scores.append(score)
+            
+            # Use best number of clusters
+            optimal_clusters = silhouette_scores.index(max(silhouette_scores)) + 2
+            self.proficiency_clusters = KMeans(n_clusters=optimal_clusters, random_state=42)
+            cluster_labels = self.proficiency_clusters.fit_predict(graph_features_scaled)
         
         # Analyze cluster characteristics
         cluster_profiles = {}
@@ -572,31 +596,53 @@ class CognitiveBenchmarkGenerator:
         plt.close()
         
         # 4. Proficiency Cluster Visualization
-        if hasattr(self, 'proficiency_clusters') and self.proficiency_clusters:
-            graph_features = [self._extract_graph_features(g) for g in graphs]
-            graph_features = np.array(graph_features)
-            graph_features_scaled = self.scaler.transform(graph_features)
-            
-            # Reduce to 2D for visualization
-            from sklearn.decomposition import PCA
-            pca = PCA(n_components=2)
-            features_2d = pca.fit_transform(graph_features_scaled)
-            
-            plt.figure(figsize=(10, 8))
-            labels = self.proficiency_clusters.predict(graph_features_scaled)
-            scatter = plt.scatter(features_2d[:, 0], features_2d[:, 1], c=labels, cmap='viridis', alpha=0.7)
-            plt.colorbar(scatter)
-            plt.xlabel('First Principal Component')
-            plt.ylabel('Second Principal Component')
-            plt.title('User Proficiency Clusters')
-            
-            # Add cluster centers
-            centers_scaled = self.proficiency_clusters.cluster_centers_
-            centers_2d = pca.transform(centers_scaled)
-            plt.scatter(centers_2d[:, 0], centers_2d[:, 1], c='red', marker='x', s=200, linewidths=3)
-            
-            plt.savefig(f"{save_path}/proficiency_clusters.png")
-            plt.close()
+        if hasattr(self, 'proficiency_clusters') and self.proficiency_clusters and len(graphs) > 1:
+            try:
+                graph_features = [self._extract_graph_features(g) for g in graphs]
+                graph_features = np.array(graph_features)
+                
+                # Check if we have enough variance for PCA
+                if len(graphs) >= 2:
+                    graph_features_scaled = self.scaler.transform(graph_features)
+                    
+                    # Reduce to 2D for visualization
+                    from sklearn.decomposition import PCA
+                    # Use min of 2 or number of samples for PCA components
+                    n_components = min(2, len(graphs))
+                    pca = PCA(n_components=n_components)
+                    features_2d = pca.fit_transform(graph_features_scaled)
+                    
+                    plt.figure(figsize=(10, 8))
+                    
+                    if hasattr(self.proficiency_clusters, 'labels_'):
+                        labels = self.proficiency_clusters.labels_
+                    else:
+                        labels = self.proficiency_clusters.predict(graph_features_scaled)
+                    
+                    if n_components == 2:
+                        scatter = plt.scatter(features_2d[:, 0], features_2d[:, 1], c=labels, cmap='viridis', alpha=0.7)
+                    else:
+                        # For 1D case, create artificial y-axis
+                        scatter = plt.scatter(features_2d[:, 0], np.zeros_like(features_2d[:, 0]), c=labels, cmap='viridis', alpha=0.7)
+                    
+                    plt.colorbar(scatter)
+                    plt.xlabel('First Principal Component')
+                    plt.ylabel('Second Principal Component' if n_components == 2 else 'Sessions')
+                    plt.title('User Proficiency Clusters')
+                    
+                    # Add cluster centers only if we have real clustering
+                    if hasattr(self.proficiency_clusters, 'cluster_centers_') and len(graphs) >= 3:
+                        centers_scaled = self.proficiency_clusters.cluster_centers_
+                        centers_2d = pca.transform(centers_scaled)
+                        if n_components == 2:
+                            plt.scatter(centers_2d[:, 0], centers_2d[:, 1], c='red', marker='x', s=200, linewidths=3)
+                        else:
+                            plt.scatter(centers_2d[:, 0], np.zeros_like(centers_2d[:, 0]), c='red', marker='x', s=200, linewidths=3)
+                    
+                    plt.savefig(f"{save_path}/proficiency_clusters.png")
+                    plt.close()
+            except Exception as e:
+                print(f"Warning: Could not generate proficiency cluster visualization: {str(e)}")
     
     def generate_benchmark_report(self, output_path: str = "./benchmarking/benchmark_report.json"):
         """Generate comprehensive benchmark report"""

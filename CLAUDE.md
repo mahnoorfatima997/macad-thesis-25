@@ -32,6 +32,9 @@ python benchmarking/run_benchmarking.py       # Full benchmarking pipeline
 python benchmarking/run_benchmarking.py --no-visualizations  # Skip visualizations
 python benchmarking/run_benchmarking.py --data-dir ./custom_data  # Custom data directory
 
+# Generate test data for benchmarking
+python benchmarking/generate_test_data.py     # Creates 5 synthetic sessions for testing
+
 # Development tools
 black .                    # Code formatting
 flake8 .                  # Linting
@@ -77,13 +80,16 @@ The system consists of four major components working together:
 3. Analysis results feed into multi-agent system
 4. Agents engage in Socratic dialogue based on visual analysis
 5. Knowledge base provides contextual references
-6. Interactions logged for thesis research
+6. **Interactions automatically logged to CSV files**
+7. **Session data exportable via sidebar button**
 
 ### Critical Implementation Details:
 - **State Persistence**: Uses Streamlit session state to maintain conversation context
 - **Agent Communication**: All agents share `ArchMentorState` for coherent responses
 - **Visual Context**: `VisualArtifact` class carries image analysis throughout conversation
 - **Learning Tracking**: `StudentProfile` adapts agent responses to skill level
+- **Data Logging**: Every interaction automatically saved with full metrics (lines 635-650)
+- **Export Feature**: Manual export button in sidebar for session data (lines 142-166)
 
 ## Configuration
 
@@ -106,8 +112,11 @@ The system includes comprehensive thesis-specific data collection and analysis:
 
 ### Data Collection
 - **Interaction Logger**: `data_collection/interaction_logger.py` tracks all user interactions
-- **Metrics**: Response times, question types, cognitive load indicators
-- **Export**: Use `export_thesis_ready_data()` for research analysis
+- **Automatic Logging**: Both apps now automatically log interactions after each response
+- **Manual Export**: Click "Export Session Data" button in sidebar to save session data
+- **Auto-saved Format**: `./thesis_data/interactions_[session_id].csv`
+- **Metrics**: Response times, question types, cognitive load indicators, prevention rates
+- **Export Functions**: `export_for_thesis_analysis()` and `export_thesis_ready_data()`
 
 ### Cognitive Benchmarking
 - **Graph ML Pipeline**: Analyzes interaction patterns using Graph Neural Networks
@@ -115,6 +124,12 @@ The system includes comprehensive thesis-specific data collection and analysis:
 - **Evaluation Metrics**: Measures cognitive offloading prevention, deep thinking engagement, scaffolding effectiveness
 - **Visualization Suite**: Interactive dashboards, cognitive flow diagrams, temporal analysis
 - **Benchmark Generation**: Creates proficiency-based benchmarks with progression indicators
+- **Data Requirements**:
+  - Basic analysis: 1+ sessions
+  - Clustering: 3+ sessions recommended
+  - Proficiency classifier: 5+ sessions required
+  - Optimal results: 10+ sessions
+- **Test Data**: Use `generate_test_data.py` to create synthetic sessions for testing
 
 ### Running Benchmarking Analysis
 ```bash
@@ -137,3 +152,20 @@ benchmarking/results/
 - **Deep Thinking Engagement**: Target >60%
 - **Improvement over Baseline**: Comparing to traditional tutoring methods
 - **Learning Progression**: Tracking skill development across sessions
+
+## Recent Updates
+
+### Interaction Logging Integration (Lines Modified)
+- `mega_architectural_mentor.py`: 
+  - Lines 635-650: Auto-logging after each interaction
+  - Lines 142-166: Export button and metrics display
+  - Line 177: New logger on reset
+- `thesis-agents/app.py`:
+  - Lines 809-824: Auto-logging after each interaction
+  - Lines 156-175: Export button in sidebar
+  - Line 185: New logger on reset
+
+### Benchmarking Fixes
+- **Small Dataset Handling**: Rule-based proficiency assignment for <3 sessions
+- **Clustering Protection**: Prevents errors with insufficient data
+- **Test Data Generator**: `generate_test_data.py` for testing without real sessions
