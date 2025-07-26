@@ -75,7 +75,7 @@ def main():
         env_api_key = os.getenv("OPENAI_API_KEY")
         
         if env_api_key:
-            st.success("✅ API key loaded from environment")
+            st.success("API key loaded from environment")
             api_key = env_api_key
         else:
             api_key = st.text_input(
@@ -113,17 +113,17 @@ def main():
             try:
                 # Test GPT-SAM
                 gpt_sam = GPTSAMAnalyzer(api_key)
-                st.success("✅ GPT Vision: Ready")
-                st.success("✅ SAM: Ready")
+                st.success("GPT Vision: Ready")
+                st.success("SAM: Ready")
                 
                 # Test agents
                 if st.session_state.orchestrator:
-                    st.success("✅ Multi-Agent System: Ready")
+                    st.success("Multi-Agent System: Ready")
                 else:
                     st.info("⏳ Multi-Agent System: Not initialized")
                     
             except Exception as e:
-                st.error(f"❌ System Error: {e}")
+                st.error(f"System Error: {e}")
         
         # Pipeline information
         st.subheader("🔄 Unified Pipeline")
@@ -152,7 +152,7 @@ def main():
                     # Get session summary
                     summary = st.session_state.interaction_logger.get_session_summary()
                     
-                    st.success(f"✅ Session data exported to ./thesis_data/")
+                    st.success(f"Session data exported to ./thesis_data/")
                     st.info(f"Session ID: {st.session_state.interaction_logger.session_id}")
                     st.info(f"Total interactions: {len(st.session_state.interaction_logger.interactions)}")
                     
@@ -425,7 +425,7 @@ def main():
                             if design_insights:
                                 strengths = design_insights.get('strengths', [])
                                 if strengths:
-                                    st.write("**✅ Design Strengths:**")
+                                    st.write("**Design Strengths:**")
                                     for strength in strengths[:3]:
                                         st.write(f"• {strength}")
                                 
@@ -471,7 +471,7 @@ def main():
                         explanation = flag_explanations.get(flag, f"• **{flag.replace('_', ' ').title()}**")
                         st.markdown(explanation)
                 else:
-                    st.success("✅ Strong cognitive awareness demonstrated!")
+                    st.success("Strong cognitive awareness demonstrated!")
                 
                 # Learning opportunities
                 opportunities = synthesis.get('learning_opportunities', [])
@@ -519,9 +519,9 @@ def main():
                         st.write(f"**Previous Level:** {previous.title()}")
                         
                         if updated:
-                            st.success(f"✅ Skill level updated: {previous} → {detected}")
+                            st.success(f"Skill level updated: {previous} → {detected}")
                         else:
-                            st.info(f"✅ Skill level confirmed: {detected}")
+                            st.info(f"Skill level confirmed: {detected}")
                     
                     with col_skill2:
                         confidence = skill_assessment.get('confidence', 0)

@@ -23,7 +23,7 @@ class InteractionLogger:
         # Create data directory
         os.makedirs("./thesis_data", exist_ok=True)
         
-        print(f"📊 Data collection initialized for session: {self.session_id}")
+        print(f"Data collection initialized for session: {self.session_id}")
         
     def log_interaction(self, 
                        student_input: str,
@@ -97,7 +97,7 @@ class InteractionLogger:
         # Real-time save to CSV
         self._save_interaction_to_csv(interaction)
         
-        print(f"📊 Logged interaction {interaction['interaction_number']}: {response_type} via {routing_path}")
+        print(f"Logged interaction {interaction['interaction_number']}: {response_type} via {routing_path}")
         
     def _classify_input_type(self, input_text: str) -> str:
         """Classify student input for analysis"""
@@ -392,7 +392,7 @@ class InteractionLogger:
         with open(f"./thesis_data/full_log_{self.session_id}.json", 'w') as f:
             json.dump(self.interactions, f, indent=2)
         
-        print(f"📊 Thesis data exported:")
+        print(f"Thesis data exported:")
         print(f"   - interactions_{self.session_id}.csv")
         print(f"   - session_summary_{self.session_id}.json")
         print(f"   - full_log_{self.session_id}.json")
@@ -501,7 +501,7 @@ def export_thesis_ready_data():
         combined_df = pd.concat(all_data, ignore_index=True)
         combined_df.to_csv("./thesis_data/all_interactions_for_analysis.csv", index=False)
         
-        print("📊 Thesis-ready data exported:")
+        print("Thesis-ready data exported:")
         print("   - thesis_summary_statistics.json")
         print("   - all_interactions_for_analysis.csv")
         print(f"   - {len(csv_files)} individual session files")

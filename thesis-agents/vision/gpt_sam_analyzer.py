@@ -25,7 +25,7 @@ try:
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
-    print("⚠️ OpenAI not available. Install with: pip install openai")
+    print("OpenAI not available. Install with: pip install openai")
 
 class GPTSAMAnalyzer:
     """GPT Vision + SAM analyzer for architectural images"""
@@ -38,18 +38,18 @@ class GPTSAMAnalyzer:
         if OPENAI_AVAILABLE and api_key:
             self.client = OpenAI(api_key=api_key)
             self.gpt_available = True
-            print("✅ GPT Vision initialized")
+            print("GPT Vision initialized")
         else:
             self.client = None
             self.gpt_available = False
-            print("⚠️ GPT Vision not available")
+            print("GPT Vision not available")
         
         # Initialize SAM
         try:
             self.sam = SAM2Segmenter(model_name="facebook/sam-vit-base")
-            print("✅ SAM initialized")
+            print("SAM initialized")
         except Exception as e:
-            print(f"❌ SAM initialization failed: {e}")
+            print(f"SAM initialization failed: {e}")
             self.sam = None
     
     def encode_image(self, image_path: str) -> str:
@@ -162,7 +162,7 @@ class GPTSAMAnalyzer:
             return self._create_fallback_from_text(content, width, height)
                 
         except Exception as e:
-            print(f"❌ GPT Vision API error: {e}")
+            print(f"GPT Vision API error: {e}")
             return self._create_error_response(width, height, str(e))
     
     def _extract_json_from_response(self, content: str) -> Dict[str, Any]:
@@ -174,18 +174,18 @@ class GPTSAMAnalyzer:
             json_str = json_match.group()
             try:
                 json_result = json.loads(json_str)
-                print("✅ JSON extracted successfully")
+                print("JSON extracted successfully")
                 return json_result
             except json.JSONDecodeError as e:
-                print(f"❌ JSON parsing failed: {e}")
+                print(f"JSON parsing failed: {e}")
                 # Try to fix common JSON issues
                 try:
                     fixed_json = self._fix_common_json_issues(json_str)
                     json_result = json.loads(fixed_json)
-                    print("✅ JSON fixed and parsed successfully")
+                    print("JSON fixed and parsed successfully")
                     return json_result
                 except:
-                    print("❌ Could not fix JSON automatically")
+                    print("Could not fix JSON automatically")
         
         # Strategy 2: Extract from code blocks
         code_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
@@ -193,10 +193,10 @@ class GPTSAMAnalyzer:
             json_str = code_block_match.group(1)
             try:
                 json_result = json.loads(json_str)
-                print("✅ JSON extracted from code block")
+                print("JSON extracted from code block")
                 return json_result
             except json.JSONDecodeError:
-                print("❌ JSON in code block is invalid")
+                print("JSON in code block is invalid")
         
         return None
     
@@ -307,7 +307,7 @@ class GPTSAMAnalyzer:
                 "gpt_analysis": gpt_analysis
             }
         except Exception as e:
-            print(f"❌ SAM segmentation error: {e}")
+            print(f"SAM segmentation error: {e}")
             return {"error": f"SAM segmentation failed: {e}"}
     
     def create_visualization(self, image_path: str, gpt_analysis: Dict[str, Any], sam_results: Dict[str, Any]) -> np.ndarray:
@@ -316,7 +316,7 @@ class GPTSAMAnalyzer:
         # Load the original image
         image = cv2.imread(image_path)
         if image is None:
-            print("❌ Could not load image for visualization")
+            print("Could not load image for visualization")
             return None
         
         # Create a copy for visualization
@@ -450,5 +450,5 @@ class GPTSAMAnalyzer:
             "pipeline_version": "gpt_sam_v1.0"
         }
         
-        print("✅ GPT-SAM analysis complete!")
+        print("GPT-SAM analysis complete!")
         return results 
