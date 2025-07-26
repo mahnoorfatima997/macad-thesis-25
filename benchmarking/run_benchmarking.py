@@ -6,6 +6,7 @@ Main execution script for running the complete benchmarking pipeline
 
 import sys
 import os
+
 from pathlib import Path
 import argparse
 import json
@@ -68,15 +69,15 @@ class BenchmarkingPipeline:
         session_files = self._load_session_data()
         
         if not session_files:
-            print("❌ No interaction data found. Please run some sessions first.")
+            print("[X] No interaction data found. Please run some sessions first.")
             return
         
-        print(f"✅ Found {len(session_files)} session files")
+        print(f"[OK] Found {len(session_files)} session files")
         self.results['sessions_analyzed'] = len(session_files)
         
         # Warn about minimum data requirements
         if len(session_files) < 3:
-            print("\n⚠️  Warning: Limited data available")
+            print("\n[!]  Warning: Limited data available")
             print("   - Clustering will use rule-based assignment instead of ML clustering")
             print("   - For best results, collect at least 3-5 sessions")
             print("   - Proficiency classifier requires at least 5 sessions\n")
@@ -84,40 +85,40 @@ class BenchmarkingPipeline:
         # Step 2: Process data into graphs
         print("\nStep 2: Processing data into interaction graphs...")
         graphs = self._process_interaction_graphs(session_files)
-        print(f"✅ Created {len(graphs)} interaction graphs")
+        print(f"[OK] Created {len(graphs)} interaction graphs")
         
         # Step 3: Train GNN model
         print("\nStep 3: Training Graph Neural Network model...")
         self._train_gnn_model(graphs)
-        print("✅ GNN model trained successfully")
+        print("[OK] GNN model trained successfully")
         
         # Step 4: Generate cognitive benchmarks
         print("\nStep 4: Generating cognitive benchmarks...")
         benchmarks = self._generate_benchmarks(graphs)
-        print(f"✅ Generated {len(benchmarks)} proficiency benchmarks")
+        print(f"[OK] Generated {len(benchmarks)} proficiency benchmarks")
         
         # Step 5: Evaluate sessions
         print("\nStep 5: Evaluating cognitive metrics...")
         evaluation_results = self._evaluate_sessions(session_files)
-        print("✅ Session evaluation complete")
+        print("[OK] Session evaluation complete")
         
         # Step 6: Train proficiency classifier
         if train_classifier:
             print("\nStep 6: Training user proficiency classifier...")
             self._train_proficiency_classifier(session_files)
-            print("✅ Proficiency classifier trained")
+            print("[OK] Proficiency classifier trained")
         
         # Step 7: Generate visualizations
         if generate_visualizations:
             print("\nStep 7: Generating visualizations...")
             self._generate_visualizations(graphs, benchmarks, evaluation_results)
-            print("✅ Visualizations generated")
+            print("[OK] Visualizations generated")
         
         # Step 8: Export comprehensive report
         if export_report:
             print("\nStep 8: Generating final report...")
             self._export_comprehensive_report()
-            print("✅ Report exported")
+            print("[OK] Report exported")
         
         print("\n" + "="*60)
         print("BENCHMARKING COMPLETE!")
@@ -137,7 +138,7 @@ class BenchmarkingPipeline:
                 if len(df) > 0:
                     valid_files.append(file)
             except Exception as e:
-                print(f"  ⚠️  Skipping invalid file {file.name}: {str(e)}")
+                print(f"  [!]  Skipping invalid file {file.name}: {str(e)}")
         
         return valid_files
     
@@ -153,7 +154,7 @@ class BenchmarkingPipeline:
                 graph = self.benchmark_generator.process_session_data(str(session_file))
                 graphs.append(graph)
             except Exception as e:
-                print(f"\n  ⚠️  Error processing {session_file.name}: {str(e)}")
+                print(f"\n  [!]  Error processing {session_file.name}: {str(e)}")
         
         print()  # New line after progress
         return graphs
@@ -219,7 +220,7 @@ class BenchmarkingPipeline:
         )
         
         if len(training_data) < 5:
-            print("  ⚠️  Insufficient data for classifier training (need at least 5 sessions)")
+            print("  [!]  Insufficient data for classifier training (need at least 5 sessions)")
             return
         
         # Train classifier
@@ -297,6 +298,40 @@ class BenchmarkingPipeline:
             graphs, 
             save_path=str(viz_dir)
         )
+        
+        # 6. Export all dashboard visualizations
+        print("\nExporting comprehensive dashboard visualizations...")
+        try:
+            from benchmarking.export_all_visualizations import BenchmarkVisualizationExporter
+            viz_exporter = BenchmarkVisualizationExporter(results_path=str(self.output_dir))
+            viz_exporter.export_all_visualizations()
+        except ImportError:
+            # Try direct import if running from benchmarking directory
+            try:
+                from export_all_visualizations import BenchmarkVisualizationExporter
+                viz_exporter = BenchmarkVisualizationExporter(results_path=str(self.output_dir))
+                viz_exporter.export_all_visualizations()
+            except Exception as e:
+                print(f"  [!]  Warning: Could not export all visualizations: {str(e)}")
+        except Exception as e:
+            print(f"  [!]  Warning: Could not export all visualizations: {str(e)}")
+        
+        # 7. Export Graph ML visualizations
+        print("\nExporting Graph ML visualizations...")
+        try:
+            from benchmarking.graph_ml_visualizations import GraphMLVisualizer
+            graph_viz = GraphMLVisualizer(results_path=str(self.output_dir))
+            graph_viz.export_all_graph_ml_visualizations()
+        except ImportError:
+            # Try direct import if running from benchmarking directory
+            try:
+                from graph_ml_visualizations import GraphMLVisualizer
+                graph_viz = GraphMLVisualizer(results_path=str(self.output_dir))
+                graph_viz.export_all_graph_ml_visualizations()
+            except Exception as e:
+                print(f"  [!]  Warning: Could not export Graph ML visualizations: {str(e)}")
+        except Exception as e:
+            print(f"  [!]  Warning: Could not export Graph ML visualizations: {str(e)}")
     
     def _calculate_aggregate_metrics(self, all_metrics: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Calculate aggregate metrics across all sessions"""
@@ -652,6 +687,8 @@ class BenchmarkingPipeline:
         print(f"  • Evaluation Reports: evaluation_reports/")
         print(f"  • Visualizations: visualizations/")
         print(f"  • Summary: benchmark_summary.md")
+        print(f"\nNOTE: All dashboard visualizations have been exported to:")
+        print(f"  • {self.output_dir}/visualizations/index.html")
 
 
 def main():
@@ -693,6 +730,12 @@ def main():
         help="Skip generating the final report"
     )
     
+    parser.add_argument(
+        "--no-dashboard",
+        action="store_true",
+        help="Skip launching the Streamlit dashboard after benchmarking"
+    )
+    
     args = parser.parse_args()
     
     # Create pipeline
@@ -707,6 +750,16 @@ def main():
         generate_visualizations=not args.no_visualizations,
         export_report=not args.no_report
     )
+    
+    # Launch dashboard if requested
+    if not args.no_dashboard:
+        print("\n" + "="*60)
+        print("Launching Benchmarking Dashboard...")
+        print("="*60)
+        import subprocess
+        import sys
+        subprocess.Popen([sys.executable, "-m", "streamlit", "run", 
+                         "benchmarking/benchmark_dashboard.py"])
 
 
 if __name__ == "__main__":

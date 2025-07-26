@@ -607,7 +607,7 @@ class CognitiveMetricsEvaluator:
             with open(output_path, 'w') as f:
                 json.dump(report, f, indent=2)
             
-            print(f"📊 Evaluation report saved to: {output_path}")
+            print(f"[DATA] Evaluation report saved to: {output_path}")
         
         return report
     
@@ -828,7 +828,7 @@ class CognitiveMetricsEvaluator:
             plt.savefig(f"{save_path}/session_progression.png", dpi=300, bbox_inches='tight')
             plt.close()
         
-        print(f"📊 Metric visualizations saved to: {save_path}")
+        print(f"[DATA] Metric visualizations saved to: {save_path}")
 
 
 def evaluate_session_data(session_file: str) -> Dict[str, Any]:
@@ -898,7 +898,7 @@ def evaluate_all_sessions() -> Dict[str, Any]:
     with open(report_path, 'w') as f:
         json.dump(aggregate_metrics, f, indent=2)
     
-    print(f"✅ Evaluation complete!")
+    print(f"[OK] Evaluation complete!")
     print(f"   - Evaluated {len(all_reports)} sessions")
     print(f"   - Average improvement over baseline: {aggregate_metrics['overall_improvement']:.1f}%")
     print(f"   - Reports saved to: ./benchmarking/evaluation_reports/")

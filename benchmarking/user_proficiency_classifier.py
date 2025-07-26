@@ -76,16 +76,55 @@ class UserProficiencyClassifier:
         X = np.array(X)
         y = np.array(y)
         
+        # Replace any NaN values with 0
+        X = np.nan_to_num(X, nan=0.0, posinf=1.0, neginf=0.0)
+        
         # Scale features
         X_scaled = self.scaler.fit_transform(X)
         
         # Encode labels
         y_encoded = self.label_encoder.fit_transform(y)
         
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_scaled, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
-        )
+        # Check if we have enough samples per class for stratified split
+        unique_classes, class_counts = np.unique(y_encoded, return_counts=True)
+        min_samples_per_class = min(class_counts)
+        
+        # Handle single-class case
+        if len(unique_classes) == 1:
+            single_class_label = self.label_encoder.inverse_transform(unique_classes)[0]
+            print(f"  Warning: Only one proficiency level found in data: {single_class_label}")
+            print(f"  Creating a simplified model for single-class scenario")
+            
+            # For single class, we'll use all data for training and skip evaluation
+            X_train = X_scaled
+            y_train = y_encoded
+            X_test = np.array([])  # Empty test set
+            y_test = np.array([])
+        # Determine if we can use stratified split
+        elif len(unique_classes) > 1 and min_samples_per_class >= 2:
+            # Calculate appropriate test size
+            # Need at least 1 sample per class in test set
+            min_test_size = len(unique_classes) / len(X_scaled)
+            test_size = max(0.2, min_test_size * 1.2)  # Add 20% buffer
+            
+            # Use stratified split when we have enough diversity
+            try:
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X_scaled, y_encoded, test_size=test_size, random_state=42, stratify=y_encoded
+                )
+            except ValueError as e:
+                # Fallback to regular split if stratification fails
+                print(f"  Note: Stratified split failed ({str(e)}), using regular split")
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X_scaled, y_encoded, test_size=0.2, random_state=42
+                )
+        else:
+            # Use regular split without stratification for small/homogeneous datasets
+            print(f"  Note: Using regular train-test split (insufficient class diversity for stratification)")
+            print(f"  Classes found: {dict(zip(self.label_encoder.inverse_transform(unique_classes), class_counts))}")
+            X_train, X_test, y_train, y_test = train_test_split(
+                X_scaled, y_encoded, test_size=0.2, random_state=42
+            )
         
         # Train classifier based on model type
         if model_type == 'random_forest':
@@ -103,28 +142,51 @@ class UserProficiencyClassifier:
                 random_state=42
             )
         elif model_type == 'ensemble':
-            # Ensemble of multiple classifiers
-            self.classifier = VotingClassifierCustom([
-                ('rf', RandomForestClassifier(n_estimators=100, random_state=42)),
-                ('gb', GradientBoostingClassifier(n_estimators=100, random_state=42))
-            ])
+            # Check if we have multiple classes for ensemble
+            if len(unique_classes) > 1:
+                # Ensemble of multiple classifiers
+                self.classifier = VotingClassifierCustom([
+                    ('rf', RandomForestClassifier(n_estimators=100, random_state=42)),
+                    ('gb', GradientBoostingClassifier(n_estimators=100, random_state=42))
+                ])
+            else:
+                # Use single classifier for single-class case
+                print("  Using RandomForest only (single class detected)")
+                self.classifier = RandomForestClassifier(
+                    n_estimators=100,
+                    max_depth=10,
+                    min_samples_split=5,
+                    random_state=42
+                )
         
         # Train the model
         self.classifier.fit(X_train, y_train)
         
-        # Evaluate
-        y_pred = self.classifier.predict(X_test)
+        # Evaluate if we have test data
+        if len(X_test) > 0:
+            y_pred = self.classifier.predict(X_test)
+            
+            print("\nClassification Report:")
+            print(classification_report(
+                y_test, y_pred, 
+                target_names=self.label_encoder.classes_,
+                zero_division=0
+            ))
+        else:
+            print("\nNote: Test set too small for evaluation")
         
-        print("\nClassification Report:")
-        print(classification_report(
-            y_test, y_pred, 
-            target_names=self.label_encoder.classes_
-        ))
-        
-        # Cross-validation
-        cv_scores = cross_val_score(self.classifier, X_scaled, y_encoded, cv=5)
-        print(f"\nCross-validation scores: {cv_scores}")
-        print(f"Average CV score: {cv_scores.mean():.3f} (+/- {cv_scores.std() * 2:.3f})")
+        # Cross-validation if we have enough samples
+        if len(X_scaled) >= 5:
+            # Use minimum of 5 or number of samples for CV
+            cv_folds = min(5, len(X_scaled))
+            try:
+                cv_scores = cross_val_score(self.classifier, X_scaled, y_encoded, cv=cv_folds)
+                print(f"\nCross-validation scores: {cv_scores}")
+                print(f"Average CV score: {cv_scores.mean():.3f} (+/- {cv_scores.std() * 2:.3f})")
+            except Exception as e:
+                print(f"\nCross-validation skipped: {str(e)}")
+        else:
+            print("\nCross-validation skipped: Insufficient samples")
         
         self.trained = True
         
@@ -140,6 +202,10 @@ class UserProficiencyClassifier:
         
         # Extract features
         features = self.extract_user_features(session_data)
+        
+        # Replace any NaN values with 0
+        features = np.nan_to_num(features, nan=0.0, posinf=1.0, neginf=0.0)
+        
         features_scaled = self.scaler.transform(features.reshape(1, -1))
         
         # Predict proficiency
@@ -743,6 +809,11 @@ class VotingClassifierCustom:
         if importances:
             return np.mean(importances, axis=0)
         return None
+    
+    def score(self, X, y):
+        """Score method for cross-validation compatibility"""
+        predictions = self.predict(X)
+        return np.mean(predictions == y)
 
 
 def generate_training_data_from_sessions(session_files: List[str]) -> List[Tuple[pd.DataFrame, str]]:
@@ -768,15 +839,31 @@ def assign_proficiency_label(session_data: pd.DataFrame) -> str:
     offload_prevention = session_data['prevents_cognitive_offloading'].mean()
     deep_thinking = session_data['encourages_deep_thinking'].mean()
     scaffolding = session_data['provides_scaffolding'].mean()
+    engagement = session_data['maintains_engagement'].mean()
     
-    # Simple rule-based assignment (would be replaced with actual labels)
-    composite_score = (offload_prevention + deep_thinking + scaffolding) / 3
+    # Also consider interaction patterns
+    question_ratio = (session_data['input_type'] == 'direct_question').mean()
+    avg_input_length = session_data['input_length'].mean()
+    knowledge_integration = session_data['knowledge_integrated'].mean()
     
-    if composite_score >= 0.8:
+    # More nuanced scoring considering multiple factors
+    cognitive_score = (offload_prevention + deep_thinking) / 2
+    support_score = (scaffolding + engagement) / 2
+    interaction_score = (1 - question_ratio) * 0.5 + min(avg_input_length / 20, 1) * 0.5
+    
+    # Weighted composite score
+    composite_score = (cognitive_score * 0.4 + 
+                      support_score * 0.3 + 
+                      interaction_score * 0.2 + 
+                      knowledge_integration * 0.1)
+    
+    # More granular thresholds for better distribution
+    # Adjusted to create more diversity in typical session data
+    if composite_score >= 0.85:
         return 'expert'
-    elif composite_score >= 0.6:
+    elif composite_score >= 0.65:
         return 'advanced'
-    elif composite_score >= 0.4:
+    elif composite_score >= 0.45:
         return 'intermediate'
     else:
         return 'beginner'

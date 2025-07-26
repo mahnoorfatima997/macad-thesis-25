@@ -39,6 +39,12 @@ python benchmarking/generate_test_data.py     # Creates 5 synthetic sessions for
 black .                    # Code formatting
 flake8 .                  # Linting
 pytest                    # Run tests (no test files currently exist)
+
+# Benchmarking and analysis
+python benchmarking/run_benchmarking.py         # Run full benchmarking pipeline (includes export)
+python benchmarking/launch_dashboard.py          # Launch interactive results dashboard
+streamlit run benchmarking/benchmark_dashboard.py # Direct dashboard launch
+python benchmarking/export_visualizations.py     # Export all visualizations from existing results
 ```
 
 ## High-Level Architecture
@@ -71,6 +77,8 @@ The system consists of four major components working together:
 - **Visualization Tools**: `visualization_tools.py` - Creates interactive dashboards and analysis charts
 - **Proficiency Classifier**: `user_proficiency_classifier.py` - ML-based user proficiency assessment
 - **Pipeline Runner**: `run_benchmarking.py` - Orchestrates the complete benchmarking analysis
+- **Interactive Dashboard**: `benchmark_dashboard.py` - Streamlit dashboard for exploring results
+- **Dashboard Launcher**: `launch_dashboard.py` - Quick launcher for the benchmarking dashboard
 
 ## Key Integration Points
 

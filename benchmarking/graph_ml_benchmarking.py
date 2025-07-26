@@ -705,7 +705,7 @@ class CognitiveBenchmarkGenerator:
         with open(output_path, 'w') as f:
             json.dump(report, f, indent=2)
         
-        print(f"📊 Benchmark report generated: {output_path}")
+        print(f"[REPORT] Benchmark report generated: {output_path}")
         
         return report
     
@@ -794,7 +794,7 @@ def main():
     # Save model
     generator.save_model("./benchmarking/cognitive_benchmark_model.pkl")
     
-    print("\n✅ Benchmarking complete!")
+    print("\n[OK] Benchmarking complete!")
     print(f"   - Analyzed {len(graphs)} sessions")
     print(f"   - Created {len(benchmarks)} proficiency benchmarks")
     print("   - Visualizations saved to ./benchmarking/visualizations/")

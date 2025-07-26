@@ -138,10 +138,9 @@ class CognitiveBenchmarkVisualizer:
                 color=node_colors,
                 colorscale='Viridis',
                 colorbar=dict(
-                    title="Learning<br>Indicator",
+                    title=dict(text="Learning<br>Indicator", side='right'),
                     thickness=15,
-                    xanchor='left',
-                    titleside='right'
+                    xanchor='left'
                 ),
                 line=dict(width=2, color='white')
             ),

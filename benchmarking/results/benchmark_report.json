@@ -1,20 +1,22 @@
 {
-  "generated_at": "2025-07-25T14:05:48.829855",
+  "generated_at": "2025-07-26T10:09:22.555593",
   "benchmark_profiles": {
     "beginner": {
       "proficiency_level": "beginner",
       "target_metrics": {
         "cognitive_load_range": [
-          NaN,
-          NaN
+          0.771,
+          1
         ],
-        "learning_effectiveness_min": NaN,
-        "engagement_min": NaN,
-        "cognitive_offloading_prevention_min": NaN,
-        "deep_thinking_rate_min": NaN,
-        "scaffolding_effectiveness_min": NaN
+        "learning_effectiveness_min": 0.3933333333333333,
+        "engagement_min": 0.6855555555555556,
+        "cognitive_offloading_prevention_min": 0.9,
+        "deep_thinking_rate_min": 0.6333333333333333,
+        "scaffolding_effectiveness_min": 0
       },
-      "recommended_strategies": [],
+      "recommended_strategies": [
+        "Provide more structured guidance with progressive complexity"
+      ],
       "progression_indicators": {
         "next_level": "intermediate",
         "requirements": {

@@ -1,0 +1,36 @@
+{
+  "session_id": "8d7b4a17-b1b9-4b65-8a98-0aef893bbac3",
+  "session_duration_minutes": 4.407823466666667,
+  "total_interactions": 2,
+  "routing_distribution": {
+    "socratic_focus": 2
+  },
+  "agent_usage": {
+    "socratic_tutor": 2,
+    "cognitive_enhancement": 2
+  },
+  "avg_response_time": 0.0,
+  "cognitive_offloading_prevention_rate": 1.0,
+  "deep_thinking_encouragement_rate": 0.5,
+  "scaffolding_rate": 0.0,
+  "engagement_maintenance_rate": 1.0,
+  "skill_adaptation_rate": 0.0,
+  "knowledge_integration_rate": 0.0,
+  "avg_sources_per_interaction": 0.0,
+  "multi_agent_usage_rate": 1.0,
+  "appropriate_routing_rate": 1.0,
+  "response_coherence_rate": 0.0,
+  "avg_student_input_length": 27.5,
+  "input_type_distribution": {
+    "improvement_seeking": 1,
+    "general_statement": 1
+  },
+  "total_cognitive_flags": 0,
+  "avg_cognitive_flags_per_interaction": 0.0,
+  "skill_progression": {
+    "initial_skill": "intermediate",
+    "final_skill": "intermediate",
+    "skill_changes": 1,
+    "progression_detected": false
+  }
+}
