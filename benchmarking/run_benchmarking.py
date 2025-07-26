@@ -317,21 +317,21 @@ class BenchmarkingPipeline:
             print(f"  [!]  Warning: Could not export all visualizations: {str(e)}")
         
         # 7. Export Graph ML visualizations
-        print("\nExporting Graph ML visualizations...")
+        print("\nExporting interactive Graph ML visualizations...")
         try:
-            from benchmarking.graph_ml_visualizations import GraphMLVisualizer
-            graph_viz = GraphMLVisualizer(results_path=str(self.output_dir))
-            graph_viz.export_all_graph_ml_visualizations()
+            from benchmarking.graph_ml_interactive import InteractiveGraphMLVisualizer
+            graph_viz = InteractiveGraphMLVisualizer(results_path=str(self.output_dir))
+            graph_viz.export_all_interactive_visualizations()
         except ImportError:
             # Try direct import if running from benchmarking directory
             try:
-                from graph_ml_visualizations import GraphMLVisualizer
-                graph_viz = GraphMLVisualizer(results_path=str(self.output_dir))
-                graph_viz.export_all_graph_ml_visualizations()
+                from graph_ml_interactive import InteractiveGraphMLVisualizer
+                graph_viz = InteractiveGraphMLVisualizer(results_path=str(self.output_dir))
+                graph_viz.export_all_interactive_visualizations()
             except Exception as e:
-                print(f"  [!]  Warning: Could not export Graph ML visualizations: {str(e)}")
+                print(f"  [!]  Warning: Could not export interactive Graph ML visualizations: {str(e)}")
         except Exception as e:
-            print(f"  [!]  Warning: Could not export Graph ML visualizations: {str(e)}")
+            print(f"  [!]  Warning: Could not export interactive Graph ML visualizations: {str(e)}")
     
     def _calculate_aggregate_metrics(self, all_metrics: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Calculate aggregate metrics across all sessions"""

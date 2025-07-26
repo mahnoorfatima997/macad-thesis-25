@@ -1558,19 +1558,19 @@ class BenchmarkDashboard:
         """, unsafe_allow_html=True)
         
         try:
-            # Import the Graph ML visualizer
-            from graph_ml_visualizations import GraphMLVisualizer
+            # Import the interactive Graph ML visualizer
+            from graph_ml_interactive import InteractiveGraphMLVisualizer
             
             # Initialize visualizer
-            viz = GraphMLVisualizer(results_path=str(self.results_path))
+            viz = InteractiveGraphMLVisualizer(results_path=str(self.results_path))
             
             # Tab layout for different graph visualizations
             tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                "Knowledge Graph", 
-                "Cognitive Network", 
-                "Learning Trajectories",
-                "Multi-Scale Patterns",
-                "GNN Embeddings"
+                "🌐 Knowledge Graph", 
+                "🧠 Cognitive Patterns", 
+                "📈 Learning Network",
+                "🤖 Agent System",
+                "🎯 Embedding Space"
             ])
             
             with tab1:
@@ -1581,7 +1581,7 @@ class BenchmarkDashboard:
                 thickness represents connection strength.
                 """)
                 
-                fig1 = viz.create_expanded_knowledge_graph()
+                fig1 = viz.create_interactive_knowledge_graph()
                 st.plotly_chart(fig1, use_container_width=True)
                 
                 st.markdown("""
@@ -1596,67 +1596,67 @@ class BenchmarkDashboard:
                 """, unsafe_allow_html=True)
             
             with tab2:
-                st.markdown("### Cognitive Benchmark Network")
+                st.markdown("### Interactive Cognitive Pattern Network")
                 st.markdown("""
-                This network visualization reveals user clusters based on interaction patterns and 
-                cognitive behaviors. It shows how different user groups engage with various test 
-                types and response patterns.
+                This network visualization reveals cognitive patterns and their relationships. 
+                It shows how different thinking patterns connect and influence each other, 
+                with node size indicating pattern centrality and importance.
                 """)
                 
-                fig2 = viz.create_cognitive_benchmark_network()
+                fig2 = viz.create_interactive_cognitive_network()
                 st.plotly_chart(fig2, use_container_width=True)
                 
                 st.markdown("""
                 <div class="pattern-insight">
-                <h4>Network Analysis Results</h4>
+                <h4>Pattern Analysis Results</h4>
                 <ul>
-                <li>Clear clustering of users by proficiency level</li>
-                <li>Expert users show more diverse interaction patterns</li>
-                <li>Beginners heavily rely on scaffolded responses</li>
+                <li>Deep thinking strongly correlates with reflective practice</li>
+                <li>Scaffolded progress serves as a bridge to independent exploration</li>
+                <li>Creative problem solving emerges from multiple cognitive patterns</li>
                 </ul>
                 </div>
                 """, unsafe_allow_html=True)
             
             with tab3:
-                st.markdown("### Learning Trajectory Graph")
+                st.markdown("### Interactive Learning Network")
                 st.markdown("""
                 This visualization maps skill progression paths across different competencies. 
-                It shows both individual trajectories and cross-skill dependencies that emerge 
-                during the learning process.
+                The hierarchical layout shows progression levels, while connections indicate 
+                prerequisites and dependencies between skills.
                 """)
                 
-                fig3 = viz.create_learning_trajectory_graph()
+                fig3 = viz.create_interactive_learning_network()
                 st.plotly_chart(fig3, use_container_width=True)
                 
                 st.markdown("""
                 <div class="pattern-insight">
-                <h4>Trajectory Patterns</h4>
+                <h4>Learning Path Insights</h4>
                 <ul>
-                <li>Spatial awareness serves as a foundational skill for other competencies</li>
-                <li>Critical analysis development accelerates system thinking abilities</li>
-                <li>Creative synthesis emerges only at advanced proficiency levels</li>
+                <li>Multiple valid pathways exist for skill development</li>
+                <li>Cross-skill dependencies create rich learning opportunities</li>
+                <li>User trajectories show personalized progression patterns</li>
                 </ul>
                 </div>
                 """, unsafe_allow_html=True)
             
             with tab4:
-                st.markdown("### Multi-Scale Pattern Analysis")
+                st.markdown("### Interactive Multi-Agent System Network")
                 st.markdown("""
-                This hierarchical visualization shows patterns from system-wide performance down to 
-                individual behaviors. It reveals how macro-level outcomes emerge from micro-level 
-                interactions.
+                This circular network shows the multi-agent system architecture and interactions. 
+                Node size represents agent centrality, while edges show delegation and collaboration 
+                patterns between agents.
                 """)
                 
-                fig4 = viz.create_multi_scale_pattern_graph()
+                fig4 = viz.create_interactive_agent_network()
                 st.plotly_chart(fig4, use_container_width=True)
                 
                 st.markdown("""
                 <div class="pattern-insight">
-                <h4>Scale-Based Insights</h4>
+                <h4>Agent System Insights</h4>
                 <ul>
-                <li>System performance strongly correlates with cluster-level patterns</li>
-                <li>Individual behaviors aggregate to create distinct cognitive patterns</li>
-                <li>Cross-scale interactions reveal emergent learning phenomena</li>
+                <li>Orchestrator serves as the central coordination hub</li>
+                <li>Socratic Tutor has the highest interaction frequency</li>
+                <li>Task distribution shows balanced agent utilization</li>
                 </ul>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1669,7 +1669,7 @@ class BenchmarkDashboard:
                 Clusters indicate similar cognitive patterns.
                 """)
                 
-                fig5 = viz.create_gnn_embedding_visualization()
+                fig5 = viz.create_interactive_embedding_space()
                 st.plotly_chart(fig5, use_container_width=True)
                 
                 st.markdown("""

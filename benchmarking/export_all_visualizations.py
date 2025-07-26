@@ -961,41 +961,36 @@ class BenchmarkVisualizationExporter:
     </div>
     
     <div class="section">
-        <h2>Graph ML Analysis</h2>
+        <h2>Interactive Graph ML Analysis</h2>
         <div class="viz-grid">
             <div class="viz-item">
-                <h3>Expanded Knowledge Graph</h3>
+                <h3>Interactive Knowledge Graph</h3>
                 <div class="viz-links">
-                    <a href="graph_ml/expanded_knowledge_graph.html">Interactive</a>
-                    <a href="graph_ml/expanded_knowledge_graph.png">Static</a>
+                    <a href="interactive_graph_ml/interactive_knowledge_graph.html">Interactive</a>
                 </div>
             </div>
             <div class="viz-item">
-                <h3>Cognitive Benchmark Network</h3>
+                <h3>Interactive Learning Network</h3>
                 <div class="viz-links">
-                    <a href="graph_ml/cognitive_benchmark_network.html">Interactive</a>
-                    <a href="graph_ml/cognitive_benchmark_network.png">Static</a>
+                    <a href="interactive_graph_ml/interactive_learning_network.html">Interactive</a>
                 </div>
             </div>
             <div class="viz-item">
-                <h3>Learning Trajectory Graph</h3>
+                <h3>Interactive Cognitive Network</h3>
                 <div class="viz-links">
-                    <a href="graph_ml/learning_trajectory_graph.html">Interactive</a>
-                    <a href="graph_ml/learning_trajectory_graph.png">Static</a>
+                    <a href="interactive_graph_ml/interactive_cognitive_network.html">Interactive</a>
                 </div>
             </div>
             <div class="viz-item">
-                <h3>Multi-Scale Pattern Graph</h3>
+                <h3>Interactive Agent Network</h3>
                 <div class="viz-links">
-                    <a href="graph_ml/multi_scale_pattern_graph.html">Interactive</a>
-                    <a href="graph_ml/multi_scale_pattern_graph.png">Static</a>
+                    <a href="interactive_graph_ml/interactive_agent_network.html">Interactive</a>
                 </div>
             </div>
             <div class="viz-item">
-                <h3>GNN Embedding Visualization</h3>
+                <h3>Interactive Embedding Space</h3>
                 <div class="viz-links">
-                    <a href="graph_ml/gnn_embedding_visualization.html">Interactive</a>
-                    <a href="graph_ml/gnn_embedding_visualization.png">Static</a>
+                    <a href="interactive_graph_ml/interactive_embedding_space.html">Interactive</a>
                 </div>
             </div>
         </div>
