@@ -226,6 +226,9 @@ class InteractiveGraphMLVisualizer:
                           skill_level=skill_level,
                           size=20)
                 
+                # Add position for user node
+                pos_map[user_node] = (-2, i * 0.5)
+                
                 # Connect to skill nodes based on proficiency
                 if skill_level == 'expert':
                     target_nodes = ['Creative Synthesis_Expert', 'System Thinking_Expert']
@@ -528,6 +531,9 @@ class InteractiveGraphMLVisualizer:
             
             for edge in G.edges(data=True):
                 if edge[2].get('type', 'default') == edge_type:
+                    # Skip edge if nodes don't have positions
+                    if edge[0] not in pos or edge[1] not in pos:
+                        continue
                     x0, y0 = pos[edge[0]]
                     x1, y1 = pos[edge[1]]
                     
@@ -562,6 +568,9 @@ class InteractiveGraphMLVisualizer:
         node_symbols = []
         
         for node in G.nodes():
+            # Skip nodes without positions
+            if node not in pos:
+                continue
             x, y = pos[node]
             node_x.append(x)
             node_y.append(y)

@@ -678,17 +678,17 @@ class BenchmarkingPipeline:
         metrics = self.results.get('evaluation_metrics', {})
         if metrics:
             print(f"\nKey Metrics:")
-            print(f"  • Cognitive Offloading Prevention: {metrics.get('avg_cognitive_offloading_prevention', 0):.1%}")
-            print(f"  • Deep Thinking Engagement: {metrics.get('avg_deep_thinking_engagement', 0):.1%}")
-            print(f"  • Improvement over Baseline: {metrics.get('avg_improvement_over_baseline', 0):.1f}%")
+            print(f"  - Cognitive Offloading Prevention: {metrics.get('avg_cognitive_offloading_prevention', 0):.1%}")
+            print(f"  - Deep Thinking Engagement: {metrics.get('avg_deep_thinking_engagement', 0):.1%}")
+            print(f"  - Improvement over Baseline: {metrics.get('avg_improvement_over_baseline', 0):.1f}%")
         
         print(f"\nResults saved to: {self.output_dir}")
-        print(f"  • Benchmark Report: benchmark_report.json")
-        print(f"  • Evaluation Reports: evaluation_reports/")
-        print(f"  • Visualizations: visualizations/")
-        print(f"  • Summary: benchmark_summary.md")
+        print(f"  - Benchmark Report: benchmark_report.json")
+        print(f"  - Evaluation Reports: evaluation_reports/")
+        print(f"  - Visualizations: visualizations/")
+        print(f"  - Summary: benchmark_summary.md")
         print(f"\nNOTE: All dashboard visualizations have been exported to:")
-        print(f"  • {self.output_dir}/visualizations/index.html")
+        print(f"  - {self.output_dir}/visualizations/index.html")
 
 
 def main():
