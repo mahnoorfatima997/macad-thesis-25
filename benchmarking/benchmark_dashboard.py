@@ -110,13 +110,6 @@ class BenchmarkDashboard:
     def render_header(self):
         """Render dashboard header"""
         st.markdown('<h1 class="main-header">🧠 Cognitive Benchmarking Dashboard</h1>', unsafe_allow_html=True)
-        st.markdown("""
-        <div class="explanation-box">
-        <h4>Welcome to the MEGA Architectural Mentor Benchmarking Results</h4>
-        <p>This dashboard presents comprehensive analysis of cognitive patterns, learning effectiveness, 
-        and system performance based on Graph Neural Network analysis of user interactions.</p>
-        </div>
-        """, unsafe_allow_html=True)
     
     def render_key_metrics(self):
         """Render key performance metrics with enhanced visualizations"""
