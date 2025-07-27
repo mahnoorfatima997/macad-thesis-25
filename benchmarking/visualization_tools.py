@@ -15,6 +15,11 @@ from pathlib import Path
 import json
 from datetime import datetime
 import colorcet as cc
+from thesis_colors import (
+    THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
+    PLOTLY_COLORSCALES, CHART_COLORS, UI_COLORS,
+    get_color_palette, get_metric_color, get_proficiency_color, get_agent_color
+)
 
 
 class CognitiveBenchmarkVisualizer:
@@ -48,17 +53,17 @@ class CognitiveBenchmarkVisualizer:
         """Setup color palette for consistent visualization"""
         
         return {
-            'beginner': '#FF6B6B',
-            'intermediate': '#4ECDC4',
-            'advanced': '#45B7D1',
-            'expert': '#96CEB4',
-            'cognitive_load': '#FFE66D',
-            'learning': '#95E1D3',
-            'engagement': '#F38181',
-            'scaffolding': '#AA96DA',
-            'positive': '#2ECC71',
-            'negative': '#E74C3C',
-            'neutral': '#95A5A6'
+            'beginner': get_proficiency_color('beginner'),
+            'intermediate': get_proficiency_color('intermediate'),
+            'advanced': get_proficiency_color('advanced'),
+            'expert': get_proficiency_color('expert'),
+            'cognitive_load': THESIS_COLORS['neutral_orange'],
+            'learning': get_metric_color('knowledge_integration'),
+            'engagement': get_metric_color('engagement'),
+            'scaffolding': get_metric_color('scaffolding'),
+            'positive': THESIS_COLORS['primary_violet'],
+            'negative': THESIS_COLORS['accent_coral'],
+            'neutral': THESIS_COLORS['neutral_light']
         }
     
     def visualize_interaction_graph(self, 
@@ -87,7 +92,7 @@ class CognitiveBenchmarkVisualizer:
             x1, y1 = pos[edge[1]]
             
             edge_type = graph[edge[0]][edge[1]].get('edge_type', 'temporal')
-            color = '#888' if edge_type == 'temporal' else '#FFA500'
+            color = UI_COLORS['text_secondary'] if edge_type == 'temporal' else THESIS_COLORS['neutral_orange']
             width = 1 if edge_type == 'temporal' else 2
             
             edge_trace = go.Scatter(
@@ -198,16 +203,27 @@ class CognitiveBenchmarkVisualizer:
         node_sizes = [300 + graph.nodes[node].get('cognitive_load', 0.5) * 500 
                      for node in graph.nodes()]
         
+        # Create custom colormap from thesis colors
+        from matplotlib.colors import LinearSegmentedColormap
+        thesis_colors_rgb = [
+            plt.colors.hex2color(THESIS_COLORS['accent_coral']),
+            plt.colors.hex2color(THESIS_COLORS['neutral_orange']),
+            plt.colors.hex2color(THESIS_COLORS['neutral_warm']),
+            plt.colors.hex2color(THESIS_COLORS['primary_violet']),
+            plt.colors.hex2color(THESIS_COLORS['primary_dark'])
+        ]
+        thesis_cmap = LinearSegmentedColormap.from_list('thesis', thesis_colors_rgb)
+        
         nodes = nx.draw_networkx_nodes(graph, pos, 
                                       node_color=node_colors,
                                       node_size=node_sizes,
-                                      cmap='viridis',
+                                      cmap=thesis_cmap,
                                       alpha=0.9,
                                       edgecolors='white',
                                       linewidths=2)
         
         # Add colorbar
-        sm = plt.cm.ScalarMappable(cmap='viridis', 
+        sm = plt.cm.ScalarMappable(cmap=thesis_cmap, 
                                    norm=plt.Normalize(vmin=0, vmax=1))
         sm.set_array([])
         cbar = plt.colorbar(sm, ax=plt.gca(), fraction=0.046, pad=0.04)
@@ -250,7 +266,7 @@ class CognitiveBenchmarkVisualizer:
                 labels=list(proficiency_counts.keys()),
                 values=list(proficiency_counts.values()),
                 hole=0.3,
-                marker_colors=[self.color_palette.get(k, '#888') for k in proficiency_counts.keys()],
+                marker_colors=[self.color_palette.get(k, THESIS_COLORS['neutral_warm']) for k in proficiency_counts.keys()],
                 textinfo='label+percent',
                 textposition='auto'
             ),
@@ -331,7 +347,7 @@ class CognitiveBenchmarkVisualizer:
                 x=['Cognitive<br>Load', 'Learning<br>Effect', 'Engagement', 
                    'Offload<br>Prevention', 'Deep<br>Thinking', 'Scaffolding'],
                 y=pattern_labels,
-                colorscale='RdYlGn',
+                colorscale=PLOTLY_COLORSCALES['main'],
                 text=np.round(pattern_matrix, 2),
                 texttemplate='%{text}',
                 textfont={"size": 10},
@@ -405,10 +421,10 @@ class CognitiveBenchmarkVisualizer:
                 r=values,
                 theta=metric_labels + metric_labels[:1],
                 fill='toself',
-                fillcolor=self.color_palette.get(level, '#888888'),
+                fillcolor=self.color_palette.get(level, THESIS_COLORS['neutral_warm']),
                 opacity=0.3,
                 name=f'{level.title()} Benchmark',
-                line=dict(color=self.color_palette.get(level, '#888888'), width=2)
+                line=dict(color=self.color_palette.get(level, THESIS_COLORS['neutral_warm']), width=2)
             ))
         
         # Add user metrics if provided
@@ -570,7 +586,8 @@ class CognitiveBenchmarkVisualizer:
         # 1. Cognitive Metrics Timeline
         metrics = ['prevents_cognitive_offloading', 'encourages_deep_thinking', 
                   'provides_scaffolding', 'maintains_engagement']
-        colors = ['#2ECC71', '#3498DB', '#9B59B6', '#E74C3C']
+        colors = [THESIS_COLORS['primary_violet'], THESIS_COLORS['primary_purple'], 
+                 THESIS_COLORS['primary_rose'], THESIS_COLORS['accent_coral']]
         
         for metric, color in zip(metrics, colors):
             # Calculate rolling average
@@ -593,7 +610,7 @@ class CognitiveBenchmarkVisualizer:
                 x=session_data.index,
                 y=session_data['confidence_score'],
                 name='Confidence Score',
-                line=dict(color='#F39C12', width=2, dash='dash'),
+                line=dict(color=THESIS_COLORS['neutral_warm'], width=2, dash='dash'),
                 mode='lines'
             ),
             row=1, col=1,
@@ -624,7 +641,7 @@ class CognitiveBenchmarkVisualizer:
                         y=usage,
                         name=f'{agent_type.title()} Agent',
                         stackgroup='agents',
-                        fillcolor=self.color_palette.get(agent_type, '#888')
+                        fillcolor=get_agent_color(agent_type)
                     ),
                     row=2, col=1
                 )
@@ -639,7 +656,7 @@ class CognitiveBenchmarkVisualizer:
                 x=session_data.index,
                 y=cumulative_prevention / (session_data.index + 1),
                 name='Avg Offload Prevention',
-                line=dict(color='#2ECC71', width=3),
+                line=dict(color=THESIS_COLORS['primary_violet'], width=3),
                 fill='tonexty'
             ),
             row=3, col=1
@@ -650,7 +667,7 @@ class CognitiveBenchmarkVisualizer:
                 x=session_data.index,
                 y=cumulative_thinking / (session_data.index + 1),
                 name='Avg Deep Thinking',
-                line=dict(color='#3498DB', width=3),
+                line=dict(color=THESIS_COLORS['primary_purple'], width=3),
                 fill='tonexty'
             ),
             row=3, col=1
@@ -784,7 +801,7 @@ class CognitiveBenchmarkVisualizer:
                 labels=list(prof_dist.keys()),
                 values=list(prof_dist.values()),
                 hole=0.4,
-                marker_colors=[self.color_palette.get(k, '#888') for k in prof_dist.keys()],
+                marker_colors=[self.color_palette.get(k, THESIS_COLORS['neutral_warm']) for k in prof_dist.keys()],
                 textinfo='label+value+percent',
                 textposition='auto'
             ),

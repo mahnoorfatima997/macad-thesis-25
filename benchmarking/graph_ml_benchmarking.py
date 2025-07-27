@@ -20,6 +20,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 import pickle
+from thesis_colors import (
+    THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
+    PLOTLY_COLORSCALES, CHART_COLORS, UI_COLORS,
+    get_color_palette, get_metric_color, get_proficiency_color, get_agent_color
+)
 
 class InteractionGraph:
     """Constructs and manages interaction graphs from user data"""
@@ -559,7 +564,7 @@ class CognitiveBenchmarkGenerator:
             for node in graph.graph.nodes():
                 cognitive_loads.append(graph.graph.nodes[node]['cognitive_load'])
         
-        plt.hist(cognitive_loads, bins=30, alpha=0.7, color='blue', edgecolor='black')
+        plt.hist(cognitive_loads, bins=30, alpha=0.7, color=THESIS_COLORS['primary_purple'], edgecolor=THESIS_COLORS['primary_dark'])
         plt.xlabel('Cognitive Load')
         plt.ylabel('Frequency')
         plt.title('Distribution of Cognitive Load Across All Interactions')
@@ -619,11 +624,21 @@ class CognitiveBenchmarkGenerator:
                     else:
                         labels = self.proficiency_clusters.predict(graph_features_scaled)
                     
+                    # Create custom colormap from thesis colors
+                    from matplotlib.colors import LinearSegmentedColormap
+                    thesis_colors_rgb = [
+                        plt.colors.hex2color(get_proficiency_color('beginner')),
+                        plt.colors.hex2color(get_proficiency_color('intermediate')),
+                        plt.colors.hex2color(get_proficiency_color('advanced')),
+                        plt.colors.hex2color(get_proficiency_color('expert'))
+                    ]
+                    thesis_cmap = LinearSegmentedColormap.from_list('thesis_prof', thesis_colors_rgb[:self.n_clusters])
+                    
                     if n_components == 2:
-                        scatter = plt.scatter(features_2d[:, 0], features_2d[:, 1], c=labels, cmap='viridis', alpha=0.7)
+                        scatter = plt.scatter(features_2d[:, 0], features_2d[:, 1], c=labels, cmap=thesis_cmap, alpha=0.7)
                     else:
                         # For 1D case, create artificial y-axis
-                        scatter = plt.scatter(features_2d[:, 0], np.zeros_like(features_2d[:, 0]), c=labels, cmap='viridis', alpha=0.7)
+                        scatter = plt.scatter(features_2d[:, 0], np.zeros_like(features_2d[:, 0]), c=labels, cmap=thesis_cmap, alpha=0.7)
                     
                     plt.colorbar(scatter)
                     plt.xlabel('First Principal Component')
