@@ -332,6 +332,23 @@ class BenchmarkingPipeline:
                 print(f"  [!]  Warning: Could not export interactive Graph ML visualizations: {str(e)}")
         except Exception as e:
             print(f"  [!]  Warning: Could not export interactive Graph ML visualizations: {str(e)}")
+        
+        # 8. Export PyVis interactive visualizations
+        print("\nExporting PyVis interactive visualizations...")
+        try:
+            from benchmarking.graph_ml_pyvis import PyVisGraphMLVisualizer
+            pyvis_viz = PyVisGraphMLVisualizer(results_path=str(self.output_dir))
+            pyvis_viz.export_all_visualizations()
+        except ImportError:
+            # Try direct import if running from benchmarking directory
+            try:
+                from graph_ml_pyvis import PyVisGraphMLVisualizer
+                pyvis_viz = PyVisGraphMLVisualizer(results_path=str(self.output_dir))
+                pyvis_viz.export_all_visualizations()
+            except Exception as e:
+                print(f"  [!]  Warning: Could not export PyVis visualizations: {str(e)}")
+        except Exception as e:
+            print(f"  [!]  Warning: Could not export PyVis visualizations: {str(e)}")
     
     def _calculate_aggregate_metrics(self, all_metrics: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Calculate aggregate metrics across all sessions"""

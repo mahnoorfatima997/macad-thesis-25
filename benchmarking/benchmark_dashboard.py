@@ -1544,38 +1544,40 @@ class BenchmarkDashboard:
         
         st.markdown("""
         <div class="explanation-box">
-        <h4>Advanced Graph Neural Network Analysis</h4>
-        <p>These interactive visualizations leverage Graph Machine Learning to analyze complex relationships 
-        in the learning ecosystem. Based on the thesis requirements, we present five key graph-based insights.</p>
+        <h4>Interactive Network Visualizations with PyVis</h4>
+        <p>These fully interactive visualizations leverage PyVis to create dynamic network graphs. 
+        Click and drag nodes, zoom in/out, and explore the complex relationships in the learning ecosystem.</p>
         </div>
         """, unsafe_allow_html=True)
         
-        try:
-            # Import the interactive Graph ML visualizer
-            from graph_ml_interactive import InteractiveGraphMLVisualizer
-            
-            # Initialize visualizer
-            viz = InteractiveGraphMLVisualizer(results_path=str(self.results_path))
-            
+        # Check if PyVis visualizations exist
+        pyvis_dir = self.results_path / "visualizations" / "pyvis"
+        
+        if pyvis_dir.exists():
             # Tab layout for different graph visualizations
             tab1, tab2, tab3, tab4, tab5 = st.tabs([
                 "🌐 Knowledge Graph", 
+                "📈 Learning Trajectories",
+                "🤖 Agent Collaboration",
                 "🧠 Cognitive Patterns", 
-                "📈 Learning Network",
-                "🤖 Agent System",
-                "🎯 Embedding Space"
+                "📊 Session Evolution"
             ])
             
             with tab1:
-                st.markdown("### Expanded Knowledge Graph - Architecture, Cognition & AI")
+                st.markdown("### Interactive Knowledge Graph - Architecture, Cognition & AI")
                 st.markdown("""
                 This graph shows the interconnected relationships between architectural concepts, 
-                cognitive processes, and AI components. Node size indicates importance, while edge 
-                thickness represents connection strength.
+                cognitive processes, and AI components. **Click and drag nodes to explore connections!**
                 """)
                 
-                fig1 = viz.create_interactive_knowledge_graph()
-                st.plotly_chart(fig1, use_container_width=True)
+                # Embed PyVis HTML
+                html_file = pyvis_dir / "knowledge_graph_pyvis.html"
+                if html_file.exists():
+                    with open(html_file, 'r', encoding='utf-8') as f:
+                        html_content = f.read()
+                    st.components.v1.html(html_content, height=800, scrolling=True)
+                else:
+                    st.error("Knowledge graph visualization not found.")
                 
                 st.markdown("""
                 <div class="pattern-insight">
@@ -1589,37 +1591,20 @@ class BenchmarkDashboard:
                 """, unsafe_allow_html=True)
             
             with tab2:
-                st.markdown("### Interactive Cognitive Pattern Network")
-                st.markdown("""
-                This network visualization reveals cognitive patterns and their relationships. 
-                It shows how different thinking patterns connect and influence each other, 
-                with node size indicating pattern centrality and importance.
-                """)
-                
-                fig2 = viz.create_interactive_cognitive_network()
-                st.plotly_chart(fig2, use_container_width=True)
-                
-                st.markdown("""
-                <div class="pattern-insight">
-                <h4>Pattern Analysis Results</h4>
-                <ul>
-                <li>Deep thinking strongly correlates with reflective practice</li>
-                <li>Scaffolded progress serves as a bridge to independent exploration</li>
-                <li>Creative problem solving emerges from multiple cognitive patterns</li>
-                </ul>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with tab3:
-                st.markdown("### Interactive Learning Network")
+                st.markdown("### Interactive Learning Trajectory Network")
                 st.markdown("""
                 This visualization maps skill progression paths across different competencies. 
-                The hierarchical layout shows progression levels, while connections indicate 
-                prerequisites and dependencies between skills.
+                **Hover over nodes to see skill details and drag to rearrange the network!**
                 """)
                 
-                fig3 = viz.create_interactive_learning_network()
-                st.plotly_chart(fig3, use_container_width=True)
+                # Embed PyVis HTML
+                html_file = pyvis_dir / "learning_trajectories_pyvis.html"
+                if html_file.exists():
+                    with open(html_file, 'r', encoding='utf-8') as f:
+                        html_content = f.read()
+                    st.components.v1.html(html_content, height=800, scrolling=True)
+                else:
+                    st.error("Learning trajectories visualization not found.")
                 
                 st.markdown("""
                 <div class="pattern-insight">
@@ -1632,20 +1617,25 @@ class BenchmarkDashboard:
                 </div>
                 """, unsafe_allow_html=True)
             
-            with tab4:
-                st.markdown("### Interactive Multi-Agent System Network")
+            with tab3:
+                st.markdown("### Interactive Agent Collaboration Network")
                 st.markdown("""
-                This circular network shows the multi-agent system architecture and interactions. 
-                Node size represents agent centrality, while edges show delegation and collaboration 
-                patterns between agents.
+                This network shows how AI agents work together, their handoff patterns, 
+                and interaction frequencies. **Node size indicates usage frequency!**
                 """)
                 
-                fig4 = viz.create_interactive_agent_network()
-                st.plotly_chart(fig4, use_container_width=True)
+                # Embed PyVis HTML
+                html_file = pyvis_dir / "agent_collaboration_pyvis.html"
+                if html_file.exists():
+                    with open(html_file, 'r', encoding='utf-8') as f:
+                        html_content = f.read()
+                    st.components.v1.html(html_content, height=800, scrolling=True)
+                else:
+                    st.error("Agent collaboration visualization not found.")
                 
                 st.markdown("""
                 <div class="pattern-insight">
-                <h4>Agent System Insights</h4>
+                <h4>Agent Collaboration Insights</h4>
                 <ul>
                 <li>Orchestrator serves as the central coordination hub</li>
                 <li>Socratic Tutor has the highest interaction frequency</li>
@@ -1654,24 +1644,56 @@ class BenchmarkDashboard:
                 </div>
                 """, unsafe_allow_html=True)
             
-            with tab5:
-                st.markdown("### GNN Embedding Space Visualization")
+            with tab4:
+                st.markdown("### Interactive Cognitive Pattern Network")
                 st.markdown("""
-                This visualization shows how the Graph Neural Network represents different cognitive 
-                states in a high-dimensional embedding space, reduced to 2D for visualization. 
-                Clusters indicate similar cognitive patterns.
+                Discover thinking patterns, their relationships, and how they 
+                emerge during learning sessions. **Click nodes to highlight connections!**
                 """)
                 
-                fig5 = viz.create_interactive_embedding_space()
-                st.plotly_chart(fig5, use_container_width=True)
+                # Embed PyVis HTML
+                html_file = pyvis_dir / "cognitive_patterns_pyvis.html"
+                if html_file.exists():
+                    with open(html_file, 'r', encoding='utf-8') as f:
+                        html_content = f.read()
+                    st.components.v1.html(html_content, height=800, scrolling=True)
+                else:
+                    st.error("Cognitive patterns visualization not found.")
                 
                 st.markdown("""
                 <div class="pattern-insight">
-                <h4>Embedding Analysis</h4>
+                <h4>Cognitive Pattern Insights</h4>
                 <ul>
-                <li>Clear separation between proficiency levels in embedding space</li>
-                <li>User states form distinct clusters based on cognitive patterns</li>
-                <li>Transition zones between clusters indicate learning opportunities</li>
+                <li>Deep thinking strongly correlates with reflective practice</li>
+                <li>Scaffolded progress serves as a bridge to independent exploration</li>
+                <li>Creative problem solving emerges from multiple cognitive patterns</li>
+                </ul>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with tab5:
+                st.markdown("### Session Evolution Timeline")
+                st.markdown("""
+                Track learning progression over time, skill development, 
+                and milestone achievements. **Scroll horizontally to explore the timeline!**
+                """)
+                
+                # Embed PyVis HTML
+                html_file = pyvis_dir / "session_evolution_pyvis.html"
+                if html_file.exists():
+                    with open(html_file, 'r', encoding='utf-8') as f:
+                        html_content = f.read()
+                    st.components.v1.html(html_content, height=800, scrolling=True)
+                else:
+                    st.error("Session evolution visualization not found.")
+                
+                st.markdown("""
+                <div class="pattern-insight">
+                <h4>Session Evolution Insights</h4>
+                <ul>
+                <li>Clear progression paths visible across sessions</li>
+                <li>Milestone achievements correlate with cognitive pattern emergence</li>
+                <li>Improvement rates vary based on engagement quality</li>
                 </ul>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1679,22 +1701,29 @@ class BenchmarkDashboard:
             # Summary insights
             st.markdown("""
             <div class="key-insights">
-            <h4>🔍 Graph ML Analysis Summary</h4>
+            <h4>🔍 Interactive Graph ML Analysis Summary</h4>
             <ul>
-            <li><b>Knowledge Integration:</b> The system successfully creates dense knowledge graphs connecting architectural and cognitive domains.</li>
-            <li><b>User Clustering:</b> Graph analysis reveals 4 distinct user proficiency clusters with unique interaction patterns.</li>
-            <li><b>Learning Pathways:</b> Multiple valid trajectories exist for skill development, supporting personalized learning.</li>
-            <li><b>Emergent Patterns:</b> System-level effectiveness emerges from coordinated agent interactions at the micro level.</li>
-            <li><b>GNN Performance:</b> The neural network effectively captures and differentiates cognitive states in the embedding space.</li>
+            <li><b>Full Interactivity:</b> All visualizations support click, drag, zoom, and dynamic exploration.</li>
+            <li><b>Knowledge Integration:</b> Dense knowledge graphs connect architectural and cognitive domains.</li>
+            <li><b>Learning Pathways:</b> Multiple valid trajectories for personalized skill development.</li>
+            <li><b>Agent Orchestration:</b> Complex multi-agent interactions visualized in real-time.</li>
+            <li><b>Cognitive Patterns:</b> Emergent thinking patterns revealed through network analysis.</li>
             </ul>
             </div>
             """, unsafe_allow_html=True)
             
-        except ImportError as e:
-            st.error(f"Could not load Graph ML visualizations: {str(e)}")
-            st.info("Please ensure graph_ml_visualizations.py is in the benchmarking directory.")
-        except Exception as e:
-            st.error(f"Error generating Graph ML visualizations: {str(e)}")
+            # Add link to full PyVis gallery
+            col1, col2, col3 = st.columns(3)
+            with col2:
+                if st.button("🌐 Open Full Interactive Gallery", type="primary"):
+                    gallery_path = pyvis_dir / "index.html"
+                    if gallery_path.exists():
+                        st.info("📁 Gallery file: " + str(gallery_path))
+                        st.markdown("Open this file in your browser for the full experience!")
+                    
+        else:
+            st.error("PyVis visualizations not found. Please generate them first.")
+            st.code("python benchmarking/graph_ml_pyvis.py", language="bash")
     
     def run(self):
         """Run the dashboard"""
