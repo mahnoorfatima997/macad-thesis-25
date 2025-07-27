@@ -1,0 +1,783 @@
+#!/usr/bin/env python
+"""
+Mega Architectural Mentor - Cognitive Benchmarking System
+Main execution script for running the complete benchmarking pipeline
+"""
+
+import sys
+import os
+
+from pathlib import Path
+import argparse
+import json
+from datetime import datetime
+import pandas as pd
+import numpy as np
+from typing import Dict, List, Any, Optional
+
+# Add parent directory to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+
+# Import benchmarking modules
+from benchmarking.graph_ml_benchmarking import (
+    InteractionGraph, CognitiveGNN, CognitiveBenchmarkGenerator
+)
+from benchmarking.evaluation_metrics import (
+    CognitiveMetricsEvaluator, evaluate_all_sessions
+)
+from benchmarking.visualization_tools import CognitiveBenchmarkVisualizer
+from benchmarking.user_proficiency_classifier import (
+    UserProficiencyClassifier, generate_training_data_from_sessions
+)
+
+
+class BenchmarkingPipeline:
+    """Complete benchmarking pipeline for cognitive assessment"""
+    
+    def __init__(self, data_dir: str = "./thesis_data", output_dir: str = "./benchmarking/results"):
+        self.data_dir = Path(data_dir)
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize components
+        self.benchmark_generator = CognitiveBenchmarkGenerator()
+        self.metrics_evaluator = CognitiveMetricsEvaluator()
+        self.visualizer = CognitiveBenchmarkVisualizer(style='scientific')
+        self.proficiency_classifier = UserProficiencyClassifier()
+        
+        # Results storage
+        self.results = {
+            'timestamp': datetime.now().isoformat(),
+            'sessions_analyzed': 0,
+            'benchmarks_generated': {},
+            'evaluation_metrics': {},
+            'proficiency_classifications': {}
+        }
+    
+    def run_full_pipeline(self, 
+                         train_classifier: bool = True,
+                         generate_visualizations: bool = True,
+                         export_report: bool = True):
+        """Run the complete benchmarking pipeline"""
+        
+        print("\n" + "="*60)
+        print("MEGA ARCHITECTURAL MENTOR - COGNITIVE BENCHMARKING SYSTEM")
+        print("="*60 + "\n")
+        
+        # Step 1: Load and validate data
+        print("Step 1: Loading interaction data...")
+        session_files = self._load_session_data()
+        
+        if not session_files:
+            print("[X] No interaction data found. Please run some sessions first.")
+            return
+        
+        print(f"[OK] Found {len(session_files)} session files")
+        self.results['sessions_analyzed'] = len(session_files)
+        
+        # Warn about minimum data requirements
+        if len(session_files) < 3:
+            print("\n[!]  Warning: Limited data available")
+            print("   - Clustering will use rule-based assignment instead of ML clustering")
+            print("   - For best results, collect at least 3-5 sessions")
+            print("   - Proficiency classifier requires at least 5 sessions\n")
+        
+        # Step 2: Process data into graphs
+        print("\nStep 2: Processing data into interaction graphs...")
+        graphs = self._process_interaction_graphs(session_files)
+        print(f"[OK] Created {len(graphs)} interaction graphs")
+        
+        # Step 3: Train GNN model
+        print("\nStep 3: Training Graph Neural Network model...")
+        self._train_gnn_model(graphs)
+        print("[OK] GNN model trained successfully")
+        
+        # Step 4: Generate cognitive benchmarks
+        print("\nStep 4: Generating cognitive benchmarks...")
+        benchmarks = self._generate_benchmarks(graphs)
+        print(f"[OK] Generated {len(benchmarks)} proficiency benchmarks")
+        
+        # Step 5: Evaluate sessions
+        print("\nStep 5: Evaluating cognitive metrics...")
+        evaluation_results = self._evaluate_sessions(session_files)
+        print("[OK] Session evaluation complete")
+        
+        # Step 6: Train proficiency classifier
+        if train_classifier:
+            print("\nStep 6: Training user proficiency classifier...")
+            self._train_proficiency_classifier(session_files)
+            print("[OK] Proficiency classifier trained")
+        
+        # Step 7: Generate visualizations
+        if generate_visualizations:
+            print("\nStep 7: Generating visualizations...")
+            self._generate_visualizations(graphs, benchmarks, evaluation_results)
+            print("[OK] Visualizations generated")
+        
+        # Step 8: Export comprehensive report
+        if export_report:
+            print("\nStep 8: Generating final report...")
+            self._export_comprehensive_report()
+            print("[OK] Report exported")
+        
+        print("\n" + "="*60)
+        print("BENCHMARKING COMPLETE!")
+        print("="*60)
+        self._print_summary()
+    
+    def _load_session_data(self) -> List[Path]:
+        """Load all available session data files"""
+        
+        session_files = list(self.data_dir.glob("interactions_*.csv"))
+        
+        # Validate files
+        valid_files = []
+        for file in session_files:
+            try:
+                df = pd.read_csv(file)
+                if len(df) > 0:
+                    valid_files.append(file)
+            except Exception as e:
+                print(f"  [!]  Skipping invalid file {file.name}: {str(e)}")
+        
+        return valid_files
+    
+    def _process_interaction_graphs(self, session_files: List[Path]) -> List[InteractionGraph]:
+        """Process session data into interaction graphs"""
+        
+        graphs = []
+        
+        for i, session_file in enumerate(session_files):
+            print(f"  Processing session {i+1}/{len(session_files)}...", end='\r')
+            
+            try:
+                graph = self.benchmark_generator.process_session_data(str(session_file))
+                graphs.append(graph)
+            except Exception as e:
+                print(f"\n  [!]  Error processing {session_file.name}: {str(e)}")
+        
+        print()  # New line after progress
+        return graphs
+    
+    def _train_gnn_model(self, graphs: List[InteractionGraph]):
+        """Train the Graph Neural Network model"""
+        
+        self.benchmark_generator.train_gnn_model(graphs, epochs=50)
+        
+        # Save the model
+        model_path = self.output_dir / "gnn_model.pkl"
+        self.benchmark_generator.save_model(str(model_path))
+    
+    def _generate_benchmarks(self, graphs: List[InteractionGraph]) -> Dict[str, Any]:
+        """Generate cognitive benchmarks from graphs"""
+        
+        # Generate proficiency clusters
+        cluster_analysis = self.benchmark_generator.generate_proficiency_clusters(graphs)
+        
+        # Create benchmark profiles
+        benchmarks = self.benchmark_generator.create_benchmark_profiles(cluster_analysis)
+        
+        # Store results
+        self.results['benchmarks_generated'] = benchmarks
+        self.results['cluster_analysis'] = cluster_analysis
+        
+        # Generate benchmark report
+        report_path = self.output_dir / "benchmark_report.json"
+        self.benchmark_generator.generate_benchmark_report(str(report_path))
+        
+        return benchmarks
+    
+    def _evaluate_sessions(self, session_files: List[Path]) -> Dict[str, Any]:
+        """Evaluate cognitive metrics for all sessions"""
+        
+        all_metrics = []
+        
+        for session_file in session_files:
+            session_data = pd.read_csv(session_file)
+            metrics = self.metrics_evaluator.evaluate_session(session_data)
+            all_metrics.append(metrics)
+        
+        # Calculate aggregate metrics
+        aggregate_metrics = self._calculate_aggregate_metrics(all_metrics)
+        self.results['evaluation_metrics'] = aggregate_metrics
+        
+        # Save individual reports
+        reports_dir = self.output_dir / "evaluation_reports"
+        reports_dir.mkdir(exist_ok=True)
+        
+        for metrics in all_metrics:
+            report_path = reports_dir / f"session_{metrics['session_id']}_evaluation.json"
+            self.metrics_evaluator.generate_evaluation_report(metrics, str(report_path))
+        
+        return aggregate_metrics
+    
+    def _train_proficiency_classifier(self, session_files: List[Path]):
+        """Train the user proficiency classifier"""
+        
+        # Generate training data
+        training_data = generate_training_data_from_sessions(
+            [str(f) for f in session_files]
+        )
+        
+        if len(training_data) < 5:
+            print("  [!]  Insufficient data for classifier training (need at least 5 sessions)")
+            return
+        
+        # Train classifier
+        self.proficiency_classifier.train_classifier(training_data, model_type='ensemble')
+        
+        # Save model
+        model_path = self.output_dir / "proficiency_classifier.pkl"
+        self.proficiency_classifier.save_model(str(model_path))
+        
+        # Classify all sessions
+        classifications = {}
+        for session_file in session_files:
+            session_data = pd.read_csv(session_file)
+            result = self.proficiency_classifier.classify_user(session_data)
+            classifications[session_file.stem] = result
+        
+        self.results['proficiency_classifications'] = classifications
+    
+    def _generate_visualizations(self, 
+                               graphs: List[InteractionGraph],
+                               benchmarks: Dict[str, Any],
+                               evaluation_results: Dict[str, Any]):
+        """Generate all visualizations"""
+        
+        viz_dir = self.output_dir / "visualizations"
+        viz_dir.mkdir(exist_ok=True)
+        
+        # 1. Interaction graph visualization (first 3 graphs)
+        for i, graph in enumerate(graphs[:3]):
+            graph_path = viz_dir / f"interaction_graph_{i+1}.html"
+            self.visualizer.visualize_interaction_graph(
+                graph.graph, 
+                title=f"Session {i+1} Interaction Graph",
+                save_path=str(graph_path),
+                interactive=True
+            )
+        
+        # 2. Proficiency dashboard
+        if 'cluster_analysis' in self.results:
+            dashboard_path = viz_dir / "proficiency_dashboard.html"
+            session_metrics = self.metrics_evaluator.metrics_history
+            self.visualizer.create_proficiency_dashboard(
+                self.results['cluster_analysis']['cluster_profiles'],
+                session_metrics,
+                save_path=str(dashboard_path)
+            )
+        
+        # 3. Benchmark comparison
+        if benchmarks and self.results.get('evaluation_metrics'):
+            comparison_path = viz_dir / "benchmark_comparison.html"
+            self.visualizer.visualize_benchmark_comparison(
+                benchmarks,
+                self.results['evaluation_metrics'],
+                save_path=str(comparison_path)
+            )
+        
+        # 4. Cognitive flow diagram
+        if graphs:
+            # Combine data from all sessions for flow analysis
+            all_data = []
+            for session_file in self.data_dir.glob("interactions_*.csv"):
+                df = pd.read_csv(session_file)
+                all_data.append(df)
+            
+            if all_data:
+                combined_data = pd.concat(all_data, ignore_index=True)
+                flow_path = viz_dir / "cognitive_flow.html"
+                self.visualizer.create_cognitive_flow_diagram(
+                    combined_data,
+                    save_path=str(flow_path)
+                )
+        
+        # 5. Generate static visualizations from benchmark generator
+        self.benchmark_generator.visualize_cognitive_patterns(
+            graphs, 
+            save_path=str(viz_dir)
+        )
+        
+        # 6. Export all dashboard visualizations
+        print("\nExporting comprehensive dashboard visualizations...")
+        try:
+            from benchmarking.export_all_visualizations import BenchmarkVisualizationExporter
+            viz_exporter = BenchmarkVisualizationExporter(results_path=str(self.output_dir))
+            viz_exporter.export_all_visualizations()
+        except ImportError:
+            # Try direct import if running from benchmarking directory
+            try:
+                from export_all_visualizations import BenchmarkVisualizationExporter
+                viz_exporter = BenchmarkVisualizationExporter(results_path=str(self.output_dir))
+                viz_exporter.export_all_visualizations()
+            except Exception as e:
+                print(f"  [!]  Warning: Could not export all visualizations: {str(e)}")
+        except Exception as e:
+            print(f"  [!]  Warning: Could not export all visualizations: {str(e)}")
+        
+        # 7. Export Graph ML visualizations
+        print("\nExporting interactive Graph ML visualizations...")
+        try:
+            from benchmarking.graph_ml_interactive import InteractiveGraphMLVisualizer
+            graph_viz = InteractiveGraphMLVisualizer(results_path=str(self.output_dir))
+            graph_viz.export_all_interactive_visualizations()
+        except ImportError:
+            # Try direct import if running from benchmarking directory
+            try:
+                from graph_ml_interactive import InteractiveGraphMLVisualizer
+                graph_viz = InteractiveGraphMLVisualizer(results_path=str(self.output_dir))
+                graph_viz.export_all_interactive_visualizations()
+            except Exception as e:
+                print(f"  [!]  Warning: Could not export interactive Graph ML visualizations: {str(e)}")
+        except Exception as e:
+            print(f"  [!]  Warning: Could not export interactive Graph ML visualizations: {str(e)}")
+        
+        # 8. Export PyVis interactive visualizations
+        print("\nExporting PyVis interactive visualizations...")
+        try:
+            from benchmarking.graph_ml_pyvis import PyVisGraphMLVisualizer
+            pyvis_viz = PyVisGraphMLVisualizer(results_path=str(self.output_dir))
+            pyvis_viz.export_all_visualizations()
+        except ImportError:
+            # Try direct import if running from benchmarking directory
+            try:
+                from graph_ml_pyvis import PyVisGraphMLVisualizer
+                pyvis_viz = PyVisGraphMLVisualizer(results_path=str(self.output_dir))
+                pyvis_viz.export_all_visualizations()
+            except Exception as e:
+                print(f"  [!]  Warning: Could not export PyVis visualizations: {str(e)}")
+        except Exception as e:
+            print(f"  [!]  Warning: Could not export PyVis visualizations: {str(e)}")
+    
+    def _calculate_aggregate_metrics(self, all_metrics: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Calculate aggregate metrics across all sessions"""
+        
+        if not all_metrics:
+            return {}
+        
+        aggregate = {
+            'total_sessions': len(all_metrics),
+            'total_interactions': sum(m['total_interactions'] for m in all_metrics),
+            'avg_session_duration': np.mean([m['duration_minutes'] for m in all_metrics]),
+            
+            # Cognitive metrics
+            'avg_cognitive_offloading_prevention': np.mean([
+                m['cognitive_offloading_prevention']['overall_rate'] for m in all_metrics
+            ]),
+            'avg_deep_thinking_engagement': np.mean([
+                m['deep_thinking_engagement']['overall_rate'] for m in all_metrics
+            ]),
+            'avg_scaffolding_effectiveness': np.mean([
+                m['scaffolding_effectiveness']['overall_rate'] for m in all_metrics
+            ]),
+            'avg_knowledge_integration': np.mean([
+                m['knowledge_integration']['integration_rate'] for m in all_metrics
+            ]),
+            
+            # Improvement metrics
+            'avg_improvement_over_baseline': np.mean([
+                m['improvement_over_baseline']['overall_improvement'] for m in all_metrics
+            ]),
+            
+            # Skill progression
+            'sessions_with_progression': sum(
+                1 for m in all_metrics 
+                if m['skill_progression']['progression_score'] > 0
+            ),
+            
+            # Agent effectiveness
+            'avg_agent_coordination': np.mean([
+                m['agent_coordination_score'] for m in all_metrics
+            ])
+        }
+        
+        return aggregate
+    
+    def _export_comprehensive_report(self):
+        """Export comprehensive benchmarking report"""
+        
+        report = {
+            'metadata': {
+                'generated_at': datetime.now().isoformat(),
+                'system_version': '1.0.0',
+                'sessions_analyzed': self.results['sessions_analyzed']
+            },
+            'executive_summary': self._generate_executive_summary(),
+            'benchmarks': self.results.get('benchmarks_generated', {}),
+            'evaluation_metrics': self.results.get('evaluation_metrics', {}),
+            'proficiency_analysis': self._analyze_proficiency_distribution(),
+            'recommendations': self._generate_system_recommendations(),
+            'thesis_insights': self._generate_thesis_insights()
+        }
+        
+        # Save main report
+        report_path = self.output_dir / "comprehensive_benchmark_report.json"
+        with open(report_path, 'w') as f:
+            json.dump(report, f, indent=2)
+        
+        # Generate human-readable summary
+        summary_path = self.output_dir / "benchmark_summary.md"
+        self._write_markdown_summary(report, summary_path)
+    
+    def _generate_executive_summary(self) -> Dict[str, Any]:
+        """Generate executive summary of benchmarking results"""
+        
+        metrics = self.results.get('evaluation_metrics', {})
+        
+        return {
+            'key_findings': [
+                f"Analyzed {self.results['sessions_analyzed']} tutoring sessions",
+                f"Cognitive offloading prevention rate: {metrics.get('avg_cognitive_offloading_prevention', 0):.1%}",
+                f"Deep thinking engagement: {metrics.get('avg_deep_thinking_engagement', 0):.1%}",
+                f"Average improvement over baseline: {metrics.get('avg_improvement_over_baseline', 0):.1f}%"
+            ],
+            'system_effectiveness': self._assess_overall_effectiveness(),
+            'primary_strengths': self._identify_primary_strengths(),
+            'areas_for_improvement': self._identify_improvement_areas()
+        }
+    
+    def _analyze_proficiency_distribution(self) -> Dict[str, Any]:
+        """Analyze distribution of user proficiency levels"""
+        
+        classifications = self.results.get('proficiency_classifications', {})
+        
+        if not classifications:
+            return {'message': 'No proficiency classifications available'}
+        
+        # Count proficiency levels
+        proficiency_counts = {}
+        for session, result in classifications.items():
+            level = result['proficiency_level']
+            proficiency_counts[level] = proficiency_counts.get(level, 0) + 1
+        
+        # Calculate percentages
+        total = sum(proficiency_counts.values())
+        proficiency_percentages = {
+            level: (count / total) * 100 
+            for level, count in proficiency_counts.items()
+        }
+        
+        return {
+            'distribution': proficiency_counts,
+            'percentages': proficiency_percentages,
+            'insights': self._generate_proficiency_insights(proficiency_percentages)
+        }
+    
+    def _generate_system_recommendations(self) -> List[Dict[str, str]]:
+        """Generate recommendations for system improvement"""
+        
+        recommendations = []
+        metrics = self.results.get('evaluation_metrics', {})
+        
+        # Based on cognitive metrics
+        if metrics.get('avg_cognitive_offloading_prevention', 0) < 0.7:
+            recommendations.append({
+                'area': 'Socratic Questioning',
+                'recommendation': 'Enhance Socratic agent to better prevent cognitive offloading',
+                'priority': 'high',
+                'implementation': 'Improve question generation algorithms and response patterns'
+            })
+        
+        if metrics.get('avg_deep_thinking_engagement', 0) < 0.6:
+            recommendations.append({
+                'area': 'Critical Thinking',
+                'recommendation': 'Develop more sophisticated prompts for deep thinking',
+                'priority': 'high',
+                'implementation': 'Add complexity layers to agent responses'
+            })
+        
+        if metrics.get('avg_agent_coordination', 0) < 0.7:
+            recommendations.append({
+                'area': 'Multi-Agent Coordination',
+                'recommendation': 'Improve agent orchestration for coherent responses',
+                'priority': 'medium',
+                'implementation': 'Refine LangGraph routing logic and state management'
+            })
+        
+        # Based on proficiency distribution
+        prof_dist = self._analyze_proficiency_distribution()
+        if prof_dist.get('percentages', {}).get('beginner', 0) > 50:
+            recommendations.append({
+                'area': 'Beginner Support',
+                'recommendation': 'Enhance scaffolding for beginner users',
+                'priority': 'high',
+                'implementation': 'Develop adaptive difficulty progression'
+            })
+        
+        return recommendations
+    
+    def _generate_thesis_insights(self) -> Dict[str, Any]:
+        """Generate insights relevant to thesis research"""
+        
+        metrics = self.results.get('evaluation_metrics', {})
+        
+        return {
+            'cognitive_offloading_prevention': {
+                'effectiveness': metrics.get('avg_cognitive_offloading_prevention', 0),
+                'interpretation': self._interpret_offloading_prevention(
+                    metrics.get('avg_cognitive_offloading_prevention', 0)
+                ),
+                'thesis_implication': 'System successfully encourages independent thinking'
+                if metrics.get('avg_cognitive_offloading_prevention', 0) > 0.7
+                else 'Further development needed to prevent cognitive dependency'
+            },
+            'multi_agent_effectiveness': {
+                'coordination_score': metrics.get('avg_agent_coordination', 0),
+                'interpretation': 'Agents work cohesively to provide comprehensive support'
+                if metrics.get('avg_agent_coordination', 0) > 0.7
+                else 'Agent coordination needs improvement',
+                'thesis_implication': 'Multi-agent approach shows promise for educational AI'
+            },
+            'learning_progression': {
+                'sessions_with_progression': metrics.get('sessions_with_progression', 0),
+                'progression_rate': (metrics.get('sessions_with_progression', 0) / 
+                                   max(metrics.get('total_sessions', 1), 1)),
+                'thesis_implication': 'System supports skill development over time'
+            },
+            'overall_assessment': self._generate_overall_thesis_assessment()
+        }
+    
+    def _assess_overall_effectiveness(self) -> str:
+        """Assess overall system effectiveness"""
+        
+        metrics = self.results.get('evaluation_metrics', {})
+        
+        key_metrics = [
+            metrics.get('avg_cognitive_offloading_prevention', 0),
+            metrics.get('avg_deep_thinking_engagement', 0),
+            metrics.get('avg_scaffolding_effectiveness', 0),
+            metrics.get('avg_knowledge_integration', 0)
+        ]
+        
+        avg_effectiveness = np.mean(key_metrics) if key_metrics else 0
+        
+        if avg_effectiveness >= 0.8:
+            return "Highly Effective - System exceeds benchmarks"
+        elif avg_effectiveness >= 0.6:
+            return "Effective - System meets core objectives"
+        elif avg_effectiveness >= 0.4:
+            return "Moderately Effective - Room for improvement"
+        else:
+            return "Needs Improvement - Significant enhancements required"
+    
+    def _identify_primary_strengths(self) -> List[str]:
+        """Identify primary system strengths"""
+        
+        strengths = []
+        metrics = self.results.get('evaluation_metrics', {})
+        
+        if metrics.get('avg_cognitive_offloading_prevention', 0) > 0.8:
+            strengths.append("Excellent at preventing cognitive offloading")
+        
+        if metrics.get('avg_improvement_over_baseline', 0) > 50:
+            strengths.append(f"{metrics['avg_improvement_over_baseline']:.0f}% improvement over traditional methods")
+        
+        if metrics.get('avg_deep_thinking_engagement', 0) > 0.7:
+            strengths.append("Strong deep thinking engagement")
+        
+        return strengths
+    
+    def _identify_improvement_areas(self) -> List[str]:
+        """Identify areas needing improvement"""
+        
+        areas = []
+        metrics = self.results.get('evaluation_metrics', {})
+        
+        if metrics.get('avg_scaffolding_effectiveness', 0) < 0.6:
+            areas.append("Scaffolding effectiveness needs enhancement")
+        
+        if metrics.get('avg_knowledge_integration', 0) < 0.5:
+            areas.append("Knowledge integration could be improved")
+        
+        if metrics.get('sessions_with_progression', 0) / max(metrics.get('total_sessions', 1), 1) < 0.5:
+            areas.append("Skill progression tracking needs refinement")
+        
+        return areas
+    
+    def _generate_proficiency_insights(self, percentages: Dict[str, float]) -> List[str]:
+        """Generate insights from proficiency distribution"""
+        
+        insights = []
+        
+        if percentages.get('beginner', 0) > 40:
+            insights.append("High percentage of beginners indicates need for better onboarding")
+        
+        if percentages.get('expert', 0) < 5:
+            insights.append("Low expert percentage suggests limited progression pathways")
+        
+        if percentages.get('intermediate', 0) > 50:
+            insights.append("Majority at intermediate level shows effective skill building")
+        
+        return insights
+    
+    def _interpret_offloading_prevention(self, rate: float) -> str:
+        """Interpret cognitive offloading prevention rate"""
+        
+        if rate >= 0.8:
+            return "Exceptional - Users consistently engage in independent thinking"
+        elif rate >= 0.6:
+            return "Good - Most interactions encourage self-directed learning"
+        elif rate >= 0.4:
+            return "Moderate - Some tendency toward answer-seeking behavior"
+        else:
+            return "Poor - High cognitive dependency observed"
+    
+    def _generate_overall_thesis_assessment(self) -> str:
+        """Generate overall assessment for thesis"""
+        
+        metrics = self.results.get('evaluation_metrics', {})
+        improvement = metrics.get('avg_improvement_over_baseline', 0)
+        
+        if improvement > 60 and metrics.get('avg_cognitive_offloading_prevention', 0) > 0.7:
+            return ("The Mega Architectural Mentor demonstrates significant potential "
+                   "as an AI-powered educational tool that enhances rather than replaces "
+                   "human cognitive capabilities in spatial design education.")
+        elif improvement > 40:
+            return ("The system shows promise in preventing cognitive offloading while "
+                   "supporting learning, though further refinements could enhance effectiveness.")
+        else:
+            return ("Initial results indicate the multi-agent approach has merit, "
+                   "but substantial improvements are needed to achieve thesis objectives.")
+    
+    def _write_markdown_summary(self, report: Dict[str, Any], path: Path):
+        """Write human-readable markdown summary"""
+        
+        with open(path, 'w') as f:
+            f.write("# Mega Architectural Mentor - Benchmarking Report\n\n")
+            f.write(f"Generated: {report['metadata']['generated_at']}\n\n")
+            
+            # Executive Summary
+            f.write("## Executive Summary\n\n")
+            summary = report['executive_summary']
+            for finding in summary['key_findings']:
+                f.write(f"- {finding}\n")
+            f.write(f"\n**Overall Effectiveness:** {summary['system_effectiveness']}\n\n")
+            
+            # Strengths
+            f.write("### Primary Strengths\n\n")
+            for strength in summary['primary_strengths']:
+                f.write(f"- {strength}\n")
+            f.write("\n")
+            
+            # Improvements
+            f.write("### Areas for Improvement\n\n")
+            for area in summary['areas_for_improvement']:
+                f.write(f"- {area}\n")
+            f.write("\n")
+            
+            # Recommendations
+            f.write("## System Recommendations\n\n")
+            for rec in report['recommendations']:
+                f.write(f"### {rec['area']}\n")
+                f.write(f"- **Recommendation:** {rec['recommendation']}\n")
+                f.write(f"- **Priority:** {rec['priority']}\n")
+                f.write(f"- **Implementation:** {rec['implementation']}\n\n")
+            
+            # Thesis Insights
+            f.write("## Thesis Research Insights\n\n")
+            insights = report['thesis_insights']
+            f.write(f"### Cognitive Offloading Prevention\n")
+            f.write(f"- Effectiveness: {insights['cognitive_offloading_prevention']['effectiveness']:.1%}\n")
+            f.write(f"- {insights['cognitive_offloading_prevention']['interpretation']}\n")
+            f.write(f"- **Implication:** {insights['cognitive_offloading_prevention']['thesis_implication']}\n\n")
+            
+            f.write(f"### Overall Assessment\n\n")
+            f.write(f"{insights['overall_assessment']}\n")
+    
+    def _print_summary(self):
+        """Print summary of benchmarking results"""
+        
+        print("\nBENCHMARKING SUMMARY")
+        print("-" * 40)
+        print(f"Sessions Analyzed: {self.results['sessions_analyzed']}")
+        
+        metrics = self.results.get('evaluation_metrics', {})
+        if metrics:
+            print(f"\nKey Metrics:")
+            print(f"  - Cognitive Offloading Prevention: {metrics.get('avg_cognitive_offloading_prevention', 0):.1%}")
+            print(f"  - Deep Thinking Engagement: {metrics.get('avg_deep_thinking_engagement', 0):.1%}")
+            print(f"  - Improvement over Baseline: {metrics.get('avg_improvement_over_baseline', 0):.1f}%")
+        
+        print(f"\nResults saved to: {self.output_dir}")
+        print(f"  - Benchmark Report: benchmark_report.json")
+        print(f"  - Evaluation Reports: evaluation_reports/")
+        print(f"  - Visualizations: visualizations/")
+        print(f"  - Summary: benchmark_summary.md")
+        print(f"\nNOTE: All dashboard visualizations have been exported to:")
+        print(f"  - {self.output_dir}/visualizations/index.html")
+
+
+def main():
+    """Main entry point for benchmarking system"""
+    
+    parser = argparse.ArgumentParser(
+        description="Run cognitive benchmarking for Mega Architectural Mentor"
+    )
+    
+    parser.add_argument(
+        "--data-dir",
+        type=str,
+        default="./thesis_data",
+        help="Directory containing interaction data (default: ./thesis_data)"
+    )
+    
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="./benchmarking/results",
+        help="Directory for output files (default: ./benchmarking/results)"
+    )
+    
+    parser.add_argument(
+        "--no-classifier",
+        action="store_true",
+        help="Skip training the proficiency classifier"
+    )
+    
+    parser.add_argument(
+        "--no-visualizations",
+        action="store_true",
+        help="Skip generating visualizations"
+    )
+    
+    parser.add_argument(
+        "--no-report",
+        action="store_true",
+        help="Skip generating the final report"
+    )
+    
+    parser.add_argument(
+        "--no-dashboard",
+        action="store_true",
+        help="Skip launching the Streamlit dashboard after benchmarking"
+    )
+    
+    args = parser.parse_args()
+    
+    # Create pipeline
+    pipeline = BenchmarkingPipeline(
+        data_dir=args.data_dir,
+        output_dir=args.output_dir
+    )
+    
+    # Run benchmarking
+    pipeline.run_full_pipeline(
+        train_classifier=not args.no_classifier,
+        generate_visualizations=not args.no_visualizations,
+        export_report=not args.no_report
+    )
+    
+    # Launch dashboard if requested
+    if not args.no_dashboard:
+        print("\n" + "="*60)
+        print("Launching Benchmarking Dashboard...")
+        print("="*60)
+        import subprocess
+        import sys
+        subprocess.Popen([sys.executable, "-m", "streamlit", "run", 
+                         "benchmarking/benchmark_dashboard.py"])
+
+
+if __name__ == "__main__":
+    main()

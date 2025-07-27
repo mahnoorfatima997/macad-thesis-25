@@ -153,6 +153,27 @@ st.sidebar.markdown("📚 **Knowledge**: Provides architectural principles & pre
 st.sidebar.markdown("🤔 **Socratic**: Asks guiding questions")
 st.sidebar.markdown("🧠 **Cognitive**: Challenges assumptions")
 
+st.sidebar.markdown("---")
+st.sidebar.markdown("**📊 Data Collection:**")
+
+# Export session data button
+if st.session_state.interaction_logger and hasattr(st.session_state.interaction_logger, 'interactions') and len(st.session_state.interaction_logger.interactions) > 0:
+    if st.sidebar.button("💾 Export Session Data"):
+        try:
+            # Export data for thesis analysis
+            st.session_state.interaction_logger.export_for_thesis_analysis()
+            
+            # Get session summary
+            summary = st.session_state.interaction_logger.get_session_summary()
+            
+            st.sidebar.success(f"✅ Data exported!")
+            st.sidebar.info(f"Session: {st.session_state.interaction_logger.session_id[:8]}...")
+            st.sidebar.info(f"Interactions: {len(st.session_state.interaction_logger.interactions)}")
+        except Exception as e:
+            st.sidebar.error(f"Export error: {str(e)}")
+else:
+    st.sidebar.info("No data to export yet")
+
 # Reset button
 if st.sidebar.button("🔄 Start New Project"):
     st.session_state.analysis_complete = False
@@ -161,6 +182,7 @@ if st.sidebar.button("🔄 Start New Project"):
     st.session_state.analysis_result = None
     st.session_state.agents_initialized = False
     st.session_state.uploaded_image_path = None
+    st.session_state.interaction_logger = InteractionLogger()  # Create new logger for new session
     st.rerun()
 
 # Main content
@@ -805,6 +827,23 @@ else:
                         "role": "assistant",
                         "content": result["response"]
                     })
+                    
+                    # Log interaction for thesis data collection
+                    if st.session_state.interaction_logger:
+                        st.session_state.interaction_logger.log_interaction(
+                            student_input=user_input,
+                            agent_response=result["response"],
+                            routing_path=result["routing_path"],
+                            agents_used=result["metadata"]["agents_used"],
+                            response_type=result["metadata"]["response_type"],
+                            cognitive_flags=result["classification"].get("cognitive_flags", []),
+                            student_skill_level=st.session_state.arch_state.student_profile.skill_level,
+                            confidence_score=result["classification"].get("confidence", 0.5),
+                            sources_used=result["metadata"]["sources"],
+                            response_time=result["metadata"].get("response_time", 0),
+                            context_classification=result["classification"],
+                            metadata=result["metadata"]
+                        )
                     
                 except Exception as e:
                     # Fallback response
