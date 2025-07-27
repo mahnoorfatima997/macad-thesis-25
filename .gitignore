@@ -21,3 +21,70 @@ Thumbs.db
 # Large files
 *.dll
 *.lib
+
+# Environment variables and API keys
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Configuration files with sensitive data
+config.json
+secrets.json
+credentials.json
+auth.json
+*.key
+*.pem
+*.cert
+
+# API key files
+api_keys.py
+api_keys.json
+api_config.py
+openai_key.txt
+*_api_key.txt
+
+# AWS credentials
+.aws/
+aws_credentials
+
+# Google Cloud credentials
+gcloud/
+*.json.keyfile
+service-account-key.json
+
+# Azure credentials
+.azure/
+azure_credentials
+
+# Database credentials
+db_config.py
+database.ini
+*.sqlite3
+*.db
+
+# Temporary and backup files
+*.bak
+*.tmp
+*.temp
+*.swp
+*~
+
+# IDE specific files
+.idea/
+*.iml
+
+# Log files that might contain sensitive data
+*.log
+logs/
+
+# Session data
+sessions/
+*.session
+
+# Thesis data (if contains sensitive information)
+thesis_data/
+interaction_logs/
