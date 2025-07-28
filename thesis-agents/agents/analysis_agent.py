@@ -11,7 +11,6 @@ load_dotenv()  # Should already be there
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from vision.sketch_analyzer import SketchAnalyzer
-from vision.gpt_sam_analyzer import GPTSAMAnalyzer
 from state_manager import ArchMentorState, StudentProfile, VisualArtifact
 from knowledge_base.knowledge_manager import KnowledgeManager
 
@@ -20,7 +19,6 @@ class AnalysisAgent:
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  #memory issue
         self.domain = domain
         self.sketch_analyzer = SketchAnalyzer(domain)
-        self.gpt_sam_analyzer = GPTSAMAnalyzer()  # Initialize GPT-SAM analyzer
         self.knowledge_manager = KnowledgeManager(domain)
         self.name = "analysis_agent"
         print(f"🔍 {self.name} initialized for domain: {domain}")
@@ -174,34 +172,10 @@ class AnalysisAgent:
         if current_sketch and current_sketch.image_path:
             try:
                 print(f"📸 Analyzing image: {current_sketch.image_path}")
-                
-                # Use GPT-SAM analyzer for enhanced visual analysis
-                gpt_sam_results = self.gpt_sam_analyzer.analyze_image(current_sketch.image_path)
-                
-                if "error" not in gpt_sam_results:
-                    # Extract GPT analysis for compatibility
-                    gpt_analysis = gpt_sam_results.get("gpt_analysis", {})
-                    
-                    # Convert to format expected by existing system
-                    visual_analysis = {
-                        "confidence_score": gpt_analysis.get("analysis_confidence", 0.7),
-                        "identified_elements": [elem.get("label", "") for elem in gpt_analysis.get("spatial_elements", [])],
-                        "design_strengths": gpt_analysis.get("design_insights", {}).get("strengths", []),
-                        "improvement_opportunities": gpt_analysis.get("design_insights", {}).get("issues", []),
-                        "accessibility_notes": [],  # Will be enhanced by knowledge base
-                        "spatial_organization": gpt_analysis.get("spatial_narrative", ""),
-                        "circulation_pattern": gpt_analysis.get("circulation_analysis", {}).get("primary_path", ""),
-                        "gpt_sam_results": gpt_sam_results  # Store full results for detailed display
-                    }
-                else:
-                    # Fallback to original sketch analyzer
-                    print(f"⚠️ GPT-SAM failed, falling back to sketch analyzer: {gpt_sam_results['error']}")
-                    visual_analysis = await self.sketch_analyzer.analyze_sketch(
-                        current_sketch.image_path,
-                        context=design_brief
-                    )
-                    visual_analysis["gpt_sam_error"] = gpt_sam_results["error"]
-                
+                visual_analysis = await self.sketch_analyzer.analyze_sketch(
+                    current_sketch.image_path,
+                    context=design_brief
+                )
                 analysis_result["visual_analysis"] = visual_analysis
                 analysis_result["confidence_score"] = visual_analysis.get("confidence_score", 0.5)
                 
@@ -281,9 +255,56 @@ class AnalysisAgent:
             return {"knowledge_enhanced": False}
     
     def analyze_design_brief(self, brief: str) -> Dict[str, Any]:
-        """Analyze the textual design brief for key information"""
+        """Analyze the textual design brief for key information using AI for better detection"""
         
-        # Program type detection
+        # Use AI to intelligently detect the project type
+        prompt = f"""
+        Analyze this architectural design brief and identify the building type:
+        
+        BRIEF: "{brief}"
+        
+        Identify the most likely building type from these options:
+        - community center
+        - housing/residential
+        - office/workplace
+        - school/educational
+        - hospital/healthcare
+        - library
+        - museum/gallery
+        - retail/commercial
+        - restaurant/food service
+        - industrial/manufacturing
+        - mixed-use
+        - cultural center
+        - sports/recreation
+        - transportation
+        - religious/worship
+        
+        If the brief doesn't clearly indicate a building type, analyze the context and user's questions to infer the most likely type.
+        
+        Return ONLY the building type as a single word or short phrase (e.g., "community center", "housing", "office").
+        """
+        
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=20,
+                temperature=0.1
+            )
+            
+            ai_building_type = response.choices[0].message.content.strip().lower()
+            print(f"🏗️ AI detected building type: {ai_building_type}")
+            
+            # Fallback to keyword matching if AI fails
+            if not ai_building_type or ai_building_type == "unknown":
+                ai_building_type = self._fallback_building_type_detection(brief)
+            
+        except Exception as e:
+            print(f"⚠️ AI building type detection failed: {e}")
+            ai_building_type = self._fallback_building_type_detection(brief)
+        
+        # Expanded program type detection - covers more building types
         program_keywords = {
             "community center": {
                 "requirements": ["meeting rooms", "kitchen", "flexible space", "accessibility", "parking"],
@@ -300,18 +321,40 @@ class AnalysisAgent:
             "school": {
                 "requirements": ["classrooms", "cafeteria", "library", "playground", "administration"],
                 "considerations": ["safety", "age groups", "accessibility", "outdoor learning"]
+            },
+            "hospital": {
+                "requirements": ["patient rooms", "emergency", "surgery", "reception", "parking"],
+                "considerations": ["accessibility", "infection control", "staff workflow", "patient comfort"]
+            },
+            "library": {
+                "requirements": ["reading areas", "collections", "study rooms", "computers", "accessibility"],
+                "considerations": ["quiet zones", "natural light", "security", "community access"]
+            },
+            "museum": {
+                "requirements": ["exhibition spaces", "storage", "entrance", "gift shop", "accessibility"],
+                "considerations": ["climate control", "lighting", "circulation", "visitor experience"]
+            },
+            "retail": {
+                "requirements": ["sales floor", "storage", "checkout", "fitting rooms", "parking"],
+                "considerations": ["customer flow", "product display", "security", "accessibility"]
+            },
+            "restaurant": {
+                "requirements": ["dining areas", "kitchen", "restrooms", "storage", "parking"],
+                "considerations": ["food service flow", "ambiance", "accessibility", "noise control"]
+            },
+            "industrial": {
+                "requirements": ["production areas", "storage", "offices", "loading", "parking"],
+                "considerations": ["workflow efficiency", "safety", "environmental controls", "logistics"]
             }
         }
         
-        # Identify building type and requirements
-        building_type = "unknown"
+        # Get requirements and considerations for the detected building type
         requirements = []
         considerations = []
         
-        brief_lower = brief.lower()
+        # Try to match the AI-detected type with our program keywords
         for btype, info in program_keywords.items():
-            if btype in brief_lower:
-                building_type = btype
+            if btype in ai_building_type or ai_building_type in btype:
                 requirements = info["requirements"]
                 considerations = info["considerations"]
                 break
@@ -322,14 +365,14 @@ class AnalysisAgent:
         # Extract constraints and requirements
         constraint_keywords = ["budget", "sustainable", "accessible", "limited", "small", "large", 
                              "affordable", "green", "net-zero", "LEED", "ADA"]
-        constraints = [kw for kw in constraint_keywords if kw in brief_lower]
+        constraints = [kw for kw in constraint_keywords if kw in brief.lower()]
         
         # Assess brief complexity
         word_count = len(brief.split())
         complexity = "simple" if word_count < 20 else "detailed" if word_count < 50 else "comprehensive"
         
         return {
-            "building_type": building_type,
+            "building_type": ai_building_type,
             "program_requirements": requirements,
             "design_considerations": considerations,
             "numbers_mentioned": numbers,
@@ -338,6 +381,34 @@ class AnalysisAgent:
             "complexity": complexity,
             "detail_level": self.assess_detail_level(brief)
         }
+    
+    def _fallback_building_type_detection(self, brief: str) -> str:
+        """Fallback keyword-based building type detection"""
+        brief_lower = brief.lower()
+        
+        # Simple keyword matching as fallback
+        if any(word in brief_lower for word in ["community", "center", "meeting"]):
+            return "community center"
+        elif any(word in brief_lower for word in ["house", "home", "residential", "apartment", "housing"]):
+            return "housing"
+        elif any(word in brief_lower for word in ["office", "workplace", "work", "business"]):
+            return "office"
+        elif any(word in brief_lower for word in ["school", "education", "classroom", "student"]):
+            return "school"
+        elif any(word in brief_lower for word in ["hospital", "medical", "healthcare", "clinic"]):
+            return "hospital"
+        elif any(word in brief_lower for word in ["library", "book", "reading"]):
+            return "library"
+        elif any(word in brief_lower for word in ["museum", "gallery", "exhibition", "art"]):
+            return "museum"
+        elif any(word in brief_lower for word in ["retail", "shop", "store", "commercial"]):
+            return "retail"
+        elif any(word in brief_lower for word in ["restaurant", "cafe", "food", "dining"]):
+            return "restaurant"
+        elif any(word in brief_lower for word in ["industrial", "factory", "manufacturing"]):
+            return "industrial"
+        else:
+            return "mixed-use"  # Better default than "unknown"
     
     def assess_detail_level(self, brief: str) -> str:
         """Assess how detailed the student's brief is"""
@@ -482,34 +553,41 @@ class AnalysisAgent:
 
     # generate_cognitive_flags method
     async def generate_cognitive_flags(self, analysis_result: Dict, student_profile: StudentProfile, state: ArchMentorState) -> List[str]:
-        """AI-powered cognitive flag generation - handles ANY topic"""
+        """AI-powered cognitive flag generation - accurately identifies what the student is asking about"""
         
         # Get student's actual messages
         student_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
         recent_input = " ".join(student_messages[-2:]) if student_messages else ""
         
         prompt = f"""
-        Analyze what this architecture student is asking about and identify learning gaps:
+        Analyze this architecture student's question and identify what they are ACTUALLY asking about:
         
         STUDENT INPUT: "{recent_input}"
         PROJECT: {state.current_design_brief}
         SKILL LEVEL: {student_profile.skill_level}
         
-        Generate 2-3 cognitive flags that identify what educational support they need based on their ACTUAL questions and interests.
+        First, identify the MAIN TOPIC they are asking about (e.g., circulation, lighting, materials, accessibility, etc.)
+        Then, identify what type of guidance they need.
         
-        Examples of cognitive flags:
-        - needs_programming_guidance (if asking about space functions/activities)
-        - needs_material_guidance (if asking about materials)
-        - needs_acoustic_guidance (if asking about sound/noise)
-        - needs_lighting_guidance (if asking about illumination)
-        - needs_circulation_guidance (if asking about movement/flow)
+        IMPORTANT: Look at the actual words they used. If they mention "circulation", the topic is circulation, not materials.
+        
+        Generate 2-3 cognitive flags that accurately reflect their question:
+        
+        Topic-based flags (use the actual topic they mentioned):
+        - needs_circulation_guidance (if asking about movement, flow, paths)
+        - needs_lighting_guidance (if asking about illumination, natural light)
+        - needs_material_guidance (if asking about materials, finishes)
+        - needs_acoustic_guidance (if asking about sound, noise)
+        - needs_accessibility_guidance (if asking about universal design, ADA)
         - needs_sustainability_guidance (if asking about environmental issues)
-        - needs_accessibility_guidance (if asking about universal design)
         - needs_structural_guidance (if asking about building systems)
-        - needs_brief_clarification (if unclear about requirements)
-        - needs_spatial_thinking_support (if confused about space organization)
+        - needs_programming_guidance (if asking about space functions/activities)
+        - needs_spatial_thinking_support (if asking about space organization)
         
-        Focus on what they ACTUALLY asked about, not generic assumptions.
+        Guidance type flags:
+        - needs_brief_clarification (if unclear about requirements)
+        - needs_technical_guidance (if asking about specific standards/codes)
+        - needs_design_strategy_guidance (if asking about design approaches)
         
         Return 2-3 flags as a comma-separated list: flag1, flag2, flag3
         """
@@ -518,14 +596,15 @@ class AnalysisAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=100,
-                temperature=0.3
+                max_tokens=150,
+                temperature=0.1
             )
             
             flags_text = response.choices[0].message.content.strip()
             flags = [flag.strip() for flag in flags_text.split(',')]
             
             print(f"🤖 AI generated flags based on student input: {flags}")
+            print(f"🤖 Student input was: {recent_input}")
             return flags
             
         except Exception as e:

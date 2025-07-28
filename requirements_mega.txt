@@ -1,5 +1,5 @@
-# Mega Architectural Mentor - Complete Requirements
-# Core dependencies for the unified AI system
+# Mega Architectural Mentor v2.0 - Complete Requirements
+# Core dependencies for the unified AI system with SAM included
 
 # Streamlit and web interface
 streamlit>=1.28.0
@@ -15,7 +15,7 @@ torchvision>=0.15.0
 transformers>=4.30.0
 openai>=1.0.0
 
-# SAM (Segment Anything Model) dependencies
+# SAM (Segment Anything Model) - INCLUDED
 segment-anything @ git+https://github.com/facebookresearch/segment-anything.git
 
 # Multi-agent orchestration
@@ -37,6 +37,7 @@ seaborn>=0.12.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 aiohttp>=3.8.0
+PyPDF2>=3.0.0
 
 # Development and testing
 pytest>=7.4.0
@@ -62,4 +63,34 @@ python-decouple>=3.8
 
 # Optional: GPU acceleration
 # cuda-python>=12.0.0  # Uncomment if using CUDA
-# cupy-cuda12x>=12.0.0  # Uncomment if using CUDA 12.x 
+# cupy-cuda12x>=12.0.0  # Uncomment if using CUDA 12.x
+
+# =============================================================================
+# INSTALLATION INSTRUCTIONS
+# =============================================================================
+# 
+# 1. BASIC INSTALLATION (includes SAM):
+#    pip install -r requirements_mega.txt
+#
+# 2. GPU ACCELERATION (optional):
+#    # Install CUDA toolkit first, then uncomment GPU lines above
+#    pip install cuda-python cupy-cuda12x
+#
+# 3. SAM is included by default but can be disabled in the UI
+#
+# =============================================================================
+# SYSTEM REQUIREMENTS
+# =============================================================================
+#
+# MINIMUM:
+# - 4GB RAM
+# - Python 3.8+
+# - OpenAI API key
+#
+# RECOMMENDED:
+# - 8GB+ RAM
+# - GPU with 4GB+ VRAM (for faster SAM processing)
+# - Python 3.8+
+# - OpenAI API key
+#
+# ============================================================================= 

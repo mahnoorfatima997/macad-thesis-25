@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Mega Architectural Mentor - Unified AI System
-Combines GPT Vision + SAM analysis with multi-agent cognitive enhancement
+Clean, modern chatbot interface with hover sidebar
 """
 
 import streamlit as st
@@ -14,6 +14,8 @@ import base64
 from PIL import Image
 import cv2
 import numpy as np
+from typing import Optional, Dict, Any, List
+from pathlib import Path
 
 # Import all the thesis-agents components
 import sys
@@ -29,42 +31,786 @@ from orchestration.langgraph_orchestrator import LangGraphOrchestrator
 from vision.gpt_sam_analyzer import GPTSAMAnalyzer
 from data_collection.interaction_logger import InteractionLogger
 
-# Import detection components
-sys.path.append('./src/core/detection')
-from sam2_module_fixed import SAM2Segmenter
+# Import detection components (SAM is included in requirements)
+try:
+    sys.path.append('./src/core/detection')
+    from sam2_module_fixed import SAM2Segmenter
+    SAM_AVAILABLE = True
+except ImportError:
+    SAM_AVAILABLE = False
+    print("⚠️ SAM2 module not available - check installation")
 
-# Configure Streamlit
+# Configure Streamlit for clean interface
 st.set_page_config(
-    page_title="🏗️ Mega Architectural Mentor",
+    page_title="🏗️ Architectural Mentor",
     page_icon="🏗️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS for modern interface
+st.markdown("""
+<style>
+    /* Dark theme styling */
+    .stApp {
+        background: #1a1a1a !important;
+        color: white !important;
+    }
+    
+    /* Sidebar styling */
+    .css-1d391kg {
+        background: #2a2a2a !important;
+        border-right: 1px solid #404040 !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    /* Ensure sidebar is visible */
+    section[data-testid="stSidebar"] {
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    /* Ensure main content doesn't overlap with sidebar */
+    .main .block-container {
+        background: #1a1a1a !important;
+        max-width: 1200px;
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+        margin-left: 0 !important;
+    }
+    
+    /* Hide Streamlit elements */
+    .stDeployButton {
+        display: none;
+    }
+    
+    #MainMenu {
+        visibility: hidden;
+    }
+    
+    footer {
+        visibility: hidden;
+    }
+    
+    /* Top section styling */
+    .top-section {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-top: 2rem;
+    }
+    
+    .plan-badge {
+        display: inline-block;
+        background: #2a2a2a;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+    }
+    
+    .upgrade-link {
+        color: #ff6b35;
+        text-decoration: none;
+        margin-left: 8px;
+    }
+    
+    .greeting {
+        font-size: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    
+    .greeting-icon {
+        color: #ff6b35;
+        margin-right: 8px;
+    }
+    
+    /* Main chat input area */
+    .chat-input-container {
+        background: #2a2a2a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 0 auto;
+        max-width: 800px;
+        position: relative;
+        border: 1px solid #404040;
+    }
+    
+    .chat-input {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.1rem;
+        width: 100%;
+        min-height: 60px;
+        resize: none;
+        outline: none;
+    }
+    
+    .chat-input::placeholder {
+        color: #888;
+    }
+    
+    /* Input controls */
+    .input-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #404040;
+    }
+    
+    .left-controls {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .control-button {
+        background: #404040;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .control-button:hover {
+        background: #505050;
+    }
+    
+    .model-selector {
+        color: white;
+        background: transparent;
+        border: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .send-button {
+        background: #ff6b35;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 500;
+    }
+    
+    .send-button:hover {
+        background: #e55a2b;
+    }
+    
+    /* Action buttons */
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-button {
+        background: transparent;
+        border: 1px solid #404040;
+        border-radius: 8px;
+        padding: 8px 16px;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    
+    .action-button:hover {
+        background: #2a2a2a;
+        border-color: #ff6b35;
+    }
+    
+    /* Left sidebar */
+    .left-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 120px;
+        height: 100vh;
+        background: #2a2a2a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 0;
+        z-index: 1000;
+        font-size: 11px;
+        color: #ccc;
+    }
+    
+    .sidebar-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 0.8rem;
+        text-align: center;
+        width: 100%;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        color: #888;
+        margin-bottom: 0.2rem;
+        font-size: 10px;
+    }
+    
+    .info-value {
+        color: #fff;
+        font-size: 11px;
+        background: #404040;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    /* Chat messages */
+    .chat-message {
+        margin: 1rem 0;
+        padding: 1rem;
+        border-radius: 8px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .user-message {
+        background: #2a2a2a;
+        border-left: 4px solid #ff6b35;
+    }
+    
+    .assistant-message {
+        background: #2a2a2a;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    /* Dropdown styling */
+    .stSelectbox > div > div {
+        background: #404040 !important;
+        color: white !important;
+        border: 1px solid #505050 !important;
+    }
+    
+    .stSelectbox > div > div:hover {
+        background: #505050 !important;
+    }
+    
+    /* Hide labels */
+    .stSelectbox label {
+        display: none !important;
+    }
+    
+    /* File uploader styling */
+    .stFileUploader > div {
+        background: transparent !important;
+        border: none !important;
+    }
+    
+    .stFileUploader label {
+        display: none !important;
+    }
+    
+    /* Compact text styling */
+    .compact-text {
+        font-size: 12px;
+        color: #888;
+        line-height: 1.4;
+        margin-bottom: 10px;
+    }
+    
+    /* Configuration container styling */
+    .config-container {
+        background: #2a2a2a;
+        border: 1px solid #404040;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 600px;
+    }
+    
+    /* Smaller button styling */
+    .small-button {
+        max-width: 200px;
+        margin: 0 auto;
+    }
+    
+    /* Compact radio and checkbox styling */
+    .stRadio > div {
+        font-size: 12px !important;
+    }
+    
+    .stCheckbox > div {
+        font-size: 12px !important;
+    }
+    
+    .stSelectbox > div {
+        font-size: 12px !important;
+    }
+    
+
+""", unsafe_allow_html=True)
+
+# Initialize session state with a helper function
+def initialize_session_state():
+    """Initialize all session state variables"""
+    defaults = {
+        'analysis_complete': False,
+        'chat_messages': [],
+        'arch_state': None,
+        'analysis_result': None,
+        'gpt_sam_results': None,
+        'uploaded_image_path': None,
+        'interaction_logger': InteractionLogger(),
+        'orchestrator': None,
+        'use_sam': False,
+        'input_mode': "Text Only",
+        'mentor_type': "Socratic Agent" # Added for new logic
+    }
+    
+    for key, default_value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = default_value
+
 # Initialize session state
-if 'analysis_complete' not in st.session_state:
+initialize_session_state()
+
+class MegaArchitecturalMentor:
+    """Main orchestrator class for the Mega Architectural Mentor system"""
+    
+    def __init__(self, api_key: str, use_sam: bool = False):
+        self.api_key = api_key
+        self.use_sam = use_sam and SAM_AVAILABLE
+        self.gpt_sam_analyzer = None
+        self.orchestrator = None
+        
+        # Initialize components
+        self._initialize_components()
+    
+    def _initialize_components(self):
+        """Initialize all system components"""
+        try:
+            # Initialize GPT-SAM analyzer (SAM is optional)
+            self.gpt_sam_analyzer = GPTSAMAnalyzer(self.api_key)
+            print(f"✅ GPT Vision initialized (SAM: {'enabled' if self.use_sam else 'disabled'})")
+            
+            # Initialize orchestrator
+            self.orchestrator = LangGraphOrchestrator(domain="architecture")
+            print("✅ Multi-agent orchestrator initialized")
+            
+        except Exception as e:
+            print(f"❌ Component initialization failed: {e}")
+            raise
+    
+    async def analyze_design(self, design_brief: str, image_path: Optional[str] = None, 
+                           skill_level: str = "intermediate", domain: str = "architecture") -> Dict[str, Any]:
+        """Main analysis pipeline that handles text-only, image-only, and image+text scenarios"""
+        
+        # Step 1: Initialize state
+        state = ArchMentorState()
+        state.current_design_brief = design_brief
+        state.student_profile = StudentProfile(skill_level=skill_level)
+        state.domain = domain
+        
+        # Step 2: Handle image if provided
+        gpt_sam_results = None
+        vision_available = False
+        
+        if image_path and os.path.exists(image_path):
+            vision_available = True
+            artifact = VisualArtifact(
+                id="uploaded_sketch",
+                type="sketch",
+                image_path=image_path
+            )
+            state.current_sketch = artifact
+            state.visual_artifacts.append(artifact)
+            
+            # Step 3: Run vision analysis (if SAM enabled)
+            if self.use_sam and self.gpt_sam_analyzer:
+                try:
+                    gpt_sam_results = self.gpt_sam_analyzer.analyze_image(image_path)
+                    print(f"✅ Vision analysis completed with SAM: {'enabled' if self.use_sam else 'disabled'}")
+                except Exception as e:
+                    print(f"⚠️ Vision analysis failed: {e}")
+                    gpt_sam_results = {"error": f"Vision analysis failed: {str(e)}"}
+            else:
+                # Basic GPT Vision analysis without SAM
+                try:
+                    if self.gpt_sam_analyzer:
+                        gpt_sam_results = self.gpt_sam_analyzer.analyze_with_coordinates(image_path)
+                        print("✅ Basic GPT Vision analysis completed")
+                except Exception as e:
+                    print(f"⚠️ Basic vision analysis failed: {e}")
+                    gpt_sam_results = {"error": f"Basic vision analysis failed: {str(e)}"}
+        
+        # Step 4: Run cognitive analysis
+        analysis_agent = AnalysisAgent(domain)
+        analysis_result = await analysis_agent.process(state)
+        
+        # Step 5: Return comprehensive results
+        return {
+            "state": state,
+            "analysis_result": analysis_result,
+            "gpt_sam_results": gpt_sam_results,
+            "vision_available": vision_available,
+            "sam_enabled": self.use_sam and vision_available
+        }
+    
+    async def process_chat_message(self, user_input: str, state: ArchMentorState) -> Dict[str, Any]:
+        """Process a chat message through the multi-agent system"""
+        if not self.orchestrator:
+            raise Exception("Orchestrator not initialized")
+        
+        # Update state with user message
+        state.messages.append({
+            "role": "user",
+            "content": user_input
+        })
+        
+        # Process through LangGraph workflow
+        result = await self.orchestrator.process_student_input(state)
+        
+        # Update state with assistant response
+        state.messages.append({
+            "role": "assistant",
+            "content": result["response"]
+        })
+        
+        return result
+
+def render_left_sidebar():
+    """Render the left sidebar with app information"""
+    # Get current mode from session state
+    current_mode = st.session_state.get('input_mode', 'Text Only')
+    sam_status = "Enabled" if st.session_state.get('use_sam', False) else "Disabled"
+    
+    st.markdown(f"""
+    <div class="left-sidebar">
+        <div class="sidebar-info">
+            <div class="info-item">
+                <span class="info-label">Mode:</span>
+                <span class="info-value">{current_mode}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">SAM:</span>
+                <span class="info-value">{sam_status}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">Ready</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Add benchmarking section
+    st.markdown("---")
+    st.markdown("**📊 Benchmarking**")
+    
+    # Check if benchmarking results exist
+    benchmark_results_path = Path("benchmarking/results/benchmark_report.json")
+    if benchmark_results_path.exists():
+        st.success("✅ Results available")
+        if st.button("📈 View Dashboard", use_container_width=True):
+            # Launch benchmarking dashboard in new tab
+            import subprocess
+            import sys
+            dashboard_path = Path("benchmarking/benchmark_dashboard.py")
+            subprocess.Popen([
+                sys.executable, "-m", "streamlit", "run", 
+                str(dashboard_path), "--server.port", "8502"
+            ])
+            st.info("🌐 Dashboard opening in new tab...")
+    else:
+        st.warning("⚠️ No results yet")
+        if st.button("🔬 Run Benchmarking", use_container_width=True):
+            # Run benchmarking analysis
+            import subprocess
+            import sys
+            st.info("🧠 Running cognitive benchmarking analysis...")
+            try:
+                result = subprocess.run([
+                    sys.executable, "benchmarking/run_benchmarking.py"
+                ], capture_output=True, text=True)
+                if result.returncode == 0:
+                    st.success("✅ Benchmarking complete! Click 'View Dashboard' to see results.")
+                else:
+                    st.error(f"❌ Benchmarking failed: {result.stderr}")
+            except Exception as e:
+                st.error(f"❌ Error running benchmarking: {str(e)}")
+
+def render_chat_message(message: Dict[str, Any]):
+    """Render a chat message with appropriate styling"""
+    
+    if message["role"] == "user":
+        st.markdown(f"""
+        <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #4CAF50;">
+            <strong>You:</strong><br>
+            {message["content"]}
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        # Get mentor type for display
+        mentor_type = message.get("mentor_type", "Socratic Agent")
+        mentor_icon = "🤖" if mentor_type == "Raw GPT" else "🏗️"
+        mentor_label = f"{mentor_icon} {mentor_type}"
+        
+        st.markdown(f"""
+        <div style="background: #1e1e1e; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
+            <strong>{mentor_label}:</strong><br>
+            {message["content"]}
+        </div>
+        """, unsafe_allow_html=True)
+
+def run_async_analysis(mentor, design_brief: str, temp_image_path: Optional[str], 
+                      skill_level: str) -> Dict[str, Any]:
+    """Run the analysis pipeline asynchronously"""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    try:
+        results = loop.run_until_complete(
+            mentor.analyze_design(
+                design_brief=design_brief,
+                image_path=temp_image_path,
+                skill_level=skill_level,
+                domain="architecture"
+            )
+        )
+        return results
+    finally:
+        loop.close()
+
+def get_raw_gpt_response(user_input: str, project_context: str = "") -> Dict[str, Any]:
+    """Get a direct GPT response for comparison with the Socratic agent"""
+    
+    try:
+        from openai import OpenAI
+        import os
+        
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        
+        # Create a prompt for direct GPT response
+        prompt = f"""
+        You are an architectural expert. Answer this student's question directly and comprehensively:
+        
+        STUDENT QUESTION: "{user_input}"
+        PROJECT CONTEXT: {project_context}
+        
+        Provide a detailed, informative answer that directly addresses their question. 
+        Give specific architectural advice, examples, and technical information.
+        """
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=400,
+            temperature=0.3
+        )
+        
+        raw_response = response.choices[0].message.content.strip()
+        
+        return {
+            "response": raw_response,
+            "metadata": {
+                "response_type": "raw_gpt",
+                "agents_used": ["gpt-4o"],
+                "interaction_type": "direct_answer",
+                "confidence_level": "high",
+                "understanding_level": "high",
+                "engagement_level": "medium",
+                "sources": [],
+                "response_time": 0,
+                "routing_path": "raw_gpt"
+            },
+            "routing_path": "raw_gpt",
+            "classification": {
+                "interaction_type": "direct_answer",
+                "confidence_level": "high",
+                "understanding_level": "high",
+                "engagement_level": "medium"
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ Raw GPT response failed: {e}")
+        return {
+            "response": "I apologize, but I'm unable to provide a response at the moment. Please try again.",
+            "metadata": {
+                "response_type": "error",
+                "agents_used": [],
+                "error": str(e)
+            },
+            "routing_path": "error",
+            "classification": {}
+        }
+
+def process_chat_response(user_input: str) -> Dict[str, Any]:
+    """Process chat response through orchestrator or raw GPT based on mentor type"""
+    
+    print(f"💬 Processing chat response: {user_input[:50]}...")
+    
+    # Get the selected mentor type from session state
+    mentor_type = st.session_state.get('mentor_type', 'Socratic Agent')
+    
+    # Add user message to chat history
+    st.session_state.chat_messages.append({
+        "role": "user",
+        "content": user_input,
+        "timestamp": datetime.now().isoformat()
+    })
+    
+    try:
+        if mentor_type == "Raw GPT":
+            # Use raw GPT for direct comparison
+            print("🤖 Using Raw GPT for direct response...")
+            
+            # Get project context from session state
+            project_context = ""
+            if st.session_state.arch_state and hasattr(st.session_state.arch_state, 'current_design_brief'):
+                project_context = st.session_state.arch_state.current_design_brief
+            
+            result = get_raw_gpt_response(user_input, project_context)
+            
+        else:
+            # Use Socratic Agent (multi-agent system)
+            print("🤖 Using Socratic Agent (multi-agent system)...")
+            
+            # Add user input to arch state
+            if st.session_state.arch_state:
+                st.session_state.arch_state.messages.append({
+                    "role": "user",
+                    "content": user_input
+                })
+            
+            # Process through orchestrator
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            result = loop.run_until_complete(
+                st.session_state.orchestrator.process_student_input(
+                    st.session_state.arch_state
+                )
+            )
+            
+            loop.close()
+        
+        print(f"✅ Response generated: {result.get('response', 'No response')[:100]}...")
+        print(f"✅ Response type: {result.get('metadata', {}).get('response_type', 'Unknown')}")
+        print(f"✅ Agents used: {result.get('metadata', {}).get('agents_used', [])}")
+        
+        # Add assistant response to chat history
+        st.session_state.chat_messages.append({
+            "role": "assistant",
+            "content": result.get("response", "I apologize, but I couldn't generate a response."),
+            "timestamp": datetime.now().isoformat(),
+            "metadata": result.get("metadata", {}),
+            "mentor_type": mentor_type
+        })
+        
+        # Log interaction for data collection
+        if st.session_state.interaction_logger:
+            # Extract metadata for logging
+            metadata = result.get("metadata", {})
+            agents_used = metadata.get("agents_used", [])
+            response_type = metadata.get("response_type", "unknown")
+            routing_path = metadata.get("routing_path", "unknown")
+            cognitive_flags = metadata.get("cognitive_flags", [])
+            confidence_score = metadata.get("confidence_score", 0.5)
+            sources_used = metadata.get("sources", [])
+            context_classification = metadata.get("classification", {})
+            
+            # Get student skill level from session state
+            student_skill_level = "intermediate"  # Default
+            if st.session_state.arch_state and hasattr(st.session_state.arch_state, 'student_profile'):
+                student_skill_level = st.session_state.arch_state.student_profile.skill_level
+            
+            st.session_state.interaction_logger.log_interaction(
+                student_input=user_input,
+                agent_response=result.get("response", ""),
+                routing_path=routing_path,
+                agents_used=agents_used,
+                response_type=response_type,
+                cognitive_flags=cognitive_flags,
+                student_skill_level=student_skill_level,
+                confidence_score=confidence_score,
+                sources_used=sources_used,
+                context_classification=context_classification,
+                metadata=metadata
+            )
+        
+        return result
+        
+    except Exception as e:
+        print(f"❌ Error in process_chat_response: {e}")
+        print(f"❌ Exception in chat processing: {e}")
+        
+        error_response = f"I apologize, but I encountered an error: {str(e)}"
+        
+        # Add error response to chat history
+        st.session_state.chat_messages.append({
+            "role": "assistant",
+            "content": error_response,
+            "timestamp": datetime.now().isoformat(),
+            "metadata": {"response_type": "error", "error": str(e)},
+            "mentor_type": mentor_type
+        })
+        
+        return {
+            "response": error_response,
+            "metadata": {"response_type": "error", "error": str(e)},
+            "routing_path": "error",
+            "classification": {}
+        }
+
+def reset_session():
+    """Reset all session state for new project"""
     st.session_state.analysis_complete = False
-if 'chat_messages' not in st.session_state:
     st.session_state.chat_messages = []
-if 'arch_state' not in st.session_state:
     st.session_state.arch_state = None
-if 'analysis_result' not in st.session_state:
     st.session_state.analysis_result = None
-if 'gpt_sam_results' not in st.session_state:
     st.session_state.gpt_sam_results = None
-if 'uploaded_image_path' not in st.session_state:
     st.session_state.uploaded_image_path = None
-if 'interaction_logger' not in st.session_state:
-    st.session_state.interaction_logger = InteractionLogger()
-if 'orchestrator' not in st.session_state:
     st.session_state.orchestrator = None
+    st.session_state.interaction_logger = InteractionLogger()
+    # Reset input mode and SAM settings
+    st.session_state.input_mode = "Text Only"
+    st.session_state.use_sam = False
+    st.session_state.mentor_type = "Socratic Agent" # Reset mentor type
+    st.rerun()
 
 def main():
-    """Main Streamlit application"""
+    """Main Streamlit application with integrated chat interface"""
     
-    st.title("🏗️ Mega Architectural Mentor")
-    st.markdown("### **Unified AI System: Vision Analysis + Multi-Agent Cognitive Enhancement**")
-    st.markdown("---")
+    # Initialize session state if not already done
+    initialize_session_state()
     
     # Sidebar configuration
     with st.sidebar:
@@ -87,25 +833,22 @@ def main():
             if not api_key:
                 st.warning("⚠️ Please set OPENAI_API_KEY or enter your API key")
         
-        # Student profile
-        st.subheader("👤 Student Profile")
-        skill_level = st.selectbox(
-            "Skill Level", 
-            ["beginner", "intermediate", "advanced"],
-            index=1
-        )
-        
-        domain = st.selectbox(
-            "Domain",
-            ["architecture", "game_design"],
-            index=0
-        )
-        
-        # Show dynamic skill level if detected
-        if st.session_state.arch_state and hasattr(st.session_state.arch_state, 'student_profile'):
-            detected_skill = st.session_state.arch_state.student_profile.skill_level
-            if detected_skill != skill_level:
-                st.info(f"🎯 AI detected skill level: **{detected_skill.title()}**")
+        # Current session info
+        if st.session_state.analysis_complete:
+            st.subheader("📊 Current Session")
+            input_mode = st.session_state.get('input_mode', 'Text Only')
+            mentor_type = st.session_state.get('mentor_type', 'Socratic Agent')
+            
+            st.info(f"**Mode**: {input_mode}")
+            if mentor_type == "Socratic Agent":
+                st.success(f"**Mentor**: {mentor_type} 🤖")
+            else:
+                st.warning(f"**Mentor**: {mentor_type} 🤖")
+            
+            if st.session_state.use_sam:
+                st.success("**SAM**: Enabled")
+            else:
+                st.info("**SAM**: Disabled")
         
         # System status
         if api_key:
@@ -114,7 +857,12 @@ def main():
                 # Test GPT-SAM
                 gpt_sam = GPTSAMAnalyzer(api_key)
                 st.success("GPT Vision: Ready")
-                st.success("SAM: Ready")
+                
+                # Show SAM availability
+                if SAM_AVAILABLE:
+                    st.success("SAM: Available")
+                else:
+                    st.warning("SAM: Not available")
                 
                 # Test agents
                 if st.session_state.orchestrator:
@@ -126,17 +874,23 @@ def main():
                 st.error(f"System Error: {e}")
         
         # Pipeline information
-        st.subheader("🔄 Unified Pipeline")
+        st.subheader("🔄 Flexible Analysis Pipeline")
         st.markdown("""
-        **Step 1**: 🧠 GPT Vision analyzes image and provides coordinates
+        **Text-Only Mode**:
+        - 📝 Text analysis and cognitive assessment
+        - 🤖 Multi-agent guidance
+        - 📊 Learning progression tracking
         
-        **Step 2**: 🎨 SAM segments based on GPT coordinates
+        **Image + Text Mode**:
+        - 🧠 GPT Vision analyzes image
+        - 🎨 SAM segmentation (optional)
+        - 📝 Text + visual analysis
+        - 🤖 Multi-agent enhancement
         
-        **Step 3**: 🔍 Analysis Agent processes results
-        
-        **Step 4**: 🤖 Multi-Agent System provides cognitive enhancement
-        
-        **Step 5**: 📊 Display comprehensive results and insights
+        **Image-Only Mode**:
+        - 🧠 GPT Vision analysis
+        - 🎨 SAM segmentation (optional)
+        - 🤖 Multi-agent interpretation
         """)
         
         # Data export section
@@ -167,191 +921,257 @@ def main():
         
         # Reset button
         if st.button("🔄 Start New Project"):
-            st.session_state.analysis_complete = False
-            st.session_state.chat_messages = []
-            st.session_state.arch_state = None
-            st.session_state.analysis_result = None
-            st.session_state.gpt_sam_results = None
-            st.session_state.uploaded_image_path = None
-            st.session_state.orchestrator = None
-            st.session_state.interaction_logger = InteractionLogger()  # Create new logger for new session
-            st.rerun()
+            reset_session()
     
-    # Main interface
+    if not api_key:
+        st.error("⚠️ Please set OPENAI_API_KEY environment variable")
+        return
+    
+    # Main chat interface
     if not st.session_state.analysis_complete:
-        # PHASE 1: INITIAL ANALYSIS
-        st.header("🔍 Phase 1: Design Analysis")
-        st.markdown("Upload your design and brief to begin the comprehensive AI analysis.")
+        # Initialize input_mode from session state or set default
+        if 'input_mode' not in st.session_state:
+            st.session_state.input_mode = "Text Only"
+        input_mode = st.session_state.input_mode
         
-        col1, col2 = st.columns([1, 1])
+        # Top section with greeting
+        st.markdown("""
+        <div class="top-section">
+        <div class="greeting">
+            Welcome to your AI Architectural Mentor!
+        </div>
+        <p style="text-align: center; color: #888; margin-top: 1rem;">
+            Describe your project or upload an image to get started. You can work with text descriptions, 
+            upload images, or combine both for comprehensive guidance.
+        </p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        with col1:
-            st.subheader("📝 Design Brief")
-            design_brief = st.text_area(
-                "Describe your design project:",
-                placeholder="Example: Design a community center for 200 people with accessible entrances, flexible meeting spaces, and consideration for Nordic lighting conditions...",
-                height=150
-            )
+        # Compact configuration section
+        with st.container():
+            st.markdown("""
+            <div class="compact-text" style="text-align: center; margin-bottom: 15px;">
+                <strong>💡 Quick Examples:</strong><br>
+                <strong>Text:</strong> "I'm designing a sustainable office building"<br>
+                <strong>Image+Text:</strong> Upload sketch + "How can I improve circulation?"<br>
+                <strong>Image Only:</strong> Upload floor plan for analysis
+            </div>
+            """, unsafe_allow_html=True)
             
-            st.subheader("🖼️ Upload Design")
-            uploaded_file = st.file_uploader(
-                "Upload your architectural drawing or floor plan",
-                type=['png', 'jpg', 'jpeg'],
-                help="Any hand-drawn or digital architectural drawing"
-            )
-            
-            if uploaded_file:
-                image = Image.open(uploaded_file)
-                st.image(image, caption="Your Design", use_container_width=True)
+            # Analysis configuration in a compact column
+            with st.columns([1, 2, 1])[1]:  # Center column
+                st.markdown("""
+                <div class="compact-text" style="font-size: 14px; font-weight: bold; margin-bottom: 10px; text-align: center;">
+                    🔧 Analysis Configuration
+                </div>
+                """, unsafe_allow_html=True)
                 
-                # Image info
-                width, height = image.size
-                st.info(f"📐 Image dimensions: {width} × {height} pixels")
-            
-            # Quick test scenarios
-            st.subheader("🧪 Quick Test Scenarios")
-            col_test1, col_test2 = st.columns(2)
-            
-            with col_test1:
-                if st.button("📝 Test: Nordic Community Center"):
-                    design_brief = "Design a community center for 200 people in a Nordic country with central gathering space, considering limited natural light and accessibility requirements"
-                    st.rerun()
+                # Input mode selection
+                input_mode = st.radio(
+                    "Choose your input mode:",
+                    ["Text Only", "Image + Text", "Image Only"],
+                    index=0,
+                    help="Text Only: Describe your project without images\nImage + Text: Upload image and describe project\nImage Only: Analyze image without text description"
+                )
+                # Store input_mode in session state
+                st.session_state.input_mode = input_mode
                 
-                if st.button("♿ Test: Accessibility Focus"):
-                    design_brief = "Design a community center with universal design principles, ensuring accessibility for all users including wheelchair access and visual/hearing accommodations"
-                    st.rerun()
-            
-            with col_test2:
-                if st.button("🏗️ Test: Complex Brief"):
-                    design_brief = "Design a 2000 sq ft community center for 200 people with accessible entrances, flexible meeting spaces, commercial kitchen, childcare area, and parking for 50 cars in an urban setting"
-                    st.rerun()
+                # SAM analysis option (only show if image is involved)
+                use_sam = False
+                if input_mode in ["Image + Text", "Image Only"]:
+                    use_sam = st.checkbox(
+                        "🔍 Enable SAM Segmentation Analysis",
+                        value=st.session_state.get('use_sam', False),
+                        help="SAM provides precise spatial segmentation of architectural elements. Disable for faster analysis."
+                    )
+                # Store use_sam in session state
+                st.session_state.use_sam = use_sam
                 
-                if st.button("🎮 Test: Game Design"):
-                    design_brief = "Design a platformer level with multiple paths to the goal, considering player progression and challenge curve"
-                    st.rerun()
+                # Mentor type selection
+                mentor_type = st.selectbox(
+                    "🤖 Mentor Type:",
+                    ["Socratic Agent", "Raw GPT"],
+                    index=0,
+                    help="Socratic Agent: Multi-agent system that challenges and guides thinking\nRaw GPT: Direct GPT responses for comparison"
+                )
+                # Store mentor_type in session state
+                st.session_state.mentor_type = mentor_type
+                
+                # Template design prompts
+                template_prompts = {
+                    "Select a template...": "",
+                    "🏢 Sustainable Office Building": "I'm designing a sustainable office building for a tech company. The building should accommodate 200 employees with flexible workspaces, meeting rooms, and common areas. I want to focus on energy efficiency, natural lighting, and creating a collaborative environment. The site is in an urban area with limited green space.",
+                    "🏫 Community Learning Center": "I'm creating a community learning center that will serve as a hub for education, workshops, and community events. The building needs to include classrooms, a library, multipurpose spaces, and outdoor learning areas. I want it to be welcoming to all ages and accessible to everyone in the community."
+                }
+                
+                selected_template = st.selectbox(
+                    "📋 Quick Start Templates:",
+                    list(template_prompts.keys()),
+                    help="Choose a template to get started quickly, or write your own description below"
+                )
+                
+                # Skill level selection
+                skill_level = st.selectbox(
+                    "🎯 Your Skill Level:",
+                    ["beginner", "intermediate", "advanced"],
+                    index=1,
+                    help="This helps the AI provide appropriate guidance"
+                )
         
-        with col2:
-            st.subheader("🚀 Ready to Begin?")
+        # Main input area with integrated functionality - confined to center column
+        with st.columns([1, 2, 1])[1]:  # Center column
+            # File uploader (only show if image mode is selected)
+            uploaded_file = None
+            if input_mode in ["Image + Text", "Image Only"]:
+                uploaded_file = st.file_uploader(
+                    "📁 Upload your architectural drawing",
+                    type=['png', 'jpg', 'jpeg'],
+                    help="Upload a clear image of your architectural design, plan, or sketch"
+                )
             
-            if st.button("🔍 Analyze My Design", type="primary", disabled=not design_brief.strip() or not api_key):
-                if design_brief.strip() and api_key:
-                    with st.spinner("🧠 Running comprehensive AI analysis... This may take 1-2 minutes"):
-                        progress_bar = st.progress(0)
-                        
-                        try:
-                            # Step 1: Initialize state and save image
-                            progress_bar.progress(10)
-                            st.caption("Initializing system...")
-                            
-                            # Create state
-                            state = ArchMentorState()
-                            state.current_design_brief = design_brief
-                            state.student_profile = StudentProfile(skill_level=skill_level)
-                            state.domain = domain
-                            
-                            # Handle uploaded image
-                            temp_image_path = None
-                            if uploaded_file:
-                                with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
-                                    image.save(tmp_file.name)
-                                    temp_image_path = tmp_file.name
+            # Text input area
+            design_brief = ""
+            if input_mode in ["Text Only", "Image + Text"]:
+                # Get template text if selected
+                template_text = template_prompts.get(selected_template, "")
+                placeholder_text = "Describe your architectural project here..." if input_mode == "Text Only" else "Describe your project along with the uploaded image..."
+                
+                design_brief = st.text_area(
+                    "📝 Project Description:",
+                    value=template_text,
+                    placeholder=placeholder_text,
+                    height=120,
+                    help="Provide details about your architectural project, design goals, constraints, or specific questions"
+                )
+            
+            # Analysis button
+            if st.button("🚀 Start Analysis", type="primary", use_container_width=False):
+                    # Validate input based on selected mode
+                    if input_mode == "Text Only" and not design_brief.strip():
+                        st.error("📝 Please describe your project for text-only analysis")
+                    elif input_mode in ["Image + Text", "Image Only"] and not uploaded_file:
+                        st.error("🖼️ Please upload an image for image analysis")
+                    elif input_mode == "Image + Text" and not design_brief.strip():
+                        st.error("📝 Please describe your project along with the image")
+                    else:
+                        with st.spinner("🧠 Analyzing your design..."):
+                            try:
+                                # Initialize Mega Mentor
+                                mentor = MegaArchitecturalMentor(api_key, use_sam)
                                 
-                                st.session_state.uploaded_image_path = temp_image_path
+                                # Handle image if provided
+                                temp_image_path = None
+                                if uploaded_file and input_mode in ["Image + Text", "Image Only"]:
+                                    image = Image.open(uploaded_file)
+                                    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                                        image.save(tmp_file.name)
+                                        temp_image_path = tmp_file.name
+                                    st.session_state.uploaded_image_path = temp_image_path
                                 
-                                artifact = VisualArtifact(
-                                    id="uploaded_sketch",
-                                    type="sketch",
-                                    image_path=temp_image_path
-                                )
-                                state.current_sketch = artifact
-                                state.visual_artifacts.append(artifact)
-                            
-                            # Step 2: GPT Vision + SAM Analysis
-                            progress_bar.progress(30)
-                            st.caption("Running GPT Vision + SAM analysis...")
-                            
-                            gpt_sam = GPTSAMAnalyzer(api_key)
-                            if temp_image_path:
-                                gpt_sam_results = gpt_sam.analyze_image(temp_image_path)
-                                st.session_state.gpt_sam_results = gpt_sam_results
-                            else:
-                                gpt_sam_results = {"error": "No image provided"}
-                                st.session_state.gpt_sam_results = gpt_sam_results
-                            
-                            # Step 3: Analysis Agent
-                            progress_bar.progress(60)
-                            st.caption("Running cognitive analysis...")
-                            
-                            analysis_agent = AnalysisAgent(domain)
-                            loop = asyncio.new_event_loop()
-                            asyncio.set_event_loop(loop)
-                            
-                            analysis_result = loop.run_until_complete(analysis_agent.process(state))
-                            
-                            # Step 4: Initialize orchestrator
-                            progress_bar.progress(80)
-                            st.caption("Initializing multi-agent system...")
-                            
-                            orchestrator = LangGraphOrchestrator(domain)
-                            st.session_state.orchestrator = orchestrator
-                            
-                            # Store results
-                            st.session_state.arch_state = state
-                            st.session_state.analysis_result = analysis_result
-                            st.session_state.analysis_complete = True
-                            
-                            progress_bar.progress(100)
-                            st.caption("Analysis complete!")
-                            
-                            st.success("🎉 Comprehensive Analysis Complete! Ready for cognitive enhancement.")
-                            st.rerun()
-                            
-                        except Exception as e:
-                            st.error(f"❌ Analysis failed: {str(e)}")
-                            st.write("Please check your API keys and try again.")
-                else:
-                    if not design_brief.strip():
-                        st.info("👆 Enter a design brief above to start the analysis")
-                    if not api_key:
-                        st.info("👆 Enter your OpenAI API key to analyze your design")
-        
-        # Show what the system will do
-        if design_brief.strip() and api_key:
-            st.markdown("---")
-            st.subheader("🔮 What the Mega System Will Do")
-            
-            col_info1, col_info2 = st.columns(2)
-            
-            with col_info1:
-                st.markdown("**🤖 AI Agents That Will Help You:**")
-                st.markdown("• **🔍 Analysis Agent**: Detects thinking gaps and learning opportunities")
-                st.markdown("• **📚 Domain Expert**: Provides architectural knowledge and precedents")
-                st.markdown("• **🤔 Socratic Tutor**: Asks guiding questions to develop understanding")
-                st.markdown("• **🧠 Cognitive Enhancement**: Challenges assumptions and provides advanced thinking")
-                st.markdown("• **🔍 Context Agent**: Understands your learning state and adapts responses")
-            
-            with col_info2:
-                st.markdown("**🎯 Vision Analysis Capabilities:**")
-                st.markdown("• **🧠 GPT Vision**: Analyzes your drawings and provides detailed insights")
-                st.markdown("• **🎨 SAM Segmentation**: Creates precise masks of architectural elements")
-                st.markdown("• **📊 Spatial Analysis**: Understands room relationships and circulation")
-                st.markdown("• **💡 Design Insights**: Identifies strengths and improvement opportunities")
-                st.markdown("• **♿ Accessibility Analysis**: Checks for universal design principles")
+                                # Handle text input
+                                if input_mode == "Image Only":
+                                    design_brief = "Analyze this architectural drawing"
+                                elif not design_brief.strip():
+                                    design_brief = "Please analyze my architectural project"
+                                
+                                # Run analysis
+                                results = run_async_analysis(mentor, design_brief, temp_image_path, skill_level)
+                                
+                                # Store results
+                                st.session_state.arch_state = results["state"]
+                                st.session_state.analysis_result = results["analysis_result"]
+                                st.session_state.gpt_sam_results = results["gpt_sam_results"]
+                                st.session_state.orchestrator = mentor.orchestrator
+                                st.session_state.analysis_complete = True
+                                st.session_state.use_sam = use_sam
+                                st.session_state.input_mode = input_mode
+                                # mentor_type is already set from the dropdown selection
+                                
+                                st.success("✅ Analysis complete! Let's continue our conversation.")
+                                st.rerun()
+                                
+                            except Exception as e:
+                                st.error(f"❌ Analysis failed: {str(e)}")
     
     else:
-        # PHASE 2: COMPREHENSIVE RESULTS + INTERACTIVE CHAT
+        # Chat interface phase - same layout as initial page
         
-        # Top row: Project overview
-        st.header("📋 Your Project")
+        # Mentor acknowledgment - show above chat after initial analysis
+        if st.session_state.analysis_complete and len(st.session_state.chat_messages) == 0:
+            with st.columns([1, 2, 1])[1]:  # Center column
+                st.markdown("---")
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                            padding: 20px; border-radius: 10px; margin: 20px 0; 
+                            border-left: 5px solid #4CAF50;">
+                    <div style="color: white; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                        🎓 Mentor Ready
+                    </div>
+                    <div style="color: #f0f0f0; font-size: 14px; line-height: 1.5;">
+                        I've analyzed your <strong>{building_type}</strong> project and identified key areas for exploration. 
+                        I'm ready to help you with specific questions about design improvements, technical requirements, 
+                        precedents, or any aspect you'd like to explore further. What would you like to focus on?
+                    </div>
+                </div>
+                """.format(
+                    building_type=st.session_state.analysis_result.get('text_analysis', {}).get('building_type', 'architectural').title()
+                ), unsafe_allow_html=True)
         
-        col_brief, col_image = st.columns([2, 1])
-        
-        with col_brief:
-            brief = st.session_state.arch_state.current_design_brief
-            st.markdown(f"**Design Brief:** {brief}")
+        # Chat interface - confined to center column
+        with st.columns([1, 2, 1])[1]:  # Center column
+            # Display chat messages
+            for message in st.session_state.chat_messages:
+                render_chat_message(message)
             
-            # Analysis summary
+            # Chat input with integrated file upload capability
+            # File upload for additional images during conversation
+            additional_image = st.file_uploader(
+                "📎 Add image to conversation (optional)",
+                type=['png', 'jpg', 'jpeg'],
+                help="Upload additional images to discuss during the conversation"
+            )
+            
+            # Chat input
+            user_input = st.chat_input("Ask about improvements, precedents, or request a review...")
+            
+            if user_input:
+                # Generate response
+                with st.spinner("🧠 Thinking..."):
+                    try:
+                        # Process through LangGraph workflow (this already handles chat history and logging)
+                        result = process_chat_response(user_input)
+                        
+                    except Exception as e:
+                        print(f"❌ Exception in chat processing: {str(e)}")
+                        import traceback
+                        print(f"❌ Full traceback: {traceback.format_exc()}")
+                        
+                        # Add error response to chat history
+                        st.session_state.chat_messages.append({
+                            "role": "assistant",
+                            "content": "I'd love to help with that. Can you be more specific about what aspect you'd like to explore?",
+                            "timestamp": datetime.now().isoformat(),
+                            "metadata": {"response_type": "error_fallback"},
+                            "mentor_type": st.session_state.get('mentor_type', 'Socratic Agent')
+                        })
+                
+                st.rerun()
+        
+        # Analysis results section - confined to center column below chat
+        with st.columns([1, 2, 1])[1]:  # Center column
+            st.markdown("---")
+            st.markdown("""
+            <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;">
+                📊 Analysis Results
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Get analysis data
             result = st.session_state.analysis_result
+            input_mode = st.session_state.get('input_mode', 'Text Only')
+            gpt_sam_results = st.session_state.gpt_sam_results
+            
+            # Analysis summary metrics
             col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
             
             with col_metric1:
@@ -367,28 +1187,45 @@ def main():
                 st.metric("Project Type", building_type.title())
             
             with col_metric4:
-                gpt_sam_results = st.session_state.gpt_sam_results
-                if gpt_sam_results and 'error' not in gpt_sam_results:
+                if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:
                     spatial_elements = gpt_sam_results.get('gpt_analysis', {}).get('spatial_elements', [])
                     st.metric("Spatial Elements", len(spatial_elements))
                 else:
-                    st.metric("Vision Analysis", "Not available")
-        
-        with col_image:
-            if st.session_state.uploaded_image_path:
-                st.image(st.session_state.uploaded_image_path, caption="Your Design", use_container_width=True)
-        
-        st.markdown("---")
-        
-        # Main content area
-        col_analysis, col_chat = st.columns([1, 2])
-        
-        with col_analysis:
-            st.subheader("🧠 Comprehensive Analysis Results")
+                    mode_text = "Text Only" if input_mode == "Text Only" else "Not available"
+                    st.metric("Vision Analysis", mode_text)
             
-            # GPT-SAM Results
-            gpt_sam_results = st.session_state.gpt_sam_results
-            if gpt_sam_results and 'error' not in gpt_sam_results:
+            # Design brief and image
+            col_brief, col_image = st.columns([2, 1])
+            
+            with col_brief:
+                brief = st.session_state.arch_state.current_design_brief
+                st.markdown(f"**Design Brief:** {brief}")
+            
+            with col_image:
+                if st.session_state.uploaded_image_path and input_mode in ["Image + Text", "Image Only"]:
+                    st.image(st.session_state.uploaded_image_path, caption="Your Design", use_container_width=True)
+                elif input_mode == "Text Only":
+                    st.info("📝 **Text-Only Analysis**: No image uploaded for this session")
+            
+            # Design suggestions from analysis (only show if image was used and suggestions available)
+            if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:
+                gpt_analysis = gpt_sam_results.get('gpt_analysis', {})
+                design_insights = gpt_analysis.get('design_insights', {})
+                suggestions = design_insights.get('suggestions', [])
+                
+                if suggestions:
+                    st.markdown("---")
+                    st.markdown("""
+                    <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;">
+                        💡 Design Suggestions
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    for i, suggestion in enumerate(suggestions[:5], 1):
+                        st.markdown(f"**{i}.** {suggestion}")
+            
+            # GPT-SAM Results (only show if image was used)
+            if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:
                 with st.expander("🤖 GPT Vision + SAM Analysis", expanded=True):
                     st.subheader("🎨 Vision Analysis Results")
                     
@@ -446,91 +1283,111 @@ def main():
                     if sam_results and 'error' not in sam_results:
                         st.write(f"**🎨 SAM Segments Created:** {sam_results.get('num_segments', 0)}")
             
-            # Cognitive Analysis
-            result = st.session_state.analysis_result
-            cognitive_flags = result.get('cognitive_flags', [])
-            synthesis = result.get('synthesis', {})
-            
-            with st.expander("🧠 Cognitive Analysis", expanded=True):
-                if cognitive_flags:
-                    st.warning("🚩 Areas for Cognitive Development Detected:")
-                    
-                    flag_explanations = {
-                        "needs_accessibility_guidance": "♿ **Accessibility Awareness**: Consider universal design principles",
-                        "needs_spatial_thinking_support": "🏗️ **Spatial Thinking**: Think about how spaces connect and flow",
-                        "needs_brief_clarification": "📝 **Brief Development**: More specific requirements needed",
-                        "needs_basic_guidance": "📚 **Foundational**: Building fundamental understanding",
-                        "needs_public_space_consideration": "🏛️ **Public Space**: Consider community interaction patterns",
-                        "needs_program_clarification": "📋 **Program**: Clarify functional requirements",
-                        "ready_for_advanced_challenge": "🎯 **Advanced Ready**: Can handle complex challenges",
-                        "showing_growth": "📈 **Growth Detected**: Demonstrating learning progression",
-                        "stuck_on_topic": "🔄 **Pattern**: Returning to same topic - trying new approach"
-                    }
-                    
-                    for flag in cognitive_flags:
-                        explanation = flag_explanations.get(flag, f"• **{flag.replace('_', ' ').title()}**")
-                        st.markdown(explanation)
-                else:
-                    st.success("Strong cognitive awareness demonstrated!")
+            # Dynamic Cognitive Analysis (based on latest interaction)
+            if st.session_state.chat_messages:
+                # Get the latest assistant message to analyze current cognitive state
+                latest_assistant_msg = None
+                for msg in reversed(st.session_state.chat_messages):
+                    if msg.get('role') == 'assistant':
+                        latest_assistant_msg = msg
+                        break
                 
-                # Learning opportunities
-                opportunities = synthesis.get('learning_opportunities', [])
-                if opportunities:
-                    st.write("**🎯 Learning Opportunities:**")
-                    for opp in opportunities:
-                        st.write(f"• {opp}")
-            
-            # Text Analysis
-            text_analysis = result.get('text_analysis', {})
-            if text_analysis:
-                with st.expander("📝 Text Brief Analysis", expanded=False):
-                    col_text1, col_text2 = st.columns(2)
+                if latest_assistant_msg:
+                    metadata = latest_assistant_msg.get('metadata', {})
+                    cognitive_flags = metadata.get('cognitive_flags', [])
+                    response_type = metadata.get('response_type', '')
                     
-                    with col_text1:
-                        st.write(f"**Building Type:** {text_analysis.get('building_type', 'unknown').title()}")
-                        st.write(f"**Complexity:** {text_analysis.get('complexity', 'unknown')}")
-                        st.write(f"**Detail Level:** {text_analysis.get('detail_level', 'unknown')}")
-                        st.write(f"**Word Count:** {text_analysis.get('word_count', 0)}")
-                    
-                    with col_text2:
-                        requirements = text_analysis.get('program_requirements', [])
-                        st.write(f"**Requirements Found:** {len(requirements)}")
-                        if requirements:
-                            st.write("**Program Elements:**")
-                            for req in requirements[:5]:
-                                st.write(f"• {req}")
-                        
-                        constraints = text_analysis.get('constraints', [])
-                        if constraints:
-                            st.write(f"**Constraints:** {', '.join(constraints)}")
-            
-            # Skill Assessment
-            skill_assessment = result.get('skill_assessment', {})
-            if skill_assessment:
-                with st.expander("🎯 Dynamic Skill Assessment", expanded=False):
-                    col_skill1, col_skill2 = st.columns(2)
-                    
-                    with col_skill1:
-                        detected = skill_assessment.get('detected_level', 'unknown')
-                        previous = skill_assessment.get('previous_level', 'unknown')
-                        updated = skill_assessment.get('updated', False)
-                        
-                        st.write(f"**Detected Level:** {detected.title()}")
-                        st.write(f"**Previous Level:** {previous.title()}")
-                        
-                        if updated:
-                            st.success(f"Skill level updated: {previous} → {detected}")
+                    with st.expander("🧠 Current Cognitive Analysis", expanded=False):
+                        if cognitive_flags:
+                            st.warning("🚩 Areas for Cognitive Development Detected:")
+                            
+                            flag_explanations = {
+                                "needs_accessibility_guidance": "♿ **Accessibility Awareness**: Consider universal design principles",
+                                "needs_spatial_thinking_support": "🏗️ **Spatial Thinking**: Think about how spaces connect and flow",
+                                "needs_brief_clarification": "📝 **Brief Development**: More specific requirements needed",
+                                "needs_basic_guidance": "📚 **Foundational**: Building fundamental understanding",
+                                "needs_public_space_consideration": "🏛️ **Public Space**: Consider community interaction patterns",
+                                "needs_program_clarification": "📋 **Program**: Clarify functional requirements",
+                                "ready_for_advanced_challenge": "🎯 **Advanced Ready**: Can handle complex challenges",
+                                "showing_growth": "📈 **Growth Detected**: Demonstrating learning progression",
+                                "stuck_on_topic": "🔄 **Pattern**: Returning to same topic - trying new approach"
+                            }
+                            
+                            for flag in cognitive_flags:
+                                explanation = flag_explanations.get(flag, f"• **{flag.replace('_', ' ').title()}**")
+                                st.markdown(explanation)
                         else:
-                            st.info(f"Skill level confirmed: {detected}")
+                            st.success("Strong cognitive awareness demonstrated!")
+                        
+                        # Show response type and educational intent
+                        if response_type:
+                            st.info(f"**Response Type**: {response_type.replace('_', ' ').title()}")
+                        
+                        # Show learning opportunities based on response type
+                        if response_type in ['challenging_question', 'exploratory_question', 'clarifying_guidance']:
+                            st.write("**🎯 Current Learning Focus:**")
+                            if response_type == 'challenging_question':
+                                st.write("• Deepening critical thinking")
+                                st.write("• Challenging assumptions")
+                            elif response_type == 'exploratory_question':
+                                st.write("• Exploring new possibilities")
+                                st.write("• Creative thinking development")
+                            elif response_type == 'clarifying_guidance':
+                                st.write("• Building foundational understanding")
+                                st.write("• Clarifying concepts")
+            
+            # Dynamic Skill Assessment (based on latest interaction)
+            if st.session_state.chat_messages:
+                # Get the latest assistant message for skill assessment
+                latest_assistant_msg = None
+                for msg in reversed(st.session_state.chat_messages):
+                    if msg.get('role') == 'assistant':
+                        latest_assistant_msg = msg
+                        break
+                
+                if latest_assistant_msg:
+                    metadata = latest_assistant_msg.get('metadata', {})
+                    classification = metadata.get('classification', {})
+                    confidence_level = classification.get('confidence_level', 'medium')
+                    understanding_level = classification.get('understanding_level', 'medium')
+                    engagement_level = classification.get('engagement_level', 'medium')
                     
-                    with col_skill2:
-                        confidence = skill_assessment.get('confidence', 0)
-                        st.write(f"**Assessment Confidence:** {confidence:.1%}")
-                        st.progress(confidence)
+                    with st.expander("🎯 Current Learning Assessment", expanded=False):
+                        col_skill1, col_skill2 = st.columns(2)
+                        
+                        with col_skill1:
+                            st.write(f"**Confidence Level:** {confidence_level.title()}")
+                            st.write(f"**Understanding Level:** {understanding_level.title()}")
+                            st.write(f"**Engagement Level:** {engagement_level.title()}")
+                            
+                            # Show current skill level from session state
+                            if st.session_state.arch_state and hasattr(st.session_state.arch_state, 'student_profile'):
+                                current_skill = st.session_state.arch_state.student_profile.skill_level
+                                st.info(f"**Current Skill Level:** {current_skill.title()}")
+                        
+                        with col_skill2:
+                            # Convert levels to confidence scores for visualization
+                            level_scores = {
+                                'low': 0.3, 'medium': 0.6, 'high': 0.9,
+                                'uncertain': 0.2, 'confident': 0.7, 'overconfident': 0.8
+                            }
+                            
+                            confidence_score = level_scores.get(confidence_level, 0.5)
+                            st.write(f"**Confidence Score:** {confidence_score:.1%}")
+                            st.progress(confidence_score)
+                            
+                            # Show interaction insights
+                            agents_used = metadata.get('agents_used', [])
+                            if agents_used:
+                                st.write(f"**Agents Used:** {', '.join(agents_used)}")
             
             # Download results
             st.markdown("---")
-            st.subheader("📥 Download Results")
+            st.markdown("""
+            <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;">
+                📥 Download Results
+            </div>
+            """, unsafe_allow_html=True)
             
             # Create comprehensive JSON for download
             download_data = {
@@ -552,151 +1409,14 @@ def main():
                 data=json_str,
                 file_name=f"mega_architectural_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
                 mime="application/json",
-                help="Download complete analysis results including vision analysis and cognitive assessment"
+                help="Download complete analysis results including vision analysis and cognitive assessment",
+                use_container_width=False
             )
-        
-        with col_chat:
-            st.subheader("🤖 AI Mentor Conversation")
-            
-            # Initialize chat if not started
-            if not st.session_state.chat_messages:
-                # Generate initial response based on analysis
-                cognitive_flags = result.get('cognitive_flags', [])
-                building_type = result.get('text_analysis', {}).get('building_type', 'project')
-                
-                if cognitive_flags:
-                    initial_message = f"I've analyzed your {building_type} design using both vision analysis and cognitive assessment. I notice some opportunities for development, particularly around {cognitive_flags[0].replace('_', ' ')}. What specific aspect would you like to explore first?"
-                else:
-                    initial_message = f"Excellent work on your {building_type} design! The comprehensive analysis shows strong development. What aspect would you like to discuss or improve further?"
-                
-                st.session_state.chat_messages = [
-                    {
-                        "role": "assistant",
-                        "content": initial_message,
-                        "type": "initial_analysis"
-                    }
-                ]
-            
-            # Display chat messages with enhanced formatting
-            chat_container = st.container()
-            with chat_container:
-                for message in st.session_state.chat_messages:
-                    if message["role"] == "user":
-                        with st.chat_message("user"):
-                            st.write(message["content"])
-                    
-                    elif message["role"] == "assistant":
-                        with st.chat_message("assistant"):
-                            st.write(message["content"])
-                            
-                            # Enhanced agent info display
-                            response_type = message.get("type", "unknown")
-                            routing_path = message.get("routing_path", "unknown")
-                            sources = message.get("sources", [])
-                            
-                            # Show response type with appropriate emoji
-                            type_display = {
-                                "knowledge_primary": "📚 Knowledge Response",
-                                "knowledge_enhanced_socratic": "📚🤔 Knowledge + Questions",
-                                "cognitive_primary": "🧠 Cognitive Challenge",
-                                "socratic_primary": "🤔 Socratic Guidance",
-                                "multi_agent": "🤖 Multi-Agent Analysis",
-                                "initial_analysis": "🔍 Initial Analysis"
-                            }
-                            
-                            if response_type in type_display:
-                                st.caption(f"**{type_display[response_type]}**")
-                            
-                            # Show knowledge sources if available
-                            if sources:
-                                with st.expander("📚 Sources Referenced"):
-                                    for source in sources[:3]:
-                                        st.write(f"• {source}")
-            
-            # Enhanced chat input with examples
-            user_input = st.chat_input("Ask about improvements, precedents, standards, or request a review...")
-            
-            if user_input:
-                # Add user message
-                st.session_state.chat_messages.append({
-                    "role": "user", 
-                    "content": user_input
-                })
-                
-                # Update conversation state
-                st.session_state.arch_state.messages.append({
-                    "role": "user",
-                    "content": user_input
-                })
-                
-                # Generate multi-agent response
-                with st.spinner("🧠 AI agents collaborating..."):
-                    try:
-                        # Process through LangGraph workflow
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        
-                        result = loop.run_until_complete(
-                            st.session_state.orchestrator.process_student_input(
-                                st.session_state.arch_state
-                            )
-                        )
-                        
-                        # Add enhanced response
-                        st.session_state.chat_messages.append({
-                            "role": "assistant",
-                            "content": result["response"],
-                            "type": result["metadata"]["response_type"],
-                            "routing_path": result["routing_path"],
-                            "agents_used": result["metadata"]["agents_used"],
-                            "sources": result["metadata"]["sources"],
-                            "classification": result["classification"]
-                        })
-                        
-                        # Update state
-                        st.session_state.arch_state.messages.append({
-                            "role": "assistant",
-                            "content": result["response"]
-                        })
-                        
-                        # Log interaction for thesis data collection
-                        if st.session_state.interaction_logger:
-                            st.session_state.interaction_logger.log_interaction(
-                                student_input=user_input,
-                                agent_response=result["response"],
-                                routing_path=result["routing_path"],
-                                agents_used=result["metadata"]["agents_used"],
-                                response_type=result["metadata"]["response_type"],
-                                cognitive_flags=result["classification"].get("cognitive_flags", []),
-                                student_skill_level=st.session_state.arch_state.student_profile.skill_level,
-                                confidence_score=result["classification"].get("confidence", 0.5),
-                                sources_used=result["metadata"]["sources"],
-                                response_time=result["metadata"].get("response_time", 0),
-                                context_classification=result["classification"],
-                                metadata=result["metadata"]
-                            )
-                        
-                    except Exception as e:
-                        # Fallback response
-                        st.session_state.chat_messages.append({
-                            "role": "assistant",
-                            "content": f"I'd love to help with that. Can you be more specific about what aspect you'd like to explore?",
-                            "type": "error_fallback"
-                        })
-                
-                st.rerun()
-            
-            # Interaction guidance
-            if len(st.session_state.chat_messages) <= 1:
-                st.info("💡 **Try asking**: 'What precedents exist for this type of project?' or 'How can I improve the lighting design?' or 'Can you review my spatial organization?'")
     
     # Footer
-    st.markdown("---")
     st.markdown("""
-    <div style='text-align: center; color: gray;'>
-    <p><strong>🏗️ Mega Architectural Mentor</strong> | 
-    Powered by GPT Vision + SAM + Multi-Agent Cognitive Enhancement | 
-    Comprehensive AI system for architectural learning</p>
+    <div style='text-align: center; color: #666; margin-top: 3rem;'>
+    <p><strong>🏗️ Architectural Mentor</strong> | Powered by AI Vision + Multi-Agent Learning</p>
     </div>
     """, unsafe_allow_html=True)
 

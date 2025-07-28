@@ -333,7 +333,7 @@ class InteractionLogger:
             # SYSTEM PERFORMANCE
             "routing_distribution": routing_distribution,
             "agent_usage": agent_usage,
-            "avg_response_time": sum(i.get('response_time', 0) for i in self.interactions) / total_interactions,
+            "avg_response_time": sum(i.get('response_time', 0) or 0 for i in self.interactions) / total_interactions,
             
             # EDUCATIONAL EFFECTIVENESS METRICS (KEY FOR THESIS)
             "cognitive_offloading_prevention_rate": cognitive_offloading_prevention_rate,
@@ -349,15 +349,15 @@ class InteractionLogger:
             # AGENT COORDINATION EFFECTIVENESS
             "multi_agent_usage_rate": multi_agent_usage_rate,
             "appropriate_routing_rate": appropriate_routing_rate,
-            "response_coherence_rate": sum(i['response_coherence'] for i in self.interactions) / total_interactions,
+            "response_coherence_rate": sum(i.get('response_coherence', False) for i in self.interactions) / total_interactions,
             
             # STUDENT ENGAGEMENT PATTERNS
-            "avg_student_input_length": sum(i['input_length'] for i in self.interactions) / total_interactions,
+            "avg_student_input_length": sum(i.get('input_length', 0) for i in self.interactions) / total_interactions,
             "input_type_distribution": self._get_input_type_distribution(),
             
             # COGNITIVE DEVELOPMENT INDICATORS
-            "total_cognitive_flags": sum(i['cognitive_flags_count'] for i in self.interactions),
-            "avg_cognitive_flags_per_interaction": sum(i['cognitive_flags_count'] for i in self.interactions) / total_interactions,
+            "total_cognitive_flags": sum(i.get('cognitive_flags_count', 0) for i in self.interactions),
+            "avg_cognitive_flags_per_interaction": sum(i.get('cognitive_flags_count', 0) for i in self.interactions) / total_interactions,
             "skill_progression": self._analyze_skill_progression()
         }
     

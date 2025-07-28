@@ -146,66 +146,57 @@ class ContextAgent:
     
     #super enhanced AI-powered classification for learning state detection
     async def _perform_core_classification(self, input_text: str, state: ArchMentorState) -> Dict[str, Any]:
-        """Complete AI-powered learning state detection - replaces ALL hard-coding"""
+        """Simplified and improved AI-powered learning state detection"""
         
         # Get conversation context
         recent_context = self._get_recent_context(state)
         
         prompt = f"""
-        Analyze this student's architectural learning state to determine cognitive enhancement needs:
+        Analyze this student's architectural learning state to determine the best educational response:
         
         CURRENT INPUT: "{input_text}"
         CONVERSATION CONTEXT: {recent_context}
         SKILL LEVEL: {state.student_profile.skill_level}
         PROJECT: {getattr(state, 'current_design_brief', 'No project set')}
         
-        Detect these critical learning states that require specific educational interventions:
+        Classify the student's input into these clear categories:
         
-        1. CONFIDENCE LEVEL (key for cognitive enhancement):
-        - overconfident: Uses absolute terms ("obviously", "clearly", "perfect", "optimal", "best", "ideal", "definitely")
-        - uncertain: Shows doubt, confusion ("confused", "don't understand", "help", "unclear", "lost", "not sure")
-        - confident: Balanced confidence, thoughtful engagement
-        
-        2. UNDERSTANDING LEVEL (key for Socratic guidance):
-        - low: Basic questions, confusion, misunderstands concepts, asks "what is" questions
-        - medium: Partial understanding, makes some connections, uses some technical terms correctly
-        - high: Uses architectural vocabulary correctly, demonstrates conceptual grasp, makes connections
-        
-        3. ENGAGEMENT LEVEL (key for re-engagement strategies):
-        - low: Very short responses (under 5 words), passive language ("ok", "sure", "fine", "whatever")
-        - medium: Standard responses, follows prompts, moderate length
-        - high: Detailed responses (15+ words), asks questions, shows curiosity, elaborates
-        
-        4. INTERACTION TYPE (key for routing):
-        - - confusion_expression: ANY indication of confusion, uncertainty, or asking for help ("I don't know", "can you help", "I'm confused", "help me", "I'm lost")
-        - overconfident_statement: Makes absolute claims without justification
-        - feedback_request: Asks for evaluation, review, critique, or opinions
-        - technical_question: Asks about specific standards, requirements, codes, or procedures
-        - improvement_seeking: Wants to enhance, fix, or better something specific
-        - knowledge_seeking: Asks for information, examples, precedents, or explanations
+        1. INTERACTION TYPE (most important for routing):
+        - example_request: ANY mention of "example", "examples", "project", "projects", "precedent", "case study", "show me", "can you provide", "real project", "built project"
+        - feedback_request: Asks for review, feedback, thoughts, critique, evaluation, "what do you think", "how does this look"
+        - technical_question: Asks about specific standards, requirements, codes, procedures, "what are the requirements", "how many", "what size"
+        - confusion_expression: Shows confusion, uncertainty, "I don't understand", "help me", "I'm lost", "unclear"
+        - improvement_seeking: Wants to improve, enhance, fix, "how can I", "ways to improve", "make it better"
+        - knowledge_seeking: Asks for information, explanations, "what is", "how do", "can you explain"
         - general_statement: Standard conversation or comments
         
-        5. SPECIAL INDICATORS:
-        - shows_confusion: Any indication of being lost or overwhelmed
-        - requests_help: Explicitly or implicitly asks for assistance
-        - demonstrates_overconfidence: Uses language indicating excessive certainty
-        - seeks_validation: Wants confirmation or approval
+        2. CONFIDENCE LEVEL:
+        - overconfident: Uses absolute terms ("obviously", "clearly", "perfect", "optimal", "best", "ideal", "definitely", "certainly")
+        - uncertain: Shows doubt, confusion, asks for help
+        - confident: Balanced confidence, thoughtful engagement
         
-        Be sensitive to subtle expressions. A student saying "I think this approach might work" shows uncertainty, while "This is obviously the best solution" shows overconfidence.
+        3. UNDERSTANDING LEVEL:
+        - low: Basic questions, confusion, misunderstands concepts
+        - medium: Partial understanding, makes some connections
+        - high: Uses architectural vocabulary correctly, demonstrates conceptual grasp
+        
+        4. ENGAGEMENT LEVEL:
+        - low: Very short responses (under 5 words), passive language
+        - medium: Standard responses, follows prompts
+        - high: Detailed responses (15+ words), asks questions, shows curiosity
         
         Respond in valid JSON format:
         {{
+            "interaction_type": "example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|knowledge_seeking|general_statement",
             "confidence_level": "overconfident|uncertain|confident",
             "understanding_level": "low|medium|high",
             "engagement_level": "low|medium|high",
-            "interaction_type": "confusion_expression|overconfident_statement|feedback_request|technical_question|improvement_seeking|knowledge_seeking|general_statement",
-            "shows_confusion": false,
-            "requests_help": false,
-            "demonstrates_overconfidence": false,
-            "seeks_validation": false,
-            "overconfidence_score": 0,
-            "is_technical_question": false,
-            "is_feedback_request": false,
+            "is_example_request": true/false,
+            "is_feedback_request": true/false,
+            "is_technical_question": true/false,
+            "shows_confusion": true/false,
+            "requests_help": true/false,
+            "demonstrates_overconfidence": true/false,
             "reasoning": "brief explanation of classification"
         }}
         """
@@ -214,18 +205,19 @@ class ContextAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=250,
-                temperature=0.3
+                max_tokens=200,
+                temperature=0.2
             )
             
             classification_text = response.choices[0].message.content.strip()
             classification = self._parse_ai_classification(classification_text)
             
             print(f"🔍 AI Learning State Detection:")
+            print(f"   Type: {classification['interaction_type']}")
             print(f"   Confidence: {classification['confidence_level']}")
             print(f"   Understanding: {classification['understanding_level']}")
             print(f"   Engagement: {classification['engagement_level']}")
-            print(f"   Type: {classification['interaction_type']}")
+            print(f"   Is Example Request: {classification.get('is_example_request', False)}")
             print(f"   Reasoning: {classification.get('reasoning', 'No reasoning')}")
             
             return {
@@ -236,10 +228,11 @@ class ContextAgent:
                 "overconfidence_score": 2 if classification["confidence_level"] == "overconfident" else 0,
                 "is_technical_question": classification["is_technical_question"],
                 "is_feedback_request": classification["is_feedback_request"],
+                "is_example_request": classification.get("is_example_request", False),
                 "shows_confusion": classification["shows_confusion"],
                 "requests_help": classification["requests_help"],
                 "demonstrates_overconfidence": classification["demonstrates_overconfidence"],
-                "seeks_validation": classification["seeks_validation"],
+                "seeks_validation": False,
                 "classification": "question" if "?" in input_text else "statement",
                 "ai_reasoning": classification.get("reasoning", "")
             }
@@ -275,15 +268,29 @@ class ContextAgent:
         return self._default_classification()
 
     def _enhanced_fallback_detection(self, input_text: str) -> Dict[str, Any]:
-        """Enhanced fallback that still detects key learning states"""
+        """Enhanced fallback that detects example requests reliably"""
         
         input_lower = input_text.lower()
         word_count = len(input_text.split())
         
+        # ENHANCED EXAMPLE REQUEST DETECTION - MORE PATTERNS
+        example_patterns = [
+            r"\bexample\b", r"\bexamples\b", r"\bproject\b", r"\bprojects\b",
+            r"\bprecedent\b", r"\bprecedents\b", r"\bcase study\b", r"\bcase studies\b",
+            r"\bshow me\b", r"\bcan you give\b", r"\bcan you provide\b", r"\bcan you show\b",
+            r"\breal project\b", r"\bbuilt project\b", r"\bactual project\b",
+            r"\breference\b", r"\breferences\b", r"\binspiration\b"
+        ]
+        
+        import re
+        is_example_request = any(re.search(pattern, input_lower) for pattern in example_patterns)
+        
         # OVERCONFIDENCE DETECTION (critical for cognitive enhancement)
         overconfident_indicators = [
             "obviously", "clearly", "definitely", "perfect", "optimal", "best", 
-            "ideal", "certainly", "absolutely", "undoubtedly", "without question"
+            "ideal", "certainly", "absolutely", "undoubtedly", "without question",
+            "simple", "easy", "straightforward", "should just", "just need to",
+            "only need", "all you do", "simply", "only way", "right way"
         ]
         overconfidence_score = sum(1 for word in overconfident_indicators if word in input_lower)
         
@@ -321,8 +328,10 @@ class ContextAgent:
         ]
         improvement_seeking = any(indicator in input_lower for indicator in improvement_indicators)
         
-        # DETERMINE INTERACTION TYPE
-        if is_feedback_request:
+        # DETERMINE INTERACTION TYPE - PRIORITIZE EXAMPLE REQUESTS
+        if is_example_request:
+            interaction_type = "example_request"
+        elif is_feedback_request:
             interaction_type = "feedback_request"
         elif is_technical_question:
             interaction_type = "technical_question"
@@ -332,7 +341,7 @@ class ContextAgent:
             interaction_type = "overconfident_statement"
         elif improvement_seeking:
             interaction_type = "improvement_seeking"
-        elif "?" in input_text:
+        elif requests_help or "?" in input_text:
             interaction_type = "knowledge_seeking"
         else:
             interaction_type = "general_statement"
@@ -372,12 +381,13 @@ class ContextAgent:
             "overconfidence_score": overconfidence_score,
             "is_technical_question": is_technical_question,
             "is_feedback_request": is_feedback_request,
+            "is_example_request": is_example_request,  # ← THIS IS KEY
             "shows_confusion": shows_confusion,
             "requests_help": requests_help,
             "demonstrates_overconfidence": overconfidence_score >= 1,
             "seeks_validation": False,
             "classification": "question" if "?" in input_text else "statement",
-            "ai_reasoning": "Fallback classification used"
+            "ai_reasoning": "Enhanced fallback classification used"
         }
 
     def _default_classification(self) -> Dict[str, Any]:

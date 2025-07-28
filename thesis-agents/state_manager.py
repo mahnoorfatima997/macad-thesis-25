@@ -51,3 +51,24 @@ class ArchMentorState:
     # Domain configuration
     domain: str = "architecture"
     domain_config: Dict[str, Any] = field(default_factory=dict)
+
+
+#ADDED THIS FOR CONVO HISTORY MANAGEMENT
+    def ensure_brief_in_messages(self):
+        """Enhanced to maintain conversation continuity"""
+        if self.current_design_brief:
+            # Check if brief exists as first message
+            brief_exists = (self.messages and 
+                        self.messages[0].get("role") == "brief" and 
+                        self.messages[0].get("content") == self.current_design_brief)
+            
+            if not brief_exists:
+                # Remove any existing brief messages
+                self.messages = [msg for msg in self.messages if msg.get("role") != "brief"]
+                # Insert current brief at the beginning
+                self.messages.insert(0, {
+                    "role": "brief",
+                    "content": self.current_design_brief
+                })
+            return True
+        return False
