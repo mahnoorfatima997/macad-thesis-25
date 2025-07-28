@@ -5,6 +5,7 @@ mega_env/
 __pycache__/
 *.py[cod]
 *.so
+*.pyc
 
 # VS Code settings
 .vscode/
