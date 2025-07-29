@@ -1,10 +1,10 @@
-# Cognitive Benchmarking System for Mega Architectural Mentor
+# Cognitive Benchmarking System with Linkography Integration
 
-This benchmarking system implements the Graph ML-based cognitive assessment framework described in the thesis documentation. It analyzes user interactions, generates cognitive benchmarks, and provides comprehensive evaluation of the multi-agent tutoring system's effectiveness.
+This benchmarking system implements the Graph ML-based cognitive assessment framework with integrated linkography analysis based on Gabriela Goldschmidt's methodology. It analyzes user interactions, generates cognitive benchmarks, visualizes design thinking patterns, and provides comprehensive evaluation of the multi-agent tutoring system's effectiveness.
 
 ## Overview
 
-The benchmarking system consists of four main components:
+The benchmarking system consists of five main components:
 
 1. **Graph ML Benchmarking** (`graph_ml_benchmarking.py`)
    - Converts interaction data into graph structures
@@ -27,6 +27,13 @@ The benchmarking system consists of four main components:
    - Feature extraction from interaction patterns
    - Personalized recommendations generation
 
+5. **Linkography Analysis** (NEW)
+   - **Types** (`linkography_types.py`): Data models for design moves and links
+   - **Engine** (`linkography_engine.py`): Fuzzy linkography with semantic embeddings
+   - **Analyzer** (`linkography_analyzer.py`): Session analysis and move extraction
+   - **Visualization** (`linkography_visualization.py`): Interactive PyVis visualizations
+   - **Cognitive Mapping** (`linkography_cognitive_mapping.py`): Maps patterns to metrics
+
 ## Installation
 
 1. Ensure the main Mega Architectural Mentor environment is activated:
@@ -42,6 +49,11 @@ The benchmarking system consists of four main components:
    ```bash
    pip install -r benchmarking/requirements_benchmarking.txt
    ```
+   
+   This includes linkography-specific packages:
+   - `sentence-transformers`: For semantic embeddings (all-MiniLM-L6-v2)
+   - `faiss-cpu`: For efficient similarity search
+   - `pyvis`: For interactive linkograph visualization
 
 ## Usage
 
@@ -80,7 +92,8 @@ This will:
 - Evaluate all sessions
 - Train the proficiency classifier (if 5+ sessions available)
 - Generate comprehensive visualizations
-- Export a detailed report
+- Create linkography analysis for each session
+- Export a detailed report with linkography insights
 
 ### Command Line Options
 
@@ -125,6 +138,21 @@ result = classifier.classify_user(session_data)
 print(f"Proficiency: {result['proficiency_level']} ({result['confidence']:.0%} confidence)")
 ```
 
+#### 4. Generate Linkography Analysis
+```python
+from benchmarking.linkography_analyzer import LinkographySessionAnalyzer
+from benchmarking.linkography_visualization import LinkographVisualizer
+
+# Analyze a session
+analyzer = LinkographySessionAnalyzer()
+linkograph_session = analyzer.analyze_session_file("./thesis_data/interactions_session1.csv")
+
+# Create visualizations
+visualizer = LinkographVisualizer()
+visualizer.create_interactive_linkograph(linkograph_session)
+visualizer.create_pattern_analysis(linkograph_session)
+```
+
 ## Output Structure
 
 After running the benchmarking pipeline, you'll find:
@@ -139,15 +167,26 @@ benchmarking/results/
 ├── evaluation_reports/          # Individual session evaluations
 │   ├── session_xxx_evaluation.json
 │   └── ...
-└── visualizations/              # Generated visualizations
-    ├── proficiency_dashboard.html
-    ├── benchmark_comparison.html
-    ├── cognitive_flow.html
-    ├── interaction_graph_1.html
-    ├── cognitive_load_distribution.png
-    ├── learning_progression.png
-    ├── agent_usage_distribution.png
-    └── proficiency_clusters.png
+├── visualizations/              # Generated visualizations
+│   ├── proficiency_dashboard.html
+│   ├── benchmark_comparison.html
+│   ├── cognitive_flow.html
+│   ├── interaction_graph_1.html
+│   ├── cognitive_load_distribution.png
+│   ├── learning_progression.png
+│   ├── agent_usage_distribution.png
+│   └── proficiency_clusters.png
+└── linkography/                 # Linkography analysis results
+    ├── session_linkographs/     # Individual session linkographs
+    │   ├── session_xxx_linkograph.json
+    │   └── session_xxx_linkograph.html
+    ├── pattern_analysis/        # Cognitive pattern recognition
+    │   ├── cognitive_overload_patterns.json
+    │   ├── creative_breakthrough_patterns.json
+    │   └── design_fixation_patterns.json
+    └── interactive_graphs/      # PyVis interactive visualizations
+        ├── combined_linkograph.html
+        └── phase_transitions.html
 ```
 
 ## Key Metrics Evaluated
@@ -167,6 +206,17 @@ benchmarking/results/
 - **Agent Coordination**: How well multiple agents work together
 - **Routing Appropriateness**: Accuracy of agent selection for different contexts
 - **Response Coherence**: Quality of multi-agent responses
+
+### Linkography Metrics
+- **Link Density**: Ratio of actual links to possible links (indicates cognitive engagement)
+- **Critical Moves**: Design moves with high fore-links (generative thinking)
+- **Chunk Development**: Clusters of interconnected moves (focused exploration)
+- **Phase Balance**: Distribution across ideation/visualization/materialization
+- **Semantic Coherence**: Strength of conceptual connections between moves
+- **Pattern Recognition**:
+  - **Cognitive Overload**: Low link density + high move frequency
+  - **Design Fixation**: Repetitive moves with low diversity
+  - **Creative Breakthrough**: Sudden increase in link density + critical moves
 
 ## Interpreting Results
 
@@ -263,8 +313,22 @@ This benchmarking system implements the methodology described in the thesis docu
 - Implements cognitive scaffolding metrics
 - Prevents cognitive offloading through measurement
 - Supports the three-phase design process (Ideation → Visualization → Materialization)
+- Integrates Gabriela Goldschmidt's linkography for design process visualization
 
-The benchmarks generated help validate the thesis hypothesis that multimodal AI can enhance rather than replace human spatial design capabilities.
+### Linkography-Cognitive Metric Mapping
+
+The system maps linkography patterns to cognitive benchmarking metrics:
+
+| Linkography Pattern | Cognitive Metric | Interpretation |
+|-------------------|------------------|----------------|
+| High link density | Deep Thinking Engagement (DTE) | Sustained cognitive effort |
+| Critical moves with fore-links | Knowledge Integration (KI) | Synthesis and generation |
+| Sparse linkographs | Cognitive Offloading Prevention (COP) | Potential overload or disengagement |
+| Web structures | Scaffolding Effectiveness (SE) | Successful cognitive support |
+| Phase transitions | Learning Progression (LP) | Design process advancement |
+| Chunk patterns | Metacognitive Awareness (MA) | Focused exploration phases |
+
+The benchmarks generated help validate the thesis hypothesis that multimodal AI can enhance rather than replace human spatial design capabilities through real-time process visualization and analysis.
 
 ## Citation
 
