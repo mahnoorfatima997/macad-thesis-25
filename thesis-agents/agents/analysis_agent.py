@@ -6,6 +6,8 @@ import os
 import re
 from openai import OpenAI
 from dotenv import load_dotenv
+import numpy as np
+from datetime import datetime, timedelta
 
 load_dotenv()  # Should already be there
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,8 +23,83 @@ class AnalysisAgent:
         self.sketch_analyzer = SketchAnalyzer(domain)
         self.knowledge_manager = KnowledgeManager(domain)
         self.name = "analysis_agent"
+        
+        # Initialize phase detection parameters
+        self.phase_indicators = self._initialize_phase_indicators()
+        self.phase_weights = self._initialize_phase_weights()
+        
         print(f"🔍 {self.name} initialized for domain: {domain}")
     
+    def _initialize_phase_indicators(self) -> Dict[str, Dict[str, List[str]]]:
+        """Initialize comprehensive phase detection indicators"""
+        
+        return {
+            "ideation": {
+                "conversation_indicators": [
+                    "concept", "idea", "approach", "strategy", "vision", "philosophy",
+                    "what if", "how might", "explore", "consider", "think about",
+                    "precedent", "inspiration", "reference", "example", "case study",
+                    "user needs", "program", "function", "purpose", "goal",
+                    "site analysis", "context", "environment", "climate", "culture"
+                ],
+                "visual_indicators": [
+                    "concept sketch", "bubble diagram", "program diagram", "site analysis",
+                    "mood board", "inspiration images", "rough sketches", "flow diagrams"
+                ],
+                "design_indicators": [
+                    "program development", "concept exploration", "site understanding",
+                    "user research", "precedent study", "design philosophy"
+                ]
+            },
+            "visualization": {
+                "conversation_indicators": [
+                    "form", "shape", "massing", "volume", "proportion", "scale",
+                    "circulation", "flow", "layout", "plan", "section", "elevation",
+                    "spatial relationship", "adjacency", "hierarchy", "organization",
+                    "sketch", "drawing", "model", "3d", "perspective", "rendering",
+                    "light", "shadow", "material", "texture", "color", "atmosphere"
+                ],
+                "visual_indicators": [
+                    "floor plan", "site plan", "section", "elevation", "3d model",
+                    "massing study", "spatial diagram", "circulation diagram",
+                    "lighting study", "material study", "rendering", "perspective"
+                ],
+                "design_indicators": [
+                    "spatial development", "form exploration", "circulation design",
+                    "proportion study", "lighting design", "material exploration"
+                ]
+            },
+            "materialization": {
+                "conversation_indicators": [
+                    "construction", "structure", "system", "detail", "joint", "connection",
+                    "material specification", "assembly", "fabrication", "installation",
+                    "technical", "engineering", "performance", "efficiency", "sustainability",
+                    "code", "regulation", "standard", "requirement", "specification",
+                    "cost", "budget", "timeline", "schedule", "phasing", "implementation"
+                ],
+                "visual_indicators": [
+                    "construction detail", "structural diagram", "building section",
+                    "material specification", "assembly detail", "technical drawing",
+                    "sustainability diagram", "performance analysis", "cost analysis"
+                ],
+                "design_indicators": [
+                    "technical development", "construction methodology", "material specification",
+                    "performance optimization", "cost analysis", "implementation planning"
+                ]
+            }
+        }
+    
+    def _initialize_phase_weights(self) -> Dict[str, Dict[str, float]]:
+        """Initialize weights for different phase detection factors"""
+        
+        return {
+            "conversation_weight": 0.4,
+            "visual_weight": 0.3,
+            "design_weight": 0.2,
+            "temporal_weight": 0.1,
+            "confidence_threshold": 0.6
+        }
+
     def assess_student_skill_level(self, state: ArchMentorState) -> str:
         """Dynamically assess student skill level from their inputs"""
         
@@ -129,7 +206,7 @@ class AnalysisAgent:
 
 
     async def process(self, state: ArchMentorState, context_package: Dict = None) -> Dict[str, Any]:
-        """Main analysis processing with dynamic skill assessment"""
+        """Main analysis processing with dynamic skill assessment and phase detection"""
         
         print(f"\n🚀 {self.name} starting analysis...")
         
@@ -144,6 +221,11 @@ class AnalysisAgent:
         else:
             print(f"📊 Confirmed skill level: {detected_skill_level}")
         
+        # PHASE DETECTION
+        print(f"🔍 {self.name}: Starting phase detection...")
+        phase_analysis = self.detect_design_phase(state)
+        print(f"🎯 Phase detection complete: {phase_analysis['phase']} (confidence: {phase_analysis['confidence']:.2f})")
+        
         # INITIALIZE ANALYSIS RESULT
         analysis_result = {
             "agent": self.name,
@@ -154,6 +236,7 @@ class AnalysisAgent:
             "confidence_score": 0.5,
             "key_insights": [],
             "cognitive_flags": [],
+            "phase_analysis": phase_analysis,  # Add phase analysis
             "skill_assessment": {
                 "detected_level": detected_skill_level,
                 "previous_level": current_skill_level,
@@ -167,35 +250,22 @@ class AnalysisAgent:
         design_brief = state.current_design_brief
         
         print(f"📝 Design brief: {design_brief[:50] if design_brief else 'None'}...")
+        print(f"🖼️ Current sketch: {'Available' if current_sketch else 'None'}")
         
-        # Analyze visual input if provided
-        if current_sketch and current_sketch.image_path:
+        # VISUAL ANALYSIS (if sketch available)
+        if current_sketch:
+            print("🖼️ Analyzing visual content...")
             try:
-                print(f"📸 Analyzing image: {current_sketch.image_path}")
-                visual_analysis = await self.sketch_analyzer.analyze_sketch(
-                    current_sketch.image_path,
-                    context=design_brief
-                )
+                visual_analysis = await self.sketch_analyzer.analyze_sketch(current_sketch, design_brief)
                 analysis_result["visual_analysis"] = visual_analysis
-                analysis_result["confidence_score"] = visual_analysis.get("confidence_score", 0.5)
-                
-                # Extract key insights from visual analysis
-                insights = []
-                if visual_analysis.get("design_strengths"):
-                    insights.extend([f"Strength: {s}" for s in visual_analysis["design_strengths"][:2]])
-                if visual_analysis.get("improvement_opportunities"):
-                    insights.extend([f"Opportunity: {o}" for o in visual_analysis["improvement_opportunities"][:2]])
-                
-                analysis_result["key_insights"] = insights
-                print(f"✅ Visual analysis complete. Found {len(insights)} key insights")
-                
+                print(f"✅ Visual analysis complete. Elements identified: {len(visual_analysis.get('identified_elements', []))}")
             except Exception as e:
-                print(f"❌ Visual analysis failed: {e}")
+                print(f"⚠️ Visual analysis failed: {e}")
                 analysis_result["visual_analysis"] = {"error": str(e)}
         else:
-            print("📷 No visual artifact provided")
+            print("📝 No visual content to analyze")
         
-        # Analyze text brief
+        # TEXT ANALYSIS (if brief available)
         if design_brief:
             print("📖 Analyzing design brief...")
             text_analysis = self.analyze_design_brief(design_brief)
@@ -213,12 +283,13 @@ class AnalysisAgent:
         )
         analysis_result["synthesis"] = synthesis
         
-        # Generate cognitive flags for other agents
+        # Generate cognitive flags for other agents (now phase-aware)
         cognitive_flags = await self.generate_cognitive_flags(analysis_result, state.student_profile, state)
         analysis_result["cognitive_flags"] = cognitive_flags
         
         print(f"🎯 Analysis complete! Confidence: {analysis_result['confidence_score']}")
         print(f"🚩 Generated {len(cognitive_flags)} cognitive flags for other agents")
+        print(f"🎯 Current phase: {phase_analysis['phase']} (confidence: {phase_analysis['confidence']:.2f})")
         
         # Enhance analysis with knowledge base
         if analysis_result["visual_analysis"] and not analysis_result["visual_analysis"].get("error"):
@@ -610,6 +681,402 @@ class AnalysisAgent:
         except Exception as e:
             print(f"⚠️ AI flag generation failed: {e}")
             return ["needs_brief_clarification"]  # Safe fallback
+
+    def detect_design_phase(self, state: ArchMentorState, analysis_result: Dict = None) -> Dict[str, Any]:
+        """
+        Comprehensive phase detection algorithm implementing scientific methodology
+        
+        Returns:
+            Dict containing:
+            - phase: "ideation" | "visualization" | "materialization"
+            - confidence: float (0-1)
+            - indicators: Dict of supporting evidence
+            - progression_score: float indicating phase advancement
+            - phase_duration: estimated time in current phase
+        """
+        
+        print(f"🔍 {self.name}: Detecting design phase...")
+        
+        # 1. CONVERSATION PATTERN ANALYSIS
+        conversation_analysis = self._analyze_conversation_phase_indicators(state)
+        
+        # 2. VISUAL CONTENT ANALYSIS
+        visual_analysis = self._analyze_visual_phase_indicators(state, analysis_result)
+        
+        # 3. DESIGN PROGRESSION ANALYSIS
+        design_analysis = self._analyze_design_progression_indicators(state)
+        
+        # 4. TEMPORAL ANALYSIS
+        temporal_analysis = self._analyze_temporal_phase_indicators(state)
+        
+        # 5. COMPREHENSIVE PHASE SCORING
+        phase_scores = self._calculate_phase_scores(
+            conversation_analysis, visual_analysis, design_analysis, temporal_analysis
+        )
+        
+        # 6. CONFIDENCE CALCULATION
+        confidence_metrics = self._calculate_phase_confidence(
+            phase_scores, conversation_analysis, visual_analysis, design_analysis
+        )
+        
+        # 7. PHASE DETERMINATION
+        detected_phase = max(phase_scores, key=phase_scores.get)
+        confidence = confidence_metrics['overall_confidence']
+        
+        # 8. PROGRESSION ANALYSIS
+        progression_analysis = self._analyze_phase_progression(state, detected_phase)
+        
+        result = {
+            "phase": detected_phase,
+            "confidence": confidence,
+            "phase_scores": phase_scores,
+            "indicators": {
+                "conversation": conversation_analysis,
+                "visual": visual_analysis,
+                "design": design_analysis,
+                "temporal": temporal_analysis
+            },
+            "confidence_metrics": confidence_metrics,
+            "progression_score": progression_analysis['progression_score'],
+            "phase_duration": progression_analysis['phase_duration'],
+            "phase_characteristics": self._get_phase_characteristics(detected_phase),
+            "recommendations": self._generate_phase_recommendations(detected_phase, confidence)
+        }
+        
+        print(f"🎯 Phase detected: {detected_phase} (confidence: {confidence:.2f})")
+        print(f"📊 Phase scores: {phase_scores}")
+        
+        return result
+    
+    def _analyze_conversation_phase_indicators(self, state: ArchMentorState) -> Dict[str, Any]:
+        """Analyze conversation patterns for phase indicators"""
+        
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        if not user_messages:
+            return {"ideation": 0, "visualization": 0, "materialization": 0, "confidence": 0}
+        
+        # Analyze recent messages (last 5 for current focus)
+        recent_messages = user_messages[-5:]
+        all_text = ' '.join(recent_messages).lower()
+        
+        phase_scores = {}
+        total_indicators = {}
+        
+        for phase, indicators in self.phase_indicators.items():
+            conversation_indicators = indicators["conversation_indicators"]
+            
+            # Count indicator matches
+            matches = sum(1 for indicator in conversation_indicators if indicator in all_text)
+            total_indicators[phase] = len(conversation_indicators)
+            
+            # Calculate normalized score
+            phase_scores[phase] = matches / len(conversation_indicators) if conversation_indicators else 0
+        
+        # Calculate confidence based on indicator density
+        max_score = max(phase_scores.values())
+        confidence = min(max_score * 2, 1.0)  # Scale confidence
+        
+        return {
+            "ideation": phase_scores.get("ideation", 0),
+            "visualization": phase_scores.get("visualization", 0),
+            "materialization": phase_scores.get("materialization", 0),
+            "confidence": confidence,
+            "total_indicators": total_indicators,
+            "text_analysis": {
+                "message_count": len(recent_messages),
+                "avg_message_length": np.mean([len(msg.split()) for msg in recent_messages]),
+                "indicator_density": sum(phase_scores.values()) / len(phase_scores)
+            }
+        }
+    
+    def _analyze_visual_phase_indicators(self, state: ArchMentorState, analysis_result: Dict = None) -> Dict[str, Any]:
+        """Analyze visual content for phase indicators"""
+        
+        if not state.current_sketch and not analysis_result:
+            return {"ideation": 0, "visualization": 0, "materialization": 0, "confidence": 0}
+        
+        phase_scores = {}
+        
+        # Use existing visual analysis if available
+        if analysis_result and analysis_result.get("visual_analysis"):
+            visual_analysis = analysis_result["visual_analysis"]
+            
+            # Analyze identified elements for phase indicators
+            elements = visual_analysis.get("identified_elements", [])
+            design_strengths = visual_analysis.get("design_strengths", [])
+            improvement_opportunities = visual_analysis.get("improvement_opportunities", [])
+            
+            all_visual_content = ' '.join(elements + design_strengths + improvement_opportunities).lower()
+            
+            for phase, indicators in self.phase_indicators.items():
+                visual_indicators = indicators["visual_indicators"]
+                matches = sum(1 for indicator in visual_indicators if indicator in all_visual_content)
+                phase_scores[phase] = matches / len(visual_indicators) if visual_indicators else 0
+        
+        else:
+            # Default scores if no visual analysis
+            phase_scores = {"ideation": 0.1, "visualization": 0.1, "materialization": 0.1}
+        
+        # Calculate confidence based on visual content availability
+        has_visual_content = bool(state.current_sketch or (analysis_result and analysis_result.get("visual_analysis")))
+        confidence = 0.8 if has_visual_content else 0.3
+        
+        return {
+            "ideation": phase_scores.get("ideation", 0),
+            "visualization": phase_scores.get("visualization", 0),
+            "materialization": phase_scores.get("materialization", 0),
+            "confidence": confidence,
+            "has_visual_content": has_visual_content
+        }
+    
+    def _analyze_design_progression_indicators(self, state: ArchMentorState) -> Dict[str, Any]:
+        """Analyze design progression for phase indicators"""
+        
+        # Analyze conversation history for design progression
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        
+        if len(user_messages) < 3:
+            return {"ideation": 0.5, "visualization": 0.3, "materialization": 0.2, "confidence": 0.3}
+        
+        # Split conversation into thirds for progression analysis
+        third = len(user_messages) // 3
+        early_messages = user_messages[:third]
+        middle_messages = user_messages[third:2*third]
+        recent_messages = user_messages[2*third:]
+        
+        phase_scores = {}
+        
+        for phase, indicators in self.phase_indicators.items():
+            design_indicators = indicators["design_indicators"]
+            
+            # Calculate progression through phases
+            early_score = self._calculate_indicator_score(early_messages, design_indicators)
+            middle_score = self._calculate_indicator_score(middle_messages, design_indicators)
+            recent_score = self._calculate_indicator_score(recent_messages, design_indicators)
+            
+            # Weight recent messages more heavily
+            progression_score = (early_score * 0.2 + middle_score * 0.3 + recent_score * 0.5)
+            phase_scores[phase] = progression_score
+        
+        # Calculate confidence based on conversation length
+        confidence = min(len(user_messages) / 10, 1.0)
+        
+        return {
+            "ideation": phase_scores.get("ideation", 0),
+            "visualization": phase_scores.get("visualization", 0),
+            "materialization": phase_scores.get("materialization", 0),
+            "confidence": confidence,
+            "progression_analysis": {
+                "conversation_length": len(user_messages),
+                "early_focus": early_score if 'early_score' in locals() else 0,
+                "recent_focus": recent_score if 'recent_score' in locals() else 0
+            }
+        }
+    
+    def _analyze_temporal_phase_indicators(self, state: ArchMentorState) -> Dict[str, Any]:
+        """Analyze temporal patterns for phase indicators"""
+        
+        # Analyze message timestamps for temporal patterns
+        messages_with_time = [msg for msg in state.messages if msg.get('role') == 'user' and 'timestamp' in msg]
+        
+        if len(messages_with_time) < 2:
+            return {"ideation": 0.3, "visualization": 0.3, "materialization": 0.3, "confidence": 0.2}
+        
+        # Calculate time intervals between messages
+        intervals = []
+        for i in range(1, len(messages_with_time)):
+            try:
+                time1 = datetime.fromisoformat(messages_with_time[i-1]['timestamp'].replace('Z', '+00:00'))
+                time2 = datetime.fromisoformat(messages_with_time[i]['timestamp'].replace('Z', '+00:00'))
+                interval = (time2 - time1).total_seconds() / 60  # minutes
+                intervals.append(interval)
+            except:
+                continue
+        
+        if not intervals:
+            return {"ideation": 0.3, "visualization": 0.3, "materialization": 0.3, "confidence": 0.2}
+        
+        # Analyze temporal patterns
+        avg_interval = np.mean(intervals)
+        interval_variance = np.var(intervals)
+        
+        # Phase-specific temporal patterns
+        # Ideation: Longer intervals (deep thinking)
+        # Visualization: Medium intervals (active sketching)
+        # Materialization: Shorter intervals (detailed work)
+        
+        ideation_score = min(avg_interval / 10, 1.0)  # Longer intervals favor ideation
+        visualization_score = 1.0 - abs(avg_interval - 5) / 5  # Medium intervals favor visualization
+        materialization_score = 1.0 - (avg_interval / 10)  # Shorter intervals favor materialization
+        
+        confidence = min(len(intervals) / 5, 1.0)
+        
+        return {
+            "ideation": ideation_score,
+            "visualization": visualization_score,
+            "materialization": materialization_score,
+            "confidence": confidence,
+            "temporal_metrics": {
+                "avg_interval_minutes": avg_interval,
+                "interval_variance": interval_variance,
+                "total_duration_minutes": sum(intervals)
+            }
+        }
+    
+    def _calculate_phase_scores(self, conversation_analysis: Dict, visual_analysis: Dict, 
+                               design_analysis: Dict, temporal_analysis: Dict) -> Dict[str, float]:
+        """Calculate comprehensive phase scores using weighted combination"""
+        
+        weights = self.phase_weights
+        
+        phase_scores = {}
+        
+        for phase in ["ideation", "visualization", "materialization"]:
+            # Weighted combination of all analyses
+            conversation_score = conversation_analysis.get(phase, 0) * weights["conversation_weight"]
+            visual_score = visual_analysis.get(phase, 0) * weights["visual_weight"]
+            design_score = design_analysis.get(phase, 0) * weights["design_weight"]
+            temporal_score = temporal_analysis.get(phase, 0) * weights["temporal_weight"]
+            
+            # Calculate weighted average
+            total_score = conversation_score + visual_score + design_score + temporal_score
+            phase_scores[phase] = total_score
+        
+        return phase_scores
+    
+    def _calculate_phase_confidence(self, phase_scores: Dict[str, float], 
+                                   conversation_analysis: Dict, visual_analysis: Dict, 
+                                   design_analysis: Dict) -> Dict[str, float]:
+        """Calculate confidence metrics for phase detection"""
+        
+        # Overall confidence based on score separation
+        scores = list(phase_scores.values())
+        max_score = max(scores)
+        second_max = sorted(scores)[-2]
+        score_separation = max_score - second_max
+        
+        overall_confidence = min(score_separation * 2, 1.0)
+        
+        # Individual analysis confidences
+        conversation_confidence = conversation_analysis.get("confidence", 0)
+        visual_confidence = visual_analysis.get("confidence", 0)
+        design_confidence = design_analysis.get("confidence", 0)
+        
+        # Weighted confidence
+        weights = self.phase_weights
+        weighted_confidence = (
+            conversation_confidence * weights["conversation_weight"] +
+            visual_confidence * weights["visual_weight"] +
+            design_confidence * weights["design_weight"]
+        )
+        
+        return {
+            "overall_confidence": overall_confidence,
+            "weighted_confidence": weighted_confidence,
+            "score_separation": score_separation,
+            "conversation_confidence": conversation_confidence,
+            "visual_confidence": visual_confidence,
+            "design_confidence": design_confidence
+        }
+    
+    def _analyze_phase_progression(self, state: ArchMentorState, current_phase: str) -> Dict[str, Any]:
+        """Analyze progression within the current phase"""
+        
+        # Estimate time spent in current phase
+        user_messages = [msg for msg in state.messages if msg.get('role') == 'user']
+        
+        if len(user_messages) < 2:
+            return {"progression_score": 0.5, "phase_duration": 0}
+        
+        # Calculate progression based on conversation depth and complexity
+        early_messages = user_messages[:len(user_messages)//2]
+        recent_messages = user_messages[len(user_messages)//2:]
+        
+        early_complexity = np.mean([len(msg['content'].split()) for msg in early_messages])
+        recent_complexity = np.mean([len(msg['content'].split()) for msg in recent_messages])
+        
+        # Progression score based on complexity increase
+        if early_complexity > 0:
+            progression_score = min(recent_complexity / early_complexity, 2.0) / 2.0
+        else:
+            progression_score = 0.5
+        
+        # Estimate phase duration (simplified)
+        phase_duration = len(user_messages) * 2  # Rough estimate: 2 minutes per message
+        
+        return {
+            "progression_score": progression_score,
+            "phase_duration": phase_duration,
+            "complexity_increase": recent_complexity - early_complexity
+        }
+    
+    def _get_phase_characteristics(self, phase: str) -> Dict[str, Any]:
+        """Get characteristics and requirements for the detected phase"""
+        
+        characteristics = {
+            "ideation": {
+                "focus": "Conceptual exploration and problem framing",
+                "key_activities": ["Site analysis", "Program development", "Concept exploration", "Precedent study"],
+                "cognitive_demands": "High-level thinking, synthesis, creativity",
+                "typical_duration": "1-3 days",
+                "success_indicators": ["Clear concept statement", "Program definition", "Site understanding"]
+            },
+            "visualization": {
+                "focus": "Spatial development and form exploration",
+                "key_activities": ["Spatial planning", "Form development", "Circulation design", "Lighting study"],
+                "cognitive_demands": "Spatial reasoning, visual thinking, technical drawing",
+                "typical_duration": "3-7 days",
+                "success_indicators": ["Clear spatial organization", "Form development", "Circulation logic"]
+            },
+            "materialization": {
+                "focus": "Technical development and implementation",
+                "key_activities": ["Construction details", "Material specification", "Technical systems", "Cost analysis"],
+                "cognitive_demands": "Technical knowledge, detail thinking, practical constraints",
+                "typical_duration": "5-10 days",
+                "success_indicators": ["Technical feasibility", "Material specification", "Implementation plan"]
+            }
+        }
+        
+        return characteristics.get(phase, {})
+    
+    def _generate_phase_recommendations(self, phase: str, confidence: float) -> List[str]:
+        """Generate recommendations based on detected phase and confidence"""
+        
+        recommendations = []
+        
+        if confidence < 0.6:
+            recommendations.append("Phase detection confidence is low - consider explicit phase clarification")
+        
+        if phase == "ideation":
+            recommendations.extend([
+                "Focus on concept development and program definition",
+                "Explore precedents and site analysis",
+                "Develop clear design philosophy and approach"
+            ])
+        elif phase == "visualization":
+            recommendations.extend([
+                "Develop spatial organization and circulation",
+                "Explore form and massing relationships",
+                "Consider lighting and material qualities"
+            ])
+        elif phase == "materialization":
+            recommendations.extend([
+                "Develop construction and technical details",
+                "Specify materials and systems",
+                "Consider cost and implementation constraints"
+            ])
+        
+        return recommendations
+    
+    def _calculate_indicator_score(self, messages: List[str], indicators: List[str]) -> float:
+        """Calculate indicator score for a set of messages"""
+        
+        if not messages or not indicators:
+            return 0
+        
+        all_text = ' '.join(messages).lower()
+        matches = sum(1 for indicator in indicators if indicator in all_text)
+        return matches / len(indicators)
 
 # Test function
 async def test_analysis_agent():

@@ -1,20 +1,21 @@
 {
-  "generated_at": "2025-07-27T09:05:56.023440",
+  "generated_at": "2025-07-29T22:43:03.374986",
   "benchmark_profiles": {
     "beginner": {
       "proficiency_level": "beginner",
       "target_metrics": {
         "cognitive_load_range": [
-          0.771,
-          1
+          0.4125,
+          0.7125
         ],
-        "learning_effectiveness_min": 0.3933333333333333,
-        "engagement_min": 0.6855555555555556,
+        "learning_effectiveness_min": 0.35,
+        "engagement_min": 0.8583333333333334,
         "cognitive_offloading_prevention_min": 0.9,
-        "deep_thinking_rate_min": 0.6333333333333333,
+        "deep_thinking_rate_min": 0.15,
         "scaffolding_effectiveness_min": 0
       },
       "recommended_strategies": [
+        "Incorporate more 'why' and 'how' questions to encourage reflection",
         "Provide more structured guidance with progressive complexity"
       ],
       "progression_indicators": {
@@ -26,16 +27,45 @@
           "conceptual_connections": 0.4
         }
       }
+    },
+    "intermediate": {
+      "proficiency_level": "intermediate",
+      "target_metrics": {
+        "cognitive_load_range": [
+          0.85,
+          1
+        ],
+        "learning_effectiveness_min": 0.45000000000000007,
+        "engagement_min": 0.8583333333333334,
+        "cognitive_offloading_prevention_min": 0.9,
+        "deep_thinking_rate_min": 0.9,
+        "scaffolding_effectiveness_min": 0
+      },
+      "recommended_strategies": [
+        "Provide more structured guidance with progressive complexity"
+      ],
+      "progression_indicators": {
+        "next_level": "advanced",
+        "requirements": {
+          "sustained_deep_thinking": 0.8,
+          "reduced_cognitive_offloading": 0.85,
+          "independent_problem_solving": 0.7,
+          "conceptual_connections": 0.7
+        }
+      }
     }
   },
   "cluster_analysis": {
-    "n_clusters": 1,
+    "n_clusters": 2,
     "proficiency_distribution": {
-      "beginner": 1
+      "beginner": 1,
+      "intermediate": 1
     }
   },
   "recommendations": {
-    "system_improvements": [],
+    "system_improvements": [
+      "Enhance question generation to promote deeper critical thinking"
+    ],
     "pedagogical_strategies": [
       "Implement adaptive difficulty based on proficiency level",
       "Provide phase-specific scaffolding (Ideation \u2192 Visualization \u2192 Materialization)",

@@ -79,6 +79,12 @@ The system consists of four major components working together:
 - **Pipeline Runner**: `run_benchmarking.py` - Orchestrates the complete benchmarking analysis
 - **Interactive Dashboard**: `benchmark_dashboard.py` - Streamlit dashboard for exploring results
 - **Dashboard Launcher**: `launch_dashboard.py` - Quick launcher for the benchmarking dashboard
+- **Linkography Components**:
+  - `linkography_types.py` - Data models for design moves, links, and linkographs
+  - `linkography_engine.py` - Core fuzzy linkography generation with semantic embeddings
+  - `linkography_analyzer.py` - Session analysis and design move extraction
+  - `linkography_visualization.py` - Interactive linkograph visualization with PyVis
+  - `linkography_cognitive_mapping.py` - Maps linkography patterns to cognitive metrics
 
 ## Key Integration Points
 
@@ -132,6 +138,12 @@ The system includes comprehensive thesis-specific data collection and analysis:
 - **Evaluation Metrics**: Measures cognitive offloading prevention, deep thinking engagement, scaffolding effectiveness
 - **Visualization Suite**: Interactive dashboards, cognitive flow diagrams, temporal analysis
 - **Benchmark Generation**: Creates proficiency-based benchmarks with progression indicators
+- **Linkography Integration**: Implements Gabriela Goldschmidt's linkography methodology for design process analysis
+  - Real-time linkograph generation from user interactions
+  - Fuzzy linkography with semantic similarity (all-MiniLM-L6-v2 embeddings)
+  - Automated design move detection and classification
+  - Cognitive pattern recognition and educational interventions
+  - Interactive linkograph visualizations with PyVis
 - **Data Requirements**:
   - Basic analysis: 1+ sessions
   - Clustering: 3+ sessions recommended
@@ -144,6 +156,10 @@ The system includes comprehensive thesis-specific data collection and analysis:
 # Full analysis pipeline
 python benchmarking/run_benchmarking.py
 
+# Linkography-specific analysis
+python benchmarking/linkography_analyzer.py       # Analyze sessions with linkography
+python benchmarking/linkography_visualization.py  # Generate linkograph visualizations
+
 # Output structure:
 benchmarking/results/
 ├── benchmark_report.json              # Detailed benchmarks
@@ -152,7 +168,11 @@ benchmarking/results/
 ├── gnn_model.pkl                    # Trained GNN model
 ├── proficiency_classifier.pkl       # Trained classifier
 ├── evaluation_reports/              # Per-session evaluations
-└── visualizations/                  # Generated charts and graphs
+├── visualizations/                  # Generated charts and graphs
+└── linkography/                     # Linkography analysis results
+    ├── session_linkographs/         # Individual session linkographs
+    ├── pattern_analysis/            # Cognitive pattern recognition
+    └── interactive_graphs/          # PyVis interactive visualizations
 ```
 
 ### Key Thesis Metrics
@@ -160,6 +180,11 @@ benchmarking/results/
 - **Deep Thinking Engagement**: Target >60%
 - **Improvement over Baseline**: Comparing to traditional tutoring methods
 - **Learning Progression**: Tracking skill development across sessions
+- **Linkography Metrics**:
+  - Link Density: Measure of cognitive engagement intensity
+  - Critical Move Ratio: Identifies key design decisions
+  - Phase Balance: Distribution across ideation/visualization/materialization
+  - Pattern Recognition: Automated detection of design fixation, breakthroughs
 
 ## Recent Updates
 
@@ -177,3 +202,18 @@ benchmarking/results/
 - **Small Dataset Handling**: Rule-based proficiency assignment for <3 sessions
 - **Clustering Protection**: Prevents errors with insufficient data
 - **Test Data Generator**: `generate_test_data.py` for testing without real sessions
+
+### Linkography Integration (New)
+- **Core Implementation**: Added Gabriela Goldschmidt's linkography methodology
+- **Files Added**:
+  - `linkography_types.py`: Data models and type definitions
+  - `linkography_engine.py`: Fuzzy linkography with semantic embeddings
+  - `linkography_analyzer.py`: Session analysis and move extraction
+  - `linkography_visualization.py`: PyVis interactive visualizations
+  - `linkography_cognitive_mapping.py`: Cognitive metric mapping
+- **Features**:
+  - Real-time linkograph generation from design sessions
+  - Automated design move detection and classification
+  - Semantic similarity using all-MiniLM-L6-v2 embeddings
+  - Pattern recognition for educational interventions
+  - Interactive visualization in benchmarking dashboard

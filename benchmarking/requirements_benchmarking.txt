@@ -1,4 +1,4 @@
-# Requirements for Cognitive Benchmarking System
+# Requirements for Cognitive Benchmarking System with Linkography Integration
 # Install with: pip install -r benchmarking/requirements_benchmarking.txt
 
 # Core dependencies (should already be installed)
@@ -22,6 +22,11 @@ colorcet>=3.0.0  # Color palettes
 joblib>=1.0.0  # For model persistence
 scipy>=1.7.0
 
+# Linkography-specific dependencies
+sentence-transformers>=2.2.0  # For semantic embeddings (all-MiniLM-L6-v2)
+faiss-cpu>=1.7.0  # For efficient similarity search
+pyvis>=0.3.0  # For interactive graph visualization
+
 # Optional but recommended
 tqdm>=4.62.0  # Progress bars
 tabulate>=0.8.0  # Pretty tables
@@ -29,3 +34,8 @@ tabulate>=0.8.0  # Pretty tables
 # For testing (optional)
 pytest>=6.2.0
 pytest-cov>=2.12.0
+
+# Linkography Analysis Dependencies
+sentence-transformers>=2.2.0  # For semantic similarity analysis
+transformers>=4.20.0  # Required by sentence-transformers
+torch>=1.9.0  # Already listed above, but required for transformers

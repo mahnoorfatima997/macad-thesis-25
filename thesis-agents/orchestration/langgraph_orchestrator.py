@@ -108,8 +108,15 @@ class LangGraphOrchestrator:
             }
         )
         
-        # Socratic always goes to synthesizer
-        workflow.add_edge("socratic_tutor", "synthesizer")
+        # Socratic tutor can go to cognitive enhancement or synthesizer
+        workflow.add_conditional_edges(
+            "socratic_tutor",
+            self.after_socratic_tutor,
+            {
+                "to_cognitive": "cognitive_enhancement",
+                "to_synthesizer": "synthesizer"
+            }
+        )
         
         # Cognitive enhancement agent goes to synthesizer
         workflow.add_edge("cognitive_enhancement", "synthesizer")
@@ -324,10 +331,10 @@ class LangGraphOrchestrator:
         
         print("🎯 After analysis routing...")
         
-        # For comprehensive responses, we want both domain expert and Socratic tutor
+        # For comprehensive responses, we want domain expert, Socratic tutor, and cognitive enhancement
         # The workflow will execute them in sequence
         
-        print("🚀 Will execute: domain_expert → socratic_tutor → synthesizer")
+        print("🚀 Will execute: domain_expert → socratic_tutor → cognitive_enhancement → synthesizer")
         return "to_domain_expert"
     
     def after_domain_expert(self, state: WorkflowState) -> Literal["to_socratic", "to_synthesizer"]:
@@ -335,6 +342,12 @@ class LangGraphOrchestrator:
         
         print("🎯 After domain expert: Going to Socratic tutor...")
         return "to_socratic"
+    
+    def after_socratic_tutor(self, state: WorkflowState) -> Literal["to_cognitive", "to_synthesizer"]:
+        """Always go to cognitive enhancement after Socratic tutor for comprehensive responses"""
+        
+        print("🎯 After Socratic tutor: Going to cognitive enhancement...")
+        return "to_cognitive"
     
     # HELPER METHODS
     
@@ -1125,9 +1138,10 @@ class LangGraphOrchestrator:
         socratic_result = state.get("socratic_result", {})
         domain_result = state.get("domain_expert_result", {})
         analysis_result = state.get("analysis_result", {})
+        cognitive_result = state.get("cognitive_enhancement_result", {})
         classification = state.get("student_classification", {})
         
-        print(f"🔧 Available results: socratic={bool(socratic_result)}, domain={bool(domain_result)}")
+        print(f"🔧 Available results: socratic={bool(socratic_result)}, domain={bool(domain_result)}, cognitive={bool(cognitive_result)}")
         
         # Get user's original input
         user_input = state.get("last_message", "")
@@ -1150,15 +1164,39 @@ class LangGraphOrchestrator:
             
         elif socratic_result:
             # Only Socratic guidance available
-            final_response = socratic_result.get("response_text", "")
+            socratic_text = socratic_result.get("response_text", "")
+            
+            # Add cognitive assessment if available
+            if cognitive_result and cognitive_result.get("cognitive_summary"):
+                cognitive_summary = cognitive_result.get("cognitive_summary", "")
+                final_response = f"{socratic_text}\n\n{cognitive_summary}"
+            else:
+                final_response = socratic_text
+                
             response_type = "socratic_guidance"
             print(f"🔧 Using Socratic guidance only")
+            
+        elif cognitive_result:
+            # Only cognitive enhancement available
+            cognitive_text = cognitive_result.get("response_text", "")
+            cognitive_summary = cognitive_result.get("cognitive_summary", "")
+            
+            # Include both detailed response and summary
+            final_response = f"{cognitive_text}\n\n{cognitive_summary}"
+            response_type = "cognitive_enhancement"
+            print(f"🔧 Using cognitive enhancement only")
             
         else:
             # Fallback response
             final_response = "I'd be happy to help you with your architectural project. What specific aspect would you like to explore?"
             response_type = "fallback"
             print(f"🔧 Using fallback response")
+        
+        # Add cognitive assessment to other response types if available
+        if cognitive_result and cognitive_result.get("cognitive_summary") and response_type not in ["cognitive_enhancement", "socratic_guidance"]:
+            cognitive_summary = cognitive_result.get("cognitive_summary", "")
+            final_response = f"{final_response}\n\n{cognitive_summary}"
+            print(f"🔧 Added cognitive assessment to {response_type} response")
         
         # Determine which agents were used
         agents_used = []
@@ -1168,22 +1206,34 @@ class LangGraphOrchestrator:
             agents_used.append("domain_expert")
         if analysis_result:
             agents_used.append("analysis_agent")
+        if cognitive_result:
+            agents_used.append("cognitive_enhancement")
+        
+        # Extract phase analysis from analysis result
+        phase_analysis = analysis_result.get("phase_analysis", {}) if analysis_result else {}
+        
+        # Extract scientific metrics from cognitive result
+        scientific_metrics = cognitive_result.get("scientific_metrics", {}) if cognitive_result else {}
+        cognitive_state = cognitive_result.get("cognitive_state", {}) if cognitive_result else {}
+        
+        # Combine all metadata
+        metadata = {
+            "response_type": response_type,
+            "agents_used": agents_used,
+            "routing_path": state.get("routing_decision", {}).get("path", "unknown"),
+            "phase_analysis": phase_analysis,
+            "scientific_metrics": scientific_metrics,
+            "cognitive_state": cognitive_state,
+            "analysis_result": analysis_result,
+            "sources": domain_result.get("sources", []) if domain_result else [],
+            "response_time": 0,  # Could be calculated if needed
+            "classification": classification
+        }
         
         print(f"🔧 Final response type: {response_type}")
         print(f"🔧 Final response: {final_response[:100]}...")
         print(f"🔧 Agents used: {agents_used}")
-        
-        metadata = {
-            "response_type": response_type,
-            "agents_used": agents_used,
-            "interaction_type": classification.get("interaction_type", "general_statement"),
-            "confidence_level": classification.get("confidence_level", "confident"),
-            "understanding_level": classification.get("understanding_level", "medium"),
-            "engagement_level": classification.get("engagement_level", "medium"),
-            "sources": domain_result.get("sources", []) if domain_result else [],
-            "response_time": 0,
-            "routing_path": "simplified_synthesis"
-        }
+        print(f"🔧 Phase detected: {phase_analysis.get('phase', 'unknown')} (confidence: {phase_analysis.get('confidence', 0):.2f})")
         
         return final_response, metadata
     
