@@ -743,20 +743,23 @@ class InteractionLogger:
         """Extract individual design moves from interaction for linkography analysis"""
         
         moves = []
-        timestamp = datetime.datetime.now().isoformat()
+        base_timestamp = datetime.datetime.now()
         
-        # Extract moves from student input
-        student_moves = self._analyze_text_for_moves(student_input, "student", current_phase, timestamp)
+        # Extract moves from student input with micro-timestamps
+        student_moves = self._analyze_text_for_moves(student_input, "student", current_phase, base_timestamp, 0)
         moves.extend(student_moves)
         
-        # Extract moves from agent response
-        agent_moves = self._analyze_text_for_moves(agent_response, "agent", current_phase, timestamp)
+        # Extract moves from agent response with micro-timestamps
+        agent_moves = self._analyze_text_for_moves(agent_response, "agent", current_phase, base_timestamp, len(student_moves))
         moves.extend(agent_moves)
+        
+        # Add temporal relationships between moves
+        self._add_temporal_relationships(moves)
         
         return moves
     
-    def _analyze_text_for_moves(self, text: str, source: str, current_phase: str, timestamp: str) -> List[Dict[str, Any]]:
-        """Analyze text to extract individual design moves"""
+    def _analyze_text_for_moves(self, text: str, source: str, current_phase: str, base_timestamp: datetime.datetime, offset: int) -> List[Dict[str, Any]]:
+        """Analyze text to extract individual design moves with precise temporal tracking"""
         
         moves = []
         
@@ -767,22 +770,32 @@ class InteractionLogger:
             if len(sentence.strip()) < 10:  # Skip very short sentences
                 continue
             
+            # Calculate micro-timestamp for this move
+            move_timestamp = base_timestamp + datetime.timedelta(milliseconds=(offset + i) * 100)
+            
             # Determine move type based on content and phase
             move_type = self._classify_move_type(sentence, current_phase)
             
-            # Create move object
+            # Calculate cognitive load estimate
+            cognitive_load = self._estimate_move_cognitive_load(sentence, move_type, current_phase)
+            
+            # Create move object with enhanced metadata
             move = {
                 "content": sentence.strip(),
-                "timestamp": timestamp,
+                "timestamp": move_timestamp.isoformat(),
+                "micro_timestamp": move_timestamp.timestamp(),
                 "phase": current_phase,
                 "move_type": move_type,
                 "modality": "text",
                 "source": source,
                 "move_number": len(moves) + 1,
+                "cognitive_load": cognitive_load,
                 "context": {
                     "sentence_position": i,
                     "text_length": len(sentence),
-                    "has_question": "?" in sentence
+                    "has_question": "?" in sentence,
+                    "word_count": len(sentence.split()),
+                    "complexity_score": self._calculate_text_complexity(sentence)
                 }
             }
             
@@ -859,11 +872,13 @@ class InteractionLogger:
             "interaction_number": interaction_number,
             "move_number": move.get("move_number", 0),
             "timestamp": move.get("timestamp", ""),
+            "micro_timestamp": move.get("micro_timestamp", 0),
             "content": move.get("content", ""),
             "phase": move.get("phase", "unknown"),
             "move_type": move.get("move_type", "unknown"),
             "modality": move.get("modality", "text"),
             "source": move.get("source", "unknown"),
+            "cognitive_load": move.get("cognitive_load", 0.0),
             "context": json.dumps(move.get("context", {}))
         }
         
@@ -872,6 +887,74 @@ class InteractionLogger:
             self.design_moves = []
         
         self.design_moves.append(move_data)
+    
+    def _estimate_move_cognitive_load(self, sentence: str, move_type: str, phase: str) -> float:
+        """Estimate cognitive load for a design move"""
+        
+        # Base cognitive load factors
+        word_count = len(sentence.split())
+        complexity_score = self._calculate_text_complexity(sentence)
+        
+        # Move type multipliers
+        type_multipliers = {
+            "synthesis": 1.2,      # Higher load for combining ideas
+            "analysis": 1.1,       # Moderate load for analysis
+            "evaluation": 1.3,     # High load for evaluation
+            "transformation": 1.4, # Highest load for transformation
+            "reflection": 0.8,     # Lower load for reflection
+            "general": 1.0         # Base load
+        }
+        
+        # Phase multipliers
+        phase_multipliers = {
+            "ideation": 1.0,       # Base load
+            "visualization": 1.2,  # Higher load for visual thinking
+            "materialization": 1.3  # Highest load for technical details
+        }
+        
+        # Calculate cognitive load
+        base_load = min((word_count * complexity_score) / 100.0, 1.0)
+        adjusted_load = base_load * type_multipliers.get(move_type, 1.0) * phase_multipliers.get(phase, 1.0)
+        
+        return min(adjusted_load, 1.0)
+    
+    def _calculate_text_complexity(self, text: str) -> float:
+        """Calculate text complexity score"""
+        
+        # Simple complexity metrics
+        words = text.split()
+        if not words:
+            return 0.0
+        
+        # Average word length
+        avg_word_length = sum(len(word) for word in words) / len(words)
+        
+        # Sentence complexity (punctuation, capitalization)
+        complexity_score = 0.0
+        complexity_score += avg_word_length / 10.0  # Normalize word length
+        complexity_score += text.count(',') * 0.1   # Commas indicate complexity
+        complexity_score += text.count(';') * 0.2   # Semicolons indicate complexity
+        complexity_score += text.count(':') * 0.2   # Colons indicate complexity
+        
+        return min(complexity_score, 1.0)
+    
+    def _add_temporal_relationships(self, moves: List[Dict[str, Any]]):
+        """Add temporal relationships between moves"""
+        
+        for i, move in enumerate(moves):
+            # Add previous move reference
+            if i > 0:
+                move["previous_move"] = moves[i-1]["move_number"]
+                move["temporal_gap"] = move["micro_timestamp"] - moves[i-1]["micro_timestamp"]
+            else:
+                move["previous_move"] = None
+                move["temporal_gap"] = 0.0
+            
+            # Add next move reference
+            if i < len(moves) - 1:
+                move["next_move"] = moves[i+1]["move_number"]
+            else:
+                move["next_move"] = None
 
     def _get_agent_usage_analysis(self) -> Dict[str, Any]:
         """Analyze agent usage patterns"""

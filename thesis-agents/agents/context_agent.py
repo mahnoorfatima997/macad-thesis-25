@@ -78,6 +78,27 @@ class ContextAgent:
             "enthusiasm": [
                 "excited", "love", "amazing", "awesome", "great", "fantastic",
                 "wonderful", "brilliant", "perfect"
+            ],
+            
+            # DESIGN PHASE INDICATORS
+            "ideation": [
+                "concept", "idea", "approach", "strategy", "vision", "goal",
+                "objective", "purpose", "intention", "brainstorm", "explore",
+                "consider", "think about", "what if", "imagine", "envision",
+                "precedent", "example", "reference", "inspiration", "influence"
+            ],
+            "visualization": [
+                "form", "shape", "massing", "volume", "proportion", "scale",
+                "circulation", "flow", "layout", "plan", "section", "elevation",
+                "sketch", "drawing", "model", "3d", "render", "visualize",
+                "spatial", "arrangement", "composition", "geometry", "structure"
+            ],
+            "materialization": [
+                "construction", "structure", "system", "detail", "material",
+                "technical", "engineering", "performance", "cost", "budget",
+                "timeline", "schedule", "specification", "implementation",
+                "fabrication", "assembly", "installation", "maintenance",
+                "durability", "sustainability", "efficiency"
             ]
         }
 
@@ -131,6 +152,7 @@ class ContextAgent:
             "conversation_patterns": conversation_patterns,
             "routing_suggestions": routing_suggestions,
             "agent_contexts": agent_contexts,
+            "design_phase": self.detect_design_phase(current_input, state),
             "context_quality": self._assess_context_quality(core_classification, content_analysis),
             "timestamp": self._get_current_timestamp(),
             "agent": self.name
@@ -1097,6 +1119,74 @@ class ContextAgent:
             return False  # Technical questions shouldn't go to cognitive challenge
         
         return True
+    
+    def detect_design_phase(self, input_text: str, state: ArchMentorState) -> Dict[str, Any]:
+        """Detect the current design phase based on input content and conversation history"""
+        
+        input_lower = input_text.lower()
+        
+        # Calculate phase scores based on keyword matches
+        phase_scores = {
+            "ideation": 0,
+            "visualization": 0,
+            "materialization": 0
+        }
+        
+        # Score based on current input
+        for phase, keywords in self.analysis_patterns.items():
+            if phase in ["ideation", "visualization", "materialization"]:
+                for keyword in keywords:
+                    if keyword in input_lower:
+                        phase_scores[phase] += 1
+        
+        # Consider conversation history for phase progression
+        recent_messages = [msg.get('content', '') for msg in state.messages[-5:]]
+        for message in recent_messages:
+            message_lower = message.lower()
+            for phase, keywords in self.analysis_patterns.items():
+                if phase in ["ideation", "visualization", "materialization"]:
+                    for keyword in keywords:
+                        if keyword in message_lower:
+                            phase_scores[phase] += 0.5  # Lower weight for historical context
+        
+        # Determine primary phase
+        max_score = max(phase_scores.values())
+        if max_score == 0:
+            primary_phase = "ideation"  # Default to ideation
+        else:
+            primary_phase = max(phase_scores, key=phase_scores.get)
+        
+        # Calculate phase confidence
+        total_score = sum(phase_scores.values())
+        confidence = max_score / total_score if total_score > 0 else 0.5
+        
+        # Detect phase transitions
+        previous_phase = getattr(state, 'current_design_phase', 'ideation')
+        phase_transition = primary_phase != previous_phase
+        
+        # Update state
+        state.current_design_phase = primary_phase
+        
+        return {
+            "current_phase": primary_phase,
+            "previous_phase": previous_phase,
+            "phase_transition": phase_transition,
+            "phase_scores": phase_scores,
+            "confidence": confidence,
+            "phase_indicators": self._extract_phase_indicators(input_text, primary_phase)
+        }
+    
+    def _extract_phase_indicators(self, input_text: str, phase: str) -> List[str]:
+        """Extract specific indicators that led to phase classification"""
+        
+        input_lower = input_text.lower()
+        indicators = []
+        
+        for keyword in self.analysis_patterns.get(phase, []):
+            if keyword in input_lower:
+                indicators.append(keyword)
+        
+        return indicators
 
 # Test function
 async def test_context_agent():

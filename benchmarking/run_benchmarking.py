@@ -29,6 +29,10 @@ from benchmarking.visualization_tools import CognitiveBenchmarkVisualizer
 from benchmarking.user_proficiency_classifier import (
     UserProficiencyClassifier, generate_training_data_from_sessions
 )
+from benchmarking.linkography_analyzer import (
+    LinkographyAnalyzer, analyze_session_linkography, analyze_multiple_sessions
+)
+from benchmarking.pattern_recognition import CognitivePatternDetector
 
 
 class BenchmarkingPipeline:
@@ -44,6 +48,8 @@ class BenchmarkingPipeline:
         self.metrics_evaluator = CognitiveMetricsEvaluator()
         self.visualizer = CognitiveBenchmarkVisualizer(style='scientific')
         self.proficiency_classifier = UserProficiencyClassifier()
+        self.linkography_analyzer = LinkographyAnalyzer()
+        self.pattern_detector = CognitivePatternDetector()
         
         # Results storage
         self.results = {
@@ -102,21 +108,26 @@ class BenchmarkingPipeline:
         evaluation_results = self._evaluate_sessions(session_files)
         print("[OK] Session evaluation complete")
         
-        # Step 6: Train proficiency classifier
+        # Step 6: Linkography Analysis
+        print("\nStep 6: Performing linkography analysis...")
+        linkography_results = self._perform_linkography_analysis(session_files)
+        print(f"[OK] Linkography analysis complete for {len(linkography_results)} sessions")
+        
+        # Step 7: Train proficiency classifier
         if train_classifier:
-            print("\nStep 6: Training user proficiency classifier...")
+            print("\nStep 7: Training user proficiency classifier...")
             self._train_proficiency_classifier(session_files)
             print("[OK] Proficiency classifier trained")
         
-        # Step 7: Generate visualizations
+        # Step 8: Generate visualizations
         if generate_visualizations:
-            print("\nStep 7: Generating visualizations...")
-            self._generate_visualizations(graphs, benchmarks, evaluation_results)
+            print("\nStep 8: Generating visualizations...")
+            self._generate_visualizations(graphs, benchmarks, evaluation_results, linkography_results)
             print("[OK] Visualizations generated")
         
-        # Step 8: Export comprehensive report
+        # Step 9: Export comprehensive report
         if export_report:
-            print("\nStep 8: Generating final report...")
+            print("\nStep 9: Generating final report...")
             self._export_comprehensive_report()
             print("[OK] Report exported")
         
@@ -187,6 +198,142 @@ class BenchmarkingPipeline:
         
         return benchmarks
     
+    def _perform_linkography_analysis(self, session_files: List[Path]) -> Dict[str, Any]:
+        """Perform linkography analysis on session data"""
+        
+        linkography_results = {}
+        
+        for i, session_file in enumerate(session_files):
+            print(f"  Analyzing linkography for session {i+1}/{len(session_files)}...", end='\r')
+            
+            try:
+                # Load session data
+                session_data = self._load_session_data_for_linkography(session_file)
+                
+                if session_data and session_data.get('design_moves'):
+                    # Perform linkography analysis
+                    linkography_report = analyze_session_linkography(session_data)
+                    
+                    if linkography_report:
+                        session_id = session_file.stem.replace('interactions_', '')
+                        linkography_results[session_id] = linkography_report
+                        
+                        # Export individual session linkography data
+                        output_path = self.output_dir / f"linkography_{session_id}.json"
+                        self.linkography_analyzer.export_linkograph_data(str(output_path))
+                
+            except Exception as e:
+                print(f"\n  [!]  Error in linkography analysis for {session_file.name}: {str(e)}")
+        
+        print()  # New line after progress
+        
+        # Store results
+        self.results['linkography_analysis'] = linkography_results
+        
+        # Generate aggregated linkography report
+        if linkography_results:
+            aggregated_report = self._generate_aggregated_linkography_report(linkography_results)
+            self.results['aggregated_linkography'] = aggregated_report
+            
+            # Export aggregated report
+            aggregated_path = self.output_dir / "aggregated_linkography_report.json"
+            with open(aggregated_path, 'w') as f:
+                json.dump(aggregated_report, f, indent=2)
+        
+        return linkography_results
+    
+    def _load_session_data_for_linkography(self, session_file: Path) -> Dict[str, Any]:
+        """Load session data in format suitable for linkography analysis"""
+        
+        try:
+            # Load interaction data
+            interactions_df = pd.read_csv(session_file)
+            
+            # Load design moves if available
+            session_id = session_file.stem.replace('interactions_', '')
+            design_moves_file = self.data_dir / f"design_moves_{session_id}.csv"
+            
+            design_moves = []
+            if design_moves_file.exists():
+                design_moves_df = pd.read_csv(design_moves_file)
+                design_moves = design_moves_df.to_dict('records')
+            
+            # Load session summary if available
+            session_summary_file = self.data_dir / f"session_summary_{session_id}.json"
+            session_summary = {}
+            if session_summary_file.exists():
+                with open(session_summary_file, 'r') as f:
+                    session_summary = json.load(f)
+            
+            return {
+                "session_id": session_id,
+                "interactions": interactions_df.to_dict('records'),
+                "design_moves": design_moves,
+                "session_summary": session_summary
+            }
+            
+        except Exception as e:
+            print(f"  [!]  Error loading session data: {str(e)}")
+            return {}
+    
+    def _generate_aggregated_linkography_report(self, linkography_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate aggregated linkography analysis report"""
+        
+        if not linkography_results:
+            return {}
+        
+        # Aggregate metrics across sessions
+        total_moves = sum(r.get('moves_summary', {}).get('total_moves', 0) for r in linkography_results.values())
+        total_links = sum(r.get('links_summary', {}).get('total_links', 0) for r in linkography_results.values())
+        
+        # Calculate average similarity
+        similarities = []
+        for result in linkography_results.values():
+            avg_sim = result.get('links_summary', {}).get('average_similarity', 0)
+            if avg_sim > 0:
+                similarities.append(avg_sim)
+        
+        avg_similarity = np.mean(similarities) if similarities else 0
+        
+        # Aggregate cognitive patterns
+        total_overload_sessions = sum(
+            1 for r in linkography_results.values() 
+            if r.get('cognitive_patterns', {}).get('cognitive_overload', {}).get('overload_detected', False)
+        )
+        
+        total_fixation_sessions = sum(
+            1 for r in linkography_results.values() 
+            if r.get('cognitive_patterns', {}).get('design_fixation', {}).get('fixation_detected', False)
+        )
+        
+        total_breakthroughs = sum(
+            len(r.get('cognitive_patterns', {}).get('creative_breakthroughs', []))
+            for r in linkography_results.values()
+        )
+        
+        return {
+            "metadata": {
+                "timestamp": datetime.now().isoformat(),
+                "total_sessions": len(linkography_results),
+                "analysis_type": "aggregated_linkography"
+            },
+            "aggregated_metrics": {
+                "total_moves": total_moves,
+                "total_links": total_links,
+                "average_similarity": avg_similarity,
+                "average_moves_per_session": total_moves / len(linkography_results) if linkography_results else 0,
+                "average_links_per_session": total_links / len(linkography_results) if linkography_results else 0
+            },
+            "cognitive_patterns_summary": {
+                "sessions_with_overload": total_overload_sessions,
+                "sessions_with_fixation": total_fixation_sessions,
+                "total_breakthroughs": total_breakthroughs,
+                "overload_percentage": (total_overload_sessions / len(linkography_results)) * 100 if linkography_results else 0,
+                "fixation_percentage": (total_fixation_sessions / len(linkography_results)) * 100 if linkography_results else 0
+            },
+            "session_details": linkography_results
+        }
+    
     def _evaluate_sessions(self, session_files: List[Path]) -> Dict[str, Any]:
         """Evaluate cognitive metrics for all sessions"""
         
@@ -242,7 +389,8 @@ class BenchmarkingPipeline:
     def _generate_visualizations(self, 
                                graphs: List[InteractionGraph],
                                benchmarks: Dict[str, Any],
-                               evaluation_results: Dict[str, Any]):
+                               evaluation_results: Dict[str, Any],
+                               linkography_results: Dict[str, Any] = None):
         """Generate all visualizations"""
         
         viz_dir = self.output_dir / "visualizations"
