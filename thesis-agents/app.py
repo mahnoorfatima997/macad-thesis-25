@@ -398,99 +398,6 @@ else:
         visual_analysis = result.get('visual_analysis', {})
         if visual_analysis and not visual_analysis.get('error'):
             with st.expander("🖼️ Visual Analysis Details", expanded=True):
-                
-                # Check if GPT-SAM results are available
-                gpt_sam_results = visual_analysis.get('gpt_sam_results')
-                if gpt_sam_results and 'error' not in gpt_sam_results:
-                    # Display GPT-SAM enhanced analysis
-                    st.subheader("🤖 GPT Vision + SAM Analysis")
-                    
-                    # Show visualization if available
-                    if gpt_sam_results.get('visualization') is not None:
-                        st.image(gpt_sam_results['visualization'], caption="GPT Vision + SAM Analysis", use_container_width=True)
-                    
-                    # Show detailed GPT analysis
-                    gpt_analysis = gpt_sam_results.get('gpt_analysis', {})
-                    if gpt_analysis:
-                        col_gpt1, col_gpt2 = st.columns(2)
-                        
-                        with col_gpt1:
-                            spatial_elements = gpt_analysis.get('spatial_elements', [])
-                            if spatial_elements:
-                                st.write("**Spatial Elements Detected:**")
-                                for elem in spatial_elements[:8]:
-                                    elem_type = elem.get('type', 'unknown')
-                                    label = elem.get('label', 'unnamed')
-                                    confidence = elem.get('coordinate_confidence', 0)
-                                    st.write(f"• {elem_type.title()}: {label} ({confidence:.1%})")
-                            
-                            circulation = gpt_analysis.get('circulation_analysis', {})
-                            if circulation:
-                                st.write("**Circulation Analysis:**")
-                                primary = circulation.get('primary_path', 'Unknown')
-                                st.write(f"• Primary: {primary}")
-                                secondary = circulation.get('secondary_paths', [])
-                                if secondary:
-                                    st.write(f"• Secondary: {', '.join(secondary[:3])}")
-                        
-                        with col_gpt2:
-                            design_insights = gpt_analysis.get('design_insights', {})
-                            if design_insights:
-                                strengths = design_insights.get('strengths', [])
-                                if strengths:
-                                    st.write("**Design Strengths:**")
-                                    for strength in strengths[:4]:
-                                        st.write(f"• {strength}")
-                                
-                                issues = design_insights.get('issues', [])
-                                if issues:
-                                    st.write("**Design Issues:**")
-                                    for issue in issues[:4]:
-                                        st.write(f"• {issue}")
-                                
-                                suggestions = design_insights.get('suggestions', [])
-                                if suggestions:
-                                    st.write("**Suggestions:**")
-                                    for suggestion in suggestions[:3]:
-                                        st.write(f"• {suggestion}")
-                    
-                    # Show SAM segmentation results
-                    sam_results = gpt_sam_results.get('sam_results', {})
-                    if sam_results and 'error' not in sam_results:
-                        st.write(f"**SAM Segments Created:** {sam_results.get('num_segments', 0)}")
-                    
-                    # Download GPT-SAM results
-                    st.markdown("---")
-                    st.subheader("📥 Download Results")
-                    
-                    # Create JSON for download
-                    import json
-                    from datetime import datetime
-                    
-                    download_data = {
-                        "analysis_timestamp": datetime.now().isoformat(),
-                        "pipeline_version": "gpt_sam_v1.0",
-                        "gpt_analysis": gpt_analysis,
-                        "sam_results": sam_results,
-                        "design_brief": st.session_state.arch_state.current_design_brief if st.session_state.arch_state else "",
-                        "student_profile": {
-                            "skill_level": st.session_state.arch_state.student_profile.skill_level if st.session_state.arch_state else "unknown"
-                        }
-                    }
-                    
-                    json_str = json.dumps(download_data, indent=2)
-                    
-                    st.download_button(
-                        label="📥 Download GPT-SAM Analysis (JSON)",
-                        data=json_str,
-                        file_name=f"gpt_sam_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                        mime="application/json",
-                        help="Download complete GPT-SAM analysis results"
-                    )
-                    
-                    st.markdown("---")
-                
-                # Original visual analysis display
                 col_vis1, col_vis2 = st.columns(2)
                 
                 with col_vis1:
@@ -782,16 +689,17 @@ else:
                     st.error(f"Debug failed: {e}")
             
             # Update conversation state (this was already in your code)
-            st.session_state.arch_state.messages.append({
-                "role": "user",
-                "content": user_input
-            })
+            # Ensure conversation context is maintained
+            st.session_state.arch_state.ensure_brief_in_messages()
             
             # Update conversation state
             st.session_state.arch_state.messages.append({
                 "role": "user",
                 "content": user_input
             })
+            
+            print(f"🔍 State check - Total messages: {len(st.session_state.arch_state.messages)}")
+            print(f"🔍 Last user message: {user_input[:50]}...")
             
             # Generate multi-agent response
             with st.spinner("🧠 AI agents collaborating..."):

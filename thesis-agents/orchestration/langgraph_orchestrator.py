@@ -1,5 +1,5 @@
 # orchestration/langgraph_orchestrator.py
-from typing import Dict, Any, List, Literal
+from typing import Dict, Any, List, Literal, Optional
 from langgraph.graph import StateGraph, END
 from typing_extensions import TypedDict
 import asyncio
@@ -15,6 +15,7 @@ from agents.analysis_agent import AnalysisAgent
 from agents.socratic_tutor import SocraticTutorAgent
 from agents.domain_expert import DomainExpertAgent
 from agents.cognitive_enhancement import CognitiveEnhancementAgent
+from state_manager import*
 
 class WorkflowState(TypedDict):
     """LangGraph state that flows between agents"""
@@ -107,8 +108,15 @@ class LangGraphOrchestrator:
             }
         )
         
-        # Socratic always goes to synthesizer
-        workflow.add_edge("socratic_tutor", "synthesizer")
+        # Socratic tutor can go to cognitive enhancement or synthesizer
+        workflow.add_conditional_edges(
+            "socratic_tutor",
+            self.after_socratic_tutor,
+            {
+                "to_cognitive": "cognitive_enhancement",
+                "to_synthesizer": "synthesizer"
+            }
+        )
         
         # Cognitive enhancement agent goes to synthesizer
         workflow.add_edge("cognitive_enhancement", "synthesizer")
@@ -130,6 +138,9 @@ class LangGraphOrchestrator:
         
         student_state = state["student_state"]
         
+        print(f"🔍 Context Agent: Processing state with {len(student_state.messages)} messages")
+        print(f"🔍 Context Agent: Messages: {[msg.get('role', 'unknown') for msg in student_state.messages]}")
+        
         # Get last user message
         last_message = ""
         for msg in reversed(student_state.messages):
@@ -137,28 +148,41 @@ class LangGraphOrchestrator:
                 last_message = msg['content']
                 break
         
+        print(f"🔍 Context Agent: Last user message: {last_message[:50]}...")
+        
         # Use new context agent for comprehensive analysis
         context_package = await self.context_agent.analyze_student_input(student_state, last_message)
         
         return {
             **state,
             "last_message": last_message,
-            "student_classification": context_package["core_classification"],
+            "student_classification": {**context_package["core_classification"], "last_message": last_message},
             "context_metadata": context_package["contextual_metadata"],
             "conversation_patterns": context_package["conversation_patterns"],
             "routing_suggestions": context_package["routing_suggestions"],
-            "agent_contexts": context_package["agent_contexts"]
+            "agent_contexts": context_package["agent_contexts"],
+            "context_package": context_package  # Store full package for agents
         }
     
     async def router_node(self, state: WorkflowState) -> WorkflowState:
-        """ROUTER: Analyzes context and determines path (Section 3)"""
+        """ROUTER: Use context agent's routing suggestions for smart routing"""
         
         print("🎯 Router: Determining agent path...")
         
+        # Use context agent's routing suggestions instead of hardcoded logic
+        routing_suggestions = state.get("routing_suggestions", {})
         classification = state["student_classification"]
-        routing_decision = self.determine_routing(classification)
+        
+        # Smart routing: Use context agent suggestions with thread awareness fallback
+        if routing_suggestions.get("confidence", 0) > 0.7:
+            # High confidence from context agent - use its suggestions
+            routing_decision = self.create_smart_routing_decision(routing_suggestions, classification)
+        else:
+            # Lower confidence - use existing logic as fallback
+            routing_decision = await self.determine_routing(routing_suggestions, classification, state["student_state"])
         
         print(f"   Route chosen: {routing_decision['path']}")
+        print(f"   Confidence: {routing_decision['confidence']:.2f}")
         
         return {
             **state,
@@ -171,7 +195,10 @@ class LangGraphOrchestrator:
         print("📊 Analysis Agent: Processing...")
         
         student_state = state["student_state"]
-        analysis_result = await self.analysis_agent.process(student_state)
+        context_package = state.get("context_package", {})
+        
+        # Pass context package to analysis agent for better continuity
+        analysis_result = await self.analysis_agent.process(student_state, context_package)
         
         return {
             **state,
@@ -179,12 +206,37 @@ class LangGraphOrchestrator:
         }
     
     async def domain_expert_node(self, state: WorkflowState) -> WorkflowState:
-        """Domain Expert: Knowledge synthesis - NO HARD-CODED TOPICS"""
+        """Domain Expert: Knowledge synthesis with visual awareness"""
         
         print("📚 Domain Expert: Providing knowledge...")
         
         student_state = state["student_state"]
         analysis_result = state.get("analysis_result", {})
+        
+        # ENHANCED: Pass visual analysis to domain expert for sketch-aware responses
+        visual_analysis = analysis_result.get('visual_analysis', {})
+        if visual_analysis and not visual_analysis.get('error'):
+            print("🖼️ Domain Expert: Including visual analysis context")
+            # Store visual insights in student state for agent access
+            student_state.agent_context['visual_insights'] = {
+                'design_strengths': visual_analysis.get('design_strengths', []),
+                'improvement_opportunities': visual_analysis.get('improvement_opportunities', []),
+                'identified_elements': visual_analysis.get('identified_elements', []),
+                'has_visual_analysis': True
+            }
+        else:
+            student_state.agent_context['visual_insights'] = {'has_visual_analysis': False}
+        
+        # Pass visual context to analysis result for better coordination
+        if visual_analysis and not visual_analysis.get('error'):
+            analysis_result['visual_context'] = {
+                'has_visual': True,
+                'elements': visual_analysis.get('identified_elements', []),
+                'strengths': visual_analysis.get('design_strengths', []),
+                'opportunities': visual_analysis.get('improvement_opportunities', [])
+            }
+        else:
+            analysis_result['visual_context'] = {'has_visual': False}
         
         # Use cognitive flags from analysis, not hard-coded keywords
         cognitive_flags = analysis_result.get('cognitive_flags', [])
@@ -205,75 +257,24 @@ class LangGraphOrchestrator:
         }
     
     async def socratic_tutor_node(self, state: WorkflowState) -> WorkflowState:
-        """Socratic Tutor: Question generation - LISTEN TO USER INPUT"""
+        """Socratic Tutor: AI-powered question generation for ANY topic"""
         
         print("🤔 Socratic Tutor: Generating questions...")
         
         student_state = state["student_state"]
         analysis_result = state.get("analysis_result", {})
-        last_message = state.get("last_message", "").lower()
+        context_classification = state.get("student_classification", {})
         
-        # CHECK IF USER MADE A SPECIFIC CHOICE
-        user_topic = None
-        if "versatility" in last_message or "activities" in last_message:
-            user_topic = "activity_versatility"
-            print(f"🎯 User chose topic: activity versatility")
-        elif "comfort" in last_message and "space" in last_message:
-            user_topic = "space_comfort"
-            print(f"🎯 User chose topic: space comfort")
-        elif "central" in last_message and "space" in last_message:
-            user_topic = "central_space_design"
-            print(f"🎯 User chose topic: central space design")
-        
-        # Generate response based on USER'S ACTUAL CHOICE
-        if user_topic:
-            socratic_result = await self.generate_topic_specific_response(user_topic, student_state, analysis_result)
-        else:
-            # Fallback to normal socratic response
-            socratic_result = await self.socratic_agent.generate_response(
-                student_state, analysis_result
-            )
+        # Use enhanced Socratic agent with context classification
+        socratic_result = await self.socratic_agent.generate_response(
+            student_state, analysis_result, context_classification
+        )
         
         return {
             **state,
             "socratic_result": socratic_result
         }
 
-    async def generate_topic_specific_response(self, user_topic: str, student_state: ArchMentorState, analysis_result: Dict) -> Dict[str, Any]:
-        """Generate Socratic response about user's chosen topic"""
-        
-        # Create questions about what they ACTUALLY want to explore
-        topic_questions = {
-            "activity_versatility": [
-                "What types of activities do you envision happening simultaneously in this central space?",
-                "How might the space need to transform between different activities like meetings versus exhibitions?",
-                "What furniture or elements would need to be flexible to support various activities?",
-                "How could the space accommodate both intimate meetings and larger gatherings?"
-            ],
-            "space_comfort": [
-                "What makes a space feel comfortable for different user groups?",
-                "How might acoustic comfort differ between meeting and exhibition activities?",
-                "What environmental factors affect comfort during long meetings versus brief gatherings?",
-                "How could the space adapt to seasonal comfort needs in Copenhagen?"
-            ],
-            "central_space_design": [
-                "How do you envision people moving through and using this central area?",
-                "What relationship should the central space have with surrounding areas?",
-                "How could the central space serve as both a destination and a transition zone?",
-                "What would make this central area feel welcoming for community members?"
-            ]
-        }
-        
-        import random
-        question = random.choice(topic_questions.get(user_topic, ["What specific aspect of this interests you most?"]))
-        
-        return {
-            "agent": "socratic_tutor",
-            "response_text": question,
-            "response_type": "user_topic_focused",
-            "primary_gap_addressed": user_topic,
-            "educational_intent": f"Guide exploration of {user_topic.replace('_', ' ')}"
-        }
     
     async def cognitive_enhancement_node(self, state: WorkflowState) -> WorkflowState:
         """Cognitive Enhancement Agent node - FIXED"""
@@ -309,71 +310,94 @@ class LangGraphOrchestrator:
     
     # ROUTING LOGIC
     
-    def route_decision(self, state: WorkflowState) -> Literal["knowledge_only", "socratic_focus", "cognitive_challenge", "multi_agent", "default"]:
-        """Router decision based on your document's logic"""
+    def route_decision(self, state: WorkflowState) -> str:
+        """Simplified routing that ensures comprehensive responses"""
         
-        routing = state["routing_decision"]
-        return routing["path"]
+        print("🎯 Making routing decision...")
+        
+        # For most queries, we want both domain knowledge and Socratic guidance
+        # This ensures comprehensive responses that both inform and guide thinking
+        
+        print(f"✅ Route chosen: comprehensive_guidance")
+        print(f"🤖 Will activate: domain_expert + socratic_tutor")
+        
+        # Return the path that leads to analysis (which will then call both agents)
+        return "default"
     
     # In orchestration/langgraph_orchestrator.py - Fix after_analysis_routing method
 
-    def after_analysis_routing(self, state: WorkflowState) -> Literal["to_domain_expert", "to_socratic", "to_cognitive", "to_synthesizer"]:
-        """Enhanced routing after analysis - FIXED"""
+    def after_analysis_routing(self, state: WorkflowState) -> str:
+        """Simplified routing after analysis that ensures comprehensive responses"""
         
-        routing = state.get("routing_decision", {})
-        path = routing.get("path", "default")
+        print("🎯 After analysis routing...")
         
-        print(f"      🎯 After analysis routing for path: {path}")
+        # For comprehensive responses, we want domain expert, Socratic tutor, and cognitive enhancement
+        # The workflow will execute them in sequence
         
-        if path == "cognitive_challenge":
-            print(f"         → Going to cognitive agent")
-            return "to_cognitive"
-        elif path == "socratic_focus":
-            print(f"         → Going to socratic tutor")
-            return "to_socratic"
-        elif path in ["multi_agent", "default"]:
-            print(f"         → Going to domain expert first")
-            return "to_domain_expert"
-        else:
-            print(f"         → Going to synthesizer")
-            return "to_synthesizer"
+        print("🚀 Will execute: domain_expert → socratic_tutor → cognitive_enhancement → synthesizer")
+        return "to_domain_expert"
     
     def after_domain_expert(self, state: WorkflowState) -> Literal["to_socratic", "to_synthesizer"]:
-        """Route after domain expert based on path"""
+        """Always go to Socratic tutor after domain expert for comprehensive responses"""
         
-        routing = state.get("routing_decision", {})
-        path = routing.get("path", "default")
+        print("🎯 After domain expert: Going to Socratic tutor...")
+        return "to_socratic"
+    
+    def after_socratic_tutor(self, state: WorkflowState) -> Literal["to_cognitive", "to_synthesizer"]:
+        """Always go to cognitive enhancement after Socratic tutor for comprehensive responses"""
         
-        print(f"   🎯 After domain expert routing for path: {path}")
-        
-        if path == "knowledge_only":
-            print("      → Going directly to synthesizer")
-            return "to_synthesizer"
-        elif path in ["multi_agent", "default"]:
-            print("      → Going to socratic for sequence")
-            return "to_socratic"
-        else:
-            print("      → Going to synthesizer")
-            return "to_synthesizer"
+        print("🎯 After Socratic tutor: Going to cognitive enhancement...")
+        return "to_cognitive"
     
     # HELPER METHODS
     
+    def create_smart_routing_decision(self, routing_suggestions: Dict[str, Any], classification: Dict[str, Any]) -> Dict[str, Any]:
+        """Create routing decision using context agent's suggestions with thread awareness"""
+        
+        # Use context agent's primary route suggestion
+        primary_route = routing_suggestions.get("primary_route", "default")
+        confidence = routing_suggestions.get("confidence", 0.6)
+        reasoning = routing_suggestions.get("reasoning", ["Standard interaction"])
+        
+        # Convert routing suggestions to our workflow format
+        routing_decision = {
+            "path": primary_route,
+            "confidence": confidence,
+            "reason": "; ".join(reasoning),
+            "ai_powered": True
+        }
+        
+        # Map routes to agents to activate
+        route_to_agents = {
+            "knowledge_only": ["domain_expert"],
+            "socratic_focus": ["socratic_tutor"],
+            "cognitive_challenge": ["cognitive_enhancement"],
+            "multi_agent": ["domain_expert", "socratic_tutor", "cognitive_enhancement"],
+            "default": ["domain_expert", "socratic_tutor"]
+        }
+        
+        routing_decision["agents_to_activate"] = route_to_agents.get(primary_route, ["domain_expert", "socratic_tutor"])
+        
+        return routing_decision
+        
     # In orchestration/langgraph_orchestrator.py - Fix classify_student_input method
 
     def classify_student_input(self, message: str, student_state: ArchMentorState) -> Dict[str, Any]:
         """IMPROVED classification with better keyword detection"""
-        
+
         if not message:
             return {"classification": "initial", "understanding": "unknown", "confidence": "medium", "engagement": "medium"}
-        
+
         message_lower = message.lower()
-        
-        # IMPROVED KEYWORD DETECTION
-        
-        # Overconfidence indicators (for cognitive_challenge)
+
+
+        # Enhanced overconfidence indicators (for cognitive_challenge)
         overconfidence_words = ["obviously", "clearly", "definitely", "perfect", "best", "optimal", "ideal", "flawless"]
-        overconfidence_score = sum(1 for word in overconfidence_words if word in message_lower)
+        absolute_patterns = ["this is the", "this will", "my design is", "the solution is", "it's clear that"]
         
+        overconfidence_score = sum(1 for word in overconfidence_words if word in message_lower)
+        overconfidence_score += sum(1 for pattern in absolute_patterns if pattern in message_lower)
+
         # Feedback request indicators (for multi_agent)
         feedback_patterns = [
             "review my", "feedback on", "thoughts on", "critique", "evaluate", 
@@ -381,33 +405,43 @@ class LangGraphOrchestrator:
             "analyze my plan", "analyze my design", "look at my", "thoughts about my",
             "how can i improve", "can you help me improve", "improve the", "improve my"
         ]
-
         is_feedback_request = any(pattern in message_lower for pattern in feedback_patterns)
-        
+
         # Technical question indicators (for knowledge_only)
         technical_patterns = [
             "what are the", "what is the", "requirements for", "ada requirements",
             "building codes", "standards for", "guidelines", "regulations"
         ]
         is_technical_question = any(pattern in message_lower for pattern in technical_patterns)
-        
+
+        # Example/precedent/project request indicators (NEW)
+        example_patterns = [
+            "example", "examples", "precedent", "precedents", "case study", "case studies",
+            "project", "projects", "reference", "references"
+        ]
+        is_example_request = any(pattern in message_lower for pattern in example_patterns) and "?" in message_lower
+
         # Confusion indicators (for socratic_focus)
         confusion_words = ["confused", "don't understand", "unclear", "help", "lost", "stuck"]
         confusion_score = sum(1 for word in confusion_words if word in message_lower)
-        
-        # CLASSIFICATION LOGIC
-        
+
+        # Socratic clarification indicators
+        socratic_clarification_patterns = [
+            "what do you mean", "can you explain", "why did you ask", "why are you asking", "what's the point of", "what is the point of"
+        ]
+        is_socratic_clarification = any(pattern in message_lower for pattern in socratic_clarification_patterns)
+
         # 1. Understanding Level
         technical_terms = ["accessibility", "circulation", "programming", "design", "community", "building"]
         tech_usage = sum(1 for term in technical_terms if term in message_lower)
-        
+
         if tech_usage >= 2:
             understanding = "high"
         elif tech_usage >= 1:
             understanding = "medium"
         else:
             understanding = "low"
-        
+
         # 2. Confidence Level - FIXED
         if overconfidence_score >= 1:  # Lower threshold
             confidence = "overconfident"
@@ -415,7 +449,7 @@ class LangGraphOrchestrator:
             confidence = "confident"
         else:
             confidence = "uncertain"
-        
+
         # 3. Engagement Level
         word_count = len(message.split())
         if word_count > 10:
@@ -424,23 +458,28 @@ class LangGraphOrchestrator:
             engagement = "medium"
         else:
             engagement = "low"
-        
-        # 4. Interaction Type - FIXED
+
+        # 4. Interaction Type - PATCHED
         if is_feedback_request:
             interaction_type = "design_feedback_request"
+        elif is_example_request:
+            interaction_type = "example_request"
         elif is_technical_question:
             interaction_type = "technical_question"
+        elif confusion_score > 0:
+            interaction_type = "confusion_expression"
         elif "?" in message:
             interaction_type = "question"
         else:
             interaction_type = "statement"
-        
+
         print(f"      🔍 Classification Debug:")
         print(f"         Overconfidence score: {overconfidence_score}")
         print(f"         Is feedback request: {is_feedback_request}")
         print(f"         Is technical question: {is_technical_question}")
+        print(f"         Is example request: {is_example_request}")
         print(f"         Confidence level: {confidence}")
-        
+
         return {
             "classification": interaction_type,
             "understanding_level": understanding,
@@ -451,48 +490,158 @@ class LangGraphOrchestrator:
             "word_count": word_count,
             "technical_usage": tech_usage,
             "is_technical_question": is_technical_question,
-            "is_feedback_request": is_feedback_request
+            "is_feedback_request": is_feedback_request,
+            "is_example_request": is_example_request
         }
 
     #  determine_routing method
 
-    def determine_routing(self, classification: Dict[str, Any]) -> Dict[str, Any]:
-        """Dynamic routing based on AI classification - no hard-coding"""
+    # Fix for langgraph_orchestrator.py - Enhanced Routing  
+
+    # REPLACE the determine_routing method (around line 600) with this enhanced version:
+    # COMPLETE FIX for langgraph_orchestrator.py - determine_routing method
+    # REPLACE the entire determine_routing method with this complete version:
+
+    async def determine_routing(self, routing_suggestions: Dict[str, Any], classification: Dict[str, Any], state: ArchMentorState = None) -> Dict[str, Any]:
+        """Enhanced routing with better Socratic integration for design guidance"""
+
+        # FIRST: Check if this is a continuation of an ongoing conversation thread
+        if state and len(state.messages) >= 2:
+            thread_continuation = await self._check_conversation_thread(state, classification)
+            if thread_continuation:
+                print(f"🔗 Continuing conversation thread: {thread_continuation['reason']}")
+                return thread_continuation
+
+        # Get the actual user input for analysis
+        last_message = classification.get("last_message", "")
         
-        # Get AI-detected learning state
+        # --- PURE EXAMPLE/PROJECT REQUEST DETECTION (knowledge_only) ---
+        pure_example_keywords = [
+            "example", "examples", "project", "projects", "precedent", "precedents",
+            "case study", "case studies", "show me", "can you give", "can you provide",
+            "can you show", "real project", "built project", "actual project"
+        ]
+        
+        # Check if it's ONLY asking for examples (no design guidance)
+        is_pure_example_request = (
+            any(keyword in last_message.lower() for keyword in pure_example_keywords) and
+            not any(word in last_message.lower() for word in ["how can i", "how do i", "how to", "how might", "incorporate", "integrate", "implement", "apply"])
+        )
+        
+        if is_pure_example_request:
+            print(f"✅ PURE EXAMPLE REQUEST: '{last_message}' → knowledge_only")
+            return {
+                "path": "knowledge_only",
+                "agents_to_activate": ["domain_expert"],
+                "reason": "Pure example/project request without design guidance needed",
+                "confidence": 0.95
+            }
+        
+        # --- DESIGN DECISION REQUEST DETECTION (socratic_focus) ---
+        design_decision_patterns = [
+            "can you suggest", "should i have", "should i use", "which one", "which should",
+            "what should i choose", "what would you recommend", "recommend", "suggest",
+            "better to have", "is it better", "which is better", "which approach",
+            "one or two", "single or multiple", "big or small", "central or distributed"
+        ]
+        
+        is_design_decision_request = any(pattern in last_message.lower() for pattern in design_decision_patterns)
+        
+        if is_design_decision_request:
+            print(f"🤔 DESIGN DECISION REQUEST: '{last_message}' → socratic_focus")
+            return {
+                "path": "socratic_focus",
+                "agents_to_activate": ["socratic_tutor"],
+                "reason": "Design decision question needs Socratic guidance to help student think through options",
+                "confidence": 0.95
+            }
+        
+        # --- DESIGN GUIDANCE REQUEST DETECTION (default = Knowledge + Socratic) ---
+        design_guidance_patterns = [
+            "how can i", "how do i", "how to", "how might", "how should",
+            "what's the best way", "what are ways to", "approaches to",
+            "incorporate", "integrate", "implement", "apply", "use",
+            "design", "create", "make", "develop", "enhance", "improve"
+        ]
+        
+        is_design_guidance_request = any(pattern in last_message.lower() for pattern in design_guidance_patterns)
+        
+        if is_design_guidance_request:
+            print(f"🎯 DESIGN GUIDANCE REQUEST: '{last_message}' → default (Knowledge + Socratic)")
+            return {
+                "path": "default",
+                "agents_to_activate": ["domain_expert", "socratic_tutor"],
+                "reason": "Design guidance request needs both knowledge and Socratic questioning",
+                "confidence": 0.9
+            }
+        
+        # Get classification details for other routing decisions
         confidence_level = classification.get("confidence_level", "confident")
         understanding_level = classification.get("understanding_level", "medium")
         engagement_level = classification.get("engagement_level", "medium")
-        interaction_type = classification.get("interaction_type", "general_statement")
+        interaction_type = classification.get("classification", "general_statement")
         is_technical = classification.get("is_technical_question", False)
         is_feedback_request = classification.get("is_feedback_request", False)
         shows_confusion = classification.get("shows_confusion", False)
         demonstrates_overconfidence = classification.get("demonstrates_overconfidence", False)
-        
-        print(f"📊 AI Classification: {confidence_level} confidence, {understanding_level} understanding, {engagement_level} engagement")
-        
-        # EXACT ROUTING LOGIC FROM YOUR DOCUMENT (Section 2)
-        
-        # IF student asks factual question + shows high understanding → Knowledge Agent only
-        if is_technical and understanding_level == "high":
+        is_knowledge_seeking = classification.get("interaction_type") == "knowledge_seeking"
+        is_socratic_clarification = classification.get("is_socratic_clarification", False)
+
+        print(f"📊 Classification: {confidence_level} confidence, {understanding_level} understanding, {engagement_level} engagement")
+        print(f"📊 Interaction type: {classification.get('interaction_type', 'unknown')}")
+    # CONTINUING the determine_routing method - PRESERVED ALL ORIGINAL LOGIC:
+
+        # Handle socratic clarification requests
+        if is_socratic_clarification:
             routing_decision = {
-                "path": "knowledge_only",
+                "path": "socratic_explanation",
+                "agents_to_activate": ["socratic_explainer"],
+                "reason": "User asked for clarification about Socratic question",
+                "confidence": 1.0
+            }
+
+        # 1. Technical questions (standards, codes, requirements) → knowledge_only
+        elif is_technical:
+            routing_decision = {
+                "path": "knowledge_only", 
                 "agents_to_activate": ["domain_expert"],
-                "reason": "Technical question + high understanding",
+                "reason": "Technical question requiring specific knowledge",
                 "confidence": 0.9
             }
         
-        # IF student expresses confusion OR shows low understanding → Socratic Agent (primary) + Cognitive Agent (support)
-        elif shows_confusion or understanding_level == "low":
+        # 2. Design help/improvement requests need Socratic guidance
+        elif (any(word in last_message.lower() for word in ["how can i", "how do i", "don't know how", "help me"]) or
+            any(word in last_message.lower() for word in ["improve", "enhance", "better", "develop"]) or
+            shows_confusion):
             routing_decision = {
-                "path": "socratic_focus",
-                "agents_to_activate": ["socratic_tutor", "cognitive_enhancement"],
-                "primary_agent": "socratic_tutor",
-                "support_agent": "cognitive_enhancement",
-                "reason": "Confusion or low understanding detected",
+                "path": "default",  # Knowledge + Socratic
+                "agents_to_activate": ["domain_expert", "socratic_tutor"],
+                "reason": "Design improvement/guidance request needs Socratic support",
+                "confidence": 0.85
+            }
+        
+        # 3. Pure knowledge seeking (what/definitions) goes to knowledge only
+        elif (is_knowledge_seeking and 
+            any(word in last_message.lower() for word in ["what are", "what is", "definition", "standard", "requirement"])):
+            routing_decision = {
+                "path": "knowledge_only",
+                "agents_to_activate": ["domain_expert"], 
+                "reason": "General knowledge/definition request",
                 "confidence": 0.8
             }
-    # IF student shows overconfidence OR low engagement → Cognitive Agent (primary) + Socratic Agent (follow-up)
+        
+        # 4. Confusion or low understanding → Socratic focus
+        elif (shows_confusion or understanding_level == "low" or 
+            confidence_level == "uncertain" or 
+            classification.get("interaction_type") == "confusion_expression"):
+            routing_decision = {
+                "path": "socratic_focus",
+                "agents_to_activate": ["socratic_tutor"],
+                "reason": f"Confusion/low understanding: {shows_confusion}, {understanding_level}, {confidence_level}",
+                "confidence": 0.85
+            }
+        
+        # 5. Overconfidence or low engagement → Cognitive challenge
         elif demonstrates_overconfidence or engagement_level == "low":
             routing_decision = {
                 "path": "cognitive_challenge",
@@ -503,7 +652,7 @@ class LangGraphOrchestrator:
                 "confidence": 0.9
             }
         
-        # IF student requests design feedback → All agents (Knowledge → Socratic → Cognitive)
+        # 6. Feedback requests → Multi-agent
         elif is_feedback_request:
             routing_decision = {
                 "path": "multi_agent",
@@ -513,19 +662,416 @@ class LangGraphOrchestrator:
                 "confidence": 0.8
             }
         
-        # DEFAULT: Knowledge Agent + Socratic Agent (from your document)
+        # 7. Default → Knowledge + Socratic for design thinking
         else:
             routing_decision = {
                 "path": "default",
                 "agents_to_activate": ["domain_expert", "socratic_tutor"],
-                "reason": "Standard interaction - knowledge + guidance",
+                "reason": "Standard interaction - knowledge + Socratic guidance for design thinking",
                 "confidence": 0.6
             }
-        
+
         print(f"✅ Route chosen: {routing_decision['path']}")
         print(f"🤖 Agents to activate: {routing_decision['agents_to_activate']}")
-        
+
         return routing_decision
+    # ENHANCED ROUTING LOGIC - PRESERVING ALL ORIGINAL LOGIC
+    # async def determine_routing(self, routing_suggestions: Dict[str, Any], classification: Dict[str, Any], state: ArchMentorState = None) -> Dict[str, Any]:
+    #     """Fallback routing with conversation thread awareness and better example detection"""
+
+    #     # FIRST: Check if this is a continuation of an ongoing conversation thread
+    #     if state and len(state.messages) >= 2:
+    #         thread_continuation = await self._check_conversation_thread(state, classification)
+    #         if thread_continuation:
+    #             print(f"🔗 Continuing conversation thread: {thread_continuation['reason']}")
+    #             return thread_continuation
+
+    #     # Get the actual user input for robust pattern matching
+    #     last_message = classification.get("last_message", "")
+        
+    #     # --- ENHANCED EXAMPLE/PROJECT/PRECEDENT DETECTION ---
+    #     example_keywords = [
+    #         "example", "examples", "project", "projects", "precedent", "precedents",
+    #         "case study", "case studies", "show me", "can you give", "can you provide",
+    #         "can you show", "real project", "built project", "actual project",
+    #         "reference", "references", "inspiration"
+    #     ]
+        
+    #     # Use both AI classification AND keyword matching for robustness
+    #     is_example_request = (
+    #         classification.get("is_example_request", False) or
+    #         classification.get("interaction_type") == "example_request" or
+    #         any(keyword in last_message.lower() for keyword in example_keywords)
+    #     )
+        
+    #     if is_example_request:
+    #         print(f"✅ EXAMPLE REQUEST DETECTED: '{last_message}'")
+    #         routing_decision = {
+    #             "path": "knowledge_only",
+    #             "agents_to_activate": ["domain_expert"],
+    #             "reason": "User requested examples/projects/precedents",
+    #             "confidence": 0.95
+    #         }
+    #         print(f"   → Routing to knowledge_only for examples")
+    #         return routing_decision
+        
+    #     # Get AI-detected learning state for other routing decisions
+    #     confidence_level = classification.get("confidence_level", "confident")
+    #     understanding_level = classification.get("understanding_level", "medium")
+    #     engagement_level = classification.get("engagement_level", "medium")
+    #     interaction_type = classification.get("classification", "general_statement")
+    #     is_technical = classification.get("is_technical_question", False)
+    #     is_feedback_request = classification.get("is_feedback_request", False)
+    #     shows_confusion = classification.get("shows_confusion", False)
+    #     demonstrates_overconfidence = classification.get("demonstrates_overconfidence", False)
+    #     is_knowledge_seeking = classification.get("interaction_type") == "knowledge_seeking"
+        
+    #     print(f"📊 Classification: {confidence_level} confidence, {understanding_level} understanding, {engagement_level} engagement")
+    #     print(f"📊 Interaction type: {classification.get('interaction_type', 'unknown')}")
+
+    #     # ROUTING LOGIC - FIXED ORDER
+        
+    #     # 1. Technical questions go to knowledge only
+    #     if is_technical:
+    #         routing_decision = {
+    #             "path": "knowledge_only", 
+    #             "agents_to_activate": ["domain_expert"],
+    #             "reason": "Technical question requiring specific knowledge",
+    #             "confidence": 0.9
+    #         }
+        
+    #     # 2. Design help/improvement requests need Socratic guidance
+    #     elif (any(word in last_message.lower() for word in ["how can i", "how do i", "don't know how", "help me"]) or
+    #         any(word in last_message.lower() for word in ["improve", "enhance", "better", "develop"]) or
+    #         shows_confusion):
+    #         routing_decision = {
+    #             "path": "default",  # Knowledge + Socratic
+    #             "agents_to_activate": ["domain_expert", "socratic_tutor"],
+    #             "reason": "Design improvement/guidance request needs Socratic support",
+    #             "confidence": 0.85
+    #         }
+        
+    #     # 3. Pure knowledge seeking (what/definitions) goes to knowledge only
+    #     elif (is_knowledge_seeking and 
+    #         any(word in last_message.lower() for word in ["what are", "what is", "definition", "standard", "requirement"])):
+    #         routing_decision = {
+    #             "path": "knowledge_only",
+    #             "agents_to_activate": ["domain_expert"], 
+    #             "reason": "General knowledge/definition request",
+    #             "confidence": 0.8
+    #         }
+        
+    #     # 4. Confusion or low understanding → Socratic focus
+    #     elif (shows_confusion or understanding_level == "low" or 
+    #         confidence_level == "uncertain" or 
+    #         classification.get("interaction_type") == "confusion_expression"):
+    #         routing_decision = {
+    #             "path": "socratic_focus",
+    #             "agents_to_activate": ["socratic_tutor"],
+    #             "reason": f"Confusion/low understanding detected: {shows_confusion}, {understanding_level}, {confidence_level}",
+    #             "confidence": 0.85
+    #         }
+        
+    #     # 5. Overconfidence or low engagement → Cognitive challenge
+    #     elif demonstrates_overconfidence or engagement_level == "low":
+    #         routing_decision = {
+    #             "path": "cognitive_challenge",
+    #             "agents_to_activate": ["cognitive_enhancement", "socratic_tutor"],
+    #             "primary_agent": "cognitive_enhancement",
+    #             "followup_agent": "socratic_tutor",
+    #             "reason": f"Overconfidence: {demonstrates_overconfidence}, Low engagement: {engagement_level == 'low'}",
+    #             "confidence": 0.9
+    #         }
+        
+    #     # 6. Feedback requests → Multi-agent
+    #     elif is_feedback_request:
+    #         routing_decision = {
+    #             "path": "multi_agent",
+    #             "agents_to_activate": ["domain_expert", "socratic_tutor", "cognitive_enhancement"],
+    #             "sequence": ["domain_expert", "socratic_tutor", "cognitive_enhancement"],
+    #             "reason": "Design feedback request - comprehensive response needed",
+    #             "confidence": 0.8
+    #         }
+        
+    #     # 7. Default → Knowledge + Socratic
+    #     else:
+    #         routing_decision = {
+    #             "path": "default",
+    #             "agents_to_activate": ["domain_expert", "socratic_tutor"],
+    #             "reason": "Standard interaction - knowledge + guidance",
+    #             "confidence": 0.6
+    #         }
+
+    #     print(f"✅ Route chosen: {routing_decision['path']}")
+    #     print(f"🤖 Agents to activate: {routing_decision['agents_to_activate']}")
+
+    #     return routing_decision
+
+    # ALSO REPLACE the _check_conversation_thread method to improve follow-up detection:
+
+    async def _check_conversation_thread(self, state: ArchMentorState, classification: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Enhanced conversation thread detection with better example follow-up detection"""
+
+        if len(state.messages) < 2:
+            return None
+
+        # Get last assistant message and current user message
+        last_assistant_msg = None
+        current_user_msg = None
+
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'assistant' and not last_assistant_msg:
+                last_assistant_msg = msg.get('content', '')
+            elif msg.get('role') == 'user' and not current_user_msg:
+                current_user_msg = msg.get('content', '')
+
+        if not last_assistant_msg or not current_user_msg:
+            return None
+
+        # --- ENHANCED FOLLOW-UP EXAMPLE REQUEST DETECTION ---
+        followup_example_patterns = [
+            "another example", "more examples", "different example", "other example",
+            "another project", "more projects", "different project", "other projects", 
+            "another precedent", "more precedents", "different precedent", "other precedents",
+            "can you give another", "can you show another", "can you provide another",
+            "give me another", "show me another", "any other", "what about another"
+        ]
+        
+        if any(pattern in current_user_msg.lower() for pattern in followup_example_patterns):
+            print("🔗 Detected follow-up example/project/precedent request")
+            return {
+                "path": "knowledge_only",
+                "agents_to_activate": ["domain_expert"],
+                "reason": "User requested additional examples/projects/precedents",
+                "confidence": 0.97,
+                "thread_type": "followup_example_request"
+            }
+
+        # Use AI to detect other conversation thread types
+        try:
+            from openai import OpenAI
+            import os
+
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            thread_detection_prompt = f"""
+            CONVERSATION ANALYSIS:
+            System said: "{last_assistant_msg}"
+            User replied: "{current_user_msg}"
+
+            Is the user continuing the conversation thread? Analyze if the user is:
+            1. Requesting more examples/references/projects/precedents
+            2. Answering a question the system asked
+            3. Showing interest and wanting to explore the same topic deeper
+            4. Asking follow-up questions about the same topic
+
+            Respond with ONLY:
+            - "EXAMPLE_REQUEST" if requesting examples/projects/precedents
+            - "ANSWER_CONTINUATION" if answering system's question
+            - "TOPIC_CONTINUATION" if continuing same topic exploration
+            - "SOCRATIC_CONTINUATION" if answering a Socratic question
+            - "NEW_TOPIC" if starting something completely different
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": thread_detection_prompt}],
+                max_tokens=20,
+                temperature=0.3
+            )
+
+            thread_type = response.choices[0].message.content.strip()
+
+            print(f"🧠 AI Thread Detection: {thread_type}")
+
+            # Route based on AI detection
+            if thread_type == "EXAMPLE_REQUEST":
+                return {
+                    "path": "knowledge_only",
+                    "agents_to_activate": ["domain_expert"],
+                    "reason": "AI detected: User requesting examples/references",
+                    "confidence": 0.95,
+                    "thread_type": "ai_example_continuation"
+                }
+            elif thread_type == "ANSWER_CONTINUATION":
+                return {
+                    "path": "knowledge_only", 
+                    "agents_to_activate": ["domain_expert"],
+                    "reason": "AI detected: User answered system's question",
+                    "confidence": 0.9,
+                    "thread_type": "ai_answer_continuation"
+                }
+            elif thread_type == "TOPIC_CONTINUATION":
+                return {
+                    "path": "knowledge_only",
+                    "agents_to_activate": ["domain_expert"], 
+                    "reason": "AI detected: User continuing topic exploration",
+                    "confidence": 0.85,
+                    "thread_type": "ai_topic_continuation"
+                }
+            elif thread_type == "SOCRATIC_CONTINUATION":
+                return {
+                    "path": "socratic_focus",
+                    "agents_to_activate": ["socratic_tutor"],
+                    "reason": "AI detected: User answering Socratic question",
+                    "confidence": 0.8,
+                    "thread_type": "ai_socratic_continuation"
+                }
+
+            # If "NEW_TOPIC" or AI uncertain, continue with normal routing
+            return None
+
+        except Exception as e:
+            print(f"⚠️ AI thread detection failed: {e}")
+            return None
+
+    async def _check_conversation_thread(self, state: ArchMentorState, classification: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """AI-powered conversation thread detection - no hardcoding"""
+
+        if len(state.messages) < 2:
+            return None
+
+        # Get last assistant message and current user message
+        last_assistant_msg = None
+        current_user_msg = None
+
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'assistant' and not last_assistant_msg:
+                last_assistant_msg = msg.get('content', '')
+            elif msg.get('role') == 'user' and not current_user_msg:
+                current_user_msg = msg.get('content', '')
+
+        if not last_assistant_msg or not current_user_msg:
+            return None
+
+        # --- PATCH: Robust pattern matching for follow-up example requests ---
+        followup_patterns = [
+            "another example", "more examples", "different example", "other example",
+            "another project", "different project", "other project", "more project",
+            "another precedent", "more precedent", "different precedent", "other precedent",
+            "can you give another", "can you show another", "can you provide another"
+        ]
+        if any(p in current_user_msg.lower() for p in followup_patterns):
+            print("🔗 Detected follow-up example/project/precedent request in conversation thread.")
+            return {
+                "path": "knowledge_only",
+                "agents_to_activate": ["domain_expert"],
+                "reason": "User requested another example/project/precedent",
+                "confidence": 0.97,
+                "thread_type": "manual_example_followup"
+            }
+        # --- END PATCH ---
+
+        # Use AI to detect conversation thread continuation (existing code)
+        try:
+            from openai import OpenAI
+            import os
+
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            thread_detection_prompt = f"""
+            CONVERSATION ANALYSIS:
+            System said: "{last_assistant_msg}"
+            User replied: "{current_user_msg}"
+
+            Is the user continuing the conversation thread? Analyze if the user is:
+            1. Requesting more examples/references/projects/precedents (phrases like "another example", "can you give another", "more examples")
+            2. Answering a question the system asked
+            3. Showing interest and wanting to explore the same topic deeper
+            4. Asking follow-up questions about the same topic
+
+            CRITICAL: Look for continuation patterns:
+            - "another example", "can you give another", "give another example"
+            - "more examples", "additional examples", "other examples"
+            - "what about", "any other", "different example"
+
+            Respond with ONLY:
+            - "EXAMPLE_REQUEST" if ONLY asking for examples with no substantial response
+            - "SOCRATIC_WITH_EXAMPLE_REQUEST" if answering/responding to questions AND requesting examples
+            - "ANSWER_CONTINUATION" if answering system's question without requesting examples
+            - "TOPIC_CONTINUATION" if continuing same topic exploration
+            - "SOCRATIC_CONTINUATION" if thoughtfully answering a Socratic question
+            - "NEW_TOPIC" if starting something completely different
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": thread_detection_prompt}],
+                max_tokens=20,
+                temperature=0.3
+            )
+
+            thread_type = response.choices[0].message.content.strip()
+
+            print(f"🧠 AI Thread Detection: {thread_type}")
+            print(f"🔍 User said: '{current_user_msg}'")
+            print(f"🔍 System said: '{last_assistant_msg[:100]}...'")
+
+            # --- PATCH: Override thread detection if overconfidence or low engagement/understanding ---
+            overconfident = classification.get("confidence_level") == "overconfident"
+            low_engagement = classification.get("engagement_level") == "low"
+            low_understanding = classification.get("understanding_level") == "low"
+            if overconfident or low_engagement or low_understanding:
+                print("⚡ Overconfidence or low engagement/understanding detected in thread, routing to cognitive_challenge")
+                return {
+                    "path": "cognitive_challenge",
+                    "agents_to_activate": ["cognitive_enhancement", "socratic_tutor"],
+                    "primary_agent": "cognitive_enhancement",
+                    "followup_agent": "socratic_tutor",
+                    "reason": "Overconfidence or low engagement/understanding detected in thread",
+                    "confidence": 0.95,
+                    "thread_type": "override_cognitive_challenge"
+                }
+            # --- END PATCH ---
+
+            # Route based on AI detection
+            if thread_type == "EXAMPLE_REQUEST":
+                return {
+                    "path": "knowledge_only",
+                    "agents_to_activate": ["domain_expert"],
+                    "reason": "AI detected: User requesting examples/references",
+                    "confidence": 0.95,
+                    "thread_type": "ai_example_continuation"
+                }
+            elif thread_type == "SOCRATIC_WITH_EXAMPLE_REQUEST":
+                return {
+                    "path": "multi_agent",
+                    "agents_to_activate": ["domain_expert", "socratic_tutor"],
+                    "reason": "AI detected: User answered Socratic questions AND requested examples",
+                    "confidence": 0.9,
+                    "thread_type": "ai_socratic_with_examples"
+                }
+            elif thread_type == "ANSWER_CONTINUATION":
+                return {
+                    "path": "knowledge_only", 
+                    "agents_to_activate": ["domain_expert"],
+                    "reason": "AI detected: User answered system's question",
+                    "confidence": 0.9,
+                    "thread_type": "ai_answer_continuation"
+                }
+            elif thread_type == "TOPIC_CONTINUATION":
+                return {
+                    "path": "knowledge_only",
+                    "agents_to_activate": ["domain_expert"], 
+                    "reason": "AI detected: User continuing topic exploration",
+                    "confidence": 0.85,
+                    "thread_type": "ai_topic_continuation"
+                }
+            elif thread_type == "SOCRATIC_CONTINUATION":
+                return {
+                    "path": "socratic_focus",
+                    "agents_to_activate": ["socratic_tutor"],
+                    "reason": "AI detected: User answering Socratic question",
+                    "confidence": 0.8,
+                    "thread_type": "ai_socratic_continuation"
+                }
+
+            # If "NEW_TOPIC" or AI uncertain, continue with normal routing
+            return None
+
+        except Exception as e:
+            print(f"⚠️ AI thread detection failed: {e}")
+            return None
 
 
 
@@ -580,111 +1126,211 @@ class LangGraphOrchestrator:
 
 
     # response synthesis logic
+    # ALSO ENHANCE the synthesize_responses method for better Socratic integration:
+    # REPLACE the existing synthesize_responses method with this enhanced version:
+
     def synthesize_responses(self, state: WorkflowState) -> tuple[str, Dict[str, Any]]:
-        """Implement priority: 1. Socratic 2. Cognitive 3. Knowledge"""
+        """Simple, effective response synthesis that combines domain knowledge with Socratic guidance"""
         
-        routing = state.get("routing_decision", {})
-        path = routing.get("path", "default")
+        print(f"🔧 Synthesizing responses...")
         
         # Get agent results
         socratic_result = state.get("socratic_result", {})
-        cognitive_result = state.get("cognitive_enhancement_result", {})
         domain_result = state.get("domain_expert_result", {})
+        analysis_result = state.get("analysis_result", {})
+        cognitive_result = state.get("cognitive_enhancement_result", {})
+        classification = state.get("student_classification", {})
         
-        print(f"🔧 Synthesizing {path} path responses")
+        print(f"🔧 Available results: socratic={bool(socratic_result)}, domain={bool(domain_result)}, cognitive={bool(cognitive_result)}")
         
-        # DOCUMENT PRIORITY ORDER: 1. Socratic 2. Cognitive 3. Knowledge
-        final_response = ""
-        response_type = ""
-        sources = []
+        # Get user's original input
+        user_input = state.get("last_message", "")
         
-        if path == "socratic_focus":
-            # Socratic primary + cognitive support
-            final_response = socratic_result.get("response_text", "")
-            response_type = "socratic_primary"
+        # Create sophisticated response by combining domain knowledge with Socratic guidance
+        if domain_result and socratic_result:
+            # Both domain knowledge and Socratic guidance available
+            domain_text = domain_result.get("response_text", "")
+            socratic_text = socratic_result.get("response_text", "")
             
-            # Add cognitive support insight if available
-            cognitive_support = state.get("cognitive_support_result", {})
-            if cognitive_support and cognitive_support.get("response_text"):
-                final_response += f"\n\n{cognitive_support['response_text']}"
-                response_type = "socratic_with_cognitive_support"
-                
-        elif path == "cognitive_challenge":
-            # Cognitive primary + socratic follow-up
-            final_response = cognitive_result.get("response_text", "")
-            response_type = "cognitive_primary"
+            final_response = f"{domain_text}\n\n{socratic_text}"
+            response_type = "multi_agent_synthesis"
+            print(f"🔧 Combining domain knowledge + Socratic guidance")
             
-            # Add socratic follow-up if available
-            socratic_followup = state.get("socratic_followup_result", {})
-            if socratic_followup and socratic_followup.get("response_text"):
-                final_response += f"\n\n{socratic_followup['response_text']}"
-                response_type = "cognitive_with_socratic_followup"
-                
-        elif path == "knowledge_only":
-            # Knowledge only
-            knowledge_response = domain_result.get("knowledge_response", {})
-            final_response = knowledge_response.get("response", "")
-            response_type = "knowledge_only"
-            sources = domain_result.get("sources", [])
+        elif domain_result:
+            # Only domain knowledge available
+            final_response = domain_result.get("response_text", "")
+            response_type = "domain_knowledge"
+            print(f"🔧 Using domain knowledge only")
             
-        elif path == "multi_agent":
-            # All agents: Follow priority order
-            if socratic_result.get("response_text"):
-                final_response = socratic_result["response_text"]
-                response_type = "multi_agent_socratic_primary"
-                
-                # Weave in knowledge if available
-                if domain_result.get("knowledge_response", {}).get("has_knowledge"):
-                    knowledge = domain_result["knowledge_response"]["response"]
-                    final_response = f"{knowledge}\n\n{final_response}"
-                    response_type = "multi_agent_full"
-                    sources = domain_result.get("sources", [])
+        elif socratic_result:
+            # Only Socratic guidance available
+            socratic_text = socratic_result.get("response_text", "")
+            
+            # Add cognitive assessment if available
+            if cognitive_result and cognitive_result.get("cognitive_summary"):
+                cognitive_summary = cognitive_result.get("cognitive_summary", "")
+                final_response = f"{socratic_text}\n\n{cognitive_summary}"
             else:
-                # Fallback to knowledge
-                knowledge_response = domain_result.get("knowledge_response", {})
-                final_response = knowledge_response.get("response", "")
-                response_type = "multi_agent_knowledge_fallback"
-                sources = domain_result.get("sources", [])
-        
-        else:  # default path
-            # Knowledge + Socratic: Priority to Socratic
-            if socratic_result.get("response_text"):
-                final_response = socratic_result["response_text"]
-                response_type = "default_socratic"
+                final_response = socratic_text
                 
-                # Weave knowledge if available
-                if domain_result.get("knowledge_response", {}).get("has_knowledge"):
-                    knowledge = domain_result["knowledge_response"]["response"]
-                    final_response = f"{knowledge}\n\n{final_response}"
-                    response_type = "default_knowledge_socratic"
-                    sources = domain_result.get("sources", [])
-            else:
-                final_response = "Let's explore this together. What aspect would you like to focus on?"
-                response_type = "fallback"
+            response_type = "socratic_guidance"
+            print(f"🔧 Using Socratic guidance only")
+            
+        elif cognitive_result:
+            # Only cognitive enhancement available
+            cognitive_text = cognitive_result.get("response_text", "")
+            cognitive_summary = cognitive_result.get("cognitive_summary", "")
+            
+            # Include both detailed response and summary
+            final_response = f"{cognitive_text}\n\n{cognitive_summary}"
+            response_type = "cognitive_enhancement"
+            print(f"🔧 Using cognitive enhancement only")
+            
+        else:
+            # Fallback response
+            final_response = "I'd be happy to help you with your architectural project. What specific aspect would you like to explore?"
+            response_type = "fallback"
+            print(f"🔧 Using fallback response")
         
-        if not final_response:
-            final_response = "I'd like to help you explore this further. What specific aspect interests you most?"
-            response_type = "safe_fallback"
+        # Add cognitive assessment to other response types if available
+        if cognitive_result and cognitive_result.get("cognitive_summary") and response_type not in ["cognitive_enhancement", "socratic_guidance"]:
+            cognitive_summary = cognitive_result.get("cognitive_summary", "")
+            final_response = f"{final_response}\n\n{cognitive_summary}"
+            print(f"🔧 Added cognitive assessment to {response_type} response")
         
-        print(f"🔧 Final response type: {response_type}")
+        # Determine which agents were used
+        agents_used = []
+        if socratic_result:
+            agents_used.append("socratic_tutor")
+        if domain_result:
+            agents_used.append("domain_expert")
+        if analysis_result:
+            agents_used.append("analysis_agent")
+        if cognitive_result:
+            agents_used.append("cognitive_enhancement")
         
+        # Extract phase analysis from analysis result
+        phase_analysis = analysis_result.get("phase_analysis", {}) if analysis_result else {}
+        
+        # Extract scientific metrics from cognitive result
+        scientific_metrics = cognitive_result.get("scientific_metrics", {}) if cognitive_result else {}
+        cognitive_state = cognitive_result.get("cognitive_state", {}) if cognitive_result else {}
+        
+        # Combine all metadata
         metadata = {
             "response_type": response_type,
-            "routing_path": path,
-            "agents_used": routing.get("agents_to_activate", []),
-            "sources": sources,
-            "synthesis_method": "document_compliant"
+            "agents_used": agents_used,
+            "routing_path": state.get("routing_decision", {}).get("path", "unknown"),
+            "phase_analysis": phase_analysis,
+            "scientific_metrics": scientific_metrics,
+            "cognitive_state": cognitive_state,
+            "analysis_result": analysis_result,
+            "sources": domain_result.get("sources", []) if domain_result else [],
+            "response_time": 0,  # Could be calculated if needed
+            "classification": classification
         }
         
+        print(f"🔧 Final response type: {response_type}")
+        print(f"🔧 Final response: {final_response[:100]}...")
+        print(f"🔧 Agents used: {agents_used}")
+        print(f"🔧 Phase detected: {phase_analysis.get('phase', 'unknown')} (confidence: {phase_analysis.get('confidence', 0):.2f})")
+        
         return final_response, metadata
+    
+    def _synthesize_example_response(self, domain_result: Dict, user_input: str, classification: Dict) -> str:
+        """Synthesize focused example response"""
+        
+        if domain_result and domain_result.get("response_text"):
+            return domain_result["response_text"]
+        
+        # Fallback example response
+        return f"I'd be happy to help you with examples! Could you tell me more specifically what you're looking for? This will help me provide the most relevant examples for your project."
+    
+    def _synthesize_feedback_response(self, socratic_result: Dict, domain_result: Dict, user_input: str, classification: Dict) -> str:
+        """Synthesize focused feedback response"""
+        
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result["response_text"]
+        
+        if domain_result and domain_result.get("response_text"):
+            return domain_result["response_text"]
+        
+        # Fallback feedback response
+        return "I'd be glad to provide feedback on your design! To give you the most useful feedback, could you tell me what specific aspects of your project you'd like me to focus on?"
+    
+    def _synthesize_technical_response(self, domain_result: Dict, user_input: str, classification: Dict) -> str:
+        """Synthesize focused technical response"""
+        
+        if domain_result and domain_result.get("response_text"):
+            return domain_result["response_text"]
+        
+        # Fallback technical response
+        return "I'd be happy to help with technical requirements! Could you specify what technical aspects you need information about?"
+    
+    def _synthesize_clarification_response(self, socratic_result: Dict, domain_result: Dict, user_input: str, classification: Dict) -> str:
+        """Synthesize focused clarification response"""
+        
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result["response_text"]
+        
+        if domain_result and domain_result.get("response_text"):
+            return domain_result["response_text"]
+        
+        # Fallback clarification response
+        return "I understand this can be complex! Let me help clarify. What specific part would you like me to explain in more detail?"
+    
+    def _synthesize_improvement_response(self, socratic_result: Dict, domain_result: Dict, user_input: str, classification: Dict) -> str:
+        """Synthesize focused improvement response"""
+        
+        if domain_result and domain_result.get("response_text"):
+            return domain_result["response_text"]
+        
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result["response_text"]
+        
+        # Fallback improvement response
+        return "Great question about improving your design! What specific aspects would you like to enhance? This will help me suggest the most effective improvements."
+    
+    def _synthesize_challenge_response(self, cognitive_result: Dict, socratic_result: Dict, user_input: str, classification: Dict) -> str:
+        """Synthesize focused challenge response"""
+        
+        if cognitive_result and cognitive_result.get("response_text"):
+            return cognitive_result["response_text"]
+        
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result["response_text"]
+        
+        # Fallback challenge response
+        return "That's an interesting perspective! Have you considered alternative approaches or potential challenges with your current thinking?"
+    
+    def _synthesize_general_response(self, socratic_result: Dict, domain_result: Dict, user_input: str, classification: Dict) -> str:
+        """Synthesize focused general response"""
+        
+        if domain_result and domain_result.get("response_text"):
+            return domain_result["response_text"]
+        
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result["response_text"]
+        
+        # Fallback general response
+        return "That's a great question! I'd be happy to help you explore this further. What specific aspects would you like to focus on?"
         
     # MAIN EXECUTION METHOD
-    
     async def process_student_input(self, student_state: ArchMentorState) -> Dict[str, Any]:
         """Main method to process student input through the full workflow"""
-        
+
         print("🚀 LangGraph Orchestrator: Starting workflow...")
-        
+
+        # Ensure the brief is the first message if starting a new project
+        if student_state.ensure_brief_in_messages():
+            # Check if the brief is already in the messages
+            if not any(msg.get("role") == "brief" for msg in student_state.messages):
+                # Insert the brief as the first message
+                student_state.messages.insert(0, {
+                    "role": "brief",
+                    "content": student_state.current_design_brief
+                })
+
         # Initialize workflow state
         initial_state = WorkflowState(
             student_state=student_state,
@@ -697,18 +1343,48 @@ class LangGraphOrchestrator:
             final_response="",
             response_metadata={}
         )
-        
+
         # Execute the workflow
         final_state = await self.workflow.ainvoke(initial_state)
-        
+
         print("✅ LangGraph workflow completed!")
-        
+
         return {
             "response": final_state["final_response"],
             "metadata": final_state["response_metadata"],
             "routing_path": final_state["routing_decision"].get("path", "unknown"),
             "classification": final_state["student_classification"]
-        }
+        }    
+    
+    # async def process_student_input(self, student_state: ArchMentorState) -> Dict[str, Any]:
+    #     """Main method to process student input through the full workflow"""
+        
+    #     print("🚀 LangGraph Orchestrator: Starting workflow...")
+        
+    #     # Initialize workflow state
+    #     initial_state = WorkflowState(
+    #         student_state=student_state,
+    #         last_message="",
+    #         student_classification={},
+    #         routing_decision={},
+    #         analysis_result={},
+    #         domain_expert_result={},
+    #         socratic_result={},
+    #         final_response="",
+    #         response_metadata={}
+    #     )
+        
+    #     # Execute the workflow
+    #     final_state = await self.workflow.ainvoke(initial_state)
+        
+    #     print("✅ LangGraph workflow completed!")
+        
+    #     return {
+    #         "response": final_state["final_response"],
+    #         "metadata": final_state["response_metadata"],
+    #         "routing_path": final_state["routing_decision"].get("path", "unknown"),
+    #         "classification": final_state["student_classification"]
+    #     }
 
 # Test the LangGraph orchestrator
 async def test_langgraph_orchestrator():
