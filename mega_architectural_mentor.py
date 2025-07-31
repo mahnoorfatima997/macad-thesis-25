@@ -5,8 +5,8 @@ Clean, modern chatbot interface with hover sidebar
 """
 
 import streamlit as st
-import asyncio
 import os
+import asyncio
 import tempfile
 import json
 from datetime import datetime
@@ -438,6 +438,11 @@ class MegaArchitecturalMentor:
         state.student_profile = StudentProfile(skill_level=skill_level)
         state.domain = domain
         
+        # Add a user message to trigger LLM analysis instead of edge case handler
+        state.messages = [
+            {"role": "user", "content": f"I'm working on my {design_brief.lower()} and need help with the design process."}
+        ]
+        
         # Step 2: Handle image if provided
         gpt_sam_results = None
         vision_available = False
@@ -631,7 +636,7 @@ def get_raw_gpt_response(user_input: str, project_context: str = "") -> Dict[str
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=400,
+            max_tokens=800,  # Increased from 400 to prevent cut-off responses
             temperature=0.3
         )
         
@@ -734,6 +739,33 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             "metadata": result.get("metadata", {}),
             "mentor_type": mentor_type
         })
+        
+        # Update progress tracking after each interaction
+        if st.session_state.arch_state and st.session_state.orchestrator:
+            try:
+                # Re-analyze the current state to update progress
+                analysis_agent = AnalysisAgent("architecture")
+                
+                # Create a new event loop for the async analysis
+                progress_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(progress_loop)
+                
+                updated_analysis = progress_loop.run_until_complete(
+                    analysis_agent.process(st.session_state.arch_state)
+                )
+                
+                progress_loop.close()
+                
+                # Update the analysis result in session state
+                st.session_state.analysis_result = updated_analysis
+                
+                # Log the progress update
+                current_phase = updated_analysis.get('phase_analysis', {}).get('current_phase', 'unknown')
+                phase_completion = updated_analysis.get('phase_analysis', {}).get('phase_completion', 0)
+                print(f"📊 Progress Updated: {current_phase} ({phase_completion}% complete)")
+                
+            except Exception as e:
+                print(f"⚠️ Progress update failed: {e}")
         
         # Log interaction for data collection
         if st.session_state.interaction_logger:
@@ -1101,8 +1133,7 @@ def main():
             with st.columns([1, 2, 1])[1]:  # Center column
                 st.markdown("---")
                 st.markdown("""
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            padding: 20px; border-radius: 10px; margin: 20px 0; 
+                <div style="background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px 0; 
                             border-left: 5px solid #4CAF50;">
                     <div style="color: white; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
                         🎓 Mentor Ready
@@ -1171,12 +1202,198 @@ def main():
             input_mode = st.session_state.get('input_mode', 'Text Only')
             gpt_sam_results = st.session_state.gpt_sam_results
             
+            # Progress update button
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button("🔄 Update Progress", help="Re-analyze your current progress based on our conversation"):
+                    if st.session_state.arch_state and st.session_state.orchestrator:
+                        with st.spinner("🔄 Updating progress..."):
+                            try:
+                                # Re-analyze the current state
+                                analysis_agent = AnalysisAgent("architecture")
+                                progress_loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(progress_loop)
+                                
+                                updated_analysis = progress_loop.run_until_complete(
+                                    analysis_agent.process(st.session_state.arch_state)
+                                )
+                                
+                                progress_loop.close()
+                                
+                                # Update the analysis result
+                                st.session_state.analysis_result = updated_analysis
+                                
+                                current_phase = updated_analysis.get('phase_analysis', {}).get('current_phase', 'unknown')
+                                phase_completion = updated_analysis.get('phase_analysis', {}).get('phase_completion', 0)
+                                
+                                st.success(f"✅ Progress updated! Current phase: {current_phase.title()} ({phase_completion}% complete)")
+                                st.rerun()
+                                
+                            except Exception as e:
+                                st.error(f"❌ Progress update failed: {e}")
+            
+            # Analysis details (expandable)
+            with st.expander("📊 Analysis Details", expanded=False):
+                st.write("**📊 What the AI Detected:**")
+                
+                # Phase Analysis
+                phase_analysis = result.get('phase_analysis', {})
+                if phase_analysis:
+                    current_phase = phase_analysis.get('current_phase', 'unknown')
+                    phase_completion = phase_analysis.get('phase_completion', 0)
+                    st.write(f"• **Design Phase**: {current_phase.title()} ({phase_completion}% complete)")
+                else:
+                    st.write("• **Design Phase**: Not detected")
+                
+                # Text Analysis
+                text_analysis = result.get('text_analysis', {})
+                if text_analysis:
+                    building_type = text_analysis.get('building_type', 'unknown')
+                    st.write(f"• **Building Type**: {building_type.title()}")
+                    
+                    requirements = text_analysis.get('program_requirements', [])
+                    if requirements:
+                        st.write(f"• **Program Requirements**: {len(requirements)} found")
+                        for req in requirements[:3]:
+                            st.write(f"  - {req}")
+                else:
+                    st.write("• **Building Type**: Not detected")
+                
+                # Cognitive Flags
+                cognitive_flags = result.get('cognitive_flags', [])
+                if cognitive_flags:
+                    st.write(f"• **Learning Areas**: {len(cognitive_flags)} identified")
+                    for flag in cognitive_flags[:3]:
+                        flag_name = flag.replace('_', ' ').title()
+                        st.write(f"  - {flag_name}")
+                else:
+                    st.write("• **Learning Areas**: None detected")
+                
+                # Synthesis
+                synthesis = result.get('synthesis', {})
+                if synthesis:
+                    challenges = synthesis.get('cognitive_challenges', [])
+                    if challenges:
+                        st.write(f"• **Cognitive Challenges**: {len(challenges)} identified")
+                        for challenge in challenges[:2]:
+                            challenge_name = challenge.replace('_', ' ').title()
+                            st.write(f"  - {challenge_name}")
+                
+                st.write("---")
+                st.write("**🔧 Technical Details:**")
+                st.write("• **Analysis Method**: AI-Powered Analysis")
+                st.write(f"• **Domain**: {result.get('domain', 'unknown').title()}")
+                st.write(f"• **Confidence Level**: {result.get('confidence_score', 0):.1%}")
+                
+                # Human-readable summary
+                st.write("---")
+                st.write("**📋 Analysis Summary:**")
+                
+                # Phase summary
+                phase_analysis = result.get('phase_analysis', {})
+                current_phase = phase_analysis.get('current_phase', 'unknown')
+                phase_completion = phase_analysis.get('phase_completion', 0)
+                
+                phase_descriptions = {
+                    'ideation': 'You are in the early stages of your design process, focusing on concept development and problem framing.',
+                    'visualization': 'You are developing spatial relationships and exploring form, working on the visual aspects of your design.',
+                    'materialization': 'You are working on technical details, construction methods, and material specifications.',
+                    'completion': 'You are in the final stages, refining details and preparing for presentation.'
+                }
+                
+                description = phase_descriptions.get(current_phase, 'Your design process is being analyzed.')
+                st.write(f"**Current Status**: {description}")
+                
+                # Progress interpretation
+                if phase_completion < 25:
+                    st.write("**Progress**: Early stage - you're just getting started with this phase.")
+                elif phase_completion < 50:
+                    st.write("**Progress**: Developing - you're making good progress but have more work ahead.")
+                elif phase_completion < 75:
+                    st.write("**Progress**: Advanced - you're well into this phase with significant progress made.")
+                else:
+                    st.write("**Progress**: Nearly complete - you're close to finishing this phase.")
+                
+                # Next steps
+                if current_phase != 'completion' and phase_completion > 70:
+                    next_phases = {
+                        'ideation': 'visualization',
+                        'visualization': 'materialization', 
+                        'materialization': 'completion'
+                    }
+                    next_phase = next_phases.get(current_phase, 'completion')
+                    st.write(f"**Next Step**: You're ready to move to the **{next_phase.title()}** phase!")
+                elif current_phase == 'completion' and phase_completion > 90:
+                    st.write("**Next Step**: Excellent work! Your design process is nearly complete.")
+                else:
+                    st.write("**Next Step**: Continue developing your current phase to build a stronger foundation.")
+                
+                # Suggested questions based on current phase
+                st.write("---")
+                st.write("**💡 Suggested Questions to Progress:**")
+                
+                phase_questions = {
+                    'ideation': [
+                        "What is the main purpose of this building?",
+                        "Who are the primary users and what are their needs?",
+                        "What are the key functional requirements?",
+                        "What is the site context and constraints?",
+                        "What is your initial concept or vision?"
+                    ],
+                    'visualization': [
+                        "How should the spaces be organized and connected?",
+                        "What is the circulation flow between different areas?",
+                        "How can natural light be maximized?",
+                        "What are the key spatial relationships?",
+                        "How does the form respond to the site?"
+                    ],
+                    'materialization': [
+                        "What construction methods would be most appropriate?",
+                        "What materials would work best for this project?",
+                        "How can sustainability be integrated?",
+                        "What are the technical requirements?",
+                        "How can the design be optimized for construction?"
+                    ],
+                    'completion': [
+                        "What final details need to be resolved?",
+                        "How can the presentation be improved?",
+                        "What are the key design highlights?",
+                        "How does the final design meet all requirements?",
+                        "What are the next steps for implementation?"
+                    ]
+                }
+                
+                questions = phase_questions.get(current_phase, [
+                    "What aspect of your design would you like to explore?",
+                    "What challenges are you facing?",
+                    "What would you like to improve?"
+                ])
+                
+                for i, question in enumerate(questions[:3], 1):
+                    st.write(f"{i}. {question}")
+                
+                st.write("*Ask any of these questions or your own to advance your design process!*")
+            
             # Analysis summary metrics
             col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
             
             with col_metric1:
-                confidence = result.get('confidence_score', 0)
-                st.metric("Analysis Confidence", f"{confidence:.1%}")
+                # Display current design phase instead of confidence
+                phase_analysis = result.get('phase_analysis', {})
+                current_phase = phase_analysis.get('current_phase', 'unknown')
+                phase_completion = phase_analysis.get('phase_completion', 0)
+                
+                # Format phase display
+                phase_display = {
+                    'ideation': '💡 Ideation',
+                    'visualization': '🎨 Visualization', 
+                    'materialization': '🏗️ Materialization',
+                    'completion': '✅ Completion',
+                    'unknown': '❓ Unknown'
+                }
+                
+                phase_name = phase_display.get(current_phase, f"❓ {current_phase.title()}")
+                st.metric("Design Phase", f"{phase_name} ({phase_completion}%)")
             
             with col_metric2:
                 flags = len(result.get('cognitive_flags', []))
@@ -1184,7 +1401,12 @@ def main():
             
             with col_metric3:
                 building_type = result.get('text_analysis', {}).get('building_type', 'unknown')
-                st.metric("Project Type", building_type.title())
+                # Ensure building type is properly capitalized and formatted
+                if building_type and building_type != 'unknown':
+                    formatted_type = building_type.replace('_', ' ').title()
+                    st.metric("Project Type", formatted_type)
+                else:
+                    st.metric("Project Type", "Unknown")
             
             with col_metric4:
                 if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:
@@ -1206,6 +1428,72 @@ def main():
                     st.image(st.session_state.uploaded_image_path, caption="Your Design", use_container_width=True)
                 elif input_mode == "Text Only":
                     st.info("📝 **Text-Only Analysis**: No image uploaded for this session")
+            
+            # Phase Progress Section
+            phase_analysis = result.get('phase_analysis', {})
+            if phase_analysis:
+                st.markdown("---")
+                st.markdown("""
+                <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;">
+                    🎯 Design Phase Progress
+                </div>
+                """, unsafe_allow_html=True)
+                
+                current_phase = phase_analysis.get('current_phase', 'unknown')
+                phase_completion = phase_analysis.get('phase_completion', 0)
+                next_phase = phase_analysis.get('next_phase')
+                progression_ready = phase_analysis.get('progression_ready', False)
+                
+                # Phase descriptions
+                phase_descriptions = {
+                    'ideation': 'Concept development and problem framing',
+                    'visualization': 'Spatial development and form exploration', 
+                    'materialization': 'Technical development and implementation',
+                    'completion': 'Final refinement and presentation'
+                }
+                
+                # Phase activities
+                phase_activities = {
+                    'ideation': ['Site analysis', 'Program development', 'Concept exploration'],
+                    'visualization': ['Spatial planning', 'Form development', 'Circulation design'],
+                    'materialization': ['Construction details', 'Material specification', 'Technical systems'],
+                    'completion': ['Final details', 'Presentation preparation', 'Documentation']
+                }
+                
+                col_phase1, col_phase2 = st.columns([1, 1])
+                
+                with col_phase1:
+                    # Progress bar
+                    st.progress(phase_completion / 100)
+                    st.write(f"**{phase_completion}% Complete**")
+                    
+                    # Phase description
+                    description = phase_descriptions.get(current_phase, 'Phase description not available')
+                    st.write(f"**Current Focus:** {description}")
+                    
+                    # Next phase info
+                    if next_phase and progression_ready:
+                        next_phase_name = next_phase.replace('_', ' ').title()
+                        st.success(f"🎉 Ready to progress to **{next_phase_name}** phase!")
+                    elif next_phase:
+                        next_phase_name = next_phase.replace('_', ' ').title()
+                        st.info(f"Next phase: **{next_phase_name}**")
+                
+                with col_phase2:
+                    # Current phase activities
+                    activities = phase_activities.get(current_phase, [])
+                    if activities:
+                        st.write("**Key Activities for This Phase:**")
+                        for activity in activities:
+                            st.write(f"• {activity}")
+                    
+                    # Learning opportunities from synthesis
+                    synthesis = result.get('synthesis', {})
+                    learning_opportunities = synthesis.get('learning_opportunities', [])
+                    if learning_opportunities:
+                        st.write("**Learning Opportunities:**")
+                        for opportunity in learning_opportunities[:2]:  # Show top 2
+                            st.write(f"• {opportunity}")
             
             # Design suggestions from analysis (only show if image was used and suggestions available)
             if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:

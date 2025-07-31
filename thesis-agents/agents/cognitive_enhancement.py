@@ -195,7 +195,7 @@ class CognitiveEnhancementAgent:
         
         # Get phase information
         phase_analysis = analysis_result.get("phase_analysis", {})
-        current_phase = phase_analysis.get("phase", "unknown")
+        current_phase = phase_analysis.get("current_phase", "unknown")
         phase_confidence = phase_analysis.get("confidence", 0.5)
         
         # Create concise summary
@@ -710,7 +710,7 @@ class CognitiveEnhancementAgent:
         
         # Get phase information if available
         phase_analysis = analysis_result.get("phase_analysis", {})
-        current_phase = phase_analysis.get("phase", "unknown")
+        current_phase = phase_analysis.get("current_phase", "unknown")
         phase_confidence = phase_analysis.get("confidence", 0.5)
         
         # Calculate engagement metrics
@@ -1066,7 +1066,7 @@ class CognitiveEnhancementAgent:
         
         # Get phase information
         phase_analysis = analysis_result.get("phase_analysis", {})
-        current_phase = phase_analysis.get("phase", "unknown")
+        current_phase = phase_analysis.get("current_phase", "unknown")
         phase_confidence = phase_analysis.get("confidence", 0.5)
         
         # Get key metrics for context

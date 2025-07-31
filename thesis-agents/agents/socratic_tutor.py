@@ -170,7 +170,7 @@ class SocraticTutorAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
+                max_tokens=600,  # Increased from 200 to prevent cut-off responses
                 temperature=0.3
             )
             
@@ -241,7 +241,7 @@ class SocraticTutorAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
+                max_tokens=400,  # Increased from 150 to prevent cut-off responses
                 temperature=0.4
             )
             
@@ -287,7 +287,7 @@ class SocraticTutorAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
+                max_tokens=400,  # Increased from 150 to prevent cut-off responses
                 temperature=0.4
             )
             
