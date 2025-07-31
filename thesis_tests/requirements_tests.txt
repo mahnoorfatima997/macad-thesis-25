@@ -1,0 +1,23 @@
+# Requirements for MEGA Test Dashboard
+
+# Core dependencies
+streamlit>=1.31.0
+pandas>=2.2.0
+numpy>=1.26.4
+openai>=1.14.0
+
+# NLP for move parsing
+spacy>=3.7.0
+textblob>=0.17.1
+
+# Visualization
+matplotlib>=3.8.3
+plotly>=5.18.0
+
+# Data handling
+openpyxl>=3.1.2
+xlsxwriter>=3.1.9
+
+# Additional utilities
+python-dotenv>=1.0.0
+# uuid and pathlib are built-in Python libraries

@@ -266,7 +266,7 @@ class LinkographVisualizer:
                 source=source,
                 target=target,
                 value=value,
-                color=[c + '40' for c in colors]  # Add transparency
+                color=[self._hex_to_rgba(c, 0.25) for c in colors]  # Add transparency
             )
         )])
         
@@ -619,6 +619,16 @@ class LinkographVisualizer:
         }
         return pattern_colors.get(pattern_type, self.colors['neutral_light'])
     
+    def _hex_to_rgba(self, hex_color: str, alpha: float = 0.2) -> str:
+        """Convert hex color to rgba format with specified alpha"""
+        # Remove '#' if present
+        hex_color = hex_color.lstrip('#')
+        # Convert hex to RGB
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+        return f'rgba({r},{g},{b},{alpha})'
+    
     def _add_phase_annotations(self, fig: go.Figure, moves: List[DesignMove]):
         """Add phase region annotations to figure"""
         if not moves:
@@ -635,7 +645,7 @@ class LinkographVisualizer:
                     y=0.5,
                     text=current_phase.capitalize(),
                     showarrow=False,
-                    bgcolor=self._get_phase_color(current_phase) + '20',
+                    bgcolor=self._hex_to_rgba(self._get_phase_color(current_phase), 0.125),
                     bordercolor=self._get_phase_color(current_phase),
                     borderwidth=1
                 )

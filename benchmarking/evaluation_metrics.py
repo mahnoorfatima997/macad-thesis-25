@@ -99,7 +99,7 @@ class CognitiveMetricsEvaluator:
             'overall_rate': round(prevention_rate, 3),
             'in_direct_questions': round(prevention_in_questions, 3),
             'temporal_improvement': round(temporal_improvement, 3),
-            'consistency': round(1 - data['prevents_cognitive_offloading'].std(), 3)
+            'consistency': round(1 - data['prevents_cognitive_offloading'].std(), 3) if len(data) > 1 else 1.0
         }
     
     def _measure_deep_thinking_engagement(self, data: pd.DataFrame) -> Dict[str, float]:
@@ -114,7 +114,8 @@ class CognitiveMetricsEvaluator:
         # Question complexity progression
         question_complexity = []
         for idx, row in data.iterrows():
-            if '?' in row['agent_response']:
+            # Check if agent_response is a valid string
+            if pd.notna(row['agent_response']) and isinstance(row['agent_response'], str) and '?' in row['agent_response']:
                 complexity = len(row['agent_response'].split('?')) - 1
                 question_complexity.append(complexity)
         
@@ -203,7 +204,7 @@ class CognitiveMetricsEvaluator:
             'final_level': skill_levels[-1] if skill_levels else 'unknown',
             'progression_score': round(normalized_progression, 3),
             'level_changes': len(set(skill_levels)) - 1,
-            'stability': round(1 - np.std(numeric_levels) / 3, 3) if numeric_levels else 0
+            'stability': round(1 - np.std(numeric_levels) / 3, 3) if len(numeric_levels) > 1 else 1.0
         }
     
     def _measure_conceptual_understanding(self, data: pd.DataFrame) -> Dict[str, float]:
@@ -245,8 +246,9 @@ class CognitiveMetricsEvaluator:
         
         reflection_count = 0
         for response in data['agent_response']:
-            if any(indicator in response.lower() for indicator in reflection_indicators):
-                reflection_count += 1
+            if pd.notna(response) and isinstance(response, str):
+                if any(indicator in response.lower() for indicator in reflection_indicators):
+                    reflection_count += 1
         
         reflection_rate = reflection_count / len(data) if len(data) > 0 else 0
         
@@ -310,12 +312,18 @@ class CognitiveMetricsEvaluator:
         # Analyze question complexity
         complexity_scores = []
         for question in question_types['student_input']:
-            # Simple heuristic for question complexity
-            word_count = len(question.split())
-            has_why = 'why' in question.lower()
-            has_how = 'how' in question.lower()
-            has_specific_terms = any(term in question.lower() for term in 
-                                   ['circulation', 'proportion', 'spatial', 'design', 'concept'])
+            if pd.notna(question) and isinstance(question, str):
+                # Simple heuristic for question complexity
+                word_count = len(question.split())
+                has_why = 'why' in question.lower()
+                has_how = 'how' in question.lower()
+                has_specific_terms = any(term in question.lower() for term in 
+                                       ['circulation', 'proportion', 'spatial', 'design', 'concept'])
+            else:
+                word_count = 0
+                has_why = False
+                has_how = False
+                has_specific_terms = False
             
             complexity = (word_count / 10) + (0.3 if has_why else 0) + \
                         (0.3 if has_how else 0) + (0.4 if has_specific_terms else 0)
@@ -323,10 +331,10 @@ class CognitiveMetricsEvaluator:
         
         return {
             'quality_score': round(np.mean(complexity_scores), 3),
-            'complexity': round(np.mean([len(q.split()) for q in question_types['student_input']]), 1),
+            'complexity': round(np.mean([len(q.split()) for q in question_types['student_input'] if pd.notna(q) and isinstance(q, str)]), 1) if len(question_types) > 0 else 0,
             'specificity': round(sum(1 for q in question_types['student_input'] 
-                                   if any(term in q.lower() for term in 
-                                        ['circulation', 'proportion', 'spatial', 'design'])) / len(question_types), 3)
+                                   if pd.notna(q) and isinstance(q, str) and any(term in q.lower() for term in 
+                                        ['circulation', 'proportion', 'spatial', 'design'])) / len(question_types), 3) if len(question_types) > 0 else 0
         }
     
     def _measure_reflection_depth(self, data: pd.DataFrame) -> Dict[str, float]:
@@ -340,11 +348,17 @@ class CognitiveMetricsEvaluator:
         # Analyze reflection depth
         depth_scores = []
         for reflection in reflection_inputs['student_input']:
-            # Factors indicating deep reflection
-            word_count = len(reflection.split())
-            has_comparison = any(word in reflection.lower() for word in ['compared', 'unlike', 'whereas', 'however'])
-            has_reasoning = any(word in reflection.lower() for word in ['because', 'therefore', 'thus', 'consequently'])
-            has_self_assessment = any(word in reflection.lower() for word in ['i think', 'i believe', 'my approach', 'i realized'])
+            if pd.notna(reflection) and isinstance(reflection, str):
+                # Factors indicating deep reflection
+                word_count = len(reflection.split())
+                has_comparison = any(word in reflection.lower() for word in ['compared', 'unlike', 'whereas', 'however'])
+                has_reasoning = any(word in reflection.lower() for word in ['because', 'therefore', 'thus', 'consequently'])
+                has_self_assessment = any(word in reflection.lower() for word in ['i think', 'i believe', 'my approach', 'i realized'])
+            else:
+                word_count = 0
+                has_comparison = False
+                has_reasoning = False
+                has_self_assessment = False
             
             depth = (min(word_count / 50, 0.4)) + \
                    (0.2 if has_comparison else 0) + \
@@ -355,7 +369,7 @@ class CognitiveMetricsEvaluator:
         
         return {
             'depth_score': round(np.mean(depth_scores), 3),
-            'elaboration': round(np.mean([len(r.split()) for r in reflection_inputs['student_input']]), 1)
+            'elaboration': round(np.mean([len(r.split()) for r in reflection_inputs['student_input'] if pd.notna(r) and isinstance(r, str)]), 1) if len(reflection_inputs) > 0 else 0
         }
     
     def _measure_agent_coordination(self, data: pd.DataFrame) -> float:
@@ -438,7 +452,11 @@ class CognitiveMetricsEvaluator:
         rolling_mean = series.rolling(window=min(3, len(series)), min_periods=1).mean()
         
         # Measure stability (inverse of standard deviation)
-        stability = 1 - rolling_mean.std() if rolling_mean.std() < 1 else 0
+        if len(rolling_mean) > 1:
+            std_val = rolling_mean.std()
+            stability = 1 - std_val if std_val < 1 else 0
+        else:
+            stability = 1.0
         
         return stability
     
@@ -488,7 +506,7 @@ class CognitiveMetricsEvaluator:
         # Use of technical vocabulary
         technical_terms = ['spatial', 'proportion', 'circulation', 'hierarchy', 'adjacency']
         technical_usage = sum(1 for input_text in data['student_input'] 
-                            if any(term in input_text.lower() for term in technical_terms))
+                            if pd.notna(input_text) and isinstance(input_text, str) and any(term in input_text.lower() for term in technical_terms))
         depth_factors.append(min(technical_usage / len(data), 1.0))
         
         # Asking complex questions
@@ -524,17 +542,19 @@ class CognitiveMetricsEvaluator:
         awareness_count = 0
         
         for idx, row in data.iterrows():
-            input_text = row['student_input'].lower()
-            
-            # Self-referential language
-            if any(phrase in input_text for phrase in 
-                  ['i think', 'i realize', 'i understand', 'i need to', 'my approach']):
-                awareness_count += 1
-            
-            # Acknowledgment of limitations
-            if any(phrase in input_text for phrase in 
-                  ['i don\'t understand', 'confused about', 'help me with', 'struggling with']):
-                awareness_count += 0.5
+            # Check if student_input is valid
+            if pd.notna(row['student_input']) and isinstance(row['student_input'], str):
+                input_text = row['student_input'].lower()
+                
+                # Self-referential language
+                if any(phrase in input_text for phrase in 
+                      ['i think', 'i realize', 'i understand', 'i need to', 'my approach']):
+                    awareness_count += 1
+                
+                # Acknowledgment of limitations
+                if any(phrase in input_text for phrase in 
+                      ['i don\'t understand', 'confused about', 'help me with', 'struggling with']):
+                    awareness_count += 0.5
         
         awareness_score = awareness_count / len(data) if len(data) > 0 else 0
         
@@ -565,8 +585,9 @@ class CognitiveMetricsEvaluator:
         # Novel questions or insights
         unique_concepts = set()
         for input_text in data['student_input']:
-            words = input_text.lower().split()
-            unique_concepts.update(word for word in words if len(word) > 5)
+            if pd.notna(input_text) and isinstance(input_text, str):
+                words = input_text.lower().split()
+                unique_concepts.update(word for word in words if len(word) > 5)
         
         concept_diversity = len(unique_concepts) / len(data) if len(data) > 0 else 0
         creative_indicators.append(min(concept_diversity / 10, 1.0))

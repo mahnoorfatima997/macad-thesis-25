@@ -6,17 +6,18 @@ Analyzes interaction sessions to generate linkographs and cognitive mappings
 import json
 import uuid
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 import pandas as pd
 import numpy as np
 from datetime import datetime
 
 from linkography_types import (
     DesignMove, Linkograph, LinkographSession, DesignPhase,
-    MoveType, Modality, LinkographPattern
+    MoveType, Modality, LinkographPattern, LinkographLink, LinkographMetrics
 )
 from linkography_engine import LinkographyEngine
 from linkography_cognitive_mapping import CognitiveMappingService
+import time
 
 
 class LinkographySessionAnalyzer:
@@ -310,20 +311,161 @@ class LinkographySessionAnalyzer:
         """Analyze all available sessions in the benchmarking results"""
         sessions = {}
         
-        # Load evaluation reports
+        # First try to load from evaluation reports
         eval_dir = self.results_path / "evaluation_reports"
-        if not eval_dir.exists():
-            return sessions
+        if eval_dir.exists():
+            for eval_file in eval_dir.glob("*.json"):
+                with open(eval_file, 'r') as f:
+                    session_data = json.load(f)
+                
+                # Analyze session
+                linkograph_session = self.analyze_session(session_data)
+                sessions[linkograph_session.session_id] = linkograph_session
         
-        for eval_file in eval_dir.glob("*.json"):
-            with open(eval_file, 'r') as f:
-                session_data = json.load(f)
-            
-            # Analyze session
-            linkograph_session = self.analyze_session(session_data)
-            sessions[linkograph_session.session_id] = linkograph_session
+        # Also load directly from linkography files if available
+        linkography_dir = Path("./thesis_data/linkography")
+        if linkography_dir.exists():
+            for linkography_file in linkography_dir.glob("linkography_*.json"):
+                # Skip moves files
+                if "moves" in linkography_file.name:
+                    continue
+                    
+                try:
+                    with open(linkography_file, 'r') as f:
+                        linkograph_data = json.load(f)
+                    
+                    session_id = linkograph_data.get('session_id', '')
+                    
+                    # Skip if already loaded from evaluation
+                    if session_id in sessions:
+                        continue
+                    
+                    # Create a LinkographSession from the linkography data
+                    session = self._create_session_from_linkography(linkograph_data)
+                    if session:
+                        sessions[session.session_id] = session
+                        
+                except Exception as e:
+                    print(f"Error loading linkography file {linkography_file}: {e}")
         
         return sessions
+    
+    def _create_session_from_linkography(self, linkograph_data: Dict[str, Any]) -> Optional[LinkographSession]:
+        """Create a LinkographSession from linkography JSON data"""
+        try:
+            session_id = linkograph_data.get('session_id', '')
+            
+            # Reconstruct linkograph
+            linkograph_dict = linkograph_data.get('linkograph', {})
+            
+            # Create moves
+            moves = []
+            for move_data in linkograph_dict.get('moves', []):
+                move = DesignMove(
+                    id=move_data['id'],
+                    timestamp=move_data['timestamp'],
+                    session_id=session_id,
+                    user_id='participant',
+                    phase=move_data.get('phase', 'ideation'),
+                    content=move_data.get('content', ''),
+                    move_type=move_data.get('move_type', 'analysis'),
+                    modality=move_data.get('modality', 'text')
+                )
+                moves.append(move)
+            
+            # Create links
+            links = []
+            for link_data in linkograph_dict.get('links', []):
+                link = LinkographLink(
+                    id=link_data['id'],
+                    source_move=link_data['source_move'],
+                    target_move=link_data['target_move'],
+                    strength=link_data.get('strength', 0.5),
+                    confidence=0.8,
+                    link_type=link_data.get('link_type', 'forward'),
+                    temporal_distance=1,
+                    semantic_similarity=link_data.get('strength', 0.5)
+                )
+                links.append(link)
+            
+            # Create metrics
+            metrics_data = linkograph_data.get('metrics', {})
+            metrics = LinkographMetrics(
+                link_density=metrics_data.get('link_density', 0.0),
+                critical_move_ratio=metrics_data.get('critical_move_ratio', 0.0),
+                entropy=metrics_data.get('entropy', 0.0),
+                phase_balance=metrics_data.get('phase_balance', {}),
+                cognitive_indicators=metrics_data.get('cognitive_indicators', {}),
+                avg_link_strength=metrics_data.get('avg_link_strength', 0.0),
+                orphan_move_ratio=metrics_data.get('orphan_move_ratio', 0.0)
+            )
+            
+            # Create linkograph
+            linkograph = Linkograph(
+                id=linkograph_dict.get('id', session_id),
+                session_id=session_id,
+                moves=moves,
+                links=links,
+                metrics=metrics,
+                phase=linkograph_dict.get('phase', 'ideation'),
+                generated_at=linkograph_dict.get('generated_at', time.time())
+            )
+            
+            # Create session
+            session = LinkographSession(
+                session_id=session_id,
+                user_id='participant',
+                start_time=linkograph_data.get('timestamp', ''),
+                end_time=None,
+                linkographs=[linkograph],
+                overall_metrics=metrics,
+                cognitive_mapping=self.cognitive_mapper.map_linkography_to_cognitive(linkograph),
+                patterns_detected=self._extract_patterns_from_linkograph(linkograph)
+            )
+            
+            return session
+            
+        except Exception as e:
+            print(f"Error creating session from linkography: {e}")
+            return None
+    
+    def _extract_patterns_from_linkograph(self, linkograph: Linkograph) -> List[LinkographPattern]:
+        """Extract patterns from a single linkograph"""
+        patterns = []
+        
+        try:
+            # Use engine's pattern detection if available
+            if hasattr(self.engine, '_detect_patterns'):
+                engine_patterns = self.engine._detect_patterns(linkograph)
+                patterns.extend(engine_patterns)
+            
+            # Basic pattern detection based on link structure
+            if len(linkograph.links) > 0:
+                # Check for high connectivity (web pattern)
+                avg_links_per_move = len(linkograph.links) / len(linkograph.moves) if linkograph.moves else 0
+                if avg_links_per_move > 2:
+                    patterns.append(LinkographPattern(
+                        pattern_type='web',
+                        moves=[m.id for m in linkograph.moves],
+                        strength=min(avg_links_per_move / 3, 1.0),
+                        description="High connectivity pattern indicating intensive development",
+                        cognitive_implications={'deep_thinking': 0.8, 'integration': 0.9}
+                    ))
+                
+                # Check for sequential patterns
+                sequential_links = sum(1 for link in linkograph.links if link.link_type == 'forward')
+                if sequential_links / len(linkograph.links) > 0.7:
+                    patterns.append(LinkographPattern(
+                        pattern_type='sawtooth',
+                        moves=[m.id for m in linkograph.moves],
+                        strength=0.7,
+                        description="Sequential development pattern",
+                        cognitive_implications={'systematic_thinking': 0.8}
+                    ))
+        except Exception as e:
+            print(f"Error extracting patterns: {e}")
+        
+        return patterns
     
     def save_linkography_results(self, sessions: Dict[str, LinkographSession]):
         """Save linkography analysis results"""

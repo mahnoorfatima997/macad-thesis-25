@@ -30,14 +30,22 @@ class KnowledgeManager:
         
         try:
             self.collection = self.client.get_collection(name=self.collection_name)
-            print(f"📚 Loaded existing collection: {self.collection_name}")
+            print(f"Loaded existing collection: {self.collection_name}")
             print(f"   Documents in collection: {self.collection.count()}")
         except:
-            self.collection = self.client.create_collection(
-                name=self.collection_name,
-                metadata={"description": f"Knowledge base for {domain}"}
-            )
-            print(f"📚 Created new collection: {self.collection_name}")
+            try:
+                self.collection = self.client.create_collection(
+                    name=self.collection_name,
+                    metadata={"description": f"Knowledge base for {domain}"}
+                )
+                print(f"Created new collection: {self.collection_name}")
+            except Exception as e:
+                if "already exists" in str(e):
+                    # Collection exists but get_collection failed somehow
+                    self.collection = self.client.get_collection(name=self.collection_name)
+                    print(f"Using existing collection: {self.collection_name}")
+                else:
+                    raise
     
     def add_pdf_from_url(self, url: str, title: str = "", author: str = "", source_type: str = "web_pdf"):
         """Download and process PDF from URL"""

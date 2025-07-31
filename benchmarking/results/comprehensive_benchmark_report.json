@@ -1,20 +1,20 @@
 {
   "metadata": {
-    "generated_at": "2025-07-30T18:55:11.413868",
+    "generated_at": "2025-07-31T17:05:36.546325",
     "system_version": "1.0.0",
-    "sessions_analyzed": 6
+    "sessions_analyzed": 7
   },
   "executive_summary": {
     "key_findings": [
-      "Analyzed 6 tutoring sessions",
-      "Cognitive offloading prevention rate: 100.0%",
-      "Deep thinking engagement: 77.8%",
-      "Average improvement over baseline: 70.6%"
+      "Analyzed 7 tutoring sessions",
+      "Cognitive offloading prevention rate: 92.9%",
+      "Deep thinking engagement: 73.8%",
+      "Average improvement over baseline: 62.8%"
     ],
     "system_effectiveness": "Effective - System meets core objectives",
     "primary_strengths": [
       "Excellent at preventing cognitive offloading",
-      "71% improvement over traditional methods",
+      "63% improvement over traditional methods",
       "Strong deep thinking engagement"
     ],
     "areas_for_improvement": [
@@ -51,29 +51,28 @@
     }
   },
   "evaluation_metrics": {
-    "total_sessions": 6,
-    "total_interactions": 13,
-    "avg_session_duration": 1.2016666666666667,
-    "avg_cognitive_offloading_prevention": 1.0,
-    "avg_deep_thinking_engagement": 0.7778333333333333,
-    "avg_scaffolding_effectiveness": 0.0,
-    "avg_knowledge_integration": 0.7778333333333333,
-    "avg_improvement_over_baseline": 70.58333333333333,
+    "total_sessions": 7,
+    "total_interactions": 14,
+    "avg_session_duration": 1.03,
+    "avg_cognitive_offloading_prevention": 0.9285714285714286,
+    "avg_deep_thinking_engagement": 0.7381428571428571,
+    "avg_scaffolding_effectiveness": 0.07142857142857142,
+    "avg_knowledge_integration": 0.8095714285714285,
+    "avg_improvement_over_baseline": 62.8,
     "sessions_with_progression": 0,
-    "avg_agent_coordination": 0.6
+    "avg_agent_coordination": 0.5142857142857143
   },
   "proficiency_analysis": {
     "distribution": {
-      "intermediate": 5,
-      "advanced": 1
+      "advanced": 4,
+      "intermediate": 3
     },
     "percentages": {
-      "intermediate": 83.33333333333334,
-      "advanced": 16.666666666666664
+      "advanced": 57.14285714285714,
+      "intermediate": 42.857142857142854
     },
     "insights": [
-      "Low expert percentage suggests limited progression pathways",
-      "Majority at intermediate level shows effective skill building"
+      "Low expert percentage suggests limited progression pathways"
     ]
   },
   "recommendations": [
@@ -86,12 +85,12 @@
   ],
   "thesis_insights": {
     "cognitive_offloading_prevention": {
-      "effectiveness": 1.0,
+      "effectiveness": 0.9285714285714286,
       "interpretation": "Exceptional - Users consistently engage in independent thinking",
       "thesis_implication": "System successfully encourages independent thinking"
     },
     "multi_agent_effectiveness": {
-      "coordination_score": 0.6,
+      "coordination_score": 0.5142857142857143,
       "interpretation": "Agent coordination needs improvement",
       "thesis_implication": "Multi-agent approach shows promise for educational AI"
     },

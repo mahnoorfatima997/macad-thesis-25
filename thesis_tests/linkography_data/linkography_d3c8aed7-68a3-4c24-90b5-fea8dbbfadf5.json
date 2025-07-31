@@ -1,0 +1,159 @@
+{
+  "session_id": "d3c8aed7-68a3-4c24-90b5-fea8dbbfadf5",
+  "timestamp": "2025-07-31T16:20:59.596595",
+  "linkograph": {
+    "id": "c75529d1-0bea-4dcc-bf45-81d4ae2242a7",
+    "session_id": "d3c8aed7-68a3-4c24-90b5-fea8dbbfadf5",
+    "phase": "ideation",
+    "generated_at": 1753996859.596595,
+    "move_count": 4,
+    "link_count": 10,
+    "moves": [
+      {
+        "id": "ae749f52-5a33-4d47-bcb3-092f056c3600",
+        "timestamp": 1753996859.096729,
+        "content": "I want to create an open community space that encourages social interaction",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+        "timestamp": 1753996859.096729,
+        "content": "The open space should have circular seating arrangements to facilitate conversation",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+        "timestamp": 1753996859.096729,
+        "content": "Social interaction areas need good natural lighting and ventilation",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "1907b9da-45c9-44f0-bb2e-0b87be6baa1c",
+        "timestamp": 1753996859.096729,
+        "content": "Let's use sustainable materials like bamboo for the seating structures",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      }
+    ],
+    "links": [
+      {
+        "id": "b419d1bf-0f84-47db-a32d-ddc0818ca212",
+        "source_move": "ae749f52-5a33-4d47-bcb3-092f056c3600",
+        "target_move": "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+        "strength": 0.47958090901374817,
+        "link_type": "forward"
+      },
+      {
+        "id": "990bd53f-8463-4bd9-9e4f-0bd4c3c031da",
+        "source_move": "ae749f52-5a33-4d47-bcb3-092f056c3600",
+        "target_move": "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+        "strength": 0.5329828858375549,
+        "link_type": "forward"
+      },
+      {
+        "id": "ac4cfa09-db8c-42ec-b58d-2dcdbd8cb136",
+        "source_move": "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+        "target_move": "ae749f52-5a33-4d47-bcb3-092f056c3600",
+        "strength": 0.47958090901374817,
+        "link_type": "backward"
+      },
+      {
+        "id": "ab2d5705-b9fa-44a0-a824-794ff5b6123a",
+        "source_move": "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+        "target_move": "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+        "strength": 0.42439764738082886,
+        "link_type": "forward"
+      },
+      {
+        "id": "efb778c7-49d3-43c2-b833-1c1fb0cc58f9",
+        "source_move": "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+        "target_move": "1907b9da-45c9-44f0-bb2e-0b87be6baa1c",
+        "strength": 0.3533363342285156,
+        "link_type": "forward"
+      },
+      {
+        "id": "8d6d681e-e532-41a4-874d-a9dc3dac283c",
+        "source_move": "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+        "target_move": "ae749f52-5a33-4d47-bcb3-092f056c3600",
+        "strength": 0.5329828858375549,
+        "link_type": "backward"
+      },
+      {
+        "id": "90a0ce06-2821-464b-a2c5-36eeeddaf579",
+        "source_move": "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+        "target_move": "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+        "strength": 0.42439764738082886,
+        "link_type": "backward"
+      },
+      {
+        "id": "cdb503e5-ec0f-4324-b434-79a5d31b4d95",
+        "source_move": "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+        "target_move": "1907b9da-45c9-44f0-bb2e-0b87be6baa1c",
+        "strength": 0.3869171738624573,
+        "link_type": "forward"
+      },
+      {
+        "id": "d7af2d2f-8cbb-447d-b726-10efba1eda9f",
+        "source_move": "1907b9da-45c9-44f0-bb2e-0b87be6baa1c",
+        "target_move": "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+        "strength": 0.3533363342285156,
+        "link_type": "backward"
+      },
+      {
+        "id": "d4567806-1e38-4f09-aa9c-0fb2cc607eb1",
+        "source_move": "1907b9da-45c9-44f0-bb2e-0b87be6baa1c",
+        "target_move": "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+        "strength": 0.3869171738624573,
+        "link_type": "backward"
+      }
+    ]
+  },
+  "metrics": {
+    "link_density": 1.0886074751615524,
+    "critical_move_ratio": 1.0,
+    "entropy": 0.9952953556253114,
+    "phase_balance": {
+      "ideation": 1.0,
+      "visualization": 0.0,
+      "materialization": 0.0
+    },
+    "cognitive_indicators": {
+      "deep_thinking": 0.0,
+      "offloading_prevention": 0.0,
+      "knowledge_integration": 0.0,
+      "learning_progression": 0.0,
+      "metacognitive_awareness": 0.0
+    },
+    "avg_link_strength": 0.43544299006462095,
+    "max_link_range": 2,
+    "orphan_move_ratio": 0.0,
+    "chunk_count": 0,
+    "web_count": 2,
+    "sawtooth_count": 0
+  },
+  "move_count": 4,
+  "link_count": 10,
+  "critical_moves": [
+    "ae749f52-5a33-4d47-bcb3-092f056c3600",
+    "ed3ed9c5-f225-4011-868b-07bd79cf4b30",
+    "39f72a8a-2bf2-47bd-94ad-f998397943b4",
+    "1907b9da-45c9-44f0-bb2e-0b87be6baa1c"
+  ],
+  "patterns": {
+    "chunks": 0,
+    "webs": 2,
+    "sawteeth": 0
+  },
+  "phase_distribution": {
+    "ideation": 1.0,
+    "visualization": 0.0,
+    "materialization": 0.0
+  }
+}

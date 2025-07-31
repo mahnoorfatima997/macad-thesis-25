@@ -519,11 +519,11 @@ class CognitiveFeatureExtractor:
         
         # Cognitive offloading prevention
         features.append(data['prevents_cognitive_offloading'].mean())
-        features.append(data['prevents_cognitive_offloading'].std())
+        features.append(data['prevents_cognitive_offloading'].std() if len(data) > 1 else 0.0)
         
         # Deep thinking engagement
         features.append(data['encourages_deep_thinking'].mean())
-        features.append(data['encourages_deep_thinking'].std())
+        features.append(data['encourages_deep_thinking'].std() if len(data) > 1 else 0.0)
         
         # Scaffolding utilization
         features.append(data['provides_scaffolding'].mean())

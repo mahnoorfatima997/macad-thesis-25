@@ -253,7 +253,8 @@ class CognitiveMappingService:
         
         # Phase balance score
         phase_balance = linkograph.metrics.phase_balance
-        balance_score = 1.0 - np.std(list(phase_balance.values())) * 3  # Penalize imbalance
+        balance_values = list(phase_balance.values())
+        balance_score = 1.0 - (np.std(balance_values) * 3 if len(balance_values) > 1 else 0.0)  # Penalize imbalance
         
         # Calculate weighted score
         weights = self.feature_weights['learning_progression']

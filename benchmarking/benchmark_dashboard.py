@@ -2840,7 +2840,7 @@ class BenchmarkDashboard:
         if df_patterns['Scaffolding Effectiveness'].mean() < 0.3:
             weak_patterns.append("Low scaffolding effectiveness indicates need for better adaptive support")
         
-        if df_patterns['Deep Thinking'].std() > 0.3:
+        if len(df_patterns) > 1 and df_patterns['Deep Thinking'].std() > 0.3:
             weak_patterns.append("High variability in deep thinking engagement across sessions")
         
         return {

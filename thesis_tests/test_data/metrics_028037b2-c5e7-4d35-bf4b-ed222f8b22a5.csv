@@ -1,0 +1,2 @@
+timestamp,phase,cop_score,dte_score,se_score,ki_score,lp_score,ma_score,composite_score
+2025-07-31T16:20:17.022235,PRE_TEST,0.75,0.68,0.82,0.45,0.55,0.71,0.66

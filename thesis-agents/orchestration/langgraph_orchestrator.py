@@ -1166,12 +1166,8 @@ class LangGraphOrchestrator:
             # Only Socratic guidance available
             socratic_text = socratic_result.get("response_text", "")
             
-            # Add cognitive assessment if available
-            if cognitive_result and cognitive_result.get("cognitive_summary"):
-                cognitive_summary = cognitive_result.get("cognitive_summary", "")
-                final_response = f"{socratic_text}\n\n{cognitive_summary}"
-            else:
-                final_response = socratic_text
+            # Don't add cognitive assessment to keep response clean
+            final_response = socratic_text
                 
             response_type = "socratic_guidance"
             print(f"🔧 Using Socratic guidance only")
@@ -1179,10 +1175,9 @@ class LangGraphOrchestrator:
         elif cognitive_result:
             # Only cognitive enhancement available
             cognitive_text = cognitive_result.get("response_text", "")
-            cognitive_summary = cognitive_result.get("cognitive_summary", "")
             
-            # Include both detailed response and summary
-            final_response = f"{cognitive_text}\n\n{cognitive_summary}"
+            # Use only the detailed response, not the summary
+            final_response = cognitive_text
             response_type = "cognitive_enhancement"
             print(f"🔧 Using cognitive enhancement only")
             
@@ -1192,11 +1187,8 @@ class LangGraphOrchestrator:
             response_type = "fallback"
             print(f"🔧 Using fallback response")
         
-        # Add cognitive assessment to other response types if available
-        if cognitive_result and cognitive_result.get("cognitive_summary") and response_type not in ["cognitive_enhancement", "socratic_guidance"]:
-            cognitive_summary = cognitive_result.get("cognitive_summary", "")
-            final_response = f"{final_response}\n\n{cognitive_summary}"
-            print(f"🔧 Added cognitive assessment to {response_type} response")
+        # Don't add cognitive assessment to keep responses clean
+        # The cognitive data is still tracked in metadata for analysis
         
         # Determine which agents were used
         agents_used = []
