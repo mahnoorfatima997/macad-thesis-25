@@ -27,7 +27,7 @@ class CognitivePatternDetector:
         self.breakthrough_threshold = 0.8  # High cognitive load + phase transition
         self.temporal_cluster_threshold = 3  # Minimum moves in temporal cluster
         
-        print("🧠 Cognitive Pattern Detector initialized")
+        print("Cognitive Pattern Detector initialized")
     
     def detect_cognitive_overload(self, moves: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Detect cognitive overload patterns"""

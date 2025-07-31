@@ -29,9 +29,7 @@ from benchmarking.visualization_tools import CognitiveBenchmarkVisualizer
 from benchmarking.user_proficiency_classifier import (
     UserProficiencyClassifier, generate_training_data_from_sessions
 )
-from benchmarking.linkography_analyzer import (
-    LinkographyAnalyzer, analyze_session_linkography, analyze_multiple_sessions
-)
+from benchmarking.linkography_analyzer import LinkographySessionAnalyzer
 from benchmarking.pattern_recognition import CognitivePatternDetector
 
 
@@ -48,7 +46,7 @@ class BenchmarkingPipeline:
         self.metrics_evaluator = CognitiveMetricsEvaluator()
         self.visualizer = CognitiveBenchmarkVisualizer(style='scientific')
         self.proficiency_classifier = UserProficiencyClassifier()
-        self.linkography_analyzer = LinkographyAnalyzer()
+        self.linkography_analyzer = LinkographySessionAnalyzer()
         self.pattern_detector = CognitivePatternDetector()
         
         # Results storage
@@ -212,15 +210,16 @@ class BenchmarkingPipeline:
                 
                 if session_data and session_data.get('design_moves'):
                     # Perform linkography analysis
-                    linkography_report = analyze_session_linkography(session_data)
+                    linkography_report = self.linkography_analyzer.analyze_session(session_data)
                     
                     if linkography_report:
                         session_id = session_file.stem.replace('interactions_', '')
                         linkography_results[session_id] = linkography_report
                         
                         # Export individual session linkography data
-                        output_path = self.output_dir / f"linkography_{session_id}.json"
-                        self.linkography_analyzer.export_linkograph_data(str(output_path))
+                        # Note: LinkographySessionAnalyzer handles export differently
+                        # output_path = self.output_dir / f"linkography_{session_id}.json"
+                        # self.linkography_analyzer.export_linkograph_data(str(output_path))
                 
             except Exception as e:
                 print(f"\n  [!]  Error in linkography analysis for {session_file.name}: {str(e)}")

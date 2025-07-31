@@ -1,8 +1,8 @@
 {
-  "evaluation_timestamp": "2025-07-27T09:05:56.112938",
+  "evaluation_timestamp": "2025-07-30T18:54:44.582525",
   "session_metrics": {
     "session_id": "582ba7d7-f509-46f8-a922-a035f076cb22",
-    "timestamp": "2025-07-27T09:05:56.066594",
+    "timestamp": "2025-07-30T18:54:44.532627",
     "duration_minutes": 0.0,
     "total_interactions": 1,
     "cognitive_offloading_prevention": {
