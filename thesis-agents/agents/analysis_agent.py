@@ -176,14 +176,14 @@ class AnalysisAgent:
                 return self._fallback_analysis(state)
             
             current_phase = analysis["phase_analysis"]["current_phase"]
-            phase_completion = analysis["phase_analysis"].get("phase_completion", 50)
+            phase_completion = analysis["phase_analysis"].get("phase_completion", 15)  # More conservative default
             
             # Validate phase is one of the expected values
             valid_phases = ["ideation", "visualization", "materialization", "completion"]
             if current_phase not in valid_phases:
                 print(f"⚠️ Invalid phase detected: {current_phase}, using fallback")
                 current_phase = "ideation"
-                phase_completion = 50
+                phase_completion = 15  # More conservative default
             
             # Ensure building type is detected - add fallback if needed
             text_analysis = analysis.get("text_analysis", {})
@@ -309,9 +309,9 @@ class AnalysisAgent:
         return {
             "phase_analysis": {
                 "current_phase": "ideation",
-                "phase_completion": 50,
-                "confidence": 0.3,  # Low confidence for fallback
-                "overall_progress": 12.5
+                "phase_completion": 15,  # More conservative early stage
+                "confidence": 0.2,  # Very low confidence for fallback
+                "overall_progress": 3.75
             },
             "text_analysis": {
                 "building_type": building_type,
@@ -323,7 +323,7 @@ class AnalysisAgent:
                 "learning_opportunities": ["Develop project understanding", "Explore design principles"]
             },
             "cognitive_flags": ["needs_brief_clarification"],
-            "confidence_score": 0.3
+            "confidence_score": 0.2
         }
 
     def _handle_edge_cases(self, state: ArchMentorState) -> Dict[str, Any]:
@@ -336,9 +336,9 @@ class AnalysisAgent:
             return {
                 "phase_analysis": {
                     "current_phase": "ideation",
-                    "phase_completion": 10,
+                    "phase_completion": 5,  # Very early stage
                     "confidence": 0.2,
-                    "overall_progress": 2.5
+                    "overall_progress": 1.25
                 },
                 "text_analysis": {
                     "building_type": "unknown",
@@ -356,28 +356,29 @@ class AnalysisAgent:
         # If very short input, use keyword-based phase detection
         combined_input = " ".join(user_messages).lower()
         
-        # Simple keyword-based phase detection for edge cases
-        if any(word in combined_input for word in ["start", "begin", "first", "new", "what"]):
+        # More conservative keyword-based phase detection for edge cases
+        if any(word in combined_input for word in ["start", "begin", "first", "new", "what", "help", "how"]):
             phase = "ideation"
-            completion = 20
-        elif any(word in combined_input for word in ["layout", "plan", "arrange", "space", "room"]):
+            completion = 10  # Early ideation
+        elif any(word in combined_input for word in ["layout", "plan", "arrange", "space", "room", "design"]):
             phase = "visualization"
-            completion = 40
-        elif any(word in combined_input for word in ["material", "construction", "detail", "build"]):
+            completion = 25  # Early visualization
+        elif any(word in combined_input for word in ["material", "construction", "detail", "build", "technical"]):
             phase = "materialization"
-            completion = 70
-        elif any(word in combined_input for word in ["finish", "complete", "present", "final"]):
+            completion = 45  # Early materialization
+        elif any(word in combined_input for word in ["finish", "complete", "present", "final", "done"]):
             phase = "completion"
-            completion = 90
+            completion = 75  # Early completion
         else:
+            # Default to very early ideation for unclear inputs
             phase = "ideation"
-            completion = 30
+            completion = 8  # Very early stage
         
         return {
             "phase_analysis": {
                 "current_phase": phase,
                 "phase_completion": completion,
-                "confidence": 0.4,  # Medium confidence for keyword-based detection
+                "confidence": 0.3,  # Lower confidence for keyword-based detection
                 "overall_progress": completion * 0.25
             },
             "text_analysis": {

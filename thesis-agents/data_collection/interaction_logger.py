@@ -43,7 +43,7 @@ class InteractionLogger:
         
         # Extract phase information from metadata
         phase_analysis = metadata.get("phase_analysis", {}) if metadata else {}
-        current_phase = phase_analysis.get("current_phase", "unknown")
+        current_phase = phase_analysis.get("phase", "unknown")
         phase_confidence = phase_analysis.get("confidence", 0.5)
         
         # Extract scientific metrics and cognitive state from metadata
