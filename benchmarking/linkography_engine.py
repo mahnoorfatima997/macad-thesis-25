@@ -12,7 +12,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import logging
 
-from benchmarking.linkography_types import (
+from linkography_types import (
     DesignMove, LinkographLink, Linkograph, LinkographMetrics,
     LinkographPattern, CognitiveLinkographMapping, LinkType
 )

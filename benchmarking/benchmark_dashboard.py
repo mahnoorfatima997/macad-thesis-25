@@ -125,11 +125,11 @@ class BenchmarkDashboard:
     
     def render_header(self):
         """Render dashboard header"""
-        st.markdown('<h1 class="main-header">🧠 Cognitive Benchmarking Dashboard</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="main-header">Cognitive Benchmarking Dashboard</h1>', unsafe_allow_html=True)
     
     def render_key_metrics(self):
         """Render key performance metrics with enhanced visualizations"""
-        st.markdown('<h2 class="sub-header">📊 Key Performance Metrics</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Key Performance Metrics</h2>', unsafe_allow_html=True)
         
         # Calculate overall metrics
         total_sessions = len(self.evaluation_reports)
@@ -361,20 +361,16 @@ class BenchmarkDashboard:
             st.plotly_chart(fig_trend, use_container_width=True)
         
         # Explanation
+        st.markdown("### Understanding the Metrics")
         st.markdown("""
-        <div class="explanation-box">
-        <h4>Understanding the Metrics</h4>
-        <ul>
-        <li><b>Box Plots:</b> Show the distribution and consistency of metrics across sessions. Tighter boxes indicate more consistent performance.</li>
-        <li><b>Scatter Plot:</b> Reveals relationships between session duration, improvement, and engagement levels. Larger bubbles = more interactions.</li>
-        <li><b>Trend Lines:</b> Track how metrics evolve over time, helping identify learning curves and system effectiveness patterns.</li>
-        </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        - **Box Plots:** Show the distribution and consistency of metrics across sessions. Tighter boxes indicate more consistent performance.
+        - **Scatter Plot:** Reveals relationships between session duration, improvement, and engagement levels. Larger bubbles = more interactions.
+        - **Trend Lines:** Track how metrics evolve over time, helping identify learning curves and system effectiveness patterns.
+        """)
     
     def render_proficiency_analysis(self):
         """Render enhanced proficiency distribution and analysis"""
-        st.markdown('<h2 class="sub-header">🎯 User Proficiency Analysis</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">User Proficiency Analysis</h2>', unsafe_allow_html=True)
         
         # Generate proficiency data from sessions
         proficiency_data = self._analyze_proficiency_from_sessions()
@@ -585,21 +581,17 @@ class BenchmarkDashboard:
             st.warning("No proficiency data available. Run benchmarking first.")
         
         # Enhanced insights
+        st.markdown("### Proficiency Analysis Insights")
         st.markdown("""
-        <div class="key-insights">
-        <h4>🔍 Proficiency Analysis Insights</h4>
-        <ul>
-        <li><b>Distribution Pattern:</b> Most users fall into intermediate/advanced categories, indicating effective learning progression.</li>
-        <li><b>Performance Gaps:</b> The radar chart reveals that scaffolding effectiveness varies significantly across proficiency levels.</li>
-        <li><b>Progression Potential:</b> Users show strong potential for advancement, particularly from beginner to intermediate levels.</li>
-        <li><b>Critical Finding:</b> Expert users demonstrate 2-3x higher deep thinking engagement compared to beginners.</li>
-        </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        - **Distribution Pattern:** Most users fall into intermediate/advanced categories, indicating effective learning progression.
+        - **Performance Gaps:** The radar chart reveals that scaffolding effectiveness varies significantly across proficiency levels.
+        - **Progression Potential:** Users show strong potential for advancement, particularly from beginner to intermediate levels.
+        - **Critical Finding:** Expert users demonstrate 2-3x higher deep thinking engagement compared to beginners.
+        """)
     
     def render_cognitive_patterns(self):
         """Render cognitive pattern analysis with enhanced insights"""
-        st.markdown('<h2 class="sub-header">🧩 Cognitive Pattern Analysis</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Cognitive Pattern Analysis</h2>', unsafe_allow_html=True)
         
         # Prepare data for visualization
         sessions_data = []
@@ -664,15 +656,13 @@ class BenchmarkDashboard:
             st.plotly_chart(fig, use_container_width=True)
             
             # Explanation
+            st.markdown("#### Reading the Radar Chart")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Reading the Radar Chart</h4>
-            <p>This radar chart compares the MEGA system's performance (blue) against traditional teaching 
+            This radar chart compares the MEGA system's performance (blue) against traditional teaching 
             methods (orange) across five key cognitive dimensions. The further from the center, the better 
             the performance. Our system shows significant improvements in cognitive offloading prevention 
-            and deep thinking engagement.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            and deep thinking engagement.
+            """)
             
             # Session-by-session heatmap
             st.markdown("### Session-by-Session Performance Heatmap")
@@ -707,26 +697,14 @@ class BenchmarkDashboard:
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("""
-                <div class="pattern-insight">
-                <h4>Strong Patterns Identified</h4>
-                """, unsafe_allow_html=True)
-                
+                st.markdown("#### Strong Patterns Identified")
                 for insight in pattern_insights['strong_patterns']:
-                    st.markdown(f"✅ {insight}")
-                
-                st.markdown("</div>", unsafe_allow_html=True)
+                    st.markdown(f"- {insight}")
             
             with col2:
-                st.markdown("""
-                <div class="pattern-insight">
-                <h4>Areas Needing Attention</h4>
-                """, unsafe_allow_html=True)
-                
+                st.markdown("#### Areas Needing Attention")
                 for insight in pattern_insights['weak_patterns']:
-                    st.markdown(f"⚠️ {insight}")
-                
-                st.markdown("</div>", unsafe_allow_html=True)
+                    st.markdown(f"- {insight}")
             
             # Correlation analysis
             st.markdown("### Cognitive Dimension Correlations")
@@ -753,7 +731,7 @@ class BenchmarkDashboard:
     
     def render_learning_progression(self):
         """Render learning progression analysis"""
-        st.markdown('<h2 class="sub-header">📈 Learning Progression Analysis</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Learning Progression Analysis</h2>', unsafe_allow_html=True)
         
         # Collect temporal data
         temporal_data = []
@@ -1055,24 +1033,20 @@ class BenchmarkDashboard:
                 st.plotly_chart(fig_cumulative, use_container_width=True)
             
             # Learning insights
+            st.markdown("### Learning Progression Insights")
             st.markdown("""
-            <div class="key-insights">
-            <h4>📊 Learning Progression Insights</h4>
-            <ul>
-            <li><b>Positive Trend:</b> Overall improvement shows consistent upward trajectory across sessions.</li>
-            <li><b>Skill Development:</b> Users progress through proficiency levels with sustained engagement.</li>
-            <li><b>Efficiency Gains:</b> Learning velocity indicates improving efficiency over time.</li>
-            <li><b>Engagement Consistency:</b> Deep thinking and prevention rates remain high throughout.</li>
-            </ul>
-            </div>
-            """, unsafe_allow_html=True)
+            - **Positive Trend:** Overall improvement shows consistent upward trajectory across sessions.
+            - **Skill Development:** Users progress through proficiency levels with sustained engagement.
+            - **Efficiency Gains:** Learning velocity indicates improving efficiency over time.
+            - **Engagement Consistency:** Deep thinking and prevention rates remain high throughout.
+            """)
         
         else:
             st.warning("No temporal data available for progression analysis.")
     
     def render_agent_effectiveness(self):
         """Render detailed agent effectiveness analysis"""
-        st.markdown('<h2 class="sub-header">🤖 Multi-Agent System Effectiveness</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Multi-Agent System Effectiveness</h2>', unsafe_allow_html=True)
         
         # Collect comprehensive agent data
         agent_data = self._collect_agent_effectiveness_data()
@@ -1203,6 +1177,7 @@ class BenchmarkDashboard:
                         label=handoff_data['labels'],
                         color=sankey_colors
                     ),
+                    textfont=dict(color="black", size=14, family="Arial"),
                     link=dict(
                         source=handoff_data['source'],
                         target=handoff_data['target'],
@@ -1243,21 +1218,17 @@ class BenchmarkDashboard:
                 st.plotly_chart(fig_response, use_container_width=True)
         
         # Agent insights
+        st.markdown("### Agent System Insights")
         st.markdown("""
-        <div class="key-insights">
-        <h4>🔍 Agent System Insights</h4>
-        <ul>
-        <li><b>Coordination Excellence:</b> The multi-agent system shows strong coordination with minimal conflicts.</li>
-        <li><b>Socratic Dominance:</b> The Socratic Tutor agent handles most interactions, aligning with the system's educational goals.</li>
-        <li><b>Efficient Handoffs:</b> Agent transitions are smooth, maintaining conversation context effectively.</li>
-        <li><b>Response Optimization:</b> Average response times are within acceptable ranges for real-time interaction.</li>
-        </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        - **Coordination Excellence:** The multi-agent system shows strong coordination with minimal conflicts.
+        - **Socratic Dominance:** The Socratic Tutor agent handles most interactions, aligning with the system's educational goals.
+        - **Efficient Handoffs:** Agent transitions are smooth, maintaining conversation context effectively.
+        - **Response Optimization:** Average response times are within acceptable ranges for real-time interaction.
+        """)
     
     def render_comparative_analysis(self):
         """Render comprehensive comparative analysis"""
-        st.markdown('<h2 class="sub-header">⚖️ Comparative Analysis</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Comparative Analysis</h2>', unsafe_allow_html=True)
         
         # Collect improvement data
         improvements = []
@@ -1273,198 +1244,187 @@ class BenchmarkDashboard:
             })
         
         if improvements:
-            # Tab layout for different comparisons
-            tab1, tab2, tab3, tab4 = st.tabs(["vs Traditional Methods", "By User Group", "Temporal Comparison", "Feature Impact"])
+            # Section 1: vs Traditional Methods
+            st.markdown("### Improvement vs Traditional Methods")
             
-            with tab1:
-                # Average improvement over baseline
-                avg_improvements = {}
-                for key in improvements[0].keys():
-                    avg_improvements[key] = np.mean([imp[key] for imp in improvements])
-                
-                # Create bar chart with custom colors for each dimension
-                fig = go.Figure()
-                
-                categories = list(avg_improvements.keys())
-                values = list(avg_improvements.values())
-                
-                # Map cognitive dimensions to our metric colors
-                dimension_color_map = {
-                    'Cognitive Offloading': get_metric_color('cognitive_offloading'),
-                    'Deep Thinking': get_metric_color('deep_thinking'),
-                    'Knowledge Retention': get_metric_color('knowledge_integration'),
-                    'Metacognitive Awareness': get_metric_color('metacognition'),
-                    'Creative Problem Solving': THESIS_COLORS['primary_rose'],
-                    'Critical Thinking': THESIS_COLORS['primary_violet']
-                }
-                
-                # Get colors for each category
-                colors = []
-                for cat, val in zip(categories, values):
-                    base_color = dimension_color_map.get(cat, THESIS_COLORS['neutral_warm'])
-                    if val < 0:
-                        # Use accent coral for negative values
-                        colors.append(THESIS_COLORS['accent_coral'])
-                    else:
-                        colors.append(base_color)
-                
-                fig.add_trace(go.Bar(
-                    x=categories,
+            # Average improvement over baseline
+            avg_improvements = {}
+            for key in improvements[0].keys():
+                avg_improvements[key] = np.mean([imp[key] for imp in improvements])
+            
+            # Create bar chart with custom colors for each dimension
+            fig = go.Figure()
+            
+            categories = list(avg_improvements.keys())
+            values = list(avg_improvements.values())
+            
+            # Map cognitive dimensions to our metric colors
+            dimension_color_map = {
+                'Cognitive Offloading': get_metric_color('cognitive_offloading'),
+                'Deep Thinking': get_metric_color('deep_thinking'),
+                'Knowledge Retention': get_metric_color('knowledge_integration'),
+                'Metacognitive Awareness': get_metric_color('metacognition'),
+                'Creative Problem Solving': THESIS_COLORS['primary_rose'],
+                'Critical Thinking': THESIS_COLORS['primary_violet']
+            }
+            
+            # Get colors for each category
+            colors = []
+            for cat, val in zip(categories, values):
+                base_color = dimension_color_map.get(cat, THESIS_COLORS['neutral_warm'])
+                if val < 0:
+                    # Use accent coral for negative values
+                    colors.append(THESIS_COLORS['accent_coral'])
+                else:
+                    colors.append(base_color)
+            
+            fig.add_trace(go.Bar(
+                x=categories,
+                y=values,
+                text=[f"{v:.1f}%" for v in values],
+                textposition='auto',
+                marker_color=colors,
+                name='Improvement %',
+                marker_line=dict(color='rgba(0,0,0,0.3)', width=1)
+            ))
+            
+            fig.add_hline(y=0, line_dash="dash", line_color="gray")
+            
+            fig.update_layout(
+                title="Average Improvement Over Traditional Methods",
+                xaxis_title="Cognitive Dimension",
+                yaxis_title="Improvement Percentage",
+                showlegend=False,
+                height=500
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.markdown("---")  # Add separator
+            
+            # Section 2: By User Group
+            st.markdown("### Performance Comparison by User Proficiency")
+            
+            prof_comparison = self._get_proficiency_comparison_data()
+            
+            fig_prof = go.Figure()
+            
+            for prof_level, data in prof_comparison.items():
+                fig_prof.add_trace(go.Bar(
+                    name=prof_level,
+                    x=data['metrics'],
+                    y=data['values'],
+                    text=[f"{v:.0f}%" for v in data['values']],
+                    textposition='auto',
+                    marker_color=get_proficiency_color(prof_level)
+                ))
+            
+            fig_prof.update_layout(
+                title="Improvement by User Proficiency Level",
+                xaxis_title="Metric",
+                yaxis_title="Improvement %",
+                barmode='group',
+                height=450
+            )
+            
+            st.plotly_chart(fig_prof, use_container_width=True)
+            
+            st.markdown("---")  # Add separator
+            
+            # Section 3: Temporal Comparison
+            st.markdown("### Performance Evolution Over Time")
+            
+            temporal_data = self._get_temporal_comparison_data()
+            
+            fig_temp = go.Figure()
+            
+            # Use our line chart colors
+            line_colors = get_color_palette('line', len(temporal_data))
+            for idx, (metric, values) in enumerate(temporal_data.items()):
+                fig_temp.add_trace(go.Scatter(
+                    x=list(range(len(values))),
                     y=values,
-                    text=[f"{v:.1f}%" for v in values],
+                    mode='lines+markers',
+                    name=metric,
+                    line=dict(width=3, color=line_colors[idx])
+                ))
+            
+            fig_temp.update_layout(
+                title="Improvement Trends Over Sessions",
+                xaxis_title="Session Number",
+                yaxis_title="Improvement %",
+                hovermode='x unified',
+                height=450
+            )
+            
+            st.plotly_chart(fig_temp, use_container_width=True)
+            
+            st.markdown("---")  # Add separator
+            
+            # Section 4: Feature Impact
+            st.markdown("### Feature Impact on Performance")
+            
+            feature_impact = self._analyze_feature_impact()
+            
+            # Map features to appropriate thesis colors
+            feature_color_map = {
+                'Socratic Questioning': THESIS_COLORS['primary_purple'],
+                'Visual Analysis': THESIS_COLORS['primary_violet'],
+                'Multi-Agent Coordination': THESIS_COLORS['primary_rose'],
+                'Knowledge Integration': get_metric_color('knowledge_integration'),
+                'Adaptive Scaffolding': get_metric_color('scaffolding')
+            }
+            
+            # Get colors for each feature
+            colors = [feature_color_map.get(feature, THESIS_COLORS['neutral_warm']) for feature in feature_impact['features']]
+            
+            fig_impact = go.Figure(data=[
+                go.Bar(
+                    x=feature_impact['features'],
+                    y=feature_impact['impact_scores'],
+                    text=[f"{v:.2f}" for v in feature_impact['impact_scores']],
                     textposition='auto',
                     marker_color=colors,
-                    name='Improvement %',
                     marker_line=dict(color='rgba(0,0,0,0.3)', width=1)
-                ))
-                
-                fig.add_hline(y=0, line_dash="dash", line_color="gray")
-                
-                fig.update_layout(
-                    title="Average Improvement Over Traditional Methods",
-                    xaxis_title="Cognitive Dimension",
-                    yaxis_title="Improvement Percentage",
-                    showlegend=False,
-                    height=500
                 )
-                
-                st.plotly_chart(fig, use_container_width=True)
+            ])
             
-            with tab2:
-                # Comparison by user group
-                st.markdown("### Performance Comparison by User Proficiency")
-                
-                prof_comparison = self._get_proficiency_comparison_data()
-                
-                fig_prof = go.Figure()
-                
-                for prof_level, data in prof_comparison.items():
-                    fig_prof.add_trace(go.Bar(
-                        name=prof_level,
-                        x=data['metrics'],
-                        y=data['values'],
-                        text=[f"{v:.0f}%" for v in data['values']],
-                        textposition='auto',
-                        marker_color=get_proficiency_color(prof_level)
-                    ))
-                
-                fig_prof.update_layout(
-                    title="Improvement by User Proficiency Level",
-                    xaxis_title="Metric",
-                    yaxis_title="Improvement %",
-                    barmode='group',
-                    height=450
-                )
-                
-                st.plotly_chart(fig_prof, use_container_width=True)
+            # Add threshold line
+            avg_impact = np.mean(feature_impact['impact_scores'])
+            fig_impact.add_hline(
+                y=avg_impact, 
+                line_dash="dash", 
+                line_color="gray",
+                annotation_text=f"Average: {avg_impact:.2f}"
+            )
             
-            with tab3:
-                # Temporal comparison
-                st.markdown("### Performance Evolution Over Time")
-                
-                temporal_data = self._get_temporal_comparison_data()
-                
-                fig_temp = go.Figure()
-                
-                # Use our line chart colors
-                line_colors = get_color_palette('line', len(temporal_data))
-                for idx, (metric, values) in enumerate(temporal_data.items()):
-                    fig_temp.add_trace(go.Scatter(
-                        x=list(range(len(values))),
-                        y=values,
-                        mode='lines+markers',
-                        name=metric,
-                        line=dict(width=3, color=line_colors[idx])
-                    ))
-                
-                fig_temp.update_layout(
-                    title="Improvement Trends Over Sessions",
-                    xaxis_title="Session Number",
-                    yaxis_title="Improvement %",
-                    hovermode='x unified',
-                    height=450
-                )
-                
-                st.plotly_chart(fig_temp, use_container_width=True)
+            fig_impact.update_layout(
+                title="System Feature Impact on Learning Outcomes",
+                xaxis_title="System Feature",
+                yaxis_title="Impact Score",
+                height=450,
+                yaxis=dict(range=[0, 1])
+            )
             
-            with tab4:
-                # Feature impact analysis
-                st.markdown("### Feature Impact on Performance")
-                
-                feature_impact = self._analyze_feature_impact()
-                
-                # Map features to appropriate thesis colors
-                feature_color_map = {
-                    'Socratic Questioning': THESIS_COLORS['primary_purple'],
-                    'Visual Analysis': THESIS_COLORS['primary_violet'],
-                    'Multi-Agent Coordination': THESIS_COLORS['primary_rose'],
-                    'Knowledge Integration': get_metric_color('knowledge_integration'),
-                    'Adaptive Scaffolding': get_metric_color('scaffolding')
-                }
-                
-                # Get colors for each feature
-                colors = [feature_color_map.get(feature, THESIS_COLORS['neutral_warm']) for feature in feature_impact['features']]
-                
-                fig_impact = go.Figure(data=[
-                    go.Bar(
-                        x=feature_impact['features'],
-                        y=feature_impact['impact_scores'],
-                        text=[f"{v:.2f}" for v in feature_impact['impact_scores']],
-                        textposition='auto',
-                        marker_color=colors,
-                        marker_line=dict(color='rgba(0,0,0,0.3)', width=1)
-                    )
-                ])
-                
-                # Add threshold line
-                avg_impact = np.mean(feature_impact['impact_scores'])
-                fig_impact.add_hline(
-                    y=avg_impact, 
-                    line_dash="dash", 
-                    line_color="gray",
-                    annotation_text=f"Average: {avg_impact:.2f}"
-                )
-                
-                fig_impact.update_layout(
-                    title="System Feature Impact on Learning Outcomes",
-                    xaxis_title="System Feature",
-                    yaxis_title="Impact Score",
-                    height=450,
-                    yaxis=dict(range=[0, 1])
-                )
-                
-                st.plotly_chart(fig_impact, use_container_width=True)
+            st.plotly_chart(fig_impact, use_container_width=True)
             
             # Detailed comparison insights
+            st.markdown("### Comparative Analysis Insights")
             st.markdown("""
-            <div class="key-insights">
-            <h4>🎯 Comparative Analysis Insights</h4>
-            <ul>
-            <li><b>Strongest Impact:</b> Cognitive offloading prevention shows 100% improvement over traditional methods.</li>
-            <li><b>Proficiency Matters:</b> Beginners show the highest improvement rates, indicating effective scaffolding.</li>
-            <li><b>Consistent Growth:</b> Performance improvements are sustained across multiple sessions.</li>
-            <li><b>Key Features:</b> Socratic questioning and visual analysis integration have the highest impact on outcomes.</li>
-            </ul>
-            </div>
-            """, unsafe_allow_html=True)
+            - **Strongest Impact:** Cognitive offloading prevention shows 100% improvement over traditional methods.
+            - **Proficiency Matters:** Beginners show the highest improvement rates, indicating effective scaffolding.
+            - **Consistent Growth:** Performance improvements are sustained across multiple sessions.
+            - **Key Features:** Socratic questioning and visual analysis integration have the highest impact on outcomes.
+            """)
     
     def render_linkography_analysis(self):
         """Render Linkography analysis section"""
-        st.markdown('<h2 class="sub-header">🔗 Linkography Analysis</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Linkography Analysis</h2>', unsafe_allow_html=True)
         
         if not LINKOGRAPHY_AVAILABLE:
             st.error("Linkography modules are not available. Please check installation.")
             return
         
-        # Introduction
-        st.markdown("""
-        <div class="explanation-box">
-        <h4>Design Process Visualization with Linkography</h4>
-        <p>Based on Gabriela Goldschmidt's methodology, linkography reveals thinking patterns through 
-        the analysis of design moves and their interconnections. This automated analysis uses AI to 
-        detect semantic links between design actions, providing insights into cognitive processes.</p>
-        </div>
-        """, unsafe_allow_html=True)
         
         # Initialize linkography analyzer
         analyzer = LinkographySessionAnalyzer()
@@ -1478,12 +1438,16 @@ class BenchmarkDashboard:
             st.warning("No sessions available for linkography analysis.")
             return
         
-        # Session selector
+        # Session selector - default to most recent
         session_ids = list(linkograph_sessions.keys())
+        # Reverse the list to show most recent first
+        session_ids_reversed = list(reversed(session_ids))
+        
         selected_session = st.selectbox(
             "Select Session for Detailed Analysis",
-            session_ids,
-            format_func=lambda x: f"Session {x[:8]}..."
+            session_ids_reversed,
+            index=0,  # Select the first item (most recent)
+            format_func=lambda x: f"Session {x[:8]}... {'(Most Recent)' if x == session_ids_reversed[0] else ''}"
         )
         
         session = linkograph_sessions[selected_session]
@@ -1507,167 +1471,206 @@ class BenchmarkDashboard:
             critical_ratio = session.overall_metrics.critical_move_ratio
             st.metric("Critical Moves", f"{critical_ratio:.1%}")
         
-        # Tabs for different visualizations
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "📊 Linkograph",
-            "🔥 Link Density",
-            "🔄 Phase Transitions",
-            "⭐ Critical Moves",
-            "🧠 Cognitive Mapping"
-        ])
-        
         # Get overall linkograph
         overall_linkograph = session.linkographs[0] if session.linkographs else None
         
         if overall_linkograph:
-            with tab1:
-                st.markdown("### Interactive Linkograph Visualization")
-                st.markdown("""
-                The triangular linkograph shows design moves (dots) arranged temporally with links 
-                (arcs) indicating conceptual connections. Larger dots have more connections.
-                """)
-                
-                fig_linkograph = visualizer.create_triangular_linkograph(
-                    overall_linkograph,
-                    highlight_patterns=session.patterns_detected[:3]  # Highlight top 3 patterns
-                )
-                st.plotly_chart(fig_linkograph, use_container_width=True)
-                
-                # Pattern insights
-                if session.patterns_detected:
-                    st.markdown("### Detected Patterns")
-                    pattern_cols = st.columns(3)
-                    for i, pattern in enumerate(session.patterns_detected[:3]):
-                        with pattern_cols[i % 3]:
-                            st.markdown(f"""
-                            <div class="pattern-insight">
-                            <h5>{pattern.pattern_type.capitalize()}</h5>
-                            <p>{pattern.description}</p>
-                            <p>Strength: {pattern.strength:.2f}</p>
-                            </div>
-                            """, unsafe_allow_html=True)
+            # Section 1: Interactive Linkograph Visualization
+            st.markdown("### Interactive Linkograph Visualization")
+            st.markdown("""
+            The triangular linkograph shows design moves (dots) arranged temporally with links 
+            (arcs) indicating conceptual connections. Larger dots have more connections.
+            """)
             
-            with tab2:
-                st.markdown("### Link Density Heatmap")
-                st.markdown("""
-                This heatmap shows how link density varies throughout the design process. 
-                High density areas indicate intensive thinking and idea development.
-                """)
-                
-                fig_density = visualizer.create_link_density_heatmap(overall_linkograph)
-                st.plotly_chart(fig_density, use_container_width=True)
-                
-                # Phase balance chart
-                st.markdown("### Phase Distribution")
-                phase_balance = session.overall_metrics.phase_balance
-                
-                fig_phase = go.Figure(data=[go.Pie(
-                    labels=[p.capitalize() for p in phase_balance.keys()],
-                    values=list(phase_balance.values()),
-                    hole=0.3,
-                    marker_colors=[
-                        visualizer._get_phase_color(phase) 
-                        for phase in phase_balance.keys()
-                    ]
-                )])
-                
-                fig_phase.update_layout(
-                    title="Time Distribution Across Design Phases",
-                    height=400
-                )
-                
-                st.plotly_chart(fig_phase, use_container_width=True)
+            fig_linkograph = visualizer.create_triangular_linkograph(
+                overall_linkograph,
+                highlight_patterns=session.patterns_detected[:3]  # Highlight top 3 patterns
+            )
+            st.plotly_chart(fig_linkograph, use_container_width=True)
             
-            with tab3:
-                st.markdown("### Design Phase Transitions")
-                st.markdown("""
-                The Sankey diagram shows how students transition between ideation, 
-                visualization, and materialization phases during the design process.
-                """)
-                
-                fig_sankey = visualizer.create_phase_transition_sankey(overall_linkograph)
-                st.plotly_chart(fig_sankey, use_container_width=True)
-                
-                # Phase characteristics
-                st.markdown("### Phase Characteristics")
-                phase_data = []
-                for phase_name, linkograph in [(lg.phase, lg) for lg in session.linkographs]:
-                    if linkograph.moves:
-                        phase_data.append({
-                            'Phase': phase_name.capitalize(),
-                            'Moves': len(linkograph.moves),
-                            'Links': len(linkograph.links),
-                            'Link Density': linkograph.metrics.link_density,
-                            'Critical Moves': linkograph.metrics.critical_move_ratio
-                        })
-                
-                if phase_data:
-                    df_phases = pd.DataFrame(phase_data)
-                    st.dataframe(df_phases, use_container_width=True)
+            # Add legend for linkograph
+            st.markdown("#### Linkograph Legend")
             
-            with tab4:
-                st.markdown("### Critical Moves Timeline")
-                st.markdown("""
-                Critical moves are design decisions with high connectivity that significantly 
-                influence the design process. These often represent breakthrough moments.
-                """)
+            # Create legend in an info box for better visibility
+            with st.expander("Understanding the Linkograph Visualization", expanded=True):
+                legend_col1, legend_col2, legend_col3 = st.columns(3)
                 
-                fig_timeline = visualizer.create_critical_moves_timeline(overall_linkograph)
-                st.plotly_chart(fig_timeline, use_container_width=True)
-                
-                # Pattern analysis
-                st.markdown("### Pattern Analysis")
-                patterns = session.patterns_detected
-                if patterns:
-                    fig_patterns = visualizer.create_pattern_analysis_chart(patterns)
-                    st.plotly_chart(fig_patterns, use_container_width=True)
-            
-            with tab5:
-                st.markdown("### Cognitive Metrics from Linkography")
-                st.markdown("""
-                This analysis maps linkographic patterns to cognitive assessment dimensions, 
-                showing how design process characteristics correlate with learning outcomes.
-                """)
-                
-                # Create cognitive mapping radar chart
-                cognitive_dict = session.cognitive_mapping.to_dict()
-                
-                # Compare with baseline
-                baseline = {
-                    'deep_thinking_engagement': 0.35,
-                    'cognitive_offloading_prevention': 0.70,
-                    'scaffolding_effectiveness': 0.60,
-                    'knowledge_integration': 0.40,
-                    'learning_progression': 0.50,
-                    'metacognitive_awareness': 0.45
-                }
-                
-                fig_radar = visualizer.create_cognitive_mapping_radar(
-                    cognitive_dict,
-                    baseline=baseline
-                )
-                st.plotly_chart(fig_radar, use_container_width=True)
-                
-                # Detailed cognitive metrics
-                st.markdown("### Detailed Cognitive Correlations")
-                
-                col1, col2 = st.columns(2)
-                
-                with col1:
+                with legend_col1:
                     st.markdown("""
-                    **Strong Indicators:**
-                    - High link density → Deep thinking engagement
-                    - Web patterns → Knowledge integration
-                    - Critical moves → Metacognitive awareness
+                    **Nodes (Design Moves):**
+                    - Each numbered circle = one design move
+                    - Larger circles = more connections
+                    - Position = temporal sequence
+                    - Hover to see move details
                     """)
                 
-                with col2:
+                with legend_col2:
                     st.markdown("""
-                    **Concerning Patterns:**
-                    - Many orphan moves → Cognitive overload
-                    - Low link range → Limited integration
-                    - Sparse linkographs → Surface learning
+                    **Phase Colors:**
+                    - <span style='color: #cd766d; font-weight: bold'>⬤ Ideation</span> - Concept generation
+                    - <span style='color: #d99c66; font-weight: bold'>⬤ Visualization</span> - Design development  
+                    - <span style='color: #784c80; font-weight: bold'>⬤ Materialization</span> - Technical details
+                    """, unsafe_allow_html=True)
+                
+                with legend_col3:
+                    st.markdown("""
+                    **Links (Connections):**
+                    - Curved lines = conceptual relationships
+                    - Arc depth = time between moves
+                    - Line thickness = link strength
+                    - Darker color = stronger connection
                     """)
+                
+                # Add pattern highlight explanation if patterns are detected
+                if session.patterns_detected and len(session.patterns_detected) > 0:
+                    st.markdown("---")
+                    st.markdown("""
+                    **Highlighted Patterns:**
+                    - <span style='background-color: rgba(92, 79, 115, 0.2); padding: 2px 5px; border: 2px dashed #5c4f73'>Chunk</span> - Dense local connections
+                    - <span style='background-color: rgba(120, 76, 128, 0.2); padding: 2px 5px; border: 2px dashed #784c80'>Web</span> - Complex interconnections
+                    - <span style='background-color: rgba(220, 193, 136, 0.2); padding: 2px 5px; border: 2px dashed #dcc188'>Sawtooth</span> - Back-and-forth patterns
+                    """, unsafe_allow_html=True)
+            
+            # Pattern insights
+            if session.patterns_detected:
+                st.markdown("#### Detected Patterns")
+                pattern_cols = st.columns(3)
+                for i, pattern in enumerate(session.patterns_detected[:3]):
+                    with pattern_cols[i % 3]:
+                        st.markdown(f"**{pattern.pattern_type.capitalize()}**")
+                        st.markdown(f"{pattern.description}")
+                        st.markdown(f"Strength: {pattern.strength:.2f}")
+                        st.markdown("")  # Add spacing
+            
+            st.markdown("---")  # Add separator
+            
+            # Section 2: Link Density
+            st.markdown("### Link Density Heatmap")
+            st.markdown("""
+            This heatmap shows how link density varies throughout the design process. 
+            High density areas indicate intensive thinking and idea development.
+            """)
+            
+            fig_density = visualizer.create_link_density_heatmap(overall_linkograph)
+            st.plotly_chart(fig_density, use_container_width=True)
+            
+            # Phase balance chart
+            st.markdown("#### Phase Distribution")
+            phase_balance = session.overall_metrics.phase_balance
+            
+            fig_phase = go.Figure(data=[go.Pie(
+                labels=[p.capitalize() for p in phase_balance.keys()],
+                values=list(phase_balance.values()),
+                hole=0.3,
+                marker_colors=[
+                    visualizer._get_phase_color(phase) 
+                    for phase in phase_balance.keys()
+                ]
+            )])
+            
+            fig_phase.update_layout(
+                title="Time Distribution Across Design Phases",
+                height=400
+            )
+            
+            st.plotly_chart(fig_phase, use_container_width=True)
+            
+            st.markdown("---")  # Add separator
+            
+            # Section 3: Phase Transitions
+            st.markdown("### Design Phase Transitions")
+            st.markdown("""
+            The Sankey diagram shows how students transition between ideation, 
+            visualization, and materialization phases during the design process.
+            """)
+            
+            fig_sankey = visualizer.create_phase_transition_sankey(overall_linkograph)
+            st.plotly_chart(fig_sankey, use_container_width=True)
+            
+            # Phase characteristics
+            st.markdown("#### Phase Characteristics")
+            phase_data = []
+            for phase_name, linkograph in [(lg.phase, lg) for lg in session.linkographs]:
+                if linkograph.moves:
+                    phase_data.append({
+                        'Phase': phase_name.capitalize(),
+                        'Moves': len(linkograph.moves),
+                        'Links': len(linkograph.links),
+                        'Link Density': linkograph.metrics.link_density,
+                        'Critical Moves': linkograph.metrics.critical_move_ratio
+                    })
+            
+            if phase_data:
+                df_phases = pd.DataFrame(phase_data)
+                st.dataframe(df_phases, use_container_width=True)
+            
+            st.markdown("---")  # Add separator
+            
+            # Section 4: Critical Moves
+            st.markdown("### Critical Moves Timeline")
+            st.markdown("""
+            Critical moves are design decisions with high connectivity that significantly 
+            influence the design process. These often represent breakthrough moments.
+            """)
+            
+            fig_timeline = visualizer.create_critical_moves_timeline(overall_linkograph)
+            st.plotly_chart(fig_timeline, use_container_width=True)
+            
+            # Pattern analysis
+            st.markdown("#### Pattern Analysis")
+            patterns = session.patterns_detected
+            if patterns:
+                fig_patterns = visualizer.create_pattern_analysis_chart(patterns)
+                st.plotly_chart(fig_patterns, use_container_width=True)
+            
+            st.markdown("---")  # Add separator
+            
+            # Section 5: Cognitive Mapping
+            st.markdown("### Cognitive Metrics from Linkography")
+            st.markdown("""
+            This analysis maps linkographic patterns to cognitive assessment dimensions, 
+            showing how design process characteristics correlate with learning outcomes.
+            """)
+            
+            # Create cognitive mapping radar chart
+            cognitive_dict = session.cognitive_mapping.to_dict()
+            
+            # Compare with baseline
+            baseline = {
+                'deep_thinking_engagement': 0.35,
+                'cognitive_offloading_prevention': 0.70,
+                'scaffolding_effectiveness': 0.60,
+                'knowledge_integration': 0.40,
+                'learning_progression': 0.50,
+                'metacognitive_awareness': 0.45
+            }
+            
+            fig_radar = visualizer.create_cognitive_mapping_radar(
+                cognitive_dict,
+                baseline=baseline
+            )
+            st.plotly_chart(fig_radar, use_container_width=True)
+            
+            # Detailed cognitive metrics
+            st.markdown("#### Detailed Cognitive Correlations")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("""
+                **Strong Indicators:**
+                - High link density → Deep thinking engagement
+                - Web patterns → Knowledge integration
+                - Critical moves → Metacognitive awareness
+                """)
+            
+            with col2:
+                st.markdown("""
+                **Concerning Patterns:**
+                - Many orphan moves → Cognitive overload
+                - Low link range → Limited integration
+                - Sparse linkographs → Surface learning
+                """)
         
         # Summary insights
         st.markdown("### Linkography Insights Summary")
@@ -1699,24 +1702,19 @@ class BenchmarkDashboard:
             elif pattern.pattern_type == 'breakthrough':
                 insights.append("Breakthrough moments identified - capitalize on these insights")
         
-        st.markdown(f"""
-        <div class="key-insights">
-        <h4>🔍 Key Linkography Insights</h4>
-        <ul>
-        {"".join(f"<li>{insight}</li>" for insight in insights[:5])}
-        </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("### Key Linkography Insights")
+        for insight in insights[:5]:
+            st.markdown(f"- {insight}")
         
         # Export option
-        if st.button("📥 Export Linkography Data"):
+        if st.button("Export Linkography Data"):
             # Save linkography results
             analyzer.save_linkography_results(linkograph_sessions)
             st.success("Linkography data exported to results/linkography_analysis/")
     
     def render_recommendations(self):
         """Render recommendations and insights"""
-        st.markdown('<h2 class="sub-header">💡 Recommendations & Insights</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Recommendations & Insights</h2>', unsafe_allow_html=True)
         
         # Collect all recommendations
         all_recommendations = []
@@ -1731,26 +1729,26 @@ class BenchmarkDashboard:
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.markdown("### 💪 System Strengths")
+            st.markdown("### System Strengths")
             unique_strengths = list(set(all_strengths))[:5]
             for strength in unique_strengths:
-                st.markdown(f"✅ {strength}")
+                st.markdown(f"- {strength}")
         
         with col2:
-            st.markdown("### 🎯 Areas for Improvement")
+            st.markdown("### Areas for Improvement")
             unique_improvements = list(set(all_improvements))[:5]
             for improvement in unique_improvements:
-                st.markdown(f"🔸 {improvement}")
+                st.markdown(f"- {improvement}")
         
         with col3:
-            st.markdown("### 📝 Recommendations")
+            st.markdown("### Recommendations")
             unique_recommendations = list(set(all_recommendations))[:5]
             for rec in unique_recommendations:
-                st.markdown(f"💡 {rec}")
+                st.markdown(f"- {rec}")
     
     def render_technical_details(self):
         """Render technical implementation details"""
-        st.markdown('<h2 class="sub-header">🔧 Technical Implementation Details</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Technical Implementation Details</h2>', unsafe_allow_html=True)
         
         # Create tabs for different technical aspects
         tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
@@ -1766,13 +1764,11 @@ class BenchmarkDashboard:
         with tab1:
             st.markdown("### Benchmarking Methodology")
             
+            st.markdown("### Core Benchmarking Philosophy")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Core Benchmarking Philosophy</h4>
-            <p>Our benchmarking approach is grounded in educational psychology and cognitive science principles. 
-            We measure not just performance, but the quality of cognitive engagement and learning progression.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            Our benchmarking approach is grounded in educational psychology and cognitive science principles. 
+            We measure not just performance, but the quality of cognitive engagement and learning progression.
+            """)
             
             st.markdown("""
             #### 1. Multi-Dimensional Assessment Framework
@@ -1849,13 +1845,11 @@ class BenchmarkDashboard:
         with tab2:
             st.markdown("### Evaluation Metrics - Detailed Implementation")
             
+            st.markdown("### Metric Calculation Engine")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Metric Calculation Engine</h4>
-            <p>Each metric is calculated using a sophisticated algorithm that considers multiple factors,
-            weighted by importance and adjusted for context.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            Each metric is calculated using a sophisticated algorithm that considers multiple factors,
+            weighted by importance and adjusted for context.
+            """)
             
             st.markdown("""
             #### Cognitive Offloading Prevention (COP)
@@ -1970,13 +1964,11 @@ class BenchmarkDashboard:
         with tab3:
             st.markdown("### Graph ML Methodology")
             
+            st.markdown("### Graph Neural Network Approach")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Graph Neural Network Approach</h4>
-            <p>We transform learning interactions into graph structures to capture complex relationships
-            and patterns that traditional analysis might miss.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            We transform learning interactions into graph structures to capture complex relationships
+            and patterns that traditional analysis might miss.
+            """)
             
             st.markdown("""
             #### 1. Graph Construction Process
@@ -2089,13 +2081,11 @@ class BenchmarkDashboard:
         with tab4:
             st.markdown("### Proficiency Classification System")
             
+            st.markdown("### Multi-Modal Proficiency Assessment")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Multi-Modal Proficiency Assessment</h4>
-            <p>Our classification system combines behavioral patterns, performance metrics, and 
-            cognitive indicators to accurately categorize user proficiency levels.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            Our classification system combines behavioral patterns, performance metrics, and 
+            cognitive indicators to accurately categorize user proficiency levels.
+            """)
             
             st.markdown("""
             #### 1. Four-Tier Proficiency Model
@@ -2222,13 +2212,11 @@ class BenchmarkDashboard:
         with tab5:
             st.markdown("### Linkography Analysis Methodology")
             
+            st.markdown("### Automated Design Process Analysis with AI-Enhanced Linkography")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Automated Design Process Analysis with AI-Enhanced Linkography</h4>
-            <p>Based on Gabriela Goldschmidt's seminal work "Linkography: Unfolding the Design Process" (MIT Press, 2014), 
-            our implementation uses fuzzy linkography with semantic AI models to automatically analyze design thinking patterns.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            Based on Gabriela Goldschmidt's seminal work "Linkography: Unfolding the Design Process" (MIT Press, 2014), 
+            our implementation uses fuzzy linkography with semantic AI models to automatically analyze design thinking patterns.
+            """)
             
             st.markdown("""
             #### 1. Theoretical Foundation
@@ -2404,13 +2392,11 @@ class BenchmarkDashboard:
         with tab6:
             st.markdown("### System Architecture")
             
+            st.markdown("### Integrated Benchmarking Pipeline")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Integrated Benchmarking Pipeline</h4>
-            <p>The benchmarking system operates as a sophisticated pipeline that processes raw interaction 
-            data through multiple stages of analysis and evaluation.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            The benchmarking system operates as a sophisticated pipeline that processes raw interaction 
+            data through multiple stages of analysis and evaluation.
+            """)
             
             st.markdown("""
             #### 1. Data Collection Layer
@@ -2543,13 +2529,11 @@ class BenchmarkDashboard:
         with tab7:
             st.markdown("### Research Foundation")
             
+            st.markdown("### Academic Grounding")
             st.markdown("""
-            <div class="explanation-box">
-            <h4>Academic Grounding</h4>
-            <p>Our benchmarking methodology is built upon established research in cognitive science, 
-            educational psychology, and machine learning.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            Our benchmarking methodology is built upon established research in cognitive science, 
+            educational psychology, and machine learning.
+            """)
             
             st.markdown("""
             #### Core Research Documents
@@ -2697,7 +2681,7 @@ class BenchmarkDashboard:
     
     def render_export_options(self):
         """Render export options"""
-        st.markdown('<h2 class="sub-header">📥 Export Options</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">Export Options</h2>', unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
         
@@ -2947,15 +2931,19 @@ class BenchmarkDashboard:
     
     def render_graph_ml_visualizations(self):
         """Render Graph ML visualizations section"""
-        st.markdown('<h2 class="sub-header">🌐 Graph ML Analysis</h2>', unsafe_allow_html=True)
+        # Try to use the enhanced Graph ML section
+        try:
+            # Try the simple version that doesn't require PyTorch
+            from simple_graph_ml_dashboard import render_enhanced_graph_ml_section
+            render_enhanced_graph_ml_section(self)
+            return
+        except ImportError as e:
+            # If that fails, show error and fall back
+            st.error(f"Could not load enhanced Graph ML: {str(e)}")
+            st.info("Using standard visualizations instead...")
         
-        st.markdown("""
-        <div class="explanation-box">
-        <h4>Interactive Network Visualizations with PyVis</h4>
-        <p>These fully interactive visualizations leverage PyVis to create dynamic network graphs. 
-        Click and drag nodes, zoom in/out, and explore the complex relationships in the learning ecosystem.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        # Fallback to original implementation
+        st.markdown('<h2 class="sub-header">Graph ML Analysis</h2>', unsafe_allow_html=True)
         
         # Check if PyVis visualizations exist
         pyvis_dir = self.results_path / "visualizations" / "pyvis"
@@ -2963,8 +2951,8 @@ class BenchmarkDashboard:
         if pyvis_dir.exists():
             # Tab layout for different graph visualizations
             tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                "🌐 Knowledge Graph", 
-                "📈 Learning Trajectories",
+                "Knowledge Graph", 
+                "Learning Trajectories",
                 "🤖 Agent Collaboration",
                 "🧠 Cognitive Patterns", 
                 "📊 Session Evolution"
@@ -2986,16 +2974,12 @@ class BenchmarkDashboard:
                 else:
                     st.error("Knowledge graph visualization not found.")
                 
+                st.markdown("#### Key Insights")
                 st.markdown("""
-                <div class="pattern-insight">
-                <h4>Key Insights</h4>
-                <ul>
-                <li>Central nodes (Design Process, Spatial Reasoning) act as bridges between domains</li>
-                <li>Expert users show stronger connections to metacognitive concepts</li>
-                <li>AI feedback mechanisms are deeply integrated with learning outcomes</li>
-                </ul>
-                </div>
-                """, unsafe_allow_html=True)
+                - Central nodes (Design Process, Spatial Reasoning) act as bridges between domains
+                - Expert users show stronger connections to metacognitive concepts
+                - AI feedback mechanisms are deeply integrated with learning outcomes
+                """)
             
             with tab2:
                 st.markdown("### Interactive Learning Trajectory Network")
@@ -3014,15 +2998,11 @@ class BenchmarkDashboard:
                     st.error("Learning trajectories visualization not found.")
                 
                 st.markdown("""
-                <div class="pattern-insight">
-                <h4>Learning Path Insights</h4>
-                <ul>
-                <li>Multiple valid pathways exist for skill development</li>
-                <li>Cross-skill dependencies create rich learning opportunities</li>
-                <li>User trajectories show personalized progression patterns</li>
-                </ul>
-                </div>
-                """, unsafe_allow_html=True)
+                #### Learning Path Insights
+                - Multiple valid pathways exist for skill development
+                - Cross-skill dependencies create rich learning opportunities
+                - User trajectories show personalized progression patterns
+                """)
             
             with tab3:
                 st.markdown("### Interactive Agent Collaboration Network")
@@ -3040,16 +3020,12 @@ class BenchmarkDashboard:
                 else:
                     st.error("Agent collaboration visualization not found.")
                 
+                st.markdown("#### Agent Collaboration Insights")
                 st.markdown("""
-                <div class="pattern-insight">
-                <h4>Agent Collaboration Insights</h4>
-                <ul>
-                <li>Orchestrator serves as the central coordination hub</li>
-                <li>Socratic Tutor has the highest interaction frequency</li>
-                <li>Task distribution shows balanced agent utilization</li>
-                </ul>
-                </div>
-                """, unsafe_allow_html=True)
+                - Orchestrator serves as the central coordination hub
+                - Socratic Tutor has the highest interaction frequency
+                - Task distribution shows balanced agent utilization
+                """)
             
             with tab4:
                 st.markdown("### Interactive Cognitive Pattern Network")
@@ -3067,16 +3043,12 @@ class BenchmarkDashboard:
                 else:
                     st.error("Cognitive patterns visualization not found.")
                 
+                st.markdown("#### Cognitive Pattern Insights")
                 st.markdown("""
-                <div class="pattern-insight">
-                <h4>Cognitive Pattern Insights</h4>
-                <ul>
-                <li>Deep thinking strongly correlates with reflective practice</li>
-                <li>Scaffolded progress serves as a bridge to independent exploration</li>
-                <li>Creative problem solving emerges from multiple cognitive patterns</li>
-                </ul>
-                </div>
-                """, unsafe_allow_html=True)
+                - Deep thinking strongly correlates with reflective practice
+                - Scaffolded progress serves as a bridge to independent exploration
+                - Creative problem solving emerges from multiple cognitive patterns
+                """)
             
             with tab5:
                 st.markdown("### Session Evolution Timeline")
@@ -3094,35 +3066,27 @@ class BenchmarkDashboard:
                 else:
                     st.error("Session evolution visualization not found.")
                 
+                st.markdown("#### Session Evolution Insights")
                 st.markdown("""
-                <div class="pattern-insight">
-                <h4>Session Evolution Insights</h4>
-                <ul>
-                <li>Clear progression paths visible across sessions</li>
-                <li>Milestone achievements correlate with cognitive pattern emergence</li>
-                <li>Improvement rates vary based on engagement quality</li>
-                </ul>
-                </div>
-                """, unsafe_allow_html=True)
+                - Clear progression paths visible across sessions
+                - Milestone achievements correlate with cognitive pattern emergence
+                - Improvement rates vary based on engagement quality
+                """)
             
             # Summary insights
+            st.markdown("### Interactive Graph ML Analysis Summary")
             st.markdown("""
-            <div class="key-insights">
-            <h4>🔍 Interactive Graph ML Analysis Summary</h4>
-            <ul>
-            <li><b>Full Interactivity:</b> All visualizations support click, drag, zoom, and dynamic exploration.</li>
-            <li><b>Knowledge Integration:</b> Dense knowledge graphs connect architectural and cognitive domains.</li>
-            <li><b>Learning Pathways:</b> Multiple valid trajectories for personalized skill development.</li>
-            <li><b>Agent Orchestration:</b> Complex multi-agent interactions visualized in real-time.</li>
-            <li><b>Cognitive Patterns:</b> Emergent thinking patterns revealed through network analysis.</li>
-            </ul>
-            </div>
-            """, unsafe_allow_html=True)
+            - **Full Interactivity:** All visualizations support click, drag, zoom, and dynamic exploration.
+            - **Knowledge Integration:** Dense knowledge graphs connect architectural and cognitive domains.
+            - **Learning Pathways:** Multiple valid trajectories for personalized skill development.
+            - **Agent Orchestration:** Complex multi-agent interactions visualized in real-time.
+            - **Cognitive Patterns:** Emergent thinking patterns revealed through network analysis.
+            """)
             
             # Add link to full PyVis gallery
             col1, col2, col3 = st.columns(3)
             with col2:
-                if st.button("🌐 Open Full Interactive Gallery", type="primary"):
+                if st.button("Open Full Interactive Gallery", type="primary"):
                     gallery_path = pyvis_dir / "index.html"
                     if gallery_path.exists():
                         st.info("📁 Gallery file: " + str(gallery_path))

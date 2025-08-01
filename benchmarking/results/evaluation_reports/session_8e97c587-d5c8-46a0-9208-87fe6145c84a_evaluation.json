@@ -1,15 +1,15 @@
 {
-  "evaluation_timestamp": "2025-07-31T17:05:12.149471",
+  "evaluation_timestamp": "2025-08-01T10:38:49.122317",
   "session_metrics": {
     "session_id": "8e97c587-d5c8-46a0-9208-87fe6145c84a",
-    "timestamp": "2025-07-31T17:05:12.120521",
+    "timestamp": "2025-08-01T10:38:49.087631",
     "duration_minutes": 0.0,
     "total_interactions": 1,
     "cognitive_offloading_prevention": {
       "overall_rate": 0.5,
       "in_direct_questions": 0,
       "temporal_improvement": NaN,
-      "consistency": NaN
+      "consistency": 1.0
     },
     "deep_thinking_engagement": {
       "overall_rate": 0.5,

@@ -80,7 +80,8 @@ class LinkographySessionAnalyzer:
             linkographs=linkographs,
             overall_metrics=overall_linkograph.metrics,
             cognitive_mapping=cognitive_mapping,
-            patterns_detected=patterns
+            patterns_detected=patterns,
+            raw_data=session_data  # Include raw data for concept extraction
         )
         
         return session
@@ -304,7 +305,8 @@ class LinkographySessionAnalyzer:
             linkographs=[empty_linkograph],
             overall_metrics=empty_linkograph.metrics,
             cognitive_mapping=self.cognitive_mapper.map_linkography_to_cognitive(empty_linkograph),
-            patterns_detected=[]
+            patterns_detected=[],
+            raw_data={}  # Empty raw data for empty sessions
         )
     
     def analyze_all_sessions(self) -> Dict[str, LinkographSession]:
@@ -420,7 +422,8 @@ class LinkographySessionAnalyzer:
                 linkographs=[linkograph],
                 overall_metrics=metrics,
                 cognitive_mapping=self.cognitive_mapper.map_linkography_to_cognitive(linkograph),
-                patterns_detected=self._extract_patterns_from_linkograph(linkograph)
+                patterns_detected=self._extract_patterns_from_linkograph(linkograph),
+                raw_data=linkograph_data  # Include original data
             )
             
             return session

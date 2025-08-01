@@ -6,6 +6,43 @@ __pycache__/
 *.py[cod]
 *.so
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Streamlit cache
+.streamlit/cache/
+.streamlit/cache_data/
+.streamlit/cache_resource/
+*.cache
+
+# General cache directories
+cache/
+.cache/
+*_cache/
+cached_data/
+
+# Model cache files
+*.pkl.cache
+*.pickle.cache
+model_cache/
+models/cache/
+
+# Hugging Face cache
+.cache/huggingface/
+transformers_cache/
+
+# ChromaDB cache
+.chroma/
+chroma_cache/
+
+# Other ML framework caches
+.torch/
+.tensorflow/
+.keras/
 
 # VS Code settings
 .vscode/

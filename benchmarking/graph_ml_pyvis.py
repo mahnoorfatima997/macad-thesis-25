@@ -564,6 +564,7 @@ class PyVisGraphMLVisualizer:
                             value=0.5
                         )
         
+        
         # Disable physics for fixed layout
         net.toggle_physics(False)
         
