@@ -1130,7 +1130,7 @@ class LangGraphOrchestrator:
     # REPLACE the existing synthesize_responses method with this enhanced version:
 
     def synthesize_responses(self, state: WorkflowState) -> tuple[str, Dict[str, Any]]:
-        """Simple, effective response synthesis that combines domain knowledge with Socratic guidance"""
+        """Simple, effective response synthesis that combines domain knowledge with Socratic guidance and cognitive enhancement"""
         
         print(f"🔧 Synthesizing responses...")
         
@@ -1146,43 +1146,34 @@ class LangGraphOrchestrator:
         # Get user's original input
         user_input = state.get("last_message", "")
         
-        # Create sophisticated response by combining domain knowledge with Socratic guidance
-        if domain_result and socratic_result:
-            # Both domain knowledge and Socratic guidance available
-            domain_text = domain_result.get("response_text", "")
-            socratic_text = socratic_result.get("response_text", "")
-            
-            final_response = f"{domain_text}\n\n{socratic_text}"
-            response_type = "multi_agent_synthesis"
-            print(f"🔧 Combining domain knowledge + Socratic guidance")
-            
-        elif domain_result:
-            # Only domain knowledge available
-            final_response = domain_result.get("response_text", "")
-            response_type = "domain_knowledge"
-            print(f"🔧 Using domain knowledge only")
-            
-        elif socratic_result:
-            # Only Socratic guidance available
-            socratic_text = socratic_result.get("response_text", "")
-            final_response = socratic_text
-            response_type = "socratic_guidance"
-            print(f"🔧 Using Socratic guidance only")
-            
-        elif cognitive_result:
-            # Only cognitive enhancement available
+        # Create sophisticated response by combining all available components
+        response_parts = []
+        
+        # Add domain knowledge if available
+        if domain_result and domain_result.get("response_text"):
+            response_parts.append(domain_result.get("response_text", ""))
+        
+        # Add Socratic guidance if available
+        if socratic_result and socratic_result.get("response_text"):
+            response_parts.append(socratic_result.get("response_text", ""))
+        
+        # Add cognitive enhancement if available (as a separate section)
+        if cognitive_result and cognitive_result.get("response_text"):
             cognitive_text = cognitive_result.get("response_text", "")
-            final_response = cognitive_text
-            response_type = "cognitive_enhancement"
-            print(f"🔧 Using cognitive enhancement only")
-            
+            # Only add if it's not already included in other responses
+            if cognitive_text and cognitive_text not in " ".join(response_parts):
+                response_parts.append(f"\n💭 **Cognitive Challenge:** {cognitive_text}")
+        
+        # Combine all parts
+        if response_parts:
+            final_response = "\n\n".join(response_parts)
+            response_type = "multi_agent_synthesis"
+            print(f"🔧 Combining {len(response_parts)} response components")
         else:
             # Fallback response
             final_response = "I'd be happy to help you with your architectural project. What specific aspect would you like to explore?"
             response_type = "fallback"
             print(f"🔧 Using fallback response")
-        
-        # Remove automatic cognitive summary appending to eliminate repetitive text
         
         # Determine which agents were used
         agents_used = []
