@@ -29,7 +29,13 @@ class LinkographySessionAnalyzer:
     def __init__(self):
         self.engine = LinkographyEngine()
         self.cognitive_mapper = CognitiveMappingService()
-        self.results_path = Path("benchmarking/results")
+        # Fix path to work from both root and benchmarking directory
+        if Path("results").exists():
+            self.results_path = Path("results")
+        elif Path("benchmarking/results").exists():
+            self.results_path = Path("benchmarking/results")
+        else:
+            self.results_path = Path(__file__).parent / "results"
         
     def analyze_session(self, session_data: Dict) -> LinkographSession:
         """
@@ -325,7 +331,13 @@ class LinkographySessionAnalyzer:
                 sessions[linkograph_session.session_id] = linkograph_session
         
         # Also load directly from linkography files if available
-        linkography_dir = Path("./thesis_data/linkography")
+        # Fix path to work from both root and benchmarking directory
+        if Path("../thesis_data/linkography").exists():
+            linkography_dir = Path("../thesis_data/linkography")
+        elif Path("thesis_data/linkography").exists():
+            linkography_dir = Path("thesis_data/linkography")
+        else:
+            linkography_dir = Path(__file__).parent.parent / "thesis_data/linkography"
         if linkography_dir.exists():
             for linkography_file in linkography_dir.glob("linkography_*.json"):
                 # Skip moves files
