@@ -284,6 +284,7 @@ if not st.session_state.analysis_complete:
                         st.session_state.socratic_agent = socratic_agent
                         st.session_state.agents_initialized = True
                         st.session_state.analysis_complete = True
+                        st.session_state.last_analysis_time = time.time()  # Add timestamp
                         
                         st.success("🎉 Analysis Complete! Ready for cognitive enhancement.")
                         st.rerun()
@@ -309,11 +310,45 @@ else:
         
         # Analysis summary
         result = st.session_state.analysis_result
+        
+        # DEBUG: Show what's actually in the result
+        with st.expander("🔍 DEBUG: Analysis Result Data", expanded=True):
+            # Show when analysis was last run
+            if hasattr(st.session_state, 'last_analysis_time'):
+                from datetime import datetime
+                last_time = datetime.fromtimestamp(st.session_state.last_analysis_time)
+                st.write(f"**Last Analysis Run:** {last_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            else:
+                st.write("**Last Analysis Run:** Unknown")
+            
+            st.write("**Raw Analysis Result:**")
+            st.json(result)
+            
+            st.write("**Phase Analysis:**")
+            st.json(result.get('phase_analysis', {}))
+            
+            st.write("**Text Analysis:**")
+            st.json(result.get('text_analysis', {}))
+        
         col_metric1, col_metric2, col_metric3 = st.columns(3)
         
         with col_metric1:
-            confidence = result.get('confidence_score', 0)
-            st.metric("Analysis Confidence", f"{confidence:.1%}")
+            # Display current design phase instead of confidence
+            phase_analysis = result.get('phase_analysis', {})
+            current_phase = phase_analysis.get('current_phase', 'unknown')
+            phase_completion = phase_analysis.get('phase_completion', 0)
+            
+            # Format phase display
+            phase_display = {
+                'ideation': '💡 Ideation',
+                'visualization': '🎨 Visualization', 
+                'materialization': '🏗️ Materialization',
+                'completion': '✅ Completion',
+                'unknown': '❓ Unknown'
+            }
+            
+            phase_name = phase_display.get(current_phase, f"❓ {current_phase.title()}")
+            st.metric("Design Phase", f"{phase_name} ({phase_completion}%)")
         
         with col_metric2:
             flags = len(result.get('cognitive_flags', []))
@@ -321,11 +356,103 @@ else:
         
         with col_metric3:
             building_type = result.get('text_analysis', {}).get('building_type', 'unknown')
-            st.metric("Project Type", building_type.title())
+            # Ensure building type is properly capitalized and formatted
+            if building_type and building_type != 'unknown':
+                formatted_type = building_type.replace('_', ' ').title()
+                st.metric("Project Type", formatted_type)
+            else:
+                st.metric("Project Type", "Unknown")
     
     with col_image:
         if st.session_state.uploaded_image_path:
             st.image(st.session_state.uploaded_image_path, caption="Your Design", use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Force fresh analysis button
+    if st.button("🔄 Force Fresh Analysis"):
+        with st.spinner("🧠 Running fresh analysis..."):
+            try:
+                # Re-run analysis with current state
+                analysis_agent = AnalysisAgent(domain)
+                state = st.session_state.arch_state
+                
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                # Get fresh analysis
+                fresh_analysis_result = loop.run_until_complete(analysis_agent.process(state))
+                
+                # Update session state
+                st.session_state.analysis_result = fresh_analysis_result
+                st.session_state.analysis_agent = analysis_agent
+                
+                st.success("✅ Fresh analysis complete!")
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"❌ Fresh analysis failed: {str(e)}")
+    
+    # Phase Progress Section
+    phase_analysis = result.get('phase_analysis', {})
+    if phase_analysis:
+        st.subheader("🎯 Design Phase Progress")
+        
+        current_phase = phase_analysis.get('current_phase', 'unknown')
+        phase_completion = phase_analysis.get('phase_completion', 0)
+        next_phase = phase_analysis.get('next_phase')
+        progression_ready = phase_analysis.get('progression_ready', False)
+        
+        # Phase descriptions
+        phase_descriptions = {
+            'ideation': 'Concept development and problem framing',
+            'visualization': 'Spatial development and form exploration', 
+            'materialization': 'Technical development and implementation',
+            'completion': 'Final refinement and presentation'
+        }
+        
+        # Phase activities
+        phase_activities = {
+            'ideation': ['Site analysis', 'Program development', 'Concept exploration'],
+            'visualization': ['Spatial planning', 'Form development', 'Circulation design'],
+            'materialization': ['Construction details', 'Material specification', 'Technical systems'],
+            'completion': ['Final details', 'Presentation preparation', 'Documentation']
+        }
+        
+        col_phase1, col_phase2 = st.columns([1, 1])
+        
+        with col_phase1:
+            # Progress bar
+            st.progress(phase_completion / 100)
+            st.write(f"**{phase_completion}% Complete**")
+            
+            # Phase description
+            description = phase_descriptions.get(current_phase, 'Phase description not available')
+            st.write(f"**Current Focus:** {description}")
+            
+            # Next phase info
+            if next_phase and progression_ready:
+                next_phase_name = next_phase.replace('_', ' ').title()
+                st.success(f"🎉 Ready to progress to **{next_phase_name}** phase!")
+            elif next_phase:
+                next_phase_name = next_phase.replace('_', ' ').title()
+                st.info(f"Next phase: **{next_phase_name}**")
+        
+        with col_phase2:
+            # Current phase activities
+            activities = phase_activities.get(current_phase, [])
+            if activities:
+                st.write("**Key Activities for This Phase:**")
+                for activity in activities:
+                    st.write(f"• {activity}")
+            
+            # Learning opportunities from synthesis
+            synthesis = result.get('synthesis', {})
+            learning_opportunities = synthesis.get('learning_opportunities', [])
+            if learning_opportunities:
+                st.write("**Learning Opportunities:**")
+                for opportunity in learning_opportunities[:2]:  # Show top 2
+                    st.write(f"• {opportunity}")
     
     st.markdown("---")
     

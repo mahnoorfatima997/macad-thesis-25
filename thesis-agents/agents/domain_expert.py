@@ -1975,7 +1975,7 @@ class DomainExpertAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=800,
+                max_tokens=800,  # Increased from 300 to prevent cut-off responses
                 temperature=0.3
             )
             

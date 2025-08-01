@@ -227,7 +227,7 @@ class ContextAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
+                max_tokens=600,  # Increased from 200 to prevent cut-off responses
                 temperature=0.2
             )
             
