@@ -708,7 +708,7 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             # Use Socratic Agent (multi-agent system)
             print("🤖 Using Socratic Agent (multi-agent system)...")
             
-            # Add user input to arch state
+            # Add user input to arch state before processing
             if st.session_state.arch_state:
                 st.session_state.arch_state.messages.append({
                     "role": "user",

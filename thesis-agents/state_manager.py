@@ -51,6 +51,10 @@ class ArchMentorState:
     # Domain configuration
     domain: str = "architecture"
     domain_config: Dict[str, Any] = field(default_factory=dict)
+    
+    # 0108 added-Debug and display settings
+    show_response_summary: bool = True  # Toggle for response processing summary
+    show_scientific_metrics: bool = False  # Toggle for scientific metrics in response
 
 
 #ADDED THIS FOR CONVO HISTORY MANAGEMENT

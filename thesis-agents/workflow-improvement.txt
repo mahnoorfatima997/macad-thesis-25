@@ -1,0 +1,687 @@
+General Enhancement Logic for CURSOR Implementation
+🎯 Core Progressive Discovery Logic
+Fundamental Principle: Stage-Gate Progression
+Every interaction must follow a progression where complexity increases ONLY after demonstrating readiness at the current level. Never jump to advanced concepts without building foundation.
+Universal Interaction Sequence
+
+Interest Discovery → 2. Foundation Building → 3. Principle Discovery → 4. Application → 5. Complex Integration
+
+
+🔄 Domain Expert Agent Enhancement Logic
+Current Problem:
+Agent provides examples, information, or complex guidance immediately when requested.
+Enhancement Logic:
+BEFORE responding to ANY request:
+1. CHECK: How many meaningful exchanges have occurred? (< 3 = foundation needed)
+2. ASSESS: What is the user's current understanding level?
+3. DETECT: Is this premature complexity seeking?
+4. ROUTE: Foundation building OR progressive information provision
+
+IF foundation needed:
+- Ask about their current understanding first
+- Ask about their specific interest/curiosity
+- Ask about their experience with the topic
+- THEN provide simplified, discovery-focused response
+
+IF ready for information:
+- Provide 2-3 contrasting approaches (not just examples)
+- Focus on underlying PRINCIPLES, not just facts
+- Include discovery questions: "What patterns do you notice?"
+- Connect back to their specific project context
+Response Pattern Template:
+Instead of: "Here are examples of X: [list of projects]"
+Use: "What draws you to X? → [wait] → Different approaches to X include [principle A] and [principle B] → What appeals to you about these different approaches? → How might this apply to your project?"
+
+🤔 Socratic Tutor Agent Enhancement Logic
+Current Problem:
+Agent asks complex, multi-part questions immediately without building up to that complexity.
+Enhancement Logic:
+BEFORE generating ANY question:
+1. ANALYZE: Current conversation stage and student readiness
+2. CALIBRATE: Appropriate complexity level for current stage
+3. FOCUS: Ask ONE focused question, not multiple complex parts
+4. BUILD: Each question should build on their previous response
+
+Question Complexity Levels:
+Level 1: Personal connection/interest questions
+Level 2: Simple observation/experience questions  
+Level 3: Basic concept exploration questions
+Level 4: Principle discovery questions
+Level 5: Application to their project questions
+Level 6: Complex trade-off and constraint questions
+
+ONLY advance to next level after demonstrating understanding at current level
+Question Generation Template:
+Instead of: "How might you design spaces that adapt to different activities, consider trade-offs between dedicated vs flexible areas, and impact sense of ownership for different groups?"
+Use: "What draws you to flexible spaces? → [wait] → What challenges might flexibility create? → [wait] → How could you address those challenges? → [NOW complex questions]"
+
+🎯 Routing Enhancement Logic
+Current Problem:
+Router sends users directly to complex responses without checking readiness.
+Enhancement Logic:
+ADD new routing decision factors:
+1. CONVERSATION_STAGE: Count meaningful exchanges (not just message count)
+2. COMPLEXITY_READINESS: Assess if user can handle current complexity level
+3. FOUNDATION_STATUS: Check if basic understanding is established
+4. DISCOVERY_PROGRESSION: Track progression through discovery stages
+
+MODIFY routing priorities:
+Priority 1: Foundation building (if < 3 meaningful exchanges OR low understanding)
+Priority 2: Cognitive protection (premature complexity OR answer-seeking)
+Priority 3: Progressive discovery (guided principle discovery)
+Priority 4: Application building (connect to their project)
+Priority 5: Complex integration (only after all above stages)
+
+NEW routing paths needed:
+- "foundation_building" 
+- "interest_discovery"
+- "progressive_discovery"
+- "readiness_assessment"
+
+🛡️ Cognitive Protection Enhancement Logic
+Current Problem:
+Only protects against direct answer-seeking, doesn't prevent complexity overload.
+Enhancement Logic:
+EXPAND protection triggers to include:
+1. Premature example requests (< 3 exchanges exploring concepts)
+2. Premature complex questions (asking advanced questions before basics)
+3. Complexity overload (receiving complex responses when not ready)
+4. Foundation skipping (jumping to application without understanding principles)
+
+PROTECTION responses should:
+- Acknowledge their curiosity/interest
+- Explain why building foundation helps learning
+- Ask foundation-building questions
+- Promise information/examples after foundation is built
+- Maintain engagement while protecting cognitive development
+
+📊 Response Synthesis Enhancement Logic
+Current Problem:
+Synthesizer combines agent outputs without considering progressive discovery needs.
+Enhancement Logic:
+BEFORE synthesizing responses:
+1. CHECK: What stage is the user at in discovery progression?
+2. FILTER: Remove complexity that exceeds current readiness level
+3. SEQUENCE: Order information from simple to complex
+4. BRIDGE: Ensure each piece builds on the previous understanding
+5. GATE: Only include advanced concepts if foundation is demonstrated
+
+SYNTHESIS priority order:
+1. Foundation/interest building content (if needed)
+2. Single principle or concept (not multiple)
+3. Discovery questions about that concept
+4. Application to their specific context
+5. Complexity only if ready
+
+NEVER combine:
+- Foundation building + complex analysis in same response
+- Multiple complex concepts without progressive building
+- Advanced questioning without readiness demonstration
+
+🔍 Student State Analysis Enhancement Logic
+Current Problem:
+System doesn't track progressive discovery readiness, only basic classification.
+Enhancement Logic:
+TRACK additional state variables:
+- discovery_stage: (interest, foundation, principle, application, complex)
+- complexity_readiness: (basic, intermediate, advanced, expert)
+- foundation_strength: (weak, developing, solid, strong)
+- curiosity_level: (low, moderate, high, engaged)
+- principle_understanding: (none, emerging, developing, solid)
+
+UPDATE state after each exchange:
+- Did they demonstrate understanding?
+- Did they ask deeper questions?
+- Did they make connections?
+- Are they ready for next complexity level?
+
+USE state to gate complexity:
+- IF foundation_strength < "developing" → route to foundation building
+- IF curiosity_level < "moderate" → route to interest activation  
+- IF complexity_readiness < required level → route to scaffolding
+
+🎯 Universal Implementation Rules
+Rule 1: Complexity Gating
+NO complex responses until foundation is demonstrated through user responses showing understanding.
+Rule 2: Interest-First Principle
+ALWAYS start with personal interest/curiosity before diving into concepts.
+Rule 3: Single-Focus Progression
+ONE concept/principle at a time, not multiple complex ideas simultaneously.
+Rule 4: Discovery-Based Learning
+Guide students to discover principles themselves rather than stating them directly.
+Rule 5: Readiness Assessment
+Continuously assess if student is ready for next complexity level based on their responses.
+Rule 6: Progressive Scaffolding
+Each response should build on previous understanding, not jump to new complexity.
+
+🔧 Technical Implementation Guidance
+For CURSOR to implement:
+
+Add complexity level tracking to all agent methods
+Implement stage-gate logic that checks readiness before advancing
+Create foundation-building response templates for each agent
+Add discovery question generation that builds progressively
+Implement complexity filtering in response synthesis
+Create readiness assessment functions that analyze user responses
+Add progressive routing paths that honor discovery sequence
+
+Key code changes needed:
+
+Modify agent provide_knowledge and generate_response methods to check readiness first
+Add complexity level parameters to all response generation
+Implement stage progression logic in routing decisions
+Create foundation assessment functions
+Add discovery-based response templates
+Implement complexity gating in synthesizer
+
+
+CODE SUGGESTION CHANGES :
+# TARGETED IMPROVEMENTS FOR YOUR EXISTING AGENTS
+
+# ============================================================================
+# IMPROVEMENT 1: Enhanced Domain Expert - Better Discovery & Anti-Offloading
+# ============================================================================
+
+# REPLACE your existing provide_knowledge method in domain_expert.py:
+async def provide_knowledge(self, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+    """ENHANCED: Better discovery-based knowledge with cognitive protection"""
+    
+    print(f"\n📚 {self.name} providing knowledge with cognitive protection...")
+    
+    # Get user's input and analyze request type
+    user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+    user_input = user_messages[-1] if user_messages else ""
+    
+    if not user_input:
+        return self._generate_fallback_knowledge()
+    
+    building_type = self._extract_building_type_from_context(state)
+    
+    # ENHANCED: Detect cognitive offloading patterns
+    cognitive_risk = self._assess_cognitive_offloading_risk(state, user_input)
+    
+    if cognitive_risk["high_risk"]:
+        print(f"🛡️ Cognitive protection triggered: {cognitive_risk['reason']}")
+        return await self._provide_cognitive_protection_response(state, user_input, cognitive_risk)
+    
+    # ENHANCED: Better example request handling with discovery focus
+    if self._is_example_request(user_input):
+        return await self._provide_discovery_based_examples(state, user_input, gap_type)
+    
+    # ENHANCED: Improved knowledge synthesis with anti-offloading
+    return await self._provide_enhanced_knowledge_guidance(state, user_input, gap_type)
+
+# ADD this method to your domain_expert.py:
+def _assess_cognitive_offloading_risk(self, state: ArchMentorState, user_input: str) -> Dict[str, Any]:
+    """Assess risk of cognitive offloading based on MIT research"""
+    
+    user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+    message_count = len(user_messages)
+    
+    risk_analysis = {
+        "high_risk": False,
+        "reason": "",
+        "risk_factors": []
+    }
+    
+    # Risk Factor 1: Premature example seeking (< 3 messages)
+    if message_count < 3:
+        example_keywords = ["example", "examples", "show me", "give me", "provide"]
+        if any(keyword in user_input.lower() for keyword in example_keywords):
+            risk_analysis["high_risk"] = True
+            risk_analysis["reason"] = "premature_example_request"
+            risk_analysis["risk_factors"].append("insufficient_exploration")
+    
+    # Risk Factor 2: Direct answer seeking without thinking
+    direct_answer_patterns = [
+        "what should i", "tell me the", "just tell me", "what is the best",
+        "which one should", "what would you recommend", "give me the answer"
+    ]
+    if any(pattern in user_input.lower() for pattern in direct_answer_patterns):
+        risk_analysis["high_risk"] = True
+        risk_analysis["reason"] = "direct_answer_seeking"
+        risk_analysis["risk_factors"].append("bypassing_thinking_process")
+    
+    # Risk Factor 3: Passive language patterns
+    passive_patterns = ["i don't know", "just help me", "whatever works", "i give up"]
+    if any(pattern in user_input.lower() for pattern in passive_patterns):
+        risk_analysis["risk_factors"].append("passive_approach")
+        if message_count < 5:  # Early passive behavior is higher risk
+            risk_analysis["high_risk"] = True
+            risk_analysis["reason"] = "early_passive_behavior"
+    
+    return risk_analysis
+
+# ADD this method to your domain_expert.py:
+async def _provide_cognitive_protection_response(self, state: ArchMentorState, user_input: str, cognitive_risk: Dict) -> Dict[str, Any]:
+    """Provide response that protects against cognitive offloading"""
+    
+    building_type = self._extract_building_type_from_context(state)
+    risk_reason = cognitive_risk.get("reason", "")
+    
+    if risk_reason == "premature_example_request":
+        response_text = f"""
+**🤔 Let's build your understanding first**
+
+I see you're looking for examples, but research shows that jumping to examples too early can actually hurt your learning. Let's develop your thinking first.
+
+**Before exploring examples, help me understand:**
+
+• What specific aspect of {user_input.lower().replace('examples', '').strip()} interests you?
+• What challenges are you facing in your {building_type} project?
+• What's your current understanding of this topic?
+• What's driving your curiosity about this?
+
+**Building your own understanding first makes examples much more valuable.**
+
+*What's the most challenging part of this topic for you right now?*
+"""
+    
+    elif risk_reason == "direct_answer_seeking":
+        response_text = f"""
+**🧠 Let's develop your design thinking**
+
+I notice you're asking for direct recommendations. While I could give you an answer, that would rob you of the chance to develop your own design reasoning.
+
+**Instead, let's think through this together:**
+
+• What factors do you think should influence this decision?
+• What trade-offs are you willing to consider?
+• What constraints shape your options?
+• What would make one approach better than another?
+
+**Developing your own reasoning is more valuable than getting quick answers.**
+
+*What's your instinct about how to approach this challenge?*
+"""
+    
+    else:  # early_passive_behavior
+        response_text = f"""
+**💪 Let's engage your design thinking**
+
+I can sense some uncertainty, which is completely normal! But let's turn that uncertainty into curiosity and active exploration.
+
+**Let's start with what you do know:**
+
+• What aspects of {building_type} design do you feel confident about?
+• What examples have you seen that you found interesting?
+• What questions do you have about this challenge?
+• What would you try if you weren't worried about being wrong?
+
+**Every expert started with uncertainty - let's use yours as a learning opportunity.**
+
+*What aspect of this feels most approachable to you?*
+"""
+    
+    return {
+        "agent": self.name,
+        "response_text": response_text,
+        "response_type": "cognitive_protection",
+        "risk_reason": risk_reason,
+        "cognitive_protection_active": True,
+        "sources": []
+    }
+
+# ENHANCE your existing _provide_focused_examples method:
+async def _provide_discovery_based_examples(self, state: ArchMentorState, user_input: str, gap_type: str) -> Dict[str, Any]:
+    """ENHANCED: Examples that promote discovery over copying"""
+    
+    building_type = self._extract_building_type_from_context(state)
+    topic = self._extract_topic_from_user_input(user_input)
+    
+    # Enhanced knowledge search with discovery focus
+    knowledge_results = await self.discover_knowledge(topic, {}, state)
+    
+    if knowledge_results:
+        return await self._synthesize_discovery_examples(knowledge_results, topic, building_type, state)
+    else:
+        return await self._generate_discovery_examples_ai(topic, building_type, user_input)
+
+# ADD this method to your domain_expert.py:
+async def _synthesize_discovery_examples(self, knowledge_results: List[Dict], topic: str, building_type: str, state: ArchMentorState) -> Dict[str, Any]:
+    """Synthesize examples in discovery-learning format"""
+    
+    combined_knowledge = "\n\n".join([r['content'] for r in knowledge_results])
+    
+    prompt = f"""
+    Create discovery-based examples for: {topic} in {building_type} design
+    
+    KNOWLEDGE: {combined_knowledge}
+    
+    DISCOVERY FORMAT REQUIREMENTS:
+    1. Present 2-3 contrasting approaches (not just project names)
+    2. For each approach, explain the PRINCIPLE behind it
+    3. Ask questions that help students see patterns
+    4. Focus on WHY approaches work, not just WHAT they are
+    5. End with pattern recognition questions
+    
+    EXAMPLE FORMAT:
+    "Different approaches to {topic}:
+    
+    **Approach 1: [Strategy Name]**
+    Some projects use [strategy] - this works because [principle]. 
+    Example: [brief description] demonstrates this by [specific technique].
+    
+    **Approach 2: [Different Strategy]**
+    Other projects employ [different strategy] - this succeeds because [different principle].
+    Example: [brief description] shows this through [specific technique].
+    
+    What patterns do you notice? What principles might guide your {building_type} design?"
+    
+    Focus on strategies and principles, not just listing projects. Keep under 150 words.
+    """
+    
+    try:
+        response = self.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=250,
+            temperature=0.4
+        )
+        
+        discovery_response = response.choices[0].message.content.strip()
+        
+        return {
+            "agent": self.name,
+            "response_text": discovery_response,
+            "response_type": "discovery_examples",
+            "topic": topic,
+            "building_type": building_type,
+            "sources": [r.get('metadata', {}).get('source', 'Unknown') for r in knowledge_results[:3]]
+        }
+        
+    except Exception as e:
+        print(f"⚠️ Discovery synthesis failed: {e}")
+        return await self._generate_discovery_examples_ai(topic, building_type, user_input)
+
+# ============================================================================
+# IMPROVEMENT 2: Enhanced Socratic Tutor - Better Question Targeting
+# ============================================================================
+
+# ENHANCE your existing generate_response method in socratic_tutor.py:
+async def generate_response(self, state: ArchMentorState, analysis_result: Dict[str, Any], 
+                          context_classification: Optional[Dict] = None, 
+                          domain_expert_result: Optional[Dict] = None) -> Dict[str, Any]:
+    """ENHANCED: Better Socratic questioning with research-based targeting"""
+    
+    print(f"\n🤔 {self.name} generating enhanced Socratic response...")
+    
+    # Get user's last input
+    last_message = ""
+    for msg in reversed(state.messages):
+        if msg.get('role') == 'user':
+            last_message = msg['content']
+            break
+    
+    if not last_message:
+        return self._generate_fallback_response()
+    
+    # ENHANCED: Better student state analysis
+    student_state_analysis = self._analyze_student_learning_state(state, context_classification)
+    
+    # ENHANCED: Detect conversation patterns
+    conversation_context = self._analyze_conversation_context(state, last_message)
+    
+    # ENHANCED: Determine optimal Socratic strategy
+    socratic_strategy = self._determine_optimal_socratic_strategy(
+        student_state_analysis, conversation_context, domain_expert_result
+    )
+    
+    print(f"🧠 Student State: {student_state_analysis}")
+    print(f"🔄 Conversation Context: {conversation_context}")
+    print(f"🎯 Socratic Strategy: {socratic_strategy}")
+    
+    # Generate response based on strategy
+    response_result = await self._generate_targeted_socratic_response(
+        state, student_state_analysis, conversation_context, socratic_strategy, domain_expert_result
+    )
+    
+    # Add metadata
+    response_result.update({
+        "agent": self.name,
+        "socratic_strategy": socratic_strategy,
+        "student_state": student_state_analysis,
+        "conversation_context": conversation_context
+    })
+    
+    return response_result
+
+# ADD this method to your socratic_tutor.py:
+def _analyze_student_learning_state(self, state: ArchMentorState, context_classification: Optional[Dict]) -> Dict[str, Any]:
+    """Enhanced analysis of student's current learning state"""
+    
+    user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+    last_message = user_messages[-1] if user_messages else ""
+    
+    learning_state = {
+        "confidence_level": context_classification.get("confidence_level", "confident") if context_classification else "confident",
+        "understanding_level": context_classification.get("understanding_level", "medium") if context_classification else "medium",
+        "engagement_level": context_classification.get("engagement_level", "medium") if context_classification else "medium",
+        "confusion_indicators": self._detect_confusion_signals(last_message),
+        "question_complexity": self._assess_question_complexity(last_message),
+        "thinking_depth": self._assess_thinking_depth(last_message),
+        "message_count": len(user_messages)
+    }
+    
+    return learning_state
+
+# ADD this method to your socratic_tutor.py:
+def _analyze_conversation_context(self, state: ArchMentorState, current_message: str) -> Dict[str, Any]:
+    """Analyze conversation context for better question targeting"""
+    
+    user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+    
+    context = {
+        "stage": "initial" if len(user_messages) <= 2 else "developing" if len(user_messages) <= 5 else "advanced",
+        "topic_focus": self._extract_current_topic_focus(current_message),
+        "question_pattern": "seeking_examples" if any(word in current_message.lower() for word in ["example", "show me"]) else "exploring_concepts",
+        "cognitive_needs": self._identify_cognitive_needs(current_message, user_messages)
+    }
+    
+    return context
+
+# ADD this method to your socratic_tutor.py:
+def _determine_optimal_socratic_strategy(self, student_state: Dict, conversation_context: Dict, domain_expert_result: Optional[Dict]) -> str:
+    """Determine the best Socratic approach based on context"""
+    
+    # Priority 1: If domain expert provided examples, ask about them
+    if (domain_expert_result and domain_expert_result.get("response_text") and 
+        domain_expert_result.get("response_type") != "cognitive_protection"):
+        return "example_analysis_questions"
+    
+    # Priority 2: Address confusion with clarifying questions
+    if student_state.get("confusion_indicators", 0) > 2:
+        return "clarifying_scaffolding"
+    
+    # Priority 3: Challenge overconfidence
+    if (student_state.get("confidence_level") == "overconfident" and 
+        student_state.get("thinking_depth") == "shallow"):
+        return "assumption_challenging"
+    
+    # Priority 4: Support uncertain students
+    if student_state.get("confidence_level") == "uncertain":
+        return "supportive_questioning"
+    
+    # Priority 5: Deepen thinking for engaged students
+    if (student_state.get("engagement_level") == "high" and 
+        student_state.get("thinking_depth") in ["moderate", "deep"]):
+        return "depth_expanding"
+    
+    # Default: Exploratory questioning
+    return "exploratory_questioning"
+
+# ADD this method to your socratic_tutor.py:
+async def _generate_targeted_socratic_response(self, state: ArchMentorState, student_state: Dict, 
+                                             conversation_context: Dict, strategy: str, 
+                                             domain_expert_result: Optional[Dict]) -> Dict[str, Any]:
+    """Generate Socratic response based on determined strategy"""
+    
+    building_type = self._extract_building_type_from_context(state)
+    
+    if strategy == "example_analysis_questions":
+        return await self._generate_example_analysis_questions(state, domain_expert_result, building_type)
+    elif strategy == "clarifying_scaffolding":
+        return await self._generate_clarifying_scaffolding(state, student_state, building_type)
+    elif strategy == "assumption_challenging":
+        return await self._generate_assumption_challenges(state, student_state, building_type)
+    elif strategy == "supportive_questioning":
+        return await self._generate_supportive_questions(state, student_state, building_type)
+    elif strategy == "depth_expanding":
+        return await self._generate_depth_expanding_questions(state, student_state, building_type)
+    else:  # exploratory_questioning
+        return await self._generate_exploratory_questions(state, student_state, building_type)
+
+# ENHANCE your existing example-based questioning:
+async def _generate_example_analysis_questions(self, state: ArchMentorState, domain_expert_result: Dict, building_type: str) -> Dict[str, Any]:
+    """ENHANCED: Better questions about examples that promote deep analysis"""
+    
+    examples_text = domain_expert_result.get("response_text", "")
+    
+    # Extract key concepts from examples for targeted questioning
+    prompt = f"""
+    Generate ONE specific Socratic question about these examples that promotes deep thinking:
+    
+    EXAMPLES: {examples_text}
+    BUILDING TYPE: {building_type}
+    
+    REQUIREMENTS:
+    1. Reference specific examples provided
+    2. Ask about underlying principles, not surface features
+    3. Promote pattern recognition or critical analysis
+    4. Connect to their design challenge
+    5. Encourage comparison or evaluation
+    
+    QUESTION TYPES TO USE:
+    - "What makes [specific example] effective for [specific purpose]?"
+    - "How do these approaches address [specific challenge] differently?"
+    - "What principles do you see underlying [specific strategy]?"
+    - "Which of these approaches might work best for your context, and why?"
+    
+    Generate ONE targeted question:
+    """
+    
+    try:
+        response = self.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=80,
+            temperature=0.3
+        )
+        
+        question = response.choices[0].message.content.strip()
+        if not question.endswith('?'):
+            question += '?'
+        
+        return {
+            "response_text": question,
+            "response_type": "example_analysis_socratic",
+            "educational_intent": "deep_analysis_of_examples"
+        }
+        
+    except Exception as e:
+        print(f"⚠️ Example analysis question generation failed: {e}")
+        return {
+            "response_text": "Looking at these examples, what underlying principles do you notice that might inform your own design approach?",
+            "response_type": "example_analysis_socratic",
+            "educational_intent": "pattern_recognition"
+        }
+
+# ADD these helper methods to your socratic_tutor.py:
+def _detect_confusion_signals(self, message: str) -> int:
+    """Count confusion indicators in message"""
+    confusion_words = ["confused", "don't understand", "unclear", "not sure", "help", "lost", "stuck"]
+    return sum(1 for word in confusion_words if word in message.lower())
+
+def _assess_question_complexity(self, message: str) -> str:
+    """Assess complexity of student's question"""
+    word_count = len(message.split())
+    if word_count > 15 and ("how" in message.lower() or "why" in message.lower()):
+        return "complex"
+    elif word_count > 8:
+        return "moderate"
+    else:
+        return "simple"
+
+def _assess_thinking_depth(self, message: str) -> str:
+    """Assess depth of thinking in message"""
+    deep_indicators = ["because", "therefore", "however", "although", "considering", "given that"]
+    shallow_indicators = ["just", "simply", "obviously", "clearly"]
+    
+    deep_count = sum(1 for indicator in deep_indicators if indicator in message.lower())
+    shallow_count = sum(1 for indicator in shallow_indicators if indicator in message.lower())
+    
+    if deep_count > shallow_count and deep_count >= 2:
+        return "deep"
+    elif deep_count > 0:
+        return "moderate"
+    else:
+        return "shallow"
+
+def _extract_current_topic_focus(self, message: str) -> str:
+    """Extract what topic student is currently focused on"""
+    topic_keywords = {
+        "lighting": ["light", "lighting", "daylight", "illumination"],
+        "circulation": ["circulation", "flow", "movement", "path"],
+        "materials": ["material", "materials", "finish", "construction"],
+        "sustainability": ["sustainable", "green", "environment", "energy"],
+        "accessibility": ["accessible", "access", "universal", "barrier"],
+        "space": ["space", "spatial", "layout", "organization"]
+    }
+    
+    message_lower = message.lower()
+    for topic, keywords in topic_keywords.items():
+        if any(keyword in message_lower for keyword in keywords):
+            return topic
+    
+    return "general_design"
+
+def _identify_cognitive_needs(self, current_message: str, user_messages: List[str]) -> List[str]:
+    """Identify what cognitive support student needs"""
+    needs = []
+    
+    # Check for clarification needs
+    if any(word in current_message.lower() for word in ["confused", "unclear", "don't understand"]):
+        needs.append("clarification")
+    
+    # Check for confidence building needs
+    if any(word in current_message.lower() for word in ["not sure", "maybe", "i think"]):
+        needs.append("confidence_building")
+    
+    # Check for depth expansion needs
+    if len(current_message.split()) < 10 and len(user_messages) > 3:
+        needs.append("depth_expansion")
+    
+    return needs
+
+# ============================================================================
+# INTEGRATION WITH YOUR EXISTING ORCHESTRATOR
+# ============================================================================
+
+# In your orchestrator, the enhanced agents will work with your existing routing:
+# - When route_decision returns "knowledge_only" → Enhanced domain expert provides discovery examples
+# - When route_decision returns "socratic_focus" → Enhanced Socratic tutor provides targeted questions
+# - Cognitive protection activates automatically based on user patterns
+# - All existing functionality preserved, just enhanced
+
+"""
+SUMMARY OF IMPROVEMENTS:
+
+1. **Domain Expert Enhancements:**
+   - Cognitive offloading detection (premature examples, direct answers, passive behavior)
+   - Discovery-based examples that promote pattern recognition
+   - Protection responses that build thinking instead of giving answers
+
+2. **Socratic Tutor Enhancements:**
+   - Better student state analysis (confidence, understanding, thinking depth)
+   - Targeted questioning strategies based on learning context
+   - Improved example analysis questions that promote deep thinking
+
+3. **Interaction Improvements:**
+   - Agents now work together better (Socratic asks about Domain Expert's examples)
+   - Cognitive protection prevents dependency while building skills
+   - Discovery learning promotes understanding over copying
+
+4. **Research Integration:**
+   - MIT study findings on cognitive offloading prevention
+   - Educational psychology principles for optimal questioning
+   - Learning science approaches to example provision

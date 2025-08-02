@@ -26,6 +26,110 @@ except ImportError:
 from state_manager import ArchMentorState
 from knowledge_base.knowledge_manager import KnowledgeManager
 
+# Comprehensive architectural keyword configuration for flexible detection
+ARCHITECTURAL_KEYWORDS = {
+    "building_types": {
+        "residential": [
+            "house", "home", "apartment", "condo", "townhouse", "villa", "mansion", "cottage", 
+            "bungalow", "duplex", "triplex", "penthouse", "loft", "studio", "dormitory", "residence"
+        ],
+        "commercial": [
+            "office", "retail", "shop", "store", "mall", "market", "restaurant", "cafe", "hotel", 
+            "motel", "inn", "resort", "spa", "gym", "fitness", "cinema", "theater", "auditorium", 
+            "conference", "exhibition", "gallery", "showroom", "warehouse", "factory", "industrial"
+        ],
+        "institutional": [
+            "school", "university", "college", "academy", "institute", "hospital", "clinic", 
+            "medical", "library", "museum", "archive", "courthouse", "city hall", "government", 
+            "police", "fire station", "post office", "bank", "church", "temple", "mosque", "synagogue"
+        ],
+        "community": [
+            "community center", "community hall", "recreation center", "youth center", "senior center",
+            "cultural center", "arts center", "performance center", "multipurpose", "civic center",
+            "town hall", "meeting hall", "assembly hall", "convention center", "exhibition center"
+        ],
+        "transportation": [
+            "airport", "train station", "bus station", "metro", "subway", "terminal", "depot",
+            "garage", "parking", "bridge", "tunnel", "port", "marina"
+        ],
+        "mixed_use": [
+            "mixed use", "mixed-use", "live work", "live-work", "commercial residential",
+            "retail residential", "office residential", "integrated", "complex", "development"
+        ]
+    },
+    "building_elements": [
+        "building", "structure", "facility", "center", "complex", "tower", "block", "wing",
+        "annex", "extension", "addition", "renovation", "conversion", "adaptive reuse",
+        "repurposing", "retrofitting", "rehabilitation", "restoration", "preservation"
+    ],
+    "landscape_types": [
+        "landscape", "park", "garden", "outdoor", "public space", "plaza", "square", "courtyard",
+        "terrace", "rooftop garden", "green roof", "urban park", "botanical garden", "arboretum",
+        "playground", "sports field", "athletic", "recreation area", "trail", "pathway", "walkway",
+        "promenade", "esplanade", "boulevard", "street", "alley", "pedestrian", "bike path"
+    ],
+    "urban_elements": [
+        "urban", "city", "downtown", "neighborhood", "district", "zone", "area", "precinct",
+        "quarter", "block", "street", "avenue", "road", "highway", "infrastructure", "utilities"
+    ]
+}
+
+def is_building_request(text: str) -> bool:
+    """
+    Flexible detection of building-related requests using comprehensive keyword matching.
+    Returns True if the text indicates a request for building examples/information.
+    """
+    text_lower = text.lower()
+    
+    # Check for building types
+    for category, keywords in ARCHITECTURAL_KEYWORDS["building_types"].items():
+        if any(keyword in text_lower for keyword in keywords):
+            return True
+    
+    # Check for building elements
+    if any(keyword in text_lower for keyword in ARCHITECTURAL_KEYWORDS["building_elements"]):
+        return True
+    
+    return False
+
+def is_landscape_request(text: str) -> bool:
+    """
+    Flexible detection of landscape-related requests using comprehensive keyword matching.
+    Returns True if the text indicates a request for landscape examples/information.
+    """
+    text_lower = text.lower()
+    
+    # Check for landscape types
+    if any(keyword in text_lower for keyword in ARCHITECTURAL_KEYWORDS["landscape_types"]):
+        return True
+    
+    return False
+
+def get_search_query_modifiers(text: str) -> Dict[str, str]:
+    """
+    Returns appropriate search query modifiers based on the type of request detected.
+    """
+    text_lower = text.lower()
+    
+    if is_building_request(text):
+        # Exclude landscape and urban projects when building is requested
+        return {
+            "include": "building architecture",
+            "exclude": "-landscape -park -urban -garden -outdoor -public space -plaza"
+        }
+    elif is_landscape_request(text):
+        # Focus on landscape and urban projects
+        return {
+            "include": "landscape architecture",
+            "exclude": ""
+        }
+    else:
+        # Default to general architecture
+        return {
+            "include": "architecture",
+            "exclude": ""
+        }
+
 class DomainExpertAgent:
     def __init__(self, domain="architecture"):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -37,20 +141,22 @@ class DomainExpertAgent:
 
     # Web search for knowledge if database is empty
     async def search_web_for_knowledge(self, topic: str) -> List[Dict]:
-        """Enhanced web search with better architectural query construction"""
+        """Enhanced web search with better architectural query construction and clickable links"""
         
         try:
             import requests
             from urllib.parse import quote
             import re
             
-            # Enhanced search query construction for architecture
+            # Enhanced search query construction for architecture using flexible detection
             if "example" in topic.lower() or "project" in topic.lower():
                 # For example requests, focus on finding real projects
-                search_query = f"{topic} architecture projects examples case studies built works"
+                modifiers = get_search_query_modifiers(topic)
+                search_query = f"{topic} {modifiers['include']} projects examples case studies built works {modifiers['exclude']}"
             else:
                 # For general topics, focus on principles and best practices
-                search_query = f"{topic} architecture design principles best practices examples"
+                modifiers = get_search_query_modifiers(topic)
+                search_query = f"{topic} {modifiers['include']} design principles best practices examples {modifiers['exclude']}"
             
             encoded_query = quote(search_query)
             
@@ -98,43 +204,39 @@ class DomainExpertAgent:
                             content = f"Architectural resource about {topic} from {title}. This source provides professional insights into design principles, case studies, and best practices relevant to {topic} in architectural projects."
                         
                         # Extract domain for source tracking
-                        domain = ""
+                        domain = "unknown"
                         if url:
                             try:
                                 from urllib.parse import urlparse
-                                parsed = urlparse(url)
-                                domain = parsed.netloc
+                                parsed_url = urlparse(url)
+                                domain = parsed_url.netloc
                             except:
-                                domain = "web resource"
+                                domain = "web_resource"
                         
                         results.append({
                             "content": content,
                             "metadata": {
                                 "title": title,
-                                "source": url if url else "Web Search",
-                                "domain": domain,
-                                "type": "web_search_enhanced",
-                                "search_query": search_query,
-                                "topic": topic
-                            },
-                            "similarity": 0.85  # Higher confidence for web results
+                                "source": domain,
+                                "url": url,  # Include the actual URL for clickable links
+                                "discovery_method": "web_search"
+                            }
                         })
+                        
                     except Exception as e:
-                        print(f"   ⚠️ Error processing result {i}: {e}")
+                        print(f"⚠️ Error processing web result {i}: {e}")
                         continue
                 
-                if results:
-                    print(f"🌐 Found {len(results)} enhanced web search results")
-                    return results
-                else:
-                    print("⚠️ No valid results found in search response")
-            
-            print("⚠️ No web results found, using enhanced fallback")
-            return self._create_enhanced_fallback_knowledge(topic)
-            
+                print(f"✅ Found {len(results)} web results for {topic}")
+                return results
+                
+            else:
+                print(f"⚠️ Web search failed with status {response.status_code}")
+                return []
+                
         except Exception as e:
-            print(f"⚠️ Web search failed: {e}")
-            return self._create_enhanced_fallback_knowledge(topic)
+            print(f"⚠️ Web search error: {e}")
+            return []
 
     def _create_enhanced_fallback_knowledge(self, topic: str) -> List[Dict]:
         """Enhanced fallback knowledge with better example-focused content"""
@@ -180,30 +282,6 @@ class DomainExpertAgent:
                 "topic": topic
             },
             "similarity": 0.75
-        }]
-        
-        # Match topic to specific knowledge
-        topic_lower = topic.lower()
-        specific_content = None
-        
-        for key, content in fallback_knowledge.items():
-            if key in topic_lower:
-                specific_content = content
-                break
-        
-        # If no specific match, use AI to generate contextually relevant content
-        if not specific_content:
-            # Use AI to generate flexible, context-aware content
-            return self._generate_flexible_knowledge(topic)
-        
-        return [{
-            "content": specific_content,
-            "metadata": {
-                "title": f"Architectural Principles: {topic.title()}",
-                "source": "Architectural Knowledge Base",
-                "type": "fallback_knowledge"
-            },
-            "similarity": 0.7
         }]
     
     def _generate_flexible_knowledge(self, topic: str) -> List[Dict]:
@@ -420,51 +498,6 @@ class DomainExpertAgent:
 
 
 
-
-
-
-
-    # def _extract_dynamic_topic_context(self, user_messages: List[str], assistant_messages: List[str]) -> str:
-    #     """AI-powered topic extraction - works for ANY architectural topic"""
-        
-    #     if not user_messages:
-    #         return None
-            
-    #     recent_conversation = " ".join(user_messages[-2:] + assistant_messages[-2:])
-        
-    #     try:
-    #         topic_extraction_prompt = f"""
-    #         Extract the main architectural topic being discussed from this conversation:
-            
-    #         CONVERSATION: "{recent_conversation}"
-            
-    #         Identify the PRIMARY architectural topic/theme being discussed. Examples:
-    #         - If discussing courtyards, airflow, ventilation → "courtyard design"
-    #         - If discussing lighting, windows, natural light → "lighting design"  
-    #         - If discussing accessibility, doors, ramps → "accessibility"
-    #         - If discussing materials, finishes, textures → "materials"
-            
-    #         Respond with 1-3 words describing the main topic, or "none" if unclear.
-    #         """
-            
-    #         response = self.client.chat.completions.create(
-    #             model="gpt-4o",
-    #             messages=[{"role": "user", "content": topic_extraction_prompt}],
-    #             max_tokens=10,
-    #             temperature=0.3
-    #         )
-            
-    #         extracted_topic = response.choices[0].message.content.strip().lower()
-            
-    #         if extracted_topic != "none" and len(extracted_topic) > 2:
-    #             print(f"   🎯 AI extracted topic: {extracted_topic}")
-    #             return extracted_topic
-    #         else:
-    #             return None
-                
-    #     except Exception as e:
-    #         print(f"   ⚠️ AI topic extraction failed: {e}")
-    #         return None
     
     def _user_provided_insights_and_requested_examples(self, state: ArchMentorState) -> bool:
         """Detect if user both shared insights AND requested examples"""
@@ -785,9 +818,9 @@ class DomainExpertAgent:
             """
     
     async def provide_knowledge(self, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
-        """Provide challenging, thought-provoking guidance that pushes the student deeper"""
+        """Provide knowledge that encourages thinking rather than passive acceptance"""
         
-        print(f"\n📚 {self.name} providing challenging knowledge for gap: {gap_type}")
+        print(f"\n📚 {self.name} providing knowledge with cognitive protection...")
         
         # Get user's actual question
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
@@ -799,32 +832,48 @@ class DomainExpertAgent:
         building_type = self._extract_building_type_from_context(state)
         project_context = state.current_design_brief
         
-        # Use AI to generate challenging, thought-provoking responses
+        # DETECT KNOWLEDGE REQUEST PATTERNS
+        #0108-before: knowledge_pattern = self._analyze_knowledge_request(user_input, gap_type, state)
+        knowledge_pattern = self._analyze_knowledge_request(user_input, gap_type, state)
+        
+        # 3107 ADDED: Handle legitimate example requests properly
+        if knowledge_pattern["type"] == "legitimate_example_request":
+            print(f"📚 Legitimate example request detected - providing examples")
+            return await self._provide_focused_examples(state, user_input, gap_type)
+        #0108-added for 5 min message requirement   
+        # Handle premature example requests (cognitive offloading protection)
+        if knowledge_pattern["type"] == "premature_example_request":
+            print(f"🛡️ Cognitive protection: Example request too early")
+            return await self._generate_premature_example_response(user_input, building_type, project_context)
+        
+        if knowledge_pattern["type"] == "direct_answer_seeking":
+            return await self._generate_thinking_prompt(user_input, building_type, project_context)
+        
+        # Use AI to generate knowledge that encourages thinking
         prompt = f"""
-        You are a challenging architectural mentor who pushes students to think deeper about their design decisions. Provide a response that makes them consider trade-offs and implications.
+        You are an architectural mentor who provides knowledge in a way that encourages thinking, not passive acceptance.
         
         STUDENT QUESTION: "{user_input}"
         BUILDING TYPE: {building_type}
         PROJECT: {project_context}
+        KNOWLEDGE GAP: {gap_type}
         
         Your response should:
-        1. Challenge their assumptions and make them think critically
-        2. Present trade-offs and conflicting priorities they need to consider
-        3. Ask probing questions about their design intent
-        4. Push them to justify their choices and consider alternatives
-        5. Be direct and challenging, not overly supportive
-        6. Focus on the deeper architectural implications
+        1. Provide relevant information but frame it as a thinking prompt
+        2. Present multiple perspectives or trade-offs
+        3. Ask the student to consider implications
+        4. Connect to their specific project context
+        5. End with a question that requires their reasoning
+        6. Avoid giving a single "correct" answer
         
-        For example, if they ask about "open space with light but no heat":
-        "You're asking about a fundamental tension in architecture. Every design decision has consequences:
+        For example, if they ask about "sustainable materials":
+        "Sustainable materials present interesting trade-offs. Bamboo grows quickly but requires specific climate conditions. Reclaimed wood has character but may have structural limitations. Cross-laminated timber is strong but requires careful detailing.
         
-        • North-facing windows give consistent light but reduce solar gain in winter
-        • Low-E glazing blocks heat but also reduces visible light transmission
-        • External shading provides control but adds complexity and maintenance
+        For your {building_type} project, consider: What's your priority - environmental impact, cost, or aesthetics? How does your choice affect the overall design strategy?
         
-        What's driving your need for this specific balance? How does this choice affect your overall design strategy?"
+        What factors are most important for your specific context?"
         
-        Give a challenging, thought-provoking response:
+        Give a knowledge-rich response that encourages thinking:
         """
         
         try:
@@ -836,21 +885,158 @@ class DomainExpertAgent:
             )
             
             ai_response = response.choices[0].message.content.strip()
-            print(f"📚 AI-generated challenging response: {ai_response[:100]}...")
+            print(f"📚 AI-generated knowledge response: {ai_response[:100]}...")
             
             return {
                 "agent": self.name,
                 "response_text": ai_response,
-                "response_type": "challenging_guidance",
+                "response_type": "thinking_prompt_knowledge",
                 "knowledge_gap_addressed": gap_type,
                 "building_type": building_type,
                 "user_input_addressed": user_input,
+                "knowledge_pattern": knowledge_pattern,
                 "sources": []
             }
             
         except Exception as e:
             print(f"⚠️ AI response generation failed: {e}")
             return self._generate_fallback_knowledge(user_input, building_type)
+    #0108 state added for 5 min message requirement
+    def _analyze_knowledge_request(self, user_input: str, gap_type: str, state: ArchMentorState = None) -> Dict[str, Any]:
+        """Analyze the type of knowledge request to prevent cognitive offloading"""
+        
+        analysis = {
+            "type": "standard_knowledge_request",
+            "cognitive_risk": "low",
+            "indicators": []
+        }
+        
+        #3107-ADDED FOR EXAMPLE REQUESTS
+        user_input_lower = user_input.lower()
+        
+        # ENHANCED: Better detection of legitimate example requests
+        example_request_keywords = [
+            "example", "examples", "precedent", "precedents", "case study", "case studies",
+            "project", "projects", "show me", "can you give", "can you provide", "provide",
+            "inspiration", "references", "similar projects", "ideas", "real project", "built project"
+        ]
+        
+        # Check if this is a legitimate example request
+        is_example_request = any(keyword in user_input_lower for keyword in example_request_keywords)
+        
+        if is_example_request:
+            # 0108- addedCheck cognitive offloading protection (minimum 5 messages required)
+            if state and hasattr(state, 'messages'):
+                message_count = len([msg for msg in state.messages if msg.get('role') == 'user'])
+                if message_count < 5:
+                    analysis["type"] = "premature_example_request"
+                    analysis["cognitive_risk"] = "high"
+                    analysis["indicators"].append(f"Example request too early (only {message_count} messages, need 5+)")
+                    analysis["cognitive_protection"] = "active"
+                    return analysis
+            
+
+
+            # This is a legitimate example request - should provide examples
+            analysis["type"] = "legitimate_example_request"
+            analysis["cognitive_risk"] = "low"
+            analysis["indicators"].append("Legitimate example request detected")
+            return analysis
+        
+
+
+        # PATTERN 1: Direct answer seeking (but NOT example requests)
+        direct_patterns = [
+            "what is the", "what are the", "tell me the", 
+            "what should I", "what do I need", "the answer is", "the solution is"
+        ]
+        
+        if any(pattern in user_input_lower for pattern in direct_patterns):
+            analysis["type"] = "direct_answer_seeking"
+            analysis["cognitive_risk"] = "high"
+            analysis["indicators"].append("Direct answer seeking detected")
+        
+        # PATTERN 2: Passive acceptance indicators
+        passive_patterns = [
+            "okay", "sure", "fine", "whatever", "I guess",
+            "that works", "good enough"
+        ]
+        
+        if any(pattern in user_input_lower for pattern in passive_patterns):
+            analysis["type"] = "passive_acceptance"
+            analysis["cognitive_risk"] = "high"
+            analysis["indicators"].append("Passive acceptance detected")
+        
+        return analysis
+    
+    async def _generate_thinking_prompt(self, user_input: str, building_type: str, project_context: str) -> Dict[str, Any]:
+        """Generate a thinking prompt instead of a direct answer"""
+        
+        response_text = f"""
+**🤔 Let's think about this together**
+
+I notice you're asking for a direct answer, but let's explore this more deeply. The best architectural solutions come from understanding the underlying principles.
+
+**Instead of giving you the answer, let's consider:**
+
+1. **What's driving your need for this information?** (What problem are you trying to solve?)
+
+2. **What have you already considered?** (What options have you explored?)
+
+3. **What are the key factors in your specific context?** (How does your {building_type} project create unique requirements?)
+
+4. **What trade-offs are you willing to make?** (Every design decision involves compromises)
+
+**The goal is to help you develop your own reasoning, not just give you answers.**
+
+*What aspect of this question feels most challenging to you?*
+"""
+        
+        return {
+            "agent": self.name,
+            "response_text": response_text,
+            "response_type": "thinking_prompt",
+            "knowledge_gap_addressed": "thinking_development",
+            "building_type": building_type,
+            "user_input_addressed": user_input,
+            "cognitive_protection": "active"
+        }
+    #0108-added for 5 min message requirement
+    async def _generate_premature_example_response(self, user_input: str, building_type: str, project_context: str) -> Dict[str, Any]:
+        """Generate response for premature example requests (cognitive offloading protection)"""
+        
+        response_text = f"""
+**🤔 Let's build your understanding first**
+
+I understand you're looking for examples of {user_input.lower().split('examples')[0].strip()}, but let's take a step back. The best learning happens when we understand the underlying principles first.
+
+**Before diving into examples, let's explore:**
+
+1. **What specific aspect** of {user_input.lower().split('examples')[0].strip()} are you most curious about?
+
+2. **What challenges** are you facing in your {building_type} project that make you think you need examples?
+
+3. **What have you already considered** about this topic? What's your current understanding?
+
+4. **What's your design goal?** How do you envision this fitting into your overall project?
+
+**The goal is to help you develop your own reasoning and understanding, not just show you what others have done.**
+
+*What's the most challenging part of this topic for you right now?*
+
+*Note: After you've explored the concepts more deeply (in a few more messages), I'll be happy to provide specific examples to support your learning.*
+"""
+        
+        return {
+            "agent": self.name,
+            "response_text": response_text,
+            "response_type": "cognitive_protection_response",
+            "knowledge_gap_addressed": "premature_example_request",
+            "building_type": building_type,
+            "user_input_addressed": user_input,
+            "cognitive_protection": "active",
+            "protection_reason": "premature_example_request"
+        }
     
     def _generate_fallback_knowledge(self, user_input: str = "", building_type: str = "project") -> Dict[str, Any]:
         """Generate fallback knowledge when AI fails"""
@@ -881,97 +1067,221 @@ class DomainExpertAgent:
         building_type = self._extract_building_type_from_context(state)
         project_context = state.current_design_brief
         
-        # Use AI to generate a specific response to their question
+        #310 ADDED-RETRIEVAL STRATEGY
+        print(f"📚 Implementing KNOWLEDGE RETRIEVAL PIPELINE for: {user_input}")
+        
+        # STEP 1: QUERY ANALYSIS
+        # Extract architectural concepts from user input
+        user_topic = self._extract_topic_from_user_input(user_input)
+        print(f"   🎯 Extracted topic: {user_topic}")
+        
+        # STEP 2: RETRIEVAL STRATEGY
+        # First try database search
+        print(f"   🔍 Searching database for: {user_topic}")
+        knowledge_results = await self.discover_knowledge(user_topic, {}, state)
+        
+        # If database search is insufficient, use web search
+        if not knowledge_results or len(knowledge_results) < 2:
+            print(f"   🌐 Database insufficient, searching web for: {user_topic}")
+            web_results = await self.search_web_for_knowledge(user_topic)
+            if web_results:
+                knowledge_results.extend(web_results)
+                print(f"   🌐 Found {len(web_results)} web results")
+        
+        # STEP 3: SYNTHESIS ALGORITHM
+        if knowledge_results:
+            print(f"   🔧 Synthesizing {len(knowledge_results)} knowledge sources")
+            return await self.synthesize_knowledge(knowledge_results, user_topic, state, {})
+        else:
+            print(f"   ⚠️ No knowledge found, using AI generation")
+            # Use AI to generate examples when no knowledge is found
+            return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
+    
+    def _extract_topic_from_user_input(self, user_input: str) -> str:
+        """Extract the main architectural topic from user input"""
+        
+        # Common architectural topics
+        topic_keywords = {
+            "flexible spaces": ["flexible", "flexibility", "adaptable", "multi-use"],
+            "lighting": ["light", "lighting", "daylight", "illumination"],
+            "circulation": ["circulation", "flow", "movement", "path"],
+            "accessibility": ["access", "accessible", "universal design"],
+            "sustainability": ["sustainable", "green", "environmental", "eco"],
+            "materials": ["material", "finish", "texture", "surface"],
+            "structure": ["structure", "structural", "support", "frame"],
+            "acoustics": ["acoustic", "sound", "noise", "audio"],
+            "ventilation": ["ventilation", "air", "breathing", "fresh air"],
+            "shading": ["shade", "shading", "sun protection", "overhang"],
+            "community spaces": ["community", "social", "gathering", "public"],
+            "office design": ["office", "workplace", "work", "desk"],
+            "open plan": ["open plan", "open space", "open office"],
+            #3107 ADDED MORE 
+            "private spaces": ["private", "quiet", "focus", "individual"],
+            "adaptive reuse": ["adaptive reuse", "adaptive", "reuse", "renovation", "retrofit", "conversion", "repurposing"],
+            "energy efficiency": ["energy", "efficient", "efficiency", "thermal", "insulation"],
+            "natural ventilation": ["natural ventilation", "cross ventilation", "passive cooling"],
+            "daylighting": ["daylighting", "daylight", "natural light", "sunlight"],
+            "passive design": ["passive", "passive design", "passive solar"],
+            "biophilic design": ["biophilic", "nature", "natural elements", "green walls"],
+            "universal design": ["universal design", "inclusive design", "accessibility"],
+            "modular design": ["modular", "modular design", "prefabricated", "prefab"],
+            "smart building": ["smart", "intelligent", "automation", "technology"],
+            "historic preservation": ["historic", "preservation", "heritage", "conservation"],
+            "urban design": ["urban", "city", "street", "public space"],
+            "landscape architecture": ["landscape", "garden", "outdoor", "green space"],
+            "interior design": ["interior", "furniture", "furnishings", "spatial design"],
+            "parametric design": ["parametric", "algorithmic", "computational", "digital fabrication"],
+            "prefabrication": ["prefabrication", "prefab", "modular construction", "off-site"],
+            "mass timber": ["mass timber", "cross laminated timber", "clt", "wood construction"],
+            "net zero": ["net zero", "zero energy", "carbon neutral", "sustainable"],
+            "green building": ["green building", "leed", "sustainable building", "eco-friendly"]
+        }
+        
+        user_input_lower = user_input.lower()
+        
+        # Find the most specific topic match (prioritize longer/more specific terms first)
+        # Sort topics by specificity (longer topic names first)
+        sorted_topics = sorted(topic_keywords.items(), key=lambda x: len(x[0]), reverse=True)
+        
+        # Check all topics for matches
+        for topic, keywords in sorted_topics:
+            if any(keyword in user_input_lower for keyword in keywords):
+                return topic
+        
+        # If no specific topic found, extract from user input
+        words = user_input_lower.split()
+        # Look for architectural terms
+        architectural_terms = ["space", "design", "building", "room", "area", "zone", "layout"]
+        for word in words:
+            if word in architectural_terms:
+                return f"{word} design"
+        
+        # Default to the gap_type if nothing specific found
+        return user_input_lower.replace(" ", "_")
+    
+    async def _generate_ai_examples(self, user_input: str, building_type: str, project_context: str, topic: str) -> Dict[str, Any]:
+        """Generate AI-powered examples when no knowledge is found - Enhanced for contextual relevance"""
+
+        # Extract the actual topic from user input more dynamically
+        dynamic_topic = self._extract_dynamic_topic_from_context(user_input, building_type, project_context)
+        
+        # Check if user specifically asked for buildings using flexible detection
+        building_request_detected = is_building_request(user_input)
+        
+        building_requirement = ""
+        if building_request_detected:
+            building_requirement = """
+        7. IMPORTANT: The student specifically asked for BUILDING examples. Only provide examples of actual buildings or structures that have been converted/adapted. Do NOT include landscape projects, parks, urban spaces, or outdoor projects.
+        """
+        
         prompt = f"""
-        Provide a helpful, specific response to this architecture student's question:
+        Provide specific architectural examples for this student's request:
         
-        STUDENT QUESTION: "{user_input}"
+        STUDENT REQUEST: "{user_input}"
         BUILDING TYPE: {building_type}
-        PROJECT: {project_context}
-        TOPIC: {gap_type}
+        SPECIFIC TOPIC: {dynamic_topic}
+        PROJECT CONTEXT: {project_context}
         
-        Your response should:
-        1. Directly address their specific question (not generic information)
-        2. Provide practical, actionable guidance
-        3. Include relevant architectural principles and examples
-        4. Be specific to their context and building type
-        5. Help them understand how to approach their design challenge
+        REQUIREMENTS:
+        1. Focus on {dynamic_topic} specifically, not generic architectural concepts
+        2. Provide 2-3 examples that are directly relevant to {building_type}s or similar public buildings
+        3. Each example should demonstrate {dynamic_topic} in a way that connects to the student's context
+        4. Include project names, architects, and locations where possible
+        5. Explain WHY these examples work for {dynamic_topic} in {building_type} contexts
+        6. Avoid generic examples - be specific to the topic and building type{building_requirement}
         
-        For example, if they ask about balancing circulation for play and focus spaces, 
-        explain specific strategies for creating zones, transitions, and spatial hierarchies.
+        FORMAT:
+        **Example 1: [Project Name]**
+        [Brief description of how this project specifically addresses {dynamic_topic}]
+        Why it works: [Specific reason relevant to {building_type} design]
         
-        Provide a comprehensive, helpful response:
+        **Example 2: [Project Name]**
+        [Brief description of how this project specifically addresses {dynamic_topic}]
+        Why it works: [Specific reason relevant to {building_type} design]
+        
+        Keep it under 200 words and focus on practical, actionable examples that directly relate to {dynamic_topic}.
         """
         
         try:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=500,
-                temperature=0.3
+                max_tokens=400,
+                temperature=0.4
             )
             
             ai_response = response.choices[0].message.content.strip()
-            print(f"📚 AI-generated domain expert response: {ai_response[:100]}...")
+            print(f"📚 AI-generated contextual examples for {dynamic_topic}: {ai_response[:100]}...")
             
             return {
                 "agent": self.name,
                 "response_text": ai_response,
-                "response_type": "ai_powered_guidance",
-                "knowledge_gap_addressed": gap_type,
-                "examples_provided": 1,  # AI response counts as one comprehensive example
+                "response_type": "ai_generated_examples",
+                "knowledge_gap_addressed": dynamic_topic,
+                "examples_provided": 1,
                 "building_type": building_type,
-                "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input
+                "user_input_addressed": user_input,
+                "topic_specific": True,
+                "sources": ["AI Generated Examples"]
             }
             
         except Exception as e:
-            print(f"⚠️ AI response generation failed: {e}")
-            # Fallback to template-based response
-            example_queries = [
-                f"{gap_type} {building_type} examples case studies",
-                f"successful {building_type} projects {gap_type}",
-                f"architectural precedents {gap_type} {building_type}",
-                f"built projects {gap_type} {building_type}"
-            ]
-            
-            # Search for examples
-            knowledge_results = []
-            for query in example_queries:
-                try:
-                    results = await self.discover_knowledge(gap_type, {}, state)
-                    knowledge_results.extend(results)
-                except Exception as e:
-                    print(f"   ⚠️ Error searching for examples: {e}")
-            
-            # Deduplicate and rank results
-            knowledge_results = self.deduplicate_and_rank(knowledge_results)
-            
-            # Create focused response
-            if knowledge_results:
-                response_text = f"I found some excellent examples of {gap_type} in {building_type} projects:\n\n"
-                
-                for i, result in enumerate(knowledge_results[:3], 1):
-                    title = result.get('title', 'Architectural Example')
-                    content = result.get('content', '')
-                    response_text += f"**{i}. {title}**\n{content[:200]}...\n\n"
-                
-                response_text += f"These examples demonstrate how {gap_type} can be effectively implemented in {building_type} projects. Would you like me to explore any specific aspect of these examples?"
-            else:
-                response_text = f"Let me provide you with some key examples of {gap_type} in {building_type} projects:\n\n"
-                response_text += f"• **Modern {building_type} with {gap_type}**: Contemporary projects often incorporate {gap_type} through innovative design approaches\n"
-                response_text += f"• **Traditional {building_type} with {gap_type}**: Historical precedents show how {gap_type} has been addressed over time\n"
-                response_text += f"• **Sustainable {building_type} with {gap_type}**: Green building examples demonstrate environmental considerations\n\n"
-                response_text += f"Would you like me to dive deeper into any of these categories or explore specific case studies?"
-            
+            print(f"⚠️ AI example generation failed: {e}")
+            # Final fallback
             return {
                 "agent": self.name,
-                "response_text": response_text,
-                "response_type": "focused_examples",
-                "knowledge_gap_addressed": gap_type,
-                "examples_provided": len(knowledge_results),
+                "response_text": f"I'd be happy to help you with examples of {dynamic_topic} in {building_type} design. Let me search for some relevant projects and case studies that demonstrate effective approaches to this specific topic.",
+                "response_type": "fallback_examples",
+                "knowledge_gap_addressed": dynamic_topic,
                 "building_type": building_type,
-                "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input
+                "user_input_addressed": user_input,
+                "sources": []
             }
+    
+    def _extract_dynamic_topic_from_context(self, user_input: str, building_type: str, project_context: str) -> str:
+        """Extract the most relevant topic from user input and context, avoiding hardcoded topics"""
+        
+        # Analyze user input for specific topics
+        input_lower = user_input.lower()
+        
+        # Look for specific architectural topics mentioned
+        architectural_topics = {
+            "lighting": ["light", "lighting", "daylight", "natural light", "illumination", "windows"],
+            "circulation": ["circulation", "flow", "movement", "path", "route", "access"],
+            "materials": ["material", "materials", "finish", "construction", "timber", "concrete", "steel"],
+            "sustainability": ["sustainable", "green", "environment", "energy", "eco", "climate"],
+            "accessibility": ["accessible", "access", "universal", "barrier", "inclusive"],
+            "spatial_organization": ["space", "spatial", "layout", "organization", "arrangement"],
+            "structural": ["structure", "structural", "beam", "column", "frame", "load"],
+            "acoustics": ["acoustic", "sound", "noise", "audio", "echo"],
+            "thermal": ["thermal", "heating", "cooling", "insulation", "temperature"],
+            "cultural": ["cultural", "heritage", "identity", "community", "local"],
+            "adaptive_reuse": ["adaptive", "reuse", "renovation", "conversion", "existing"],
+            "connection": ["connection", "link", "relationship", "adjacency", "interface"],
+            "modern_addition": ["modern", "addition", "new", "contemporary", "extension"]
+        }
+        
+        # Find the most specific topic mentioned
+        for topic, keywords in architectural_topics.items():
+            if any(keyword in input_lower for keyword in keywords):
+                return topic
+        
+        # If no specific topic found, extract from context
+        if "connection" in input_lower or "relationship" in input_lower:
+            return "connection_details"
+        elif "old" in input_lower and "new" in input_lower:
+            return "adaptive_reuse_interface"
+        elif "truss" in input_lower or "beam" in input_lower:
+            return "structural_integration"
+        elif "example" in input_lower or "project" in input_lower:
+            # Extract what they're asking for examples of
+            words = input_lower.split()
+            for i, word in enumerate(words):
+                if word in ["examples", "example", "projects", "project"] and i + 1 < len(words):
+                    return words[i + 1]  # Return the topic they want examples of
+        
+        # Default to a general topic based on building type
+        return f"{building_type}_design_principles"
     
     async def _provide_technical_knowledge(self, state: ArchMentorState, user_input: str, gap_type: str) -> Dict[str, Any]:
         """Provide technical knowledge and requirements"""
@@ -1425,10 +1735,19 @@ class DomainExpertAgent:
             }
     
     async def synthesize_knowledge(self, knowledge_results: List[Dict], gap_type: str, state: ArchMentorState, analysis_result: Dict) -> Dict[str, Any]:
-        """Synthesize knowledge with discovery method awareness"""
+        """Synthesize knowledge with discovery method awareness and clickable links"""
         
         # Group by discovery method for richer synthesis
         methods_used = list(set([r.get('discovery_method', 'direct') for r in knowledge_results]))
+        
+        # Extract URLs for clickable links
+        urls = []
+        for result in knowledge_results:
+            if result.get('metadata', {}).get('url'):
+                urls.append({
+                    'title': result.get('metadata', {}).get('title', 'Source'),
+                    'url': result.get('metadata', {}).get('url')
+                })
         
         combined_knowledge = "\n\n---\n\n".join([
             f"Source ({r.get('discovery_method', 'direct')}): {r['metadata'].get('title', 'Unknown')}\nContent: {r['content']}" 
@@ -1448,13 +1767,35 @@ class DomainExpertAgent:
         ])
         
         if is_knowledge_request:
-            # Use AI to generate flexible, contextually relevant synthesis
-            project_context = state.current_design_brief or "architectural project"
-            building_type = self._extract_building_type_from_context(state)
+            # For knowledge requests, provide actual examples and information with links
+            # Check if user specifically asked for buildings using flexible detection
+            building_request_detected = is_building_request(last_user_message)
             
-            synthesis_prompt = await self._generate_flexible_synthesis_prompt(
-                gap_type, building_type, project_context, combined_knowledge, last_user_message
-            )
+            building_filter = ""
+            if building_request_detected:
+                building_filter = """
+            IMPORTANT: The student specifically asked for BUILDING examples. Filter out landscape projects, parks, urban spaces, and outdoor projects. Only include examples that are actual buildings or structures that have been converted/adapted.
+            """
+            
+            synthesis_prompt = f"""
+            The student is asking for specific examples and knowledge about {gap_type.replace('_', ' ')}.
+            {building_filter}
+            
+            AVAILABLE KNOWLEDGE: {combined_knowledge}
+            
+            Create a response that:
+            1. Provides specific, concrete examples from the knowledge sources
+            2. Includes project names, locations, and brief descriptions where available
+            3. Explains the key approaches and strategies used
+            4. Makes the content directly relevant to the student's specific context
+            5. Varies the response style and approach based on the content available
+            6. Keeps it informative and factual
+            7. If the student asked for buildings, ONLY include building examples (not landscape/urban projects)
+            
+            AVAILABLE URLS FOR LINKS: {urls}
+            
+            Format: Present 2-3 specific examples with brief explanations. If URLs are available, include them in markdown format: [Source Name](URL). Keep it under 200 words. Focus on providing actual information, not questions.
+            """
         else:
             synthesis_prompt = f"""
             Guide the student's thinking about {gap_type.replace('_', ' ')} using available knowledge:
@@ -1465,6 +1806,8 @@ class DomainExpertAgent:
             1. Hints at connections they should explore
             2. Asks questions that lead to discovery of patterns
             3. Encourages them to think about relationships
+            4. Varies the approach based on available content
+            5. Makes connections to their specific context
             
             Keep it under 60 words. Use questions and thinking prompts.
             """
@@ -1477,18 +1820,43 @@ class DomainExpertAgent:
                 temperature=0.4
             )
             
+            synthesized_text = response.choices[0].message.content.strip()
+            
+            # Add clickable links if available
+            if urls and is_knowledge_request:
+                links_section = "\n\n**Sources:**\n"
+                for url_info in urls[:3]:  # Limit to 3 links
+                    links_section += f"- [{url_info['title']}]({url_info['url']})\n"
+                synthesized_text += links_section
+            
+            # Return in the format expected by the orchestrator
+            response_type = "knowledge_examples" if is_knowledge_request else "synthesized_knowledge"
+            
             return {
-                "response": response.choices[0].message.content.strip(),
-                "has_knowledge": True,
+                "agent": self.name,
+                "response_text": synthesized_text,
+                "response_type": response_type,
+                "knowledge_gap_addressed": gap_type,
+                "building_type": self._extract_building_type_from_context(state),
+                "user_input_addressed": last_user_message,
                 "synthesis_quality": "multi_strategy",
-                "discovery_methods": methods_used
+                "discovery_methods": methods_used,
+                "sources": [r.get('metadata', {}).get('source', 'Unknown') for r in knowledge_results[:3]],
+                "urls_provided": len(urls) > 0,
+                "contextual_variety": True
             }
             
         except Exception as e:
             # Fallback to Socratic approach
+            fallback_text = f"Consider the {gap_type.replace('_', ' ')} aspects of your design. What relationships do you notice between user needs and spatial solutions in your project?"
+            
             return {
-                "response": f"Consider the {gap_type.replace('_', ' ')} aspects of your design. What relationships do you notice between user needs and spatial solutions in your project?",
-                "has_knowledge": True,
+                "agent": self.name,
+                "response_text": fallback_text,
+                "response_type": "fallback_synthesis",
+                "knowledge_gap_addressed": gap_type,
+                "building_type": self._extract_building_type_from_context(state),
+                "user_input_addressed": last_user_message,
                 "error": str(e)
             }
     
@@ -1860,19 +2228,6 @@ class DomainExpertAgent:
 
             Keep it under 60 words. Focus on clear, direct knowledge.
             """
-            # # Regular learning guidance - use Socratic approach ( this is ignoring socratic agent but gives question insted in snthesis)
-            # synthesis_prompt = f"""
-            # Guide the student's thinking about: {focus_area['area']}
-
-            # AVAILABLE KNOWLEDGE: {combined_knowledge}
-
-            # Provide SOCRATIC GUIDANCE that:
-            # 1. Hints at ONE principle they should consider
-            # 2. Asks a thought-provoking question that leads to discovery
-            # 3. Encourages them to think about relationships
-
-            # Keep it under 60 words. Guide discovery through questions.
-            # """
 
         try:
             response = self.client.chat.completions.create(
@@ -1975,7 +2330,7 @@ class DomainExpertAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=800,  # Increased from 300 to prevent cut-off responses
+                max_tokens=800,
                 temperature=0.3
             )
             
