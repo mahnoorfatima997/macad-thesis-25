@@ -144,18 +144,26 @@ class ContextAgent:
             core_classification, content_analysis, state, current_input
         )
         
+        # 0208COGNITIVE OFFLOADING DETECTION
+        cognitive_offloading_patterns = self._detect_cognitive_offloading_patterns(
+            core_classification, content_analysis, conversation_patterns
+        )
+        
         # COMPILE COMPLETE CONTEXT PACKAGE
         context_package = {
             "core_classification": core_classification,
             "content_analysis": content_analysis,
             "contextual_metadata": contextual_metadata,
             "conversation_patterns": conversation_patterns,
+            "cognitive_offloading_patterns": cognitive_offloading_patterns,  # ADDED
             "routing_suggestions": routing_suggestions,
             "agent_contexts": agent_contexts,
             "design_phase": self.detect_design_phase(current_input, state),
             "context_quality": self._assess_context_quality(core_classification, content_analysis),
             "timestamp": self._get_current_timestamp(),
-            "agent": self.name
+            "agent": self.name,
+            # 3107 ADDED BELOW LINE: Add conversation history for better analysis
+            "conversation_history": state.messages if hasattr(state, 'messages') else []
         }
         
         print(f"   ✅ Context analysis complete")
@@ -166,9 +174,43 @@ class ContextAgent:
         
         return context_package
     
-    #super enhanced AI-powered classification for learning state detection
+    #0208super enhanced AI-powered classification for learning state detection
     async def _perform_core_classification(self, input_text: str, state: ArchMentorState) -> Dict[str, Any]:
-        """Simplified and improved AI-powered learning state detection"""
+        """Enhanced AI-powered learning state detection with manual override for question responses"""
+        
+        # FIRST: Check if this is a response to a question using manual classification (context-aware)
+        manual_interaction_type = self._classify_interaction_type(input_text, state)
+        
+        # If it's a question response, prioritize this over AI classification
+        if manual_interaction_type == "question_response":
+            print(f"🎯 MANUAL OVERRIDE: Detected question_response, bypassing AI classification")
+            
+            # Use manual classification for interaction type, but get other metrics from AI
+            ai_classification = await self._get_ai_classification_for_other_metrics(input_text, state)
+            
+            return {
+                "interaction_type": "question_response",  # Manual override
+                "understanding_level": ai_classification.get("understanding_level", "medium"),
+                "confidence_level": ai_classification.get("confidence_level", "confident"),
+                "engagement_level": ai_classification.get("engagement_level", "medium"),
+                "overconfidence_score": 2 if ai_classification.get("confidence_level") == "overconfident" else 0,
+                "is_technical_question": ai_classification.get("is_technical_question", False),
+                "is_feedback_request": ai_classification.get("is_feedback_request", False),
+                "is_example_request": ai_classification.get("is_example_request", False),
+                "shows_confusion": ai_classification.get("shows_confusion", False),
+                "requests_help": ai_classification.get("requests_help", False),
+                "demonstrates_overconfidence": ai_classification.get("demonstrates_overconfidence", False),
+                "seeks_validation": False,
+                "classification": "question" if "?" in input_text else "statement",
+                "ai_reasoning": ai_classification.get("reasoning", "Manual override for question response"),
+                "manual_override": True
+            }
+        
+        # OTHERWISE: Use AI classification as before
+        return await self._get_ai_classification_for_other_metrics(input_text, state)
+    
+    async def _get_ai_classification_for_other_metrics(self, input_text: str, state: ArchMentorState) -> Dict[str, Any]:
+        """AI-powered classification for non-interaction-type metrics"""
         
         # Get conversation context
         recent_context = self._get_recent_context(state)
@@ -227,7 +269,7 @@ class ContextAgent:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=600,  # Increased from 200 to prevent cut-off responses
+                max_tokens=200,
                 temperature=0.2
             )
             
@@ -256,7 +298,8 @@ class ContextAgent:
                 "demonstrates_overconfidence": classification["demonstrates_overconfidence"],
                 "seeks_validation": False,
                 "classification": "question" if "?" in input_text else "statement",
-                "ai_reasoning": classification.get("reasoning", "")
+                "ai_reasoning": classification.get("reasoning", ""),
+                "manual_override": False
             }
             
         except Exception as e:
@@ -345,8 +388,8 @@ class ContextAgent:
         
         # IMPROVEMENT SEEKING DETECTION
         improvement_indicators = [
-            "improve", "better", "enhance", "fix", "upgrade", "optimize",
-            "make it better", "how can i", "ways to improve"
+            "improve", "better", "enhance", "optimize", "refine",
+            "make it better", "how can i", "what should i change"
         ]
         improvement_seeking = any(indicator in input_lower for indicator in improvement_indicators)
         
@@ -437,41 +480,194 @@ class ContextAgent:
 
 
     
-    def _classify_interaction_type(self, input_text: str) -> str:
-        """Classify the type of interaction"""
+    def _classify_interaction_type(self, input_text: str, state: ArchMentorState = None) -> str:
+        """Enhanced interaction type classification with contextual awareness for question responses"""
         
         input_lower = input_text.lower()
         
-        # Feedback requests
-        if any(word in input_lower for word in ["review", "feedback", "thoughts", "evaluate", 
-                                               "critique", "assess", "analyze my", "check my"]):
+        # FIRST: Check if this is a response to a previous question (context-aware)
+        if state and self._is_response_to_previous_question(input_text, state):
+            return "question_response"
+        
+        # Check for response indicators first (highest priority) - but be more precise
+        # These should only trigger for actual responses, not general statements
+        response_indicators = [
+            "i would", "i will", "i think", "i believe", "i feel", "i see",
+            "i understand", "i know", "i can", "i should", "i might",
+            "yes", "no", "because", "since", "as", "therefore", "however"
+        ]
+        
+        # But exclude cases where these are part of general statements, not responses
+        general_statement_indicators = [
+            "i would like to", "i would prefer to", "i would love to",
+            "i think this is", "i think that is", "i think it is",
+            "i would like to focus on", "i would like to learn", "i would like to explore",
+            "i would like to know", "i would like to understand"
+        ]
+        
+        # Check for response patterns first (highest priority for actual responses)
+        response_patterns = [
+            "i would keep", "i would use", "i would add", "i would create",
+            "i would highlight", "i would maintain", "i would preserve",
+            "i would combine", "i would balance", "i would integrate",
+            "interests me the most", "i am most interested in", "i would choose"
+        ]
+        
+        if any(pattern in input_lower for pattern in response_patterns):
+            return "question_response"
+        
+        # Check if it's a general statement (but not if it has strong response indicators)
+        if any(indicator in input_lower for indicator in general_statement_indicators):
+            # This is likely a general statement, not a response
+            pass
+        elif any(indicator in input_lower for indicator in response_indicators):
+            # It has response indicators but not specific response patterns
+            # Let the AI classification handle it
+            pass
+        
+        # Enhanced example request detection with more patterns
+        example_patterns = [
+            "can you give", "show me", "provide examples", "give me examples",
+            "examples of", "show examples", "demonstrate", "illustrate",
+            "case studies", "precedents", "similar projects", "reference"
+        ]
+        
+        if any(pattern in input_lower for pattern in example_patterns):
+            return "example_request"
+        
+        # Enhanced feedback request detection
+        feedback_patterns = [
+            "feedback", "review", "critique", "evaluate", "assess",
+            "what do you think", "how is this", "is this good", "am i on track"
+        ]
+        
+        if any(pattern in input_lower for pattern in feedback_patterns):
             return "feedback_request"
         
-        # Improvement seeking
-        if any(word in input_lower for word in ["improve", "better", "enhance", "fix", 
-                                               "upgrade", "optimize"]):
-            return "improvement_seeking"
+        # Enhanced technical question detection
+        technical_patterns = [
+            "how to", "what is", "explain", "define", "describe",
+            "technical", "specification", "requirement", "standard",
+            "code", "regulation", "material", "system", "structure"
+        ]
         
-        # Knowledge seeking
-        if any(word in input_lower for word in ["precedents", "examples", "standards", 
-                                               "requirements", "what are", "how do"]):
-            return "knowledge_seeking"
+        if any(pattern in input_lower for pattern in technical_patterns):
+            return "technical_question"
         
-        # Overconfident statements
-        if any(word in input_lower for word in ["perfect", "optimal", "best", "obviously", 
-                                               "clearly", "ideal"]):
-            return "overconfident_statement"
+        # Enhanced confusion expression detection
+        confusion_patterns = [
+            "confused", "don't understand", "unclear", "not sure",
+            "help", "lost", "stuck", "struggling", "difficult",
+            "what does this mean", "i don't get it"
+        ]
         
-        # Confusion expression
-        if any(word in input_lower for word in ["confused", "unclear", "don't understand", 
-                                               "lost", "help"]):
+        if any(pattern in input_lower for pattern in confusion_patterns):
             return "confusion_expression"
         
-        # Direct questions
-        if "?" in input_text:
-            return "direct_question"
+        # Enhanced improvement seeking detection
+        improvement_patterns = [
+            "improve", "better", "enhance", "optimize", "refine",
+            "make it better", "how can i", "what should i change"
+        ]
         
-        return "general_statement"
+        if any(pattern in input_lower for pattern in improvement_patterns):
+            return "improvement_seeking"
+        
+        # Enhanced knowledge seeking detection
+        knowledge_patterns = [
+            "learn", "study", "research", "find out", "discover",
+            "tell me about", "what are", "explain", "describe"
+        ]
+        
+        if any(pattern in input_lower for pattern in knowledge_patterns):
+            return "knowledge_seeking"
+        
+        # Enhanced general statement detection with more variety
+        statement_patterns = [
+            "i am", "i have", "i want", "i need", "i like", "i prefer",
+            "this is", "that is", "it is", "there is", "here is"
+        ]
+        
+        if any(pattern in input_lower for pattern in statement_patterns):
+            return "general_statement"
+        
+        # Default based on question mark presence
+        if "?" in input_text:
+            return "general_question"
+        else:
+            return "general_statement"
+    
+    def _is_response_to_previous_question(self, current_input: str, state: ArchMentorState) -> bool:
+        """Check if the current input is a response to a previous question from the assistant"""
+        
+        if not state.messages or len(state.messages) < 2:
+            return False
+        
+        # Get the last assistant message (should be the most recent message)
+        last_assistant_message = None
+        for message in reversed(state.messages):
+            if message.get("role") == "assistant":
+                last_assistant_message = message.get("content", "")
+                break
+        
+        if not last_assistant_message:
+            return False
+        
+        # Check if the last assistant message contains a question
+        assistant_message_lower = last_assistant_message.lower()
+        
+        # More precise question detection - check for actual question patterns
+        has_question_mark = "?" in last_assistant_message
+        
+        # Question words that typically start questions (more specific)
+        question_starters = [
+            "how", "what", "why", "when", "where", "which", "who",
+            "can you", "could you", "would you", "do you", "are you",
+            "think about", "consider", "imagine", "suppose", "what if",
+            "how might", "what might", "why might", "when might"
+        ]
+        
+        # Check if any question starter appears at the beginning of a sentence or after punctuation
+        has_question_starter = False
+        for starter in question_starters:
+            # Check if it appears at the start of the message or after sentence-ending punctuation
+            if (assistant_message_lower.startswith(starter) or 
+                f". {starter}" in assistant_message_lower or
+                f"? {starter}" in assistant_message_lower or
+                f"! {starter}" in assistant_message_lower or
+                f": {starter}" in assistant_message_lower):
+                has_question_starter = True
+                break
+        
+        assistant_asked_question = has_question_mark or has_question_starter
+        
+        if not assistant_asked_question:
+            return False
+        
+        # Now check if the current user input looks like a response
+        current_input_lower = current_input.lower()
+        
+        # Response indicators in user's message
+        response_indicators = [
+            "i would", "i will", "i think", "i believe", "i feel", "i see",
+            "i understand", "i know", "i can", "i should", "i might",
+            "yes", "no", "because", "since", "as", "therefore", "however",
+            "i would keep", "i would use", "i would add", "i would create",
+            "i would highlight", "i would maintain", "i would preserve",
+            "i would combine", "i would balance", "i would integrate",
+            "interests me the most", "i am most interested in", "i would choose"
+        ]
+        
+        # Check if user input contains response indicators
+        user_gave_response = any(indicator in current_input_lower for indicator in response_indicators)
+        
+        # Additional check: if the user input doesn't contain a question mark and is not asking for examples/help
+        not_asking_question = "?" not in current_input
+        not_requesting_help = not any(pattern in current_input_lower for pattern in [
+            "can you", "help me", "show me", "give me", "provide", "explain"
+        ])
+        
+        return user_gave_response and not_asking_question and not_requesting_help
     
     def _detect_understanding_level(self, input_lower: str) -> str:
         """Detect understanding level from linguistic indicators"""
@@ -739,6 +935,21 @@ class ContextAgent:
         if len(messages) < 3:
             return False
         
+        #0208Check if the last message is a response to a question (not repetitive)
+        last_message = messages[-1].lower()
+        response_indicators = [
+            "i would", "i will", "i think", "i believe", "i'd", "i'll",
+            "then i", "so i", "this way", "in this way", "by doing",
+            "keeping", "maintaining", "using", "applying", "following"
+        ]
+        
+        # If the last message contains response indicators, it's likely answering a question
+        if any(indicator in last_message for indicator in response_indicators):
+            return False
+          
+
+
+
         # Extract key topics from each message
         topics = []
         for msg in messages[-3:]:  # Last 3 messages
@@ -874,50 +1085,220 @@ class ContextAgent:
             all_topics.extend(topics)
         
         return list(set(all_topics))
-    
+    #0208 UPDATED
     def _prepare_routing_suggestions(self, classification: Dict, content_analysis: Dict, patterns: Dict) -> Dict[str, Any]:
-        """Prepare routing suggestions for orchestrator"""
+        """Enhanced routing suggestions with more variety and contextual awareness"""
         
-        suggestions = {
-            "primary_route": "default",
-            "confidence": 0.5,
-            "reasoning": [],
-            "alternative_routes": []
-        }
+        interaction_type = classification.get("interaction_type", "general_statement")
+        confidence_level = classification.get("confidence_level", "confident")
+        understanding_level = classification.get("understanding_level", "medium")
+        engagement_level = classification.get("engagement_level", "medium")
         
-        # Determine primary route based on classification
-        if classification["is_technical_question"] and classification["understanding_level"] == "high":
-            suggestions["primary_route"] = "knowledge_only"
-            suggestions["confidence"] = 0.8
-            suggestions["reasoning"].append("High understanding + technical question")
+        # Enhanced routing logic with more variety
+        if interaction_type == "question_response":
+            # User is responding to a question - continue exploration
+            return {
+                "primary_route": "socratic_exploration",
+                "suggested_agents": ["socratic_tutor", "domain_expert"],
+                "response_type": "exploratory_question",
+                "priority": "high",
+                "confidence": 0.95,
+                "reasoning": "User responding to previous question - continue dialogue"
+            }
         
-        elif classification["confidence_level"] == "overconfident":
-            suggestions["primary_route"] = "cognitive_challenge"
-            suggestions["confidence"] = 0.9
-            suggestions["reasoning"].append("Overconfident student needs challenge")
+        elif interaction_type == "example_request":
+            # User wants examples - provide with context
+            return {
+                "primary_route": "knowledge_exploration",
+                "suggested_agents": ["domain_expert", "socratic_tutor"],
+                "response_type": "contextual_examples",
+                "priority": "high",
+                "confidence": 0.9,
+                "reasoning": "User requesting examples - provide with Socratic follow-up"
+            }
         
-        elif classification["interaction_type"] == "confusion_expression":
-            suggestions["primary_route"] = "socratic_focus"
-            suggestions["confidence"] = 0.8
-            suggestions["reasoning"].append("Student expressing confusion")
+        elif interaction_type == "feedback_request":
+            # User wants feedback - analyze and guide
+            return {
+                "primary_route": "analysis_guidance",
+                "suggested_agents": ["analysis_agent", "socratic_tutor"],
+                "response_type": "constructive_feedback",
+                "priority": "high",
+                "confidence": 0.9,
+                "reasoning": "User seeking feedback - provide analysis with guidance"
+            }
         
-        elif classification["is_feedback_request"]:
-            suggestions["primary_route"] = "multi_agent"
-            suggestions["confidence"] = 0.7
-            suggestions["reasoning"].append("Comprehensive feedback requested")
+        elif interaction_type == "technical_question":
+            # Technical question - provide knowledge with application
+            return {
+                "primary_route": "technical_guidance",
+                "suggested_agents": ["domain_expert", "socratic_tutor"],
+                "response_type": "technical_knowledge",
+                "priority": "medium",
+                "confidence": 0.85,
+                "reasoning": "Technical question - provide knowledge with application guidance"
+            }
+        
+        elif interaction_type == "confusion_expression":
+            # User is confused - provide clarification
+            return {
+                "primary_route": "clarification_support",
+                "suggested_agents": ["socratic_tutor", "domain_expert"],
+                "response_type": "clarifying_guidance",
+                "priority": "high",
+                "confidence": 0.9,
+                "reasoning": "User expressing confusion - provide clarification and support"
+            }
+        
+        elif interaction_type == "improvement_seeking":
+            # User wants to improve - provide guidance
+            return {
+                "primary_route": "improvement_guidance",
+                "suggested_agents": ["socratic_tutor", "analysis_agent"],
+                "response_type": "improvement_suggestions",
+                "priority": "medium",
+                "confidence": 0.8,
+                "reasoning": "User seeking improvement - provide guidance and analysis"
+            }
+        
+        elif interaction_type == "knowledge_seeking":
+            # User wants knowledge - provide with context
+            return {
+                "primary_route": "knowledge_provision",
+                "suggested_agents": ["domain_expert", "socratic_tutor"],
+                "response_type": "contextual_knowledge",
+                "priority": "medium",
+                "confidence": 0.8,
+                "reasoning": "User seeking knowledge - provide with contextual application"
+            }
+        
+        elif interaction_type == "general_question":
+            # General question - explore and guide
+            return {
+                "primary_route": "exploratory_guidance",
+                "suggested_agents": ["socratic_tutor", "domain_expert"],
+                "response_type": "exploratory_question",
+                "priority": "medium",
+                "confidence": 0.75,
+                "reasoning": "General question - explore topic with guidance"
+            }
+        
+        elif interaction_type == "general_statement":
+            # General statement - respond based on confidence and engagement
+            if confidence_level == "overconfident":
+                return {
+                    "primary_route": "cognitive_challenge",
+                    "suggested_agents": ["cognitive_enhancement", "socratic_tutor"],
+                    "response_type": "assumption_challenge",
+                    "priority": "medium",
+                    "confidence": 0.8,
+                    "reasoning": "Overconfident statement - challenge assumptions"
+                }
+            elif confidence_level == "uncertain":
+                return {
+                    "primary_route": "confidence_building",
+                    "suggested_agents": ["socratic_tutor", "domain_expert"],
+                    "response_type": "supportive_guidance",
+                    "priority": "medium",
+                    "confidence": 0.8,
+                    "reasoning": "Uncertain statement - build confidence"
+                }
+            else:
+                return {
+                    "primary_route": "exploratory_guidance",
+                    "suggested_agents": ["socratic_tutor", "domain_expert"],
+                    "response_type": "exploratory_question",
+                    "priority": "low",
+                    "confidence": 0.7,
+                    "reasoning": "General statement - explore further"
+                }
         
         else:
-            suggestions["primary_route"] = "default"
-            suggestions["confidence"] = 0.6
-            suggestions["reasoning"].append("Standard interaction pattern")
+            # Default fallback
+            return {
+                "primary_route": "general_guidance",
+                "suggested_agents": ["socratic_tutor"],
+                "response_type": "general_question",
+                "priority": "low",
+                "confidence": 0.6,
+                "reasoning": "Default routing for unknown interaction type"
+            }
+    
+
+
+
+
+    def _detect_cognitive_offloading_patterns(self, classification: Dict, content_analysis: Dict, patterns: Dict) -> Dict[str, Any]:
+        """Detect cognitive offloading patterns based on MIT research findings"""
         
-        # Add alternative routes
-        if suggestions["primary_route"] != "socratic_focus":
-            suggestions["alternative_routes"].append("socratic_focus")
-        if suggestions["primary_route"] != "multi_agent":
-            suggestions["alternative_routes"].append("multi_agent")
+        flags = {
+            "detected": False,
+            "type": None,
+            "confidence": 0.0,
+            "indicators": [],
+            "mitigation_strategy": None
+        }
         
-        return suggestions
+        # 0208 UPDATED: Don't flag offloading if user is responding to a question
+        if classification.get("interaction_type") == "question_response":
+            return flags
+        
+
+
+
+        # PATTERN 1: Premature Answer Seeking (requires minimum 5 messages)
+        conversation_depth = patterns.get("conversation_depth", 0)
+        
+        if (classification.get("interaction_type") == "example_request" and
+            conversation_depth < 5):
+            flags["detected"] = True
+            flags["type"] = "premature_answer_seeking"
+            flags["confidence"] = 0.9
+            flags["indicators"].append(f"Asking for examples too early (only {conversation_depth} messages, need 5+)")
+            flags["mitigation_strategy"] = "socratic_exploration"
+        
+        # PATTERN 1b: Premature Feedback Seeking (requires minimum 3 messages)
+        elif (classification.get("interaction_type") == "feedback_request" and
+              conversation_depth < 3):
+            flags["detected"] = True
+            flags["type"] = "premature_answer_seeking"
+            flags["confidence"] = 0.8
+            #0108-before: flags["indicators"].append(f"Asking for feedback too early (only {conversation_depth} messages, need 3+)")
+            flags["indicators"].append(f"Asking for feedback too early (only {conversation_depth} messages, need 3+)")
+            flags["mitigation_strategy"] = "socratic_exploration"
+        
+        # PATTERN 2: Superficial Confidence
+        if (classification.get("confidence_level") == "overconfident" and
+            classification.get("engagement_level") == "low"):
+            flags["detected"] = True
+            flags["type"] = "superficial_confidence"
+            flags["confidence"] = 0.7
+            flags["indicators"].append("Overconfident but not engaged")
+            flags["mitigation_strategy"] = "cognitive_challenge"
+        
+        # 0208UPDATED PATTERN 3: Repetitive Dependency (only if not responding to questions)
+        if (patterns.get("repetitive_topics", False) and 
+            classification.get("interaction_type") != "question_response"):
+
+
+
+            
+            flags["detected"] = True
+            flags["type"] = "repetitive_dependency"
+            flags["confidence"] = 0.6
+            flags["indicators"].append("Repeating same questions")
+            flags["mitigation_strategy"] = "foundational_building"
+        
+        # PATTERN 4: Passive Acceptance
+        if (classification.get("engagement_level") == "low" and
+            content_analysis.get("specificity_score", 0) < 0.3):
+            flags["detected"] = True
+            flags["type"] = "passive_acceptance"
+            flags["confidence"] = 0.7
+            flags["indicators"].append("Passive acceptance without engagement")
+            flags["mitigation_strategy"] = "supportive_scaffolding"
+        
+        return flags
     
     def _prepare_agent_contexts(self, classification: Dict, content_analysis: Dict, state: ArchMentorState, input_text: str) -> Dict[str, Dict[str, Any]]:
         """Prepare context packages for each agent type"""
