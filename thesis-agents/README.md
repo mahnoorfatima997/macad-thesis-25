@@ -1,2 +1,0 @@
-# thesis-agents
-thesis-agents
