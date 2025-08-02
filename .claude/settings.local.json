@@ -4,7 +4,8 @@
       "Bash(python:*)",
       "Bash(pip install:*)",
       "Bash(find:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
