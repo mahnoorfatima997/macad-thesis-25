@@ -2474,36 +2474,6 @@ class BenchmarkDashboard:
             
             # Display in an iframe for better isolation
             st.components.v1.html(html_content, height=800, scrolling=True)
-            
-            # Add download buttons
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.download_button(
-                    label="📥 Download HTML Table",
-                    data=html_content,
-                    file_name="dashboard_features_documentation.html",
-                    mime="text/html"
-                )
-            
-            # Check for CSV file
-            csv_file_path = Path("dashboard_features_table.csv")
-            if not csv_file_path.exists():
-                csv_file_path = Path("benchmarking/dashboard_features_table.csv")
-            
-            if csv_file_path.exists():
-                with open(csv_file_path, 'r', encoding='utf-8') as f:
-                    csv_content = f.read()
-                
-                with col2:
-                    st.download_button(
-                        label="📥 Download CSV Spreadsheet",
-                        data=csv_content,
-                        file_name="dashboard_features_documentation.csv",
-                        mime="text/csv"
-                    )
-            
-            with col3:
-                st.info("💡 Use filters and search to find specific features")
                 
         else:
             st.warning("Dashboard features documentation file not found. Please generate it using `generate_features_html_table.py`")
