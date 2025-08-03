@@ -105,8 +105,8 @@ def create_features_dataframe():
             'Educational assessment theory': 'Principles for measuring learning outcomes',
             'Self-determination theory (Deci & Ryan, 1985)': 'Human motivation through autonomy, competence, and relatedness',
             'Anthropomorphism in HCI (Nass & Moon, 2000)': 'How people attribute human qualities to computers',
-            'Professional ethics in education': 'Maintaining appropriate teacher-student boundaries',
-            'Cognitive flexibility theory': 'Ability to switch between different concepts and adapt thinking',
+            'Cottone et al. (2021) Ethical Decision Making Processes': 'Maintaining appropriate teacher-student boundaries',
+            'Spiro et al. (1988) Cognitive Flexibility Theory': 'Ability to switch between different concepts and adapt thinking',
             "Goldschmidt's linkography (1990, 2014)": 'Method for analyzing design thinking through linked moves',
             'Fuzzy design reasoning (Kan & Gero, 2008)': 'Design decisions are often partially related, not binary',
             'Design productivity measure': 'How efficiently designers generate and connect ideas',
@@ -161,7 +161,7 @@ def create_features_dataframe():
             'Feature': 'Total Sessions',
             'Calculation': 'Count of evaluation reports',
             'Data Source': 'evaluation_reports/*.json',
-            'Theory': 'Basic statistical measure',
+            'Theory': 'Tukey (1977) Exploratory Data Analysis',
             'Implementation': 'benchmark_dashboard.py:335',
             'Type': 'Metric'
         },
@@ -171,7 +171,7 @@ def create_features_dataframe():
             'Feature': 'Avg Cognitive Offloading Prevention',
             'Calculation': 'Mean of all session prevention rates',
             'Data Source': 'session_metrics.cognitive_offloading_prevention.overall_rate',
-            'Theory': "Bloom's Taxonomy (1956)",
+            'Theory': 'Renkl (2002) Worked Examples & Cognitive Load',
             'Implementation': 'benchmark_dashboard.py:428-429',
             'Type': 'Metric'
         },
@@ -181,7 +181,7 @@ def create_features_dataframe():
             'Feature': 'Avg Deep Thinking Engagement',
             'Calculation': 'Mean of all session engagement rates',
             'Data Source': 'session_metrics.deep_thinking_engagement.overall_rate',
-            'Theory': "Kahneman's System 2 thinking (2011)",
+            'Theory': 'Marton & Säljö (1976) Deep vs Surface Learning',
             'Implementation': 'benchmark_dashboard.py:430-431',
             'Type': 'Metric'
         },
@@ -191,7 +191,7 @@ def create_features_dataframe():
             'Feature': 'Overall Improvement',
             'Calculation': 'Weighted avg of prevention and deep thinking improvements',
             'Data Source': 'Calculated vs. 30% and 35% baselines',
-            'Theory': 'Educational psychology research',
+            'Theory': 'Bloom (1984) 2 Sigma Problem',
             'Implementation': 'benchmark_dashboard.py:443-448',
             'Type': 'Metric'
         },
@@ -201,7 +201,7 @@ def create_features_dataframe():
             'Feature': 'Time Series Plot',
             'Calculation': 'Session metrics plotted chronologically',
             'Data Source': 'session_metrics.timestamp',
-            'Theory': 'Learning curve theory (Ebbinghaus, 1885)',
+            'Theory': 'Newell & Rosenbloom (1981) Power Law of Practice',
             'Implementation': 'benchmark_dashboard.py:467-505',
             'Type': 'Visualization'
         },
@@ -211,7 +211,7 @@ def create_features_dataframe():
             'Feature': 'Proficiency Pie Chart',
             'Calculation': 'K-means clustering on graph features',
             'Data Source': 'proficiency_classification.level',
-            'Theory': 'Dreyfus model of skill acquisition (1980)',
+            'Theory': 'Dreyfus & Dreyfus (1980) Five-Stage Model',
             'Implementation': 'graph_ml_benchmarking.py:359-395',
             'Type': 'Visualization'
         },
@@ -223,7 +223,7 @@ def create_features_dataframe():
             'Feature': 'Session Comparison Table',
             'Calculation': 'Direct metrics per session',
             'Data Source': 'evaluation_reports/*.json',
-            'Theory': 'Multi-dimensional assessment',
+            'Theory': 'Pellegrino et al. (2001) Knowing What Students Know',
             'Implementation': 'benchmark_dashboard.py:776-780',
             'Type': 'Table'
         },
@@ -233,7 +233,7 @@ def create_features_dataframe():
             'Feature': 'Cognitive Patterns Radar',
             'Calculation': '5 cognitive metrics averaged',
             'Data Source': 'Session metrics aggregated',
-            'Theory': 'Multi-dimensional assessment framework',
+            'Theory': 'Biggs (1996) Constructive Alignment',
             'Implementation': 'benchmark_dashboard.py:790-835',
             'Type': 'Visualization'
         },
@@ -243,7 +243,7 @@ def create_features_dataframe():
             'Feature': 'Baseline Comparison',
             'Calculation': 'Literature values overlay',
             'Data Source': '[0.5, 0.35, 0.4, 0.45, 0.5]',
-            'Theory': 'Meta-analysis of traditional tutoring',
+            'Theory': 'Cohen et al. (1982) Educational Outcomes Meta-Analysis',
             'Implementation': 'benchmark_dashboard.py:918',
             'Type': 'Reference'
         },
@@ -255,7 +255,7 @@ def create_features_dataframe():
             'Feature': 'Skill Progression Over Time',
             'Calculation': 'Ordinal progression mapping',
             'Data Source': 'skill_progression.initial/final_level',
-            'Theory': "Bloom's revised taxonomy (2001)",
+            'Theory': 'Anderson (1982) Acquisition of Cognitive Skill',
             'Implementation': 'evaluation_metrics.py:275-326',
             'Type': 'Visualization'
         },
@@ -265,7 +265,7 @@ def create_features_dataframe():
             'Feature': 'Learning Velocity Chart',
             'Calculation': 'Delta metrics / time',
             'Data Source': 'Temporal metric differences',
-            'Theory': 'Learning rate theory',
+            'Theory': 'Anderson (1982) Acquisition of Cognitive Skill',
             'Implementation': 'benchmark_dashboard.py:1021-1065',
             'Type': 'Visualization'
         },
@@ -277,7 +277,7 @@ def create_features_dataframe():
             'Feature': 'Agent Usage Bar Chart',
             'Calculation': 'Frequency per agent type',
             'Data Source': 'agents_used field',
-            'Theory': 'Multi-agent system design',
+            'Theory': 'Wooldridge & Jennings (1995) Intelligent Agents',
             'Implementation': 'benchmark_dashboard.py:1270-1280',
             'Type': 'Visualization'
         },
@@ -287,7 +287,7 @@ def create_features_dataframe():
             'Feature': 'Agent Effectiveness Metrics',
             'Calculation': 'Agent-specific cognitive metrics',
             'Data Source': 'Filtered by primary_agent',
-            'Theory': 'Agent specialization theory',
+            'Theory': 'Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems',
             'Implementation': 'benchmark_dashboard.py:1282-1315',
             'Type': 'Metric'
         },
@@ -297,7 +297,7 @@ def create_features_dataframe():
             'Feature': 'Agent Handoff Sankey',
             'Calculation': 'Sequential agent pairs',
             'Data Source': 'agents_used sequences',
-            'Theory': 'Workflow optimization',
+            'Theory': 'Romero & Ventura (2020) Educational Data Mining',
             'Implementation': 'benchmark_dashboard.py:1348-1380',
             'Type': 'Visualization'
         },
@@ -309,7 +309,7 @@ def create_features_dataframe():
             'Feature': 'Improvement by Dimension',
             'Calculation': '(post - pre) / pre * 100',
             'Data Source': 'Session start/end metrics',
-            'Theory': 'Educational assessment theory',
+            'Theory': 'Black & Wiliam (1998) Assessment in Education',
             'Implementation': 'evaluation_metrics.py:425-450',
             'Type': 'Visualization'
         },
@@ -319,7 +319,7 @@ def create_features_dataframe():
             'Feature': 'Feature Impact Analysis',
             'Calculation': 'Correlation analysis with outcomes',
             'Data Source': 'Real-time calculation from sessions',
-            'Theory': 'Feature importance analysis',
+            'Theory': 'Breiman (2001) Random Forests',
             'Implementation': 'benchmark_dashboard.py:163-212',
             'Type': 'Analysis'
         },
@@ -331,7 +331,7 @@ def create_features_dataframe():
             'Feature': 'CAI Score',
             'Calculation': 'autonomy_ratio - 0.5 * dependency_ratio',
             'Data Source': 'input_type categorization',
-            'Theory': 'Self-determination theory (Deci & Ryan, 1985)',
+            'Theory': 'Ryan & Deci (2000) Self-Determination Theory',
             'Implementation': 'anthropomorphism_metrics.py:182-204',
             'Type': 'Metric'
         },
@@ -341,7 +341,7 @@ def create_features_dataframe():
             'Feature': 'ADS Score',
             'Calculation': 'personal_attributions + emotional_language',
             'Data Source': 'Text pattern matching',
-            'Theory': 'Anthropomorphism in HCI (Nass & Moon, 2000)',
+            'Theory': 'Nass & Moon (2000) Machines and Mindlessness',
             'Implementation': 'anthropomorphism_metrics.py:218-250',
             'Type': 'Metric'
         },
@@ -351,7 +351,7 @@ def create_features_dataframe():
             'Feature': 'PBI Score',
             'Calculation': '1 - conversation_drift - personal_intrusions',
             'Data Source': 'Topic modeling',
-            'Theory': 'Professional ethics in education',
+            'Theory': 'Cottone et al. (2021) Ethical Decision Making Processes',
             'Implementation': 'anthropomorphism_metrics.py:258-290',
             'Type': 'Metric'
         },
@@ -361,7 +361,7 @@ def create_features_dataframe():
             'Feature': 'NES Score',
             'Calculation': 'concept_diversity + technical_vocabulary',
             'Data Source': 'Concept extraction',
-            'Theory': 'Cognitive flexibility theory',
+            'Theory': 'Spiro et al. (1988) Cognitive Flexibility Theory',
             'Implementation': 'anthropomorphism_metrics.py:318-345',
             'Type': 'Metric'
         },

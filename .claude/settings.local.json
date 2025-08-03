@@ -5,7 +5,13 @@
       "Bash(pip install:*)",
       "Bash(find:*)",
       "Bash(true)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(dir)",
+      "Bash(echo:*)",
+      "Bash(del:*)",
+      "Bash(start cmd /c:*)",
+      "Bash(git restore:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
