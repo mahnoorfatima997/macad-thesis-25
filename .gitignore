@@ -89,4 +89,5 @@ sessions/
 
 # Thesis data (if contains sensitive information)
 thesis_data/
+thesis_docs/
 interaction_logs/
