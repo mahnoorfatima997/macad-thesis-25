@@ -970,26 +970,51 @@ class DomainExpertAgent:
         return analysis
     
     async def _generate_thinking_prompt(self, user_input: str, building_type: str, project_context: str) -> Dict[str, Any]:
-        """Generate a thinking prompt instead of a direct answer"""
+        """Generate a dynamic thinking prompt instead of a direct answer"""
         
-        response_text = f"""
+        prompt = f"""
+        Generate a dynamic, contextual thinking prompt for an architecture student who is asking for a direct answer.
+        
+        CONTEXT:
+        - Student's Question: "{user_input}"
+        - Building Type: {building_type}
+        - Project Context: {project_context}
+        
+        REQUIREMENTS:
+        1. Acknowledge their specific question/concern
+        2. Explain why thinking through it is valuable
+        3. Ask ONE specific question that will guide their thinking
+        4. Make it relevant to their {building_type} project
+        5. Use a warm, encouraging tone
+        6. Keep it under 150 words
+        7. Avoid generic templates - be specific to their question
+        
+        Generate a dynamic thinking prompt:
+        """
+        
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=120,
+                temperature=0.7
+            )
+            
+            response_text = response.choices[0].message.content.strip()
+            
+        except Exception as e:
+            print(f"⚠️ Thinking prompt generation failed: {e}")
+            # Fallback to contextual template
+            response_text = f"""
 **🤔 Let's think about this together**
 
-I notice you're asking for a direct answer, but let's explore this more deeply. The best architectural solutions come from understanding the underlying principles.
+I notice you're asking about {user_input.lower()}, but let's explore this more deeply. The best architectural solutions come from understanding the underlying principles.
 
 **Instead of giving you the answer, let's consider:**
 
-1. **What's driving your need for this information?** (What problem are you trying to solve?)
+What specific challenge are you facing with {user_input.lower()} in your {building_type} project, and what have you already considered about this aspect?
 
-2. **What have you already considered?** (What options have you explored?)
-
-3. **What are the key factors in your specific context?** (How does your {building_type} project create unique requirements?)
-
-4. **What trade-offs are you willing to make?** (Every design decision involves compromises)
-
-**The goal is to help you develop your own reasoning, not just give you answers.**
-
-*What aspect of this question feels most challenging to you?*
+*This will help you develop your own reasoning and understanding.*
 """
         
         return {
@@ -1230,7 +1255,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             # Final fallback
             return {
                 "agent": self.name,
-                "response_text": f"I'd be happy to help you with examples of {dynamic_topic} in {building_type} design. Let me search for some relevant projects and case studies that demonstrate effective approaches to this specific topic.",
+                "response_text": f"I'd be happy to help you explore {dynamic_topic} for your {building_type} project! To provide the most relevant guidance, could you tell me what specific aspect of {dynamic_topic} you're most interested in understanding?",
                 "response_type": "fallback_examples",
                 "knowledge_gap_addressed": dynamic_topic,
                 "building_type": building_type,

@@ -99,6 +99,7 @@ class LangGraphOrchestrator:
                 "topic_transition": "synthesizer",     # Topic transitions go directly to synthesizer
                 "cognitive_intervention": "cognitive_enhancement",
                 "socratic_exploration": "socratic_tutor", 
+                "design_guidance": "socratic_tutor",   # NEW: Design guidance goes to Socratic tutor
                 "multi_agent_comprehensive": "analysis_agent",
                 "knowledge_with_challenge": "domain_expert",
                 "socratic_clarification": "socratic_tutor",
@@ -398,6 +399,12 @@ class LangGraphOrchestrator:
         self.logger.info("Synthesizer: Combining agent responses...")
         self.logger.debug("cognitive_enhancement_result: %s", state.get("cognitive_enhancement_result"))
         final_response, metadata = self.synthesize_responses(state)
+        
+        # HYBRID APPROACH: Add milestone question if needed
+        milestone_question = await self._add_milestone_question_if_needed(state, final_response)
+        if milestone_question:
+            final_response += f"\n\n🎯 **Milestone Question:** {milestone_question}"
+        
         return {
             **state,
             "final_response": final_response,
@@ -442,6 +449,7 @@ class LangGraphOrchestrator:
                 "foundational_building": "foundational_building",
                 "knowledge_with_challenge": "knowledge_with_challenge",
                 "balanced_guidance": "balanced_guidance",
+                "design_guidance": "design_guidance",  # NEW: Context agent uses this for design guidance requests
                 "knowledge_exploration": "knowledge_only",  # Context agent uses this for example requests
                 "analysis_guidance": "multi_agent_comprehensive",  # Context agent uses this for feedback requests
                 "technical_guidance": "knowledge_with_challenge",  # Context agent uses this for technical questions
@@ -863,6 +871,7 @@ class LangGraphOrchestrator:
         # --- DESIGN GUIDANCE REQUEST DETECTION (default = Knowledge + Socratic) ---
         design_guidance_patterns = [
             "how can i", "how do i", "how to", "how might", "how should",
+            "what direction should", "what direction", "where should", "which direction",
             "what's the best way", "what are ways to", "approaches to",
             "incorporate", "integrate", "implement", "apply", "use",
             "design", "create", "make", "develop", "enhance", "improve"
@@ -1002,7 +1011,28 @@ class LangGraphOrchestrator:
         if not last_assistant_msg or not current_user_msg:
             return None
 
-        # --- ENHANCED FOLLOW-UP EXAMPLE REQUEST DETECTION ---
+        # --- ENHANCED FOLLOW-UP DETECTION ---
+        # Check for design guidance patterns first (higher priority)
+        design_guidance_patterns = [
+            "what direction", "how should i", "how can i", "how do i", "how to",
+            "what should i", "where should", "which direction", "how might",
+            "what's the best way", "what are ways to", "approaches to",
+            "incorporate", "integrate", "implement", "apply", "use",
+            "design", "create", "make", "develop", "enhance", "improve",
+            "circulation", "lighting", "spatial", "organization", "layout"
+        ]
+        
+        if any(pattern in current_user_msg.lower() for pattern in design_guidance_patterns):
+            self.logger.info("🔗 Detected follow-up design guidance request")
+            return {
+                "path": "design_guidance",
+                "agents_to_activate": ["socratic_tutor", "domain_expert"],
+                "reason": "User asking for design guidance - provide Socratic guidance",
+                "confidence": 0.95,
+                "thread_type": "followup_design_guidance"
+            }
+        
+        # Check for example requests (lower priority)
         followup_example_patterns = [
             "another example", "more examples", "different example", "other example",
             "another project", "more projects", "different project", "other projects", 
@@ -1014,9 +1044,9 @@ class LangGraphOrchestrator:
         if any(pattern in current_user_msg.lower() for pattern in followup_example_patterns):
             self.logger.info("🔗 Detected follow-up example/project/precedent request")
             return {
-                "path": "knowledge_only",
-                "agents_to_activate": ["domain_expert"],
-                "reason": "User requested additional examples/projects/precedents",
+                "path": "default",
+                "agents_to_activate": ["domain_expert", "socratic_tutor"],
+                "reason": "User requested additional examples/projects/precedents - provide with Socratic guidance",
                 "confidence": 0.97,
                 "thread_type": "followup_example_request"
             }
@@ -1038,9 +1068,11 @@ class LangGraphOrchestrator:
             2. Answering a question the system asked
             3. Showing interest and wanting to explore the same topic deeper
             4. Asking follow-up questions about the same topic
+            5. Asking for design guidance (how to do something, what direction, etc.)
 
             Respond with ONLY:
             - "EXAMPLE_REQUEST" if requesting examples/projects/precedents
+            - "DESIGN_GUIDANCE" if asking for design advice/guidance
             - "ANSWER_CONTINUATION" if answering system's question
             - "TOPIC_CONTINUATION" if continuing same topic exploration
             - "SOCRATIC_CONTINUATION" if answering a Socratic question
@@ -1059,27 +1091,35 @@ class LangGraphOrchestrator:
             self.logger.info(f"🧠 AI Thread Detection: {thread_type}")
 
             # Route based on AI detection
-            if thread_type == "EXAMPLE_REQUEST":
+            if thread_type == "DESIGN_GUIDANCE":
                 return {
-                    "path": "knowledge_only",
-                    "agents_to_activate": ["domain_expert"],
-                    "reason": "AI detected: User requesting examples/references",
+                    "path": "design_guidance",
+                    "agents_to_activate": ["socratic_tutor", "domain_expert"],
+                    "reason": "AI detected: User asking for design guidance - provide Socratic guidance",
+                    "confidence": 0.95,
+                    "thread_type": "ai_design_guidance"
+                }
+            elif thread_type == "EXAMPLE_REQUEST":
+                return {
+                    "path": "default",
+                    "agents_to_activate": ["domain_expert", "socratic_tutor"],
+                    "reason": "AI detected: User requesting examples/references - provide with Socratic guidance",
                     "confidence": 0.95,
                     "thread_type": "ai_example_continuation"
                 }
             elif thread_type == "ANSWER_CONTINUATION":
                 return {
-                    "path": "knowledge_only", 
-                    "agents_to_activate": ["domain_expert"],
-                    "reason": "AI detected: User answered system's question",
+                    "path": "socratic_exploration", 
+                    "agents_to_activate": ["socratic_tutor", "domain_expert"],
+                    "reason": "AI detected: User answered system's question - continue Socratic exploration",
                     "confidence": 0.9,
                     "thread_type": "ai_answer_continuation"
                 }
             elif thread_type == "TOPIC_CONTINUATION":
                 return {
-                    "path": "knowledge_only",
-                    "agents_to_activate": ["domain_expert"], 
-                    "reason": "AI detected: User continuing topic exploration",
+                    "path": "default",
+                    "agents_to_activate": ["domain_expert", "socratic_tutor"], 
+                    "reason": "AI detected: User continuing topic exploration - provide comprehensive guidance",
                     "confidence": 0.85,
                     "thread_type": "ai_topic_continuation"
                 }
@@ -1099,198 +1139,9 @@ class LangGraphOrchestrator:
             self.logger.error(f"⚠️ AI thread detection failed: {e}")
             return None
 
-    async def _check_conversation_thread(self, state: ArchMentorState, classification: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """AI-powered conversation thread detection - no hardcoding"""
 
-        if len(state.messages) < 2:
-            return None
 
-        # Get last assistant message and current user message
-        last_assistant_msg = None
-        current_user_msg = None
 
-        for msg in reversed(state.messages):
-            if msg.get('role') == 'assistant' and not last_assistant_msg:
-                last_assistant_msg = msg.get('content', '')
-            elif msg.get('role') == 'user' and not current_user_msg:
-                current_user_msg = msg.get('content', '')
-
-        if not last_assistant_msg or not current_user_msg:
-            return None
-
-        # --- PATCH: Robust pattern matching for follow-up example requests ---
-        followup_patterns = [
-            "another example", "more examples", "different example", "other example",
-            "another project", "different project", "other project", "more project",
-            "another precedent", "more precedent", "different precedent", "other precedent",
-            "can you give another", "can you show another", "can you provide another"
-        ]
-        if any(p in current_user_msg.lower() for p in followup_patterns):
-            self.logger.info("🔗 Detected follow-up example/project/precedent request in conversation thread.")
-            return {
-                "path": "knowledge_only",
-                "agents_to_activate": ["domain_expert"],
-                "reason": "User requested another example/project/precedent",
-                "confidence": 0.97,
-                "thread_type": "manual_example_followup"
-            }
-        # --- END PATCH ---
-
-        # Use AI to detect conversation thread continuation with proper error handling
-        thread_result = await self._perform_ai_thread_detection(last_assistant_msg, current_user_msg, classification)
-        if thread_result:
-            return thread_result
-        
-        return None
-
-    async def _perform_ai_thread_detection(self, last_assistant_msg: str, current_user_msg: str, 
-                                         classification: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Perform AI-based thread detection with timeout and retry logic"""
-        
-        try:
-            from openai import OpenAI
-            import os
-            import asyncio
-
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-            thread_detection_prompt = f"""
-            CONVERSATION ANALYSIS:
-            System said: "{last_assistant_msg}"
-            User replied: "{current_user_msg}"
-
-            Is the user continuing the conversation thread? Analyze if the user is:
-            1. Requesting more examples/references/projects/precedents (phrases like "another example", "can you give another", "more examples")
-            2. Answering a question the system asked
-            3. Showing interest and wanting to explore the same topic deeper
-            4. Asking follow-up questions about the same topic
-
-            CRITICAL: Look for continuation patterns:
-            - "another example", "can you give another", "give another example"
-            - "more examples", "additional examples", "other examples"
-            - "what about", "any other", "different example"
-
-            Respond with ONLY:
-            - "EXAMPLE_REQUEST" if ONLY asking for examples with no substantial response
-            - "SOCRATIC_WITH_EXAMPLE_REQUEST" if answering/responding to questions AND requesting examples
-            - "ANSWER_CONTINUATION" if answering system's question without requesting examples
-            - "TOPIC_CONTINUATION" if continuing same topic exploration
-            - "SOCRATIC_CONTINUATION" if thoughtfully answering a Socratic question
-            - "NEW_TOPIC" if starting something completely different
-            """
-
-            # Add timeout to prevent hanging
-            response = await asyncio.wait_for(
-                asyncio.to_thread(
-                    client.chat.completions.create,
-                    model=self.config.AI_MODEL,
-                    messages=[{"role": "user", "content": thread_detection_prompt}],
-                    max_tokens=self.config.AI_MAX_TOKENS,
-                    temperature=self.config.AI_TEMPERATURE
-                ),
-                timeout=10.0  # 10 second timeout
-            )
-
-            thread_type = response.choices[0].message.content.strip()
-
-            self.logger.debug("AI Thread Detection: %s", thread_type)
-            self.logger.debug("User said: '%s'", current_user_msg)
-            self.logger.debug("System said: '%s...'", last_assistant_msg[:100])
-
-            # Check for overconfidence or low engagement/understanding
-            overconfident = classification.get("confidence_level") == "overconfident"
-            low_engagement = classification.get("engagement_level") == "low"
-            low_understanding = classification.get("understanding_level") == "low"
-            
-            if overconfident or low_engagement or low_understanding:
-                self.logger.info("Overconfidence or low engagement/understanding detected in thread, routing to cognitive_challenge")
-                return {
-                    "path": "cognitive_challenge",
-                    "agents_to_activate": ["cognitive_enhancement", "socratic_tutor"],
-                    "primary_agent": "cognitive_enhancement",
-                    "followup_agent": "socratic_tutor",
-                    "reason": "Overconfidence or low engagement/understanding detected in thread",
-                    "confidence": 0.95,
-                    "thread_type": "override_cognitive_challenge"
-                }
-
-            # Route based on AI detection
-            return self._route_by_ai_detection(thread_type)
-
-        except ImportError as e:
-            self.logger.warning("OpenAI not available for thread detection: %s", e)
-            return self._fallback_thread_detection(current_user_msg, classification)
-            
-        except asyncio.TimeoutError:
-            self.logger.warning("AI thread detection timed out")
-            return self._fallback_thread_detection(current_user_msg, classification)
-            
-        except Exception as e:
-            self.logger.error("AI thread detection failed: %s", e, exc_info=True)
-            return self._fallback_thread_detection(current_user_msg, classification)
-
-    def _route_by_ai_detection(self, thread_type: str) -> Optional[Dict[str, Any]]:
-        """Route based on AI thread detection result"""
-        
-        if thread_type == "EXAMPLE_REQUEST":
-            return {
-                "path": "knowledge_only",
-                "agents_to_activate": ["domain_expert"],
-                "reason": "AI detected: User requesting examples/references",
-                "confidence": 0.95,
-                "thread_type": "ai_example_continuation"
-            }
-        elif thread_type == "SOCRATIC_WITH_EXAMPLE_REQUEST":
-            return {
-                "path": "multi_agent",
-                "agents_to_activate": ["domain_expert", "socratic_tutor"],
-                "reason": "AI detected: User answered Socratic questions AND requested examples",
-                "confidence": 0.9,
-                "thread_type": "ai_socratic_with_examples"
-            }
-        elif thread_type == "ANSWER_CONTINUATION":
-            return {
-                "path": "knowledge_only", 
-                "agents_to_activate": ["domain_expert"],
-                "reason": "AI detected: User answered system's question",
-                "confidence": 0.9,
-                "thread_type": "ai_answer_continuation"
-            }
-        elif thread_type == "TOPIC_CONTINUATION":
-            return {
-                "path": "knowledge_only",
-                "agents_to_activate": ["domain_expert"], 
-                "reason": "AI detected: User continuing topic exploration",
-                "confidence": 0.85,
-                "thread_type": "ai_topic_continuation"
-            }
-        elif thread_type == "SOCRATIC_CONTINUATION":
-            return {
-                "path": "socratic_focus",
-                "agents_to_activate": ["socratic_tutor"],
-                "reason": "AI detected: User answering Socratic question",
-                "confidence": 0.8,
-                "thread_type": "ai_socratic_continuation"
-            }
-
-        # If "NEW_TOPIC" or AI uncertain, continue with normal routing
-        return None
-
-    def _fallback_thread_detection(self, current_user_msg: str, classification: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Fallback to pattern-based detection when AI fails"""
-        
-        # Enhanced pattern matching for follow-up requests
-        if any(pattern in current_user_msg.lower() for pattern in self.config.FOLLOWUP_EXAMPLE_PATTERNS):
-            self.logger.info("Fallback: Detected follow-up example/project/precedent request")
-            return {
-                "path": "knowledge_only",
-                "agents_to_activate": ["domain_expert"],
-                "reason": "Fallback pattern detection: User requested additional examples",
-                "confidence": 0.85,
-                "thread_type": "fallback_example_request"
-            }
-        
-        return None
 
 
 
@@ -1420,6 +1271,8 @@ class LangGraphOrchestrator:
             return self._synthesize_technical_response(agent_results, user_input, classification)
         elif routing_path == "feedback_request":
             return self._synthesize_feedback_response(agent_results, user_input, classification)
+        elif routing_path == "design_guidance":
+            return self._synthesize_design_guidance_response(agent_results, user_input, classification)
         else:
             return self._synthesize_default_response(agent_results)
     
@@ -1659,7 +1512,88 @@ class LangGraphOrchestrator:
         print("─" * 50 + "\n")
     
     #3107-SOCRATIC ADDED TO EXAMPLE RESPONSE
-    def _synthesize_example_response(self, domain_result: Dict, user_input: str, classification: Dict) -> str:
+    def _synthesize_design_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict) -> str:
+        """Synthesize design guidance response combining domain knowledge and Socratic guidance"""
+        
+        domain_result = agent_results.get("domain", {})
+        socratic_result = agent_results.get("socratic", {})
+        
+        # Prioritize Socratic guidance for design questions
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result.get("response_text", "")
+        
+        # Fallback to domain knowledge if available
+        if domain_result and domain_result.get("response_text"):
+            return domain_result.get("response_text", "")
+        
+        # Fallback design guidance response
+        return "That's a great design question! Let me help you think through this systematically. What specific aspects of your design are you trying to optimize?"
+
+    def _extract_building_type_from_context(self, state: ArchMentorState) -> str:
+        """Extract building type from context"""
+        try:
+            # Try to get from analysis result
+            analysis_result = state.get('analysis_result', {})
+            text_analysis = analysis_result.get('text_analysis', {})
+            building_type = text_analysis.get('building_type', 'project')
+            return building_type if building_type != 'unknown' else 'project'
+        except:
+            return 'project'
+    
+    def _extract_topic_from_user_input(self, user_input: str) -> str:
+        """Extract main topic from user input"""
+        # Simple topic extraction
+        topics = ['circulation', 'lighting', 'spatial', 'form', 'function', 'context', 'materials', 'structure']
+        user_lower = user_input.lower()
+        
+        for topic in topics:
+            if topic in user_lower:
+                return topic
+        
+        return 'design'
+    
+    async def _add_milestone_question_if_needed(self, state: WorkflowState, final_response: str) -> Optional[str]:
+        """Add milestone question if needed based on conversation gaps"""
+        
+        try:
+            # Get current phase from analysis result
+            analysis_result = state.get("analysis_result", {})
+            phase_analysis = analysis_result.get("phase_analysis", {})
+            current_phase = phase_analysis.get("phase", "ideation")
+            
+            # Get student state
+            student_state = state.get("student_state")
+            if not student_state:
+                return None
+            
+            # Get progress manager from analysis agent
+            if hasattr(self.analysis_agent, 'progress_manager'):
+                progress_manager = self.analysis_agent.progress_manager
+            else:
+                # Create progress manager if not exists
+                from phase_management.progress_manager import ProgressManager
+                progress_manager = ProgressManager()
+                self.analysis_agent.progress_manager = progress_manager
+            
+            # Generate student ID
+            student_id = f"student_{hash(str(student_state.messages))}"
+            
+            # Check if milestone question is needed
+            milestone_question = self.analysis_agent._generate_milestone_question_if_needed(
+                student_state, current_phase, progress_manager, student_id
+            )
+            
+            if milestone_question:
+                self.logger.info(f"🎯 Adding milestone question: {milestone_question}")
+                return milestone_question
+            
+            return None
+            
+        except Exception as e:
+            self.logger.warning(f"Could not generate milestone question: {e}")
+            return None
+
+    def _synthesize_example_response(self, domain_result: Dict, user_input: str, classification: Dict, state: ArchMentorState = None) -> str:
         """Synthesize focused example response with Socratic questions"""
         
         # Get domain expert examples
@@ -1673,8 +1607,11 @@ class LangGraphOrchestrator:
         if domain_text:
             return domain_text
         
-        # Fallback example response
-        return f"I'd be happy to help you with examples! Could you tell me more specifically what you're looking for? This will help me provide the most relevant examples for your project."
+        # Dynamic fallback - generate contextual response
+        building_type = self._extract_building_type_from_context(state)
+        topic = self._extract_topic_from_user_input(user_input)
+        
+        return f"I'd be happy to help you explore {topic} for your {building_type} project! To provide the most relevant guidance, could you tell me what specific aspect of {topic} you're most interested in understanding?"
     
     def _synthesize_feedback_response(self, socratic_result: Dict, domain_result: Dict, user_input: str, classification: Dict) -> str:
         """Synthesize focused feedback response"""
@@ -1685,8 +1622,9 @@ class LangGraphOrchestrator:
         if domain_result and domain_result.get("response_text"):
             return domain_result["response_text"]
         
-        # Fallback feedback response
-        return "I'd be glad to provide feedback on your design! To give you the most useful feedback, could you tell me what specific aspects of your project you'd like me to focus on?"
+        # Dynamic fallback feedback response
+        building_type = self._extract_building_type_from_context(state) if state else 'project'
+        return f"I'd be glad to provide feedback on your {building_type} design! To give you the most useful feedback, could you tell me what specific aspects of your project you'd like me to focus on?"
     
     def _synthesize_technical_response(self, domain_result: Dict, user_input: str, classification: Dict) -> str:
         """Synthesize focused technical response"""
@@ -1694,8 +1632,9 @@ class LangGraphOrchestrator:
         if domain_result and domain_result.get("response_text"):
             return domain_result["response_text"]
         
-        # Fallback technical response
-        return "I'd be happy to help with technical requirements! Could you specify what technical aspects you need information about?"
+        # Dynamic fallback technical response
+        topic = self._extract_topic_from_user_input(user_input)
+        return f"I'd be happy to help with technical requirements for {topic}! Could you specify what technical aspects you need information about?"
     
     def _synthesize_clarification_response(self, socratic_result: Dict, domain_result: Dict, user_input: str, classification: Dict) -> str:
         """Synthesize focused clarification response"""
@@ -1706,8 +1645,9 @@ class LangGraphOrchestrator:
         if domain_result and domain_result.get("response_text"):
             return domain_result["response_text"]
         
-        # Fallback clarification response
-        return "I understand this can be complex! Let me help clarify. What specific part would you like me to explain in more detail?"
+        # Dynamic fallback clarification response
+        topic = self._extract_topic_from_user_input(user_input)
+        return f"I understand {topic} can be complex! Let me help clarify. What specific part would you like me to explain in more detail?"
     
     def _synthesize_improvement_response(self, socratic_result: Dict, domain_result: Dict, user_input: str, classification: Dict) -> str:
         """Synthesize focused improvement response"""
@@ -1718,8 +1658,9 @@ class LangGraphOrchestrator:
         if socratic_result and socratic_result.get("response_text"):
             return socratic_result["response_text"]
         
-        # Fallback improvement response
-        return "Great question about improving your design! What specific aspects would you like to enhance? This will help me suggest the most effective improvements."
+        # Dynamic fallback improvement response
+        topic = self._extract_topic_from_user_input(user_input)
+        return f"Great question about improving your {topic}! What specific aspects would you like to enhance? This will help me suggest the most effective improvements."
     
     def _synthesize_challenge_response(self, cognitive_result: Dict, socratic_result: Dict, user_input: str, classification: Dict) -> str:
         """Synthesize focused challenge response"""
@@ -1755,7 +1696,8 @@ class LangGraphOrchestrator:
             return domain_result["response_text"]
         
         # Fallback exploratory response
-        return "That's an interesting direction to explore! Let's think about this together. What aspects of this topic are most important to your project goals?"
+        topic = self._extract_topic_from_user_input(user_input)
+        return f"That's an interesting direction to explore with {topic}! Let's think about this together. What aspects of {topic} are most important to your project goals?"
         
     # MAIN EXECUTION METHOD
     async def process_student_input(self, student_state: ArchMentorState) -> Dict[str, Any]:

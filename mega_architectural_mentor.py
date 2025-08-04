@@ -760,9 +760,9 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
                 st.session_state.analysis_result = updated_analysis
                 
                 # Log the progress update
-                current_phase = updated_analysis.get('phase_analysis', {}).get('current_phase', 'unknown')
-                phase_completion = updated_analysis.get('phase_analysis', {}).get('phase_completion', 0)
-                print(f"📊 Progress Updated: {current_phase} ({phase_completion}% complete)")
+                current_phase = updated_analysis.get('phase_analysis', {}).get('phase', 'unknown')
+                phase_completion = updated_analysis.get('phase_analysis', {}).get('progression_score', 0) * 100
+                print(f"📊 Progress Updated: {current_phase} ({phase_completion:.0f}% complete)")
                 
             except Exception as e:
                 print(f"⚠️ Progress update failed: {e}")
@@ -784,6 +784,40 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             if st.session_state.arch_state and hasattr(st.session_state.arch_state, 'student_profile'):
                 student_skill_level = st.session_state.arch_state.student_profile.skill_level
             
+            # Include detailed analysis result with internal grading metrics
+            enhanced_metadata = metadata.copy()
+            if st.session_state.analysis_result:
+                # Add detailed phase analysis with benchmarking metrics
+                enhanced_metadata["detailed_phase_analysis"] = st.session_state.analysis_result.get("phase_analysis", {})
+                # Add benchmarking metrics
+                enhanced_metadata["benchmarking_metrics"] = {
+                    "cop_score": st.session_state.analysis_result.get("phase_analysis", {}).get("cop_score", 0),
+                    "dte_score": st.session_state.analysis_result.get("phase_analysis", {}).get("dte_score", 0),
+                    "ki_score": st.session_state.analysis_result.get("phase_analysis", {}).get("ki_score", 0),
+                    "cop_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("cop_factor", 0),
+                    "dte_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("dte_factor", 0),
+                    "ki_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("ki_factor", 0),
+                    "milestone_progression": st.session_state.analysis_result.get("phase_analysis", {}).get("milestone_progression", 0),
+                    "quality_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("quality_factor", 0),
+                    "engagement_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("engagement_factor", 0),
+                    "completed_milestones": st.session_state.analysis_result.get("phase_analysis", {}).get("completed_milestones", 0),
+                    "total_milestones": st.session_state.analysis_result.get("phase_analysis", {}).get("total_milestones", 0),
+                    "average_grade": st.session_state.analysis_result.get("phase_analysis", {}).get("average_grade", 0)
+                }
+                # Add assessment profile if available
+                assessment_profile = st.session_state.analysis_result.get("phase_analysis", {}).get("assessment_profile")
+                if assessment_profile:
+                    enhanced_metadata["assessment_profile"] = {
+                        "student_id": getattr(assessment_profile, 'student_id', 'unknown'),
+                        "phases": {phase: {
+                            "milestones": {milestone: {
+                                "completion_percentage": getattr(milestone_data, 'completion_percentage', 0),
+                                "average_grade": getattr(milestone_data, 'average_grade', 0),
+                                "response_count": getattr(milestone_data, 'response_count', 0)
+                            } for milestone, milestone_data in phase_data.milestones.items()}
+                        } for phase, phase_data in assessment_profile.phases.items()}
+                    }
+            
             st.session_state.interaction_logger.log_interaction(
                 student_input=user_input,
                 agent_response=result.get("response", ""),
@@ -795,7 +829,7 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
                 confidence_score=confidence_score,
                 sources_used=sources_used,
                 context_classification=context_classification,
-                metadata=metadata
+                metadata=enhanced_metadata
             )
         
         return result
@@ -1204,184 +1238,245 @@ def main():
             
             # Progress update button
             col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                if st.button("🔄 Update Progress", help="Re-analyze your current progress based on our conversation"):
-                    if st.session_state.arch_state and st.session_state.orchestrator:
-                        with st.spinner("🔄 Updating progress..."):
-                            try:
-                                # Re-analyze the current state
-                                analysis_agent = AnalysisAgent("architecture")
-                                progress_loop = asyncio.new_event_loop()
-                                asyncio.set_event_loop(progress_loop)
-                                
-                                updated_analysis = progress_loop.run_until_complete(
-                                    analysis_agent.process(st.session_state.arch_state)
-                                )
-                                
-                                progress_loop.close()
-                                
-                                # Update the analysis result
-                                st.session_state.analysis_result = updated_analysis
-                                
-                                current_phase = updated_analysis.get('phase_analysis', {}).get('current_phase', 'unknown')
-                                phase_completion = updated_analysis.get('phase_analysis', {}).get('phase_completion', 0)
-                                
-                                st.success(f"✅ Progress updated! Current phase: {current_phase.title()} ({phase_completion}% complete)")
-                                st.rerun()
-                                
-                            except Exception as e:
-                                st.error(f"❌ Progress update failed: {e}")
+       
             
-            # Analysis details (expandable)
-            with st.expander("📊 Analysis Details", expanded=False):
-                st.write("**📊 What the AI Detected:**")
+            # Enhanced Cognitive Analysis Dashboard
+            with st.expander("🧠 Cognitive Analysis Dashboard", expanded=True):
+                st.markdown("""
+                <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center; color: #1f77b4;">
+                    🧠 Your Learning Journey Analysis
+                </div>
+                <style>
+                .stExpander .stMarkdown p { font-size: 13px !important; line-height: 1.3 !important; margin-bottom: 8px !important; }
+                .stExpander .stMarkdown strong { font-size: 13px !important; }
+                .stExpander .stMarkdown div { font-size: 13px !important; }
+                </style>
+                """, unsafe_allow_html=True)
                 
-                # Phase Analysis
-                phase_analysis = result.get('phase_analysis', {})
-                if phase_analysis:
-                    current_phase = phase_analysis.get('current_phase', 'unknown')
-                    phase_completion = phase_analysis.get('phase_completion', 0)
-                    st.write(f"• **Design Phase**: {current_phase.title()} ({phase_completion}% complete)")
-                else:
-                    st.write("• **Design Phase**: Not detected")
+                # Create three columns for different analysis sections
+                col1, col2, col3 = st.columns([1, 1, 1])
                 
-                # Text Analysis
-                text_analysis = result.get('text_analysis', {})
-                if text_analysis:
-                    building_type = text_analysis.get('building_type', 'unknown')
-                    st.write(f"• **Building Type**: {building_type.title()}")
+                with col1:
+                    st.markdown("**🎯 Current Design Phase**")
+                    phase_analysis = result.get('phase_analysis', {})
+                    if phase_analysis:
+                        current_phase = phase_analysis.get('phase', 'unknown')
+                        phase_confidence = phase_analysis.get('confidence', 0)
+                        phase_completion = phase_analysis.get('progression_score', 0) * 100
+                        
+                        # Phase status with color coding
+                        if phase_confidence > 0.8:
+                            phase_color = "🟢"
+                        elif phase_confidence > 0.6:
+                            phase_color = "🟡"
+                        else:
+                            phase_color = "🔴"
+                        
+                        st.write(f"{phase_color} **{current_phase.title()}**")
+                        st.write(f"Confidence: {phase_confidence:.1%}")
+                        st.write(f"Progress: {phase_completion:.0f}%")
+                        
+                        # Show next milestone if available
+                        next_milestone = phase_analysis.get('next_milestone')
+                        if next_milestone:
+                            milestone_names = {
+                                'site_analysis': 'Site Analysis',
+                                'program_requirements': 'Program Requirements',
+                                'concept_development': 'Concept Development',
+                                'spatial_organization': 'Spatial Organization',
+                                'circulation_design': 'Circulation Design',
+                                'form_development': 'Form Development',
+                                'lighting_strategy': 'Lighting Strategy',
+                                'construction_systems': 'Construction Systems',
+                                'material_selection': 'Material Selection',
+                                'technical_details': 'Technical Details',
+                                'presentation_prep': 'Presentation Preparation',
+                                'documentation': 'Documentation'
+                            }
+                            next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
+                            st.write(f"🎯 **Next:** {next_milestone_name}")
+                    else:
+                        st.write("🔍 Phase not detected yet")
+                
+                with col2:
+                    st.markdown("**💡 Learning Insights**")
+                    synthesis = result.get('synthesis', {})
                     
+                    # Cognitive Challenges
+                    cognitive_challenges = synthesis.get('cognitive_challenges', [])
+                    if cognitive_challenges:
+                        st.write(f"🚧 **Challenges** ({len(cognitive_challenges)}):")
+                        for challenge in cognitive_challenges[:3]:  # Show top 3
+                            challenge_name = challenge.replace('_', ' ').title()
+                            st.write(f"• {challenge_name}")
+                        if len(cognitive_challenges) > 3:
+                            st.write(f"• ... and {len(cognitive_challenges) - 3} more")
+                    else:
+                        st.write("✅ No major challenges detected")
+                    
+                    # Learning Opportunities
+                    learning_opportunities = synthesis.get('learning_opportunities', [])
+                    if learning_opportunities:
+                        st.write(f"🌟 **Opportunities** ({len(learning_opportunities)}):")
+                        for opportunity in learning_opportunities[:3]:  # Show top 3
+                            st.write(f"• {opportunity}")
+                        if len(learning_opportunities) > 3:
+                            st.write(f"• ... and {len(learning_opportunities) - 3} more")
+                    else:
+                        st.write("📚 Ready for new challenges")
+                
+                with col3:
+                    st.markdown("**📋 Project Context**")
+                    text_analysis = result.get('text_analysis', {})
+                    
+                    # Building Type
+                    building_type = text_analysis.get('building_type', 'unknown')
+                    if building_type != 'unknown':
+                        st.write(f"🏗️ **Type:** {building_type.title()}")
+                    else:
+                        st.write("🏗️ **Type:** Not specified")
+                    
+                    # Program Requirements
                     requirements = text_analysis.get('program_requirements', [])
                     if requirements:
-                        st.write(f"• **Program Requirements**: {len(requirements)} found")
-                        for req in requirements[:3]:
-                            st.write(f"  - {req}")
-                else:
-                    st.write("• **Building Type**: Not detected")
+                        st.write(f"📝 **Requirements** ({len(requirements)}):")
+                        for req in requirements[:2]:  # Show top 2
+                            st.write(f"• {req}")
+                        if len(requirements) > 2:
+                            st.write(f"• ... and {len(requirements) - 2} more")
+                    else:
+                        st.write("📝 **Requirements:** Not specified")
+                    
+                    # Missing Considerations
+                    missing_considerations = synthesis.get('missing_considerations', [])
+                    if missing_considerations:
+                        st.write(f"⚠️ **Missing** ({len(missing_considerations)}):")
+                        for consideration in missing_considerations[:2]:  # Show top 2
+                            st.write(f"• {consideration}")
+                        if len(missing_considerations) > 2:
+                            st.write(f"• ... and {len(missing_considerations) - 2} more")
                 
-                # Cognitive Flags
-                cognitive_flags = result.get('cognitive_flags', [])
-                if cognitive_flags:
-                    st.write(f"• **Learning Areas**: {len(cognitive_flags)} identified")
-                    for flag in cognitive_flags[:3]:
-                        flag_name = flag.replace('_', ' ').title()
-                        st.write(f"  - {flag_name}")
-                else:
-                    st.write("• **Learning Areas**: None detected")
+                # Dynamic recommendations section - only show if we have meaningful data
+                has_recommendations = False
                 
-                # Synthesis
-                synthesis = result.get('synthesis', {})
-                if synthesis:
-                    challenges = synthesis.get('cognitive_challenges', [])
-                    if challenges:
-                        st.write(f"• **Cognitive Challenges**: {len(challenges)} identified")
-                        for challenge in challenges[:2]:
-                            challenge_name = challenge.replace('_', ' ').title()
-                            st.write(f"  - {challenge_name}")
+                # Check if we have any meaningful recommendations
+                next_focus_areas = synthesis.get('next_focus_areas', [])
+                phase_recommendations = phase_analysis.get('phase_recommendations', [])
+                missing_considerations = synthesis.get('missing_considerations', [])
                 
-                st.write("---")
-                st.write("**🔧 Technical Details:**")
-                st.write("• **Analysis Method**: AI-Powered Analysis")
-                st.write(f"• **Domain**: {result.get('domain', 'unknown').title()}")
-                st.write(f"• **Confidence Level**: {result.get('confidence_score', 0):.1%}")
+                if next_focus_areas or phase_recommendations or missing_considerations:
+                    has_recommendations = True
+                    st.markdown("---")
+                    st.markdown("**🎯 Smart Recommendations**")
+                    
+                    # Next Focus Areas
+                    if next_focus_areas:
+                        st.write("**Focus on these areas next:**")
+                        for i, focus in enumerate(next_focus_areas[:3], 1):  # Show top 3
+                            focus_name = focus.replace('_', ' ').title()
+                            st.write(f"{i}. {focus_name}")
+                    
+                    # Phase Recommendations
+                    if phase_recommendations:
+                        st.write("**Phase-specific guidance:**")
+                        for rec in phase_recommendations[:2]:  # Show top 2
+                            st.write(f"• {rec}")
+                    
+                    # Missing Considerations
+                    if missing_considerations:
+                        st.write("**Consider addressing:**")
+                        for consideration in missing_considerations[:2]:  # Show top 2
+                            st.write(f"• {consideration}")
                 
-                # Human-readable summary
-                st.write("---")
-                st.write("**📋 Analysis Summary:**")
+                # Overall progress summary - show meaningful information
+                if phase_analysis:
+                    completed_milestones = phase_analysis.get('completed_milestones', 0)
+                    total_milestones = phase_analysis.get('total_milestones', 0)
+                    phase_completion = phase_analysis.get('progression_score', 0) * 100
+                    
+                    if total_milestones > 0:
+                        if completed_milestones > 0:
+                            st.markdown("---")
+                            st.markdown(f"**📊 Overall Progress: {completed_milestones}/{total_milestones} milestones completed**")
+                            
+                            # Progress visualization
+                            progress_ratio = completed_milestones / total_milestones
+                            st.progress(progress_ratio)
+                            
+                            if progress_ratio < 0.25:
+                                st.write("🔄 **Getting Started** - Building foundational knowledge")
+                            elif progress_ratio < 0.5:
+                                st.write("📝 **In Progress** - Developing design thinking")
+                            elif progress_ratio < 0.75:
+                                st.write("🎯 **Making Good Progress** - Applying concepts effectively")
+                            elif progress_ratio < 1.0:
+                                st.write("✨ **Almost Complete** - Refining and polishing")
+                            else:
+                                st.write("✅ **Project Complete** - Excellent work!")
+                        else:
+                            # Show phase-based progress when no milestones completed
+                            st.markdown("---")
+                            st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
+                            
+                            # Progress visualization
+                            progress_ratio = phase_completion / 100
+                            st.progress(progress_ratio)
+                            
+                            if progress_ratio < 0.25:
+                                st.write("🔄 **Getting Started** - Building foundational knowledge")
+                            elif progress_ratio < 0.5:
+                                st.write("📝 **In Progress** - Developing design thinking")
+                            elif progress_ratio < 0.75:
+                                st.write("🎯 **Making Good Progress** - Applying concepts effectively")
+                            elif progress_ratio < 1.0:
+                                st.write("✨ **Almost Complete** - Refining and polishing")
+                            else:
+                                st.write("✅ **Phase Complete** - Ready for next phase!")
+                    else:
+                        # Fallback to phase-based progress
+                        st.markdown("---")
+                        st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
+                        
+                        # Progress visualization
+                        progress_ratio = phase_completion / 100
+                        st.progress(progress_ratio)
+                        
+                        if progress_ratio < 0.25:
+                            st.write("🔄 **Getting Started** - Building foundational knowledge")
+                        elif progress_ratio < 0.5:
+                            st.write("📝 **In Progress** - Developing design thinking")
+                        elif progress_ratio < 0.75:
+                            st.write("🎯 **Making Good Progress** - Applying concepts effectively")
+                        elif progress_ratio < 1.0:
+                            st.write("✨ **Almost Complete** - Refining and polishing")
+                        else:
+                            st.write("✅ **Phase Complete** - Ready for next phase!")
                 
-                # Phase summary
-                phase_analysis = result.get('phase_analysis', {})
-                current_phase = phase_analysis.get('current_phase', 'unknown')
-                phase_completion = phase_analysis.get('phase_completion', 0)
-                
-                phase_descriptions = {
-                    'ideation': 'You are in the early stages of your design process, focusing on concept development and problem framing.',
-                    'visualization': 'You are developing spatial relationships and exploring form, working on the visual aspects of your design.',
-                    'materialization': 'You are working on technical details, construction methods, and material specifications.',
-                    'completion': 'You are in the final stages, refining details and preparing for presentation.'
-                }
-                
-                description = phase_descriptions.get(current_phase, 'Your design process is being analyzed.')
-                st.write(f"**Current Status**: {description}")
-                
-                # Progress interpretation
-                if phase_completion < 25:
-                    st.write("**Progress**: Early stage - you're just getting started with this phase.")
-                elif phase_completion < 50:
-                    st.write("**Progress**: Developing - you're making good progress but have more work ahead.")
-                elif phase_completion < 75:
-                    st.write("**Progress**: Advanced - you're well into this phase with significant progress made.")
-                else:
-                    st.write("**Progress**: Nearly complete - you're close to finishing this phase.")
-                
-                # Next steps
-                if current_phase != 'completion' and phase_completion > 70:
-                    next_phases = {
-                        'ideation': 'visualization',
-                        'visualization': 'materialization', 
-                        'materialization': 'completion'
-                    }
-                    next_phase = next_phases.get(current_phase, 'completion')
-                    st.write(f"**Next Step**: You're ready to move to the **{next_phase.title()}** phase!")
-                elif current_phase == 'completion' and phase_completion > 90:
-                    st.write("**Next Step**: Excellent work! Your design process is nearly complete.")
-                else:
-                    st.write("**Next Step**: Continue developing your current phase to build a stronger foundation.")
-                
-                # Suggested questions based on current phase
-                st.write("---")
-                st.write("**💡 Suggested Questions to Progress:**")
-                
-                phase_questions = {
-                    'ideation': [
-                        "What is the main purpose of this building?",
-                        "Who are the primary users and what are their needs?",
-                        "What are the key functional requirements?",
-                        "What is the site context and constraints?",
-                        "What is your initial concept or vision?"
-                    ],
-                    'visualization': [
-                        "How should the spaces be organized and connected?",
-                        "What is the circulation flow between different areas?",
-                        "How can natural light be maximized?",
-                        "What are the key spatial relationships?",
-                        "How does the form respond to the site?"
-                    ],
-                    'materialization': [
-                        "What construction methods would be most appropriate?",
-                        "What materials would work best for this project?",
-                        "How can sustainability be integrated?",
-                        "What are the technical requirements?",
-                        "How can the design be optimized for construction?"
-                    ],
-                    'completion': [
-                        "What final details need to be resolved?",
-                        "How can the presentation be improved?",
-                        "What are the key design highlights?",
-                        "How does the final design meet all requirements?",
-                        "What are the next steps for implementation?"
-                    ]
-                }
-                
-                questions = phase_questions.get(current_phase, [
-                    "What aspect of your design would you like to explore?",
-                    "What challenges are you facing?",
-                    "What would you like to improve?"
-                ])
-                
-                for i, question in enumerate(questions[:3], 1):
-                    st.write(f"{i}. {question}")
-                
-                st.write("*Ask any of these questions or your own to advance your design process!*")
+                # Removed static technical details, analysis summary, and suggested questions sections
             
-            # Analysis summary metrics
+            # Analysis summary metrics with smaller font
+            st.markdown("""
+            <style>
+            .metric-container .stMetric {
+                font-size: 12px !important;
+            }
+            .metric-container .stMetric label {
+                font-size: 11px !important;
+            }
+            .metric-container .stMetric div[data-testid="metric-container"] {
+                font-size: 12px !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
             col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
             
             with col_metric1:
-                # Display current design phase instead of confidence
+                # Display current design phase with progress
                 phase_analysis = result.get('phase_analysis', {})
-                current_phase = phase_analysis.get('current_phase', 'unknown')
-                phase_completion = phase_analysis.get('phase_completion', 0)
+                current_phase = phase_analysis.get('phase', 'unknown')
+                phase_confidence = phase_analysis.get('confidence', 0)
+                phase_completion = phase_analysis.get('progression_score', 0) * 100
                 
                 # Format phase display
                 phase_display = {
@@ -1393,28 +1488,133 @@ def main():
                 }
                 
                 phase_name = phase_display.get(current_phase, f"❓ {current_phase.title()}")
-                st.metric("Design Phase", f"{phase_name} ({phase_completion}%)")
+                # Custom metric display with smaller text
+                st.markdown(f"""
+                    <div style='text-align: center;'>
+                        <h5 style='margin-bottom: 0.2rem;'>Current Phase</h5>
+                        <p style='font-size: 1rem; margin: 0;'>{phase_name}</p>
+                        <p style='font-size: 0.8rem; color: gray;'>{phase_completion:.0f}% complete</p>
+                    </div>
+                """, unsafe_allow_html=True)
             
             with col_metric2:
-                flags = len(result.get('cognitive_flags', []))
-                st.metric("Learning Areas", flags)
+                # Learning balance indicator
+                synthesis = result.get('synthesis', {})
+                challenges = len(synthesis.get('cognitive_challenges', []))
+                opportunities = len(synthesis.get('learning_opportunities', []))
+                
+                # Calculate learning balance
+                if challenges + opportunities > 0:
+                    balance_ratio = opportunities / (challenges + opportunities)
+                    if balance_ratio > 0.6:
+                        balance_status = "🌟 Strong"
+                    elif balance_ratio > 0.4:
+                        balance_status = "📈 Good"
+                    else:
+                        balance_status = "⚠️ Needs Focus"
+                else:
+                    balance_status = "🔄 Starting"
+                
+                # Custom metric display with smaller text
+                st.markdown(f"""
+                    <div style='text-align: center;'>
+                        <h5 style='margin-bottom: 0.2rem;'>Learning Balance</h5>
+                        <p style='font-size: 1rem; margin: 0;'>{balance_status}</p>
+                        <p style='font-size: 0.8rem; color: gray;'>{challenges} challenges, {opportunities} opportunities</p>
+                    </div>
+                """, unsafe_allow_html=True)
             
             with col_metric3:
-                building_type = result.get('text_analysis', {}).get('building_type', 'unknown')
-                # Ensure building type is properly capitalized and formatted
-                if building_type and building_type != 'unknown':
-                    formatted_type = building_type.replace('_', ' ').title()
-                    st.metric("Project Type", formatted_type)
+                # Milestone progress - show meaningful information
+                completed_milestones = phase_analysis.get('completed_milestones', 0)
+                total_milestones = phase_analysis.get('total_milestones', 0)
+                
+                if total_milestones > 0:
+                    if completed_milestones > 0:
+                        milestone_progress = (completed_milestones / total_milestones) * 100
+                        # Custom metric display with smaller text
+                        st.markdown(f"""
+                            <div style='text-align: center;'>
+                                <h5 style='margin-bottom: 0.2rem;'>Milestone Progress</h5>
+                                <p style='font-size: 1rem; margin: 0;'>{completed_milestones}/{total_milestones}</p>
+                                <p style='font-size: 0.8rem; color: gray;'>{milestone_progress:.0f}%</p>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        # Show next milestone when none completed
+                        next_milestone = phase_analysis.get('next_milestone')
+                        if next_milestone:
+                            milestone_names = {
+                                'site_analysis': 'Site Analysis',
+                                'program_requirements': 'Program Requirements',
+                                'concept_development': 'Concept Development',
+                                'spatial_organization': 'Spatial Organization',
+                                'circulation_design': 'Circulation Design',
+                                'form_development': 'Form Development',
+                                'lighting_strategy': 'Lighting Strategy',
+                                'construction_systems': 'Construction Systems',
+                                'material_selection': 'Material Selection',
+                                'technical_details': 'Technical Details',
+                                'presentation_prep': 'Presentation Preparation',
+                                'documentation': 'Documentation'
+                            }
+                            next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
+                            st.markdown(f"""
+                                <div style='text-align: center;'>
+                                    <h5 style='margin-bottom: 0.2rem;'>Next Milestone</h5>
+                                    <p style='font-size: 1rem; margin: 0;'>{next_milestone_name}</p>
+                                    <p style='font-size: 0.8rem; color: gray;'>0/{total_milestones} completed</p>
+                                </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"""
+                                <div style='text-align: center;'>
+                                    <h5 style='margin-bottom: 0.2rem;'>Milestone Progress</h5>
+                                    <p style='font-size: 1rem; margin: 0;'>0/{total_milestones}</p>
+                                    <p style='font-size: 0.8rem; color: gray;'>Getting started</p>
+                                </div>
+                            """, unsafe_allow_html=True)
                 else:
-                    st.metric("Project Type", "Unknown")
+                    # Show phase-based progress instead
+                    phase_completion = phase_analysis.get('progression_score', 0) * 100
+                    st.markdown(f"""
+                        <div style='text-align: center;'>
+                            <h5 style='margin-bottom: 0.2rem;'>Phase Progress</h5>
+                            <p style='font-size: 1rem; margin: 0;'>{phase_completion:.0f}%</p>
+                            <p style='font-size: 0.8rem; color: gray;'>Based on conversation</p>
+                        </div>
+                    """, unsafe_allow_html=True)
             
             with col_metric4:
-                if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:
-                    spatial_elements = gpt_sam_results.get('gpt_analysis', {}).get('spatial_elements', [])
-                    st.metric("Spatial Elements", len(spatial_elements))
+                # Project complexity indicator
+                building_type = result.get('text_analysis', {}).get('building_type', 'unknown')
+                if building_type and building_type != 'unknown':
+                    formatted_type = building_type.replace('_', ' ').title()
+                    
+                    # Add project complexity indicator
+                    requirements = result.get('text_analysis', {}).get('program_requirements', [])
+                    if len(requirements) > 8:
+                        complexity = "🔴 Complex"
+                    elif len(requirements) > 4:
+                        complexity = "🟡 Moderate"
+                    else:
+                        complexity = "🟢 Simple"
+                    
+                    st.markdown(f"""
+                        <div style='text-align: center;'>
+                            <h5 style='margin-bottom: 0.2rem;'>Project Type</h5>
+                            <p style='font-size: 1rem; margin: 0;'>{formatted_type}</p>
+                            <p style='font-size: 0.8rem; color: gray;'>{complexity}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
                 else:
-                    mode_text = "Text Only" if input_mode == "Text Only" else "Not available"
-                    st.metric("Vision Analysis", mode_text)
+                    st.markdown(f"""
+                        <div style='text-align: center;'>
+                            <h5 style='margin-bottom: 0.2rem;'>Project Type</h5>
+                            <p style='font-size: 1rem; margin: 0;'>Unknown</p>
+                            <p style='font-size: 0.8rem; color: gray;'>Not specified</p>
+                        </div>
+                    """, unsafe_allow_html=True)
             
             # Design brief and image
             col_brief, col_image = st.columns([2, 1])
@@ -1439,8 +1639,8 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
                 
-                current_phase = phase_analysis.get('current_phase', 'unknown')
-                phase_completion = phase_analysis.get('phase_completion', 0)
+                current_phase = phase_analysis.get('phase', 'unknown')  # Fixed: use 'phase' instead of 'current_phase'
+                phase_completion = phase_analysis.get('progression_score', 0) * 100  # Convert to percentage
                 next_phase = phase_analysis.get('next_phase')
                 progression_ready = phase_analysis.get('progression_ready', False)
                 
@@ -1463,9 +1663,58 @@ def main():
                 col_phase1, col_phase2 = st.columns([1, 1])
                 
                 with col_phase1:
-                    # Progress bar
-                    st.progress(phase_completion / 100)
-                    st.write(f"**{phase_completion}% Complete**")
+                    # Progress bar with meaningful progress
+                    meaningful_progress = phase_completion / 100
+                    st.progress(meaningful_progress)
+                    
+                    # Display progress with context
+                    if meaningful_progress < 0.25:
+                        progress_status = "🔄 Getting Started"
+                    elif meaningful_progress < 0.5:
+                        progress_status = "📝 In Progress"
+                    elif meaningful_progress < 0.75:
+                        progress_status = "🎯 Making Good Progress"
+                    elif meaningful_progress < 1.0:
+                        progress_status = "✨ Almost Complete"
+                    else:
+                        progress_status = "✅ Phase Complete"
+                    
+                    st.write(f"**{progress_status}** ({phase_completion:.0f}% Complete)")
+                    
+                    # Show milestone information if available
+                    milestone_completion = phase_analysis.get('milestone_completion', 0)
+                    completed_milestones = phase_analysis.get('completed_milestones', 0)
+                    total_milestones = phase_analysis.get('total_milestones', 0)
+                    
+                    if total_milestones > 0:
+                        st.write(f"📋 **Milestones:** {completed_milestones}/{total_milestones} completed")
+                        
+                        # Show next milestone if available
+                        next_milestone = phase_analysis.get('next_milestone')
+                        if next_milestone:
+                            milestone_names = {
+                                'site_analysis': 'Site Analysis',
+                                'program_requirements': 'Program Requirements',
+                                'concept_development': 'Concept Development',
+                                'spatial_organization': 'Spatial Organization',
+                                'circulation_design': 'Circulation Design',
+                                'form_development': 'Form Development',
+                                'lighting_strategy': 'Lighting Strategy',
+                                'construction_systems': 'Construction Systems',
+                                'material_selection': 'Material Selection',
+                                'technical_details': 'Technical Details',
+                                'presentation_prep': 'Presentation Preparation',
+                                'documentation': 'Documentation'
+                            }
+                            next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
+                            st.write(f"🎯 **Next Focus:** {next_milestone_name}")
+                    
+                    # Show phase recommendations if available
+                    phase_recommendations = phase_analysis.get('phase_recommendations', [])
+                    if phase_recommendations:
+                        st.write("💡 **Recommendations:**")
+                        for rec in phase_recommendations[:3]:  # Show top 3 recommendations
+                            st.write(f"• {rec}")
                     
                     # Phase description
                     description = phase_descriptions.get(current_phase, 'Phase description not available')
@@ -1585,44 +1834,7 @@ def main():
                     cognitive_flags = metadata.get('cognitive_flags', [])
                     response_type = metadata.get('response_type', '')
                     
-                    with st.expander("🧠 Current Cognitive Analysis", expanded=False):
-                        if cognitive_flags:
-                            st.warning("🚩 Areas for Cognitive Development Detected:")
-                            
-                            flag_explanations = {
-                                "needs_accessibility_guidance": "♿ **Accessibility Awareness**: Consider universal design principles",
-                                "needs_spatial_thinking_support": "🏗️ **Spatial Thinking**: Think about how spaces connect and flow",
-                                "needs_brief_clarification": "📝 **Brief Development**: More specific requirements needed",
-                                "needs_basic_guidance": "📚 **Foundational**: Building fundamental understanding",
-                                "needs_public_space_consideration": "🏛️ **Public Space**: Consider community interaction patterns",
-                                "needs_program_clarification": "📋 **Program**: Clarify functional requirements",
-                                "ready_for_advanced_challenge": "🎯 **Advanced Ready**: Can handle complex challenges",
-                                "showing_growth": "📈 **Growth Detected**: Demonstrating learning progression",
-                                "stuck_on_topic": "🔄 **Pattern**: Returning to same topic - trying new approach"
-                            }
-                            
-                            for flag in cognitive_flags:
-                                explanation = flag_explanations.get(flag, f"• **{flag.replace('_', ' ').title()}**")
-                                st.markdown(explanation)
-                        else:
-                            st.success("Strong cognitive awareness demonstrated!")
-                        
-                        # Show response type and educational intent
-                        if response_type:
-                            st.info(f"**Response Type**: {response_type.replace('_', ' ').title()}")
-                        
-                        # Show learning opportunities based on response type
-                        if response_type in ['challenging_question', 'exploratory_question', 'clarifying_guidance']:
-                            st.write("**🎯 Current Learning Focus:**")
-                            if response_type == 'challenging_question':
-                                st.write("• Deepening critical thinking")
-                                st.write("• Challenging assumptions")
-                            elif response_type == 'exploratory_question':
-                                st.write("• Exploring new possibilities")
-                                st.write("• Creative thinking development")
-                            elif response_type == 'clarifying_guidance':
-                                st.write("• Building foundational understanding")
-                                st.write("• Clarifying concepts")
+
             
             # Dynamic Skill Assessment (based on latest interaction)
             if st.session_state.chat_messages:
@@ -1669,37 +1881,7 @@ def main():
                             if agents_used:
                                 st.write(f"**Agents Used:** {', '.join(agents_used)}")
             
-            # Download results
-            st.markdown("---")
-            st.markdown("""
-            <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;">
-                📥 Download Results
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Create comprehensive JSON for download
-            download_data = {
-                "analysis_timestamp": datetime.now().isoformat(),
-                "pipeline_version": "mega_architectural_mentor_v1.0",
-                "design_brief": st.session_state.arch_state.current_design_brief if st.session_state.arch_state else "",
-                "student_profile": {
-                    "skill_level": st.session_state.arch_state.student_profile.skill_level if st.session_state.arch_state else "unknown"
-                },
-                "gpt_sam_results": gpt_sam_results,
-                "cognitive_analysis": result,
-                "interaction_log": st.session_state.interaction_logger.get_session_summary() if st.session_state.interaction_logger else {}
-            }
-            
-            json_str = json.dumps(download_data, indent=2, default=str)
-            
-            st.download_button(
-                label="📥 Download Complete Analysis (JSON)",
-                data=json_str,
-                file_name=f"mega_architectural_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                mime="application/json",
-                help="Download complete analysis results including vision analysis and cognitive assessment",
-                use_container_width=False
-            )
+
     
     # Footer
     st.markdown("""
