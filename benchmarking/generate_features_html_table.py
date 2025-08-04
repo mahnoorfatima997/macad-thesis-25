@@ -11,6 +11,43 @@ def create_features_dataframe():
     
     features_data = []
     
+    # Define reference links
+    reference_links = {
+        'Tukey (1977) Exploratory Data Analysis': 'https://archive.org/details/exploratorydataa0000tuke_7616',
+        'Renkl (2002) Worked Examples & Cognitive Load': 'https://www.cambridge.org/core/books/abs/cognitive-load-theory/learning-from-workedout-examples-and-problem-solving/DBA85CE81E9A7B1B090547D12E2F2A04',
+        'Marton & Säljö (1976) Deep vs Surface Learning': 'https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/j.2044-8279.1976.tb02980.x',
+        'Bloom (1984) 2 Sigma Problem': 'https://journals.sagepub.com/doi/10.3102/0013189X013006004',
+        'Newell & Rosenbloom (1981) Power Law of Practice': 'https://www.researchgate.net/profile/Paul-Rosenbloom/publication/243783833_Mechanisms_of_skill_acquisition_and_the_law_of_practice/links/5461086e0cf2c1a63bff7b62/Mechanisms-of-skill-acquisition-and-the-law-of-practice.pdf',
+        'Dreyfus & Dreyfus (1980) Five-Stage Model': 'https://www.bumc.bu.edu/facdev-medicine/files/2012/03/Dreyfus-skill-level.pdf',
+        'Pellegrino et al. (2001) Knowing What Students Know': 'https://nap.nationalacademies.org/catalog/10019/knowing-what-students-know-the-science-and-design-of-educational',
+        'Biggs (1996) Constructive Alignment': 'https://www.researchgate.net/publication/220017462_Enhancing_Teaching_Through_Constructive_Alignment',
+        'Cohen et al. (1982) Educational Outcomes Meta-Analysis': 'https://f.hubspotusercontent30.net/hubfs/5191137/attachments/publications/CEMWeb024%20Educational%20Outcomes%20Of%20Tutorings%20Meta%20Analysis.pdf',
+        'Anderson (1982) Acquisition of Cognitive Skill': 'http://act-r.psy.cmu.edu/wordpress/wp-content/uploads/2012/12/63ACS_JRA_PR.1982.pdf',
+        'Wooldridge & Jennings (1995) Intelligent Agents': 'https://www.cs.cmu.edu/~motionplanning/papers/sbp_papers/integrated1/woodridge_intelligent_agents.pdf',
+        'Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems': 'https://arxiv.org/html/2507.18882v1',
+        'Romero & Ventura (2020) Educational Data Mining': 'https://bookdown.org/chen/la-manual/files/Romero%20and%20Ventura%20-%202020.pdf',
+        'Black & Wiliam (1998) Assessment in Education': 'https://www.gla.ac.uk/t4/learningandteaching/files/PGCTHE/BlackandWiliam1998.pdf',
+        'Breiman (2001) Random Forests': 'https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf',
+        'Ryan & Deci (2000) Self-Determination Theory': 'https://selfdeterminationtheory.org/SDT/documents/2000_RyanDeci_SDT.pdf',
+        'Nass & Moon (2000) Machines and Mindlessness': 'https://www.coli.uni-saarland.de/courses/agentinteraction/contents/papers/Nass00.pdf',
+        'Cottone et al. (2021) Ethical Decision Making Processes': 'https://connect.springerpub.com/binary/sgrworks/34598e5a4cbf1a9c/0ceb67abe3678cce2ed9c8f19e188f04c646d46db5af983d91d6ce025c568e36/9780826135292_0004.pdf',
+        'Spiro et al. (1988) Cognitive Flexibility Theory': 'https://core.ac.uk/download/pdf/4826446.pdf',
+        'Goldschmidt (1990) Linkography Method': 'https://www.researchgate.net/publication/285995351_Linkography_Assessing_design_productivity',
+        'Goldschmidt (1991) The Dialectics of Sketching': 'https://www.researchgate.net/publication/285995351_Linkography_Assessing_design_productivity',
+        'Goldschmidt (2014) Unfolding the Design Process': 'https://direct.mit.edu/books/monograph/2197/LinkographyUnfolding-the-Design-Process',
+        'Goldschmidt (2017) Concurrent Divergent and Convergent Thinking': 'https://users.metu.edu.tr/baykan/arch586/Readings/Cognition/PresentationPapers/Goldschmidt16.pdf',
+        'Chi (2009) Active-Constructive-Interactive': 'https://onlinelibrary.wiley.com/doi/10.1111/j.1756-8765.2008.01005.x',
+        'Entwistle (2000) Promoting Deep Learning': 'https://www.researchgate.net/publication/241049278_Promoting_deep_learning_through_teaching_and_assessment_Conceptual_frameworks_and_educational_contexts',
+        'Biggs (1987) Student Approaches to Learning': 'https://files.eric.ed.gov/fulltext/ED308201.pdf',
+        'Gao et al. (2023) A Survey of GNN for Recommender Systems': 'https://dl.acm.org/doi/full/10.1145/3568022',
+        'Hamilton et al. (2017) Learning on Large Graphs': 'https://cs.stanford.edu/people/jure/pubs/graphsage-nips17.pdf',
+        'Xu & Wunsch (2005) Survey of Clustering Algorithms': 'https://i2pc.es/coss/Docencia/SignalProcessingReviews/Xu2005.pdf',
+        # Add mapping for "Goldschmidt's linkography (1990, 2014)" to the 2014 book
+        "Goldschmidt's linkography (1990, 2014)": 'https://direct.mit.edu/books/monograph/2197/LinkographyUnfolding-the-Design-Process',
+        # Add mapping for shortened version that might appear
+        'Hamilton et al. (2017)': 'https://cs.stanford.edu/people/jure/pubs/graphsage-nips17.pdf'
+    }
+    
     # Define tooltips for technical terms
     tooltips = {
         'calculation': {
@@ -473,12 +510,12 @@ def create_features_dataframe():
         }
     ])
     
-    return pd.DataFrame(features_data), tooltips
+    return pd.DataFrame(features_data), tooltips, reference_links
 
 def generate_html_table():
     """Generate an interactive HTML table with filtering and sorting"""
     
-    df, tooltips = create_features_dataframe()
+    df, tooltips, reference_links = create_features_dataframe()
     
     html_template = """
     <!DOCTYPE html>
@@ -680,6 +717,13 @@ def generate_html_table():
         theory_tooltip = tooltips['theory'].get(row['Theory'], f"Theoretical foundation: {row['Theory']}")
         type_tooltip = tooltips['type'].get(row['Type'], f"Feature type: {row['Type']}")
         
+        # Create theory cell with hyperlink if available
+        theory_text = row['Theory']
+        if theory_text in reference_links:
+            theory_cell = f'<a href="{reference_links[theory_text]}" target="_blank" style="color: inherit; text-decoration: underline;"><em>{theory_text}</em></a>'
+        else:
+            theory_cell = f'<em>{theory_text}</em>'
+        
         html_template += f"""
                 <tr>
                     <td class="{section_class}">{row['Section']}</td>
@@ -687,7 +731,7 @@ def generate_html_table():
                     <td><strong>{row['Feature']}</strong></td>
                     <td class="tooltip-cell" data-tooltip="{calc_tooltip}">{row['Calculation']}</td>
                     <td class="tooltip-cell" data-tooltip="{data_tooltip}"><code>{row['Data Source']}</code></td>
-                    <td class="tooltip-cell" data-tooltip="{theory_tooltip}"><em>{row['Theory']}</em></td>
+                    <td class="tooltip-cell" data-tooltip="{theory_tooltip}">{theory_cell}</td>
                     <td><code>{row['Implementation']}</code></td>
                     <td class="{type_class} tooltip-cell" data-tooltip="{type_tooltip}">{row['Type']}</td>
                 </tr>
