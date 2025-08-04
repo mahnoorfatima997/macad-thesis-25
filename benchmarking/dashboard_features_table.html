@@ -58,6 +58,18 @@
             tr:hover {
                 background-color: #e0ceb5;
             }
+            /* Style for reference links to look like normal text */
+            .reference-link {
+                color: inherit;
+                text-decoration: none;
+                font-style: italic;
+                cursor: pointer;
+                border-bottom: 1px dotted #cda29a;
+            }
+            .reference-link:hover {
+                color: #784c80;
+                border-bottom: 1px solid #784c80;
+            }
             .section-overview { background-color: #dcc188; }
             .section-cognitive { background-color: #cda29a; }
             .section-learning { background-color: #b87189; }
@@ -163,7 +175,7 @@
                     <th onclick="sortTable(2)">Feature ↕</th>
                     <th onclick="sortTable(3)">Calculation ↕</th>
                     <th onclick="sortTable(4)">Data Source ↕</th>
-                    <th onclick="sortTable(5)">Theory ↕</th>
+                    <th onclick="sortTable(5)">Reference ↕</th>
                     <th onclick="sortTable(6)">Implementation ↕</th>
                     <th onclick="sortTable(7)">Type ↕</th>
                 </tr>
@@ -174,9 +186,9 @@
                     <td class="section-overview">Overview</td>
                     <td>Key Metrics Panel</td>
                     <td><strong>Total Sessions</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Simply counts how many user sessions have been analyzed">Count of evaluation reports</td>
+                    <td class="tooltip-cell" data-tooltip="Python: Count all JSON files in evaluation_reports/ directory">len(evaluation_reports)</td>
                     <td class="tooltip-cell" data-tooltip="Processed analysis files containing session summaries"><code>evaluation_reports/*.json</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Tukey (1977) Exploratory Data Analysis"><em>Tukey (1977) Exploratory Data Analysis</em></td>
+                    <td class="tooltip-cell" data-tooltip="Statistical methods for exploring data patterns"><a href="https://archive.org/details/exploratorydataa0000tuke_7616" target="_blank" class="reference-link" title="Click to view source">Tukey (1977) Exploratory Data Analysis</a></td>
                     <td><code>benchmark_dashboard.py:335</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -185,9 +197,9 @@
                     <td class="section-overview">Overview</td>
                     <td>Key Metrics Panel</td>
                     <td><strong>Avg Cognitive Offloading Prevention</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Calculates the average rate at which the system prevents users from taking cognitive shortcuts">Mean of all session prevention rates</td>
+                    <td class="tooltip-cell" data-tooltip="NumPy: Average of all Cognitive Offloading Prevention rates across sessions">np.mean([s.cop_rate for s in sessions])</td>
                     <td class="tooltip-cell" data-tooltip="Overall rate of preventing cognitive shortcuts"><code>session_metrics.cognitive_offloading_prevention.overall_rate</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Renkl (2002) Worked Examples & Cognitive Load"><em>Renkl (2002) Worked Examples & Cognitive Load</em></td>
+                    <td class="tooltip-cell" data-tooltip="Research on preventing cognitive shortcuts through worked examples"><a href="https://www.cambridge.org/core/books/abs/cognitive-load-theory/learning-from-workedout-examples-and-problem-solving/DBA85CE81E9A7B1B090547D12E2F2A04" target="_blank" class="reference-link" title="Click to view source">Renkl (2002) Worked Examples & Cognitive Load</a></td>
                     <td><code>benchmark_dashboard.py:428-429</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -196,9 +208,9 @@
                     <td class="section-overview">Overview</td>
                     <td>Key Metrics Panel</td>
                     <td><strong>Avg Deep Thinking Engagement</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Average measure of how deeply users engage with complex thinking tasks">Mean of all session engagement rates</td>
+                    <td class="tooltip-cell" data-tooltip="NumPy: Average of all Deep Thinking Engagement rates across sessions">np.mean([s.dte_rate for s in sessions])</td>
                     <td class="tooltip-cell" data-tooltip="Overall rate of engaging in complex thinking"><code>session_metrics.deep_thinking_engagement.overall_rate</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Marton & Säljö (1976) Deep vs Surface Learning"><em>Marton & Säljö (1976) Deep vs Surface Learning</em></td>
+                    <td class="tooltip-cell" data-tooltip="Foundational study distinguishing deep analytical learning from surface memorization"><a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/j.2044-8279.1976.tb02980.x" target="_blank" class="reference-link" title="Click to view source">Marton & Säljö (1976) Deep vs Surface Learning</a></td>
                     <td><code>benchmark_dashboard.py:430-431</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -207,9 +219,9 @@
                     <td class="section-overview">Overview</td>
                     <td>Key Metrics Panel</td>
                     <td><strong>Overall Improvement</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Combines two key metrics with weights to show overall system effectiveness">Weighted avg of prevention and deep thinking improvements</td>
+                    <td class="tooltip-cell" data-tooltip="Weighted formula: 60% weight on COP improvement + 40% weight on DTE improvement">0.6 * cop_improvement + 0.4 * dte_improvement</td>
                     <td class="tooltip-cell" data-tooltip="Comparison against research-based traditional tutoring rates"><code>Calculated vs. 30% and 35% baselines</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Bloom (1984) 2 Sigma Problem"><em>Bloom (1984) 2 Sigma Problem</em></td>
+                    <td class="tooltip-cell" data-tooltip="One-on-one tutoring produces 2 standard deviation improvement"><a href="https://journals.sagepub.com/doi/10.3102/0013189X013006004" target="_blank" class="reference-link" title="Click to view source">Bloom (1984) 2 Sigma Problem</a></td>
                     <td><code>benchmark_dashboard.py:443-448</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -218,9 +230,9 @@
                     <td class="section-overview">Overview</td>
                     <td>Learning Metrics Chart</td>
                     <td><strong>Time Series Plot</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Shows how metrics change over time in a line graph">Session metrics plotted chronologically</td>
+                    <td class="tooltip-cell" data-tooltip="Plotly: Line chart with time on X-axis, metric values on Y-axis">plotly.line(x=timestamps, y=metrics)</td>
                     <td class="tooltip-cell" data-tooltip="Time and date when each session occurred"><code>session_metrics.timestamp</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Newell & Rosenbloom (1981) Power Law of Practice"><em>Newell & Rosenbloom (1981) Power Law of Practice</em></td>
+                    <td class="tooltip-cell" data-tooltip="Mathematical model of skill acquisition over time"><a href="https://www.researchgate.net/profile/Paul-Rosenbloom/publication/243783833_Mechanisms_of_skill_acquisition_and_the_law_of_practice/links/5461086e0cf2c1a63bff7b62/Mechanisms-of-skill-acquisition-and-the-law-of-practice.pdf" target="_blank" class="reference-link" title="Click to view source">Newell & Rosenbloom (1981) Power Law of Practice</a></td>
                     <td><code>benchmark_dashboard.py:467-505</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -229,9 +241,9 @@
                     <td class="section-overview">Overview</td>
                     <td>Proficiency Distribution</td>
                     <td><strong>Proficiency Pie Chart</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Machine learning algorithm that groups users into proficiency levels based on behavior patterns">K-means clustering on graph features</td>
+                    <td class="tooltip-cell" data-tooltip="Scikit-learn: K-means clustering algorithm with 4 clusters (beginner/intermediate/advanced/expert)">KMeans(n_clusters=4).fit(graph_features)</td>
                     <td class="tooltip-cell" data-tooltip="Assigned skill level (beginner/intermediate/advanced/expert)"><code>proficiency_classification.level</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Dreyfus & Dreyfus (1980) Five-Stage Model"><em>Dreyfus & Dreyfus (1980) Five-Stage Model</em></td>
+                    <td class="tooltip-cell" data-tooltip="Model of progression from novice to expert in skill acquisition"><a href="https://www.bumc.bu.edu/facdev-medicine/files/2012/03/Dreyfus-skill-level.pdf" target="_blank" class="reference-link" title="Click to view source">Dreyfus & Dreyfus (1980) Five-Stage Model</a></td>
                     <td><code>graph_ml_benchmarking.py:359-395</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -240,9 +252,9 @@
                     <td class="section-cognitive">Cognitive Patterns</td>
                     <td>Session Comparison</td>
                     <td><strong>Session Comparison Table</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Raw performance data for each individual user session">Direct metrics per session</td>
+                    <td class="tooltip-cell" data-tooltip="Pandas: Convert session metrics to tabular format for display">pd.DataFrame(session_metrics).to_dict()</td>
                     <td class="tooltip-cell" data-tooltip="Processed analysis files containing session summaries"><code>evaluation_reports/*.json</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Pellegrino et al. (2001) Knowing What Students Know"><em>Pellegrino et al. (2001) Knowing What Students Know</em></td>
+                    <td class="tooltip-cell" data-tooltip="National Research Council report on educational assessment"><a href="https://nap.nationalacademies.org/catalog/10019/knowing-what-students-know-the-science-and-design-of-educational" target="_blank" class="reference-link" title="Click to view source">Pellegrino et al. (2001) Knowing What Students Know</a></td>
                     <td><code>benchmark_dashboard.py:776-780</code></td>
                     <td class="type-table tooltip-cell" data-tooltip="Structured data in rows and columns">Table</td>
                 </tr>
@@ -251,9 +263,9 @@
                     <td class="section-cognitive">Cognitive Patterns</td>
                     <td>Average Patterns</td>
                     <td><strong>Cognitive Patterns Radar</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Combines five different thinking measures into a spider/radar chart">5 cognitive metrics averaged</td>
+                    <td class="tooltip-cell" data-tooltip="Plotly: Spider/radar chart with 5 axes for cognitive metrics">radar_chart([cop, dte, se, ki, ec])</td>
                     <td class="tooltip-cell" data-tooltip="Combined data from all user sessions"><code>Session metrics aggregated</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Biggs (1996) Constructive Alignment"><em>Biggs (1996) Constructive Alignment</em></td>
+                    <td class="tooltip-cell" data-tooltip="Framework for aligning learning objectives, activities, and assessment"><a href="https://www.researchgate.net/publication/220017462_Enhancing_Teaching_Through_Constructive_Alignment" target="_blank" class="reference-link" title="Click to view source">Biggs (1996) Constructive Alignment</a></td>
                     <td><code>benchmark_dashboard.py:790-835</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -262,9 +274,9 @@
                     <td class="section-cognitive">Cognitive Patterns</td>
                     <td>Average Patterns</td>
                     <td><strong>Baseline Comparison</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Comparison values from educational research studies">Literature values overlay</td>
+                    <td class="tooltip-cell" data-tooltip="Fixed baseline values from educational research literature">baseline_values = [0.5, 0.35, 0.4, 0.45, 0.5]</td>
                     <td class="tooltip-cell" data-tooltip="Fixed comparison values from educational research"><code>[0.5, 0.35, 0.4, 0.45, 0.5]</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Cohen et al. (1982) Educational Outcomes Meta-Analysis"><em>Cohen et al. (1982) Educational Outcomes Meta-Analysis</em></td>
+                    <td class="tooltip-cell" data-tooltip="Meta-analysis showing effect sizes of educational interventions"><a href="https://f.hubspotusercontent30.net/hubfs/5191137/attachments/publications/CEMWeb024%20Educational%20Outcomes%20Of%20Tutorings%20Meta%20Analysis.pdf" target="_blank" class="reference-link" title="Click to view source">Cohen et al. (1982) Educational Outcomes Meta-Analysis</a></td>
                     <td><code>benchmark_dashboard.py:918</code></td>
                     <td class="type-reference tooltip-cell" data-tooltip="Baseline or comparison values">Reference</td>
                 </tr>
@@ -273,9 +285,9 @@
                     <td class="section-learning">Learning Progression</td>
                     <td>Skill Tracking</td>
                     <td><strong>Skill Progression Over Time</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Tracks movement through skill levels (beginner→intermediate→advanced)">Ordinal progression mapping</td>
+                    <td class="tooltip-cell" data-tooltip="Ordinal mapping of numeric levels to skill categories">skill_map = {1: "Beginner", 2: "Intermediate", 3: "Advanced", 4: "Expert"}</td>
                     <td class="tooltip-cell" data-tooltip="Starting and ending skill levels for each user"><code>skill_progression.initial/final_level</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Anderson (1982) Acquisition of Cognitive Skill"><em>Anderson (1982) Acquisition of Cognitive Skill</em></td>
+                    <td class="tooltip-cell" data-tooltip="Cognitive architecture theory for skill learning and acquisition"><a href="http://act-r.psy.cmu.edu/wordpress/wp-content/uploads/2012/12/63ACS_JRA_PR.1982.pdf" target="_blank" class="reference-link" title="Click to view source">Anderson (1982) Acquisition of Cognitive Skill</a></td>
                     <td><code>evaluation_metrics.py:275-326</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -284,9 +296,9 @@
                     <td class="section-learning">Learning Progression</td>
                     <td>Learning Velocity</td>
                     <td><strong>Learning Velocity Chart</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Rate of change - how fast someone is learning">Delta metrics / time</td>
+                    <td class="tooltip-cell" data-tooltip="Rate of change formula: Change in metric divided by time elapsed">(metric[t] - metric[t-1]) / time_delta</td>
                     <td class="tooltip-cell" data-tooltip="Changes in metrics over time"><code>Temporal metric differences</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Anderson (1982) Acquisition of Cognitive Skill"><em>Anderson (1982) Acquisition of Cognitive Skill</em></td>
+                    <td class="tooltip-cell" data-tooltip="Cognitive architecture theory for skill learning and acquisition"><a href="http://act-r.psy.cmu.edu/wordpress/wp-content/uploads/2012/12/63ACS_JRA_PR.1982.pdf" target="_blank" class="reference-link" title="Click to view source">Anderson (1982) Acquisition of Cognitive Skill</a></td>
                     <td><code>benchmark_dashboard.py:1021-1065</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -295,9 +307,9 @@
                     <td class="section-agent">Agent Performance</td>
                     <td>Usage Distribution</td>
                     <td><strong>Agent Usage Bar Chart</strong></td>
-                    <td class="tooltip-cell" data-tooltip="How often each AI assistant is used">Frequency per agent type</td>
+                    <td class="tooltip-cell" data-tooltip="Python Counter: Frequency count of agent usage">Counter(agents_used).most_common()</td>
                     <td class="tooltip-cell" data-tooltip="List of which AI assistants were activated"><code>agents_used field</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Wooldridge & Jennings (1995) Intelligent Agents"><em>Wooldridge & Jennings (1995) Intelligent Agents</em></td>
+                    <td class="tooltip-cell" data-tooltip="Foundational paper defining intelligent agent systems"><a href="https://www.cs.cmu.edu/~motionplanning/papers/sbp_papers/integrated1/woodridge_intelligent_agents.pdf" target="_blank" class="reference-link" title="Click to view source">Wooldridge & Jennings (1995) Intelligent Agents</a></td>
                     <td><code>benchmark_dashboard.py:1270-1280</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -306,9 +318,9 @@
                     <td class="section-agent">Agent Performance</td>
                     <td>Effectiveness</td>
                     <td><strong>Agent Effectiveness Metrics</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Performance measures for each individual AI assistant">Agent-specific cognitive metrics</td>
+                    <td class="tooltip-cell" data-tooltip="Pandas: Group by agent type and calculate mean COP rate">df.groupby("agent").mean()["cop_rate"]</td>
                     <td class="tooltip-cell" data-tooltip="Data grouped by main AI assistant used"><code>Filtered by primary_agent</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems"><em>Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems</em></td>
+                    <td class="tooltip-cell" data-tooltip="Modern applications of AI agents in educational contexts"><a href="https://arxiv.org/html/2507.18882v1" target="_blank" class="reference-link" title="Click to view source">Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems</a></td>
                     <td><code>benchmark_dashboard.py:1282-1315</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -317,9 +329,9 @@
                     <td class="section-agent">Agent Performance</td>
                     <td>Handoff Flow</td>
                     <td><strong>Agent Handoff Sankey</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Shows how conversations flow between different AI assistants">Sequential agent pairs</td>
+                    <td class="tooltip-cell" data-tooltip="Python: Create pairs of consecutive agent transitions">transitions = zip(agents[:-1], agents[1:])</td>
                     <td class="tooltip-cell" data-tooltip="Order in which different AI assistants were used"><code>agents_used sequences</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Romero & Ventura (2020) Educational Data Mining"><em>Romero & Ventura (2020) Educational Data Mining</em></td>
+                    <td class="tooltip-cell" data-tooltip="Review of data mining techniques in education"><a href="https://bookdown.org/chen/la-manual/files/Romero%20and%20Ventura%20-%202020.pdf" target="_blank" class="reference-link" title="Click to view source">Romero & Ventura (2020) Educational Data Mining</a></td>
                     <td><code>benchmark_dashboard.py:1348-1380</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -328,9 +340,9 @@
                     <td class="section-comparative">Comparative Analysis</td>
                     <td>Improvements</td>
                     <td><strong>Improvement by Dimension</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Percentage improvement formula comparing before and after">(post - pre) / pre * 100</td>
+                    <td class="tooltip-cell" data-tooltip="Standard percentage change formula: ((new - old) / old) × 100">((post - pre) / pre) * 100</td>
                     <td class="tooltip-cell" data-tooltip="Data field or file: Session start/end metrics"><code>Session start/end metrics</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Black & Wiliam (1998) Assessment in Education"><em>Black & Wiliam (1998) Assessment in Education</em></td>
+                    <td class="tooltip-cell" data-tooltip="Seminal work on assessment for learning"><a href="https://www.gla.ac.uk/t4/learningandteaching/files/PGCTHE/BlackandWiliam1998.pdf" target="_blank" class="reference-link" title="Click to view source">Black & Wiliam (1998) Assessment in Education</a></td>
                     <td><code>evaluation_metrics.py:425-450</code></td>
                     <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
                 </tr>
@@ -339,9 +351,9 @@
                     <td class="section-comparative">Comparative Analysis</td>
                     <td>Feature Impact</td>
                     <td><strong>Feature Impact Analysis</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Statistical analysis showing which features most impact success">Correlation analysis with outcomes</td>
+                    <td class="tooltip-cell" data-tooltip="Scipy: Pearson correlation coefficient between features and outcomes">pearson_correlation(features, outcomes)</td>
                     <td class="tooltip-cell" data-tooltip="Data field or file: Real-time calculation from sessions"><code>Real-time calculation from sessions</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Breiman (2001) Random Forests"><em>Breiman (2001) Random Forests</em></td>
+                    <td class="tooltip-cell" data-tooltip="Machine learning algorithm for classification and regression"><a href="https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf" target="_blank" class="reference-link" title="Click to view source">Breiman (2001) Random Forests</a></td>
                     <td><code>benchmark_dashboard.py:163-212</code></td>
                     <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
                 </tr>
@@ -350,9 +362,9 @@
                     <td class="section-anthropomorphism">Anthropomorphism</td>
                     <td>Cognitive Autonomy</td>
                     <td><strong>CAI Score</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Formula measuring how independently users think">autonomy_ratio - 0.5 * dependency_ratio</td>
+                    <td class="tooltip-cell" data-tooltip="CAI Score formula: Autonomy score minus half of dependency score">autonomy_ratio - 0.5 * dependency_ratio</td>
                     <td class="tooltip-cell" data-tooltip="Classification of user questions (direct/exploratory/reflective)"><code>input_type categorization</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Ryan & Deci (2000) Self-Determination Theory"><em>Ryan & Deci (2000) Self-Determination Theory</em></td>
+                    <td class="tooltip-cell" data-tooltip="Theory of human motivation emphasizing autonomy"><a href="https://selfdeterminationtheory.org/SDT/documents/2000_RyanDeci_SDT.pdf" target="_blank" class="reference-link" title="Click to view source">Ryan & Deci (2000) Self-Determination Theory</a></td>
                     <td><code>anthropomorphism_metrics.py:182-204</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -361,9 +373,9 @@
                     <td class="section-anthropomorphism">Anthropomorphism</td>
                     <td>Dependency</td>
                     <td><strong>ADS Score</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Detects when users treat AI too much like a human">personal_attributions + emotional_language</td>
+                    <td class="tooltip-cell" data-tooltip="ADS formula: Personal attribution ratio plus emotional language score">sum(personal_words) / total_words + emotion_score</td>
                     <td class="tooltip-cell" data-tooltip="Searches for specific words and phrases in conversations"><code>Text pattern matching</code></td>
-                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Nass & Moon (2000) Machines and Mindlessness"><em>Nass & Moon (2000) Machines and Mindlessness</em></td>
+                    <td class="tooltip-cell" data-tooltip="Computers Are Social Actors - anthropomorphism in HCI"><a href="https://www.coli.uni-saarland.de/courses/agentinteraction/contents/papers/Nass00.pdf" target="_blank" class="reference-link" title="Click to view source">Nass & Moon (2000) Machines and Mindlessness</a></td>
                     <td><code>anthropomorphism_metrics.py:218-250</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -372,9 +384,9 @@
                     <td class="section-anthropomorphism">Anthropomorphism</td>
                     <td>Boundaries</td>
                     <td><strong>PBI Score</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Measures professional focus of conversations">1 - conversation_drift - personal_intrusions</td>
+                    <td class="tooltip-cell" data-tooltip="PBI formula: 1 minus sum of off-topic and personal conversation ratios">1 - (off_topic_ratio + personal_ratio)</td>
                     <td class="tooltip-cell" data-tooltip="Data field or file: Topic modeling"><code>Topic modeling</code></td>
-                    <td class="tooltip-cell" data-tooltip="Maintaining appropriate teacher-student boundaries"><em>Cottone et al. (2021) Ethical Decision Making Processes</em></td>
+                    <td class="tooltip-cell" data-tooltip="Framework for ethical decisions in professional contexts"><a href="https://connect.springerpub.com/binary/sgrworks/34598e5a4cbf1a9c/0ceb67abe3678cce2ed9c8f19e188f04c646d46db5af983d91d6ce025c568e36/9780826135292_0004.pdf" target="_blank" class="reference-link" title="Click to view source">Cottone et al. (2021) Ethical Decision Making Processes</a></td>
                     <td><code>anthropomorphism_metrics.py:258-290</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -383,9 +395,9 @@
                     <td class="section-anthropomorphism">Anthropomorphism</td>
                     <td>Engagement</td>
                     <td><strong>NES Score</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Complexity of architectural concepts discussed">concept_diversity + technical_vocabulary</td>
+                    <td class="tooltip-cell" data-tooltip="NES formula: Concept diversity plus technical vocabulary ratio">len(unique_concepts) / total + tech_word_ratio</td>
                     <td class="tooltip-cell" data-tooltip="Data field or file: Concept extraction"><code>Concept extraction</code></td>
-                    <td class="tooltip-cell" data-tooltip="Ability to switch between different concepts and adapt thinking"><em>Spiro et al. (1988) Cognitive Flexibility Theory</em></td>
+                    <td class="tooltip-cell" data-tooltip="Theory of learning in complex domains"><a href="https://core.ac.uk/download/pdf/4826446.pdf" target="_blank" class="reference-link" title="Click to view source">Spiro et al. (1988) Cognitive Flexibility Theory</a></td>
                     <td><code>anthropomorphism_metrics.py:318-345</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -394,9 +406,9 @@
                     <td class="section-linkography">Linkography</td>
                     <td>Design Moves</td>
                     <td><strong>Move Extraction</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Identifies significant design decisions in user interactions">Meaningful action detection</td>
+                    <td class="tooltip-cell" data-tooltip="NLP: Extract meaningful design actions using pattern matching">extract_design_actions(interaction_text)</td>
                     <td class="tooltip-cell" data-tooltip="Deep analysis of what users say and do"><code>Interaction content analysis</code></td>
-                    <td class="tooltip-cell" data-tooltip="Method for analyzing design thinking through linked moves"><em>Goldschmidt's linkography (1990, 2014)</em></td>
+                    <td class="tooltip-cell" data-tooltip="Original linkography method for analyzing design thinking"><a href="https://www.researchgate.net/publication/285995351_Linkography_Assessing_design_productivity" target="_blank" class="reference-link" title="Click to view source">Goldschmidt (1990) Linkography Method</a></td>
                     <td><code>linkography_analyzer.py:45-120</code></td>
                     <td class="type-process tooltip-cell" data-tooltip="A systematic procedure or workflow">Process</td>
                 </tr>
@@ -405,9 +417,9 @@
                     <td class="section-linkography">Linkography</td>
                     <td>Link Generation</td>
                     <td><strong>Fuzzy Linkography</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Links design moves that are conceptually related (65% similarity threshold)">Semantic similarity > 0.65</td>
+                    <td class="tooltip-cell" data-tooltip="Cosine similarity threshold: Only link if similarity exceeds 65%">cosine_similarity(embed1, embed2) > 0.65</td>
                     <td class="tooltip-cell" data-tooltip="Mathematical comparison of meaning between texts"><code>Cosine similarity of embeddings</code></td>
-                    <td class="tooltip-cell" data-tooltip="Design decisions are often partially related, not binary"><em>Fuzzy design reasoning (Kan & Gero, 2008)</em></td>
+                    <td class="tooltip-cell" data-tooltip="Early linkography work on design thinking through sketching"><a href="https://www.researchgate.net/publication/285995351_Linkography_Assessing_design_productivity" target="_blank" class="reference-link" title="Click to view source">Goldschmidt (1991) The Dialectics of Sketching</a></td>
                     <td><code>linkography_engine.py:85-140</code></td>
                     <td class="type-algorithm tooltip-cell" data-tooltip="A computational procedure for analysis">Algorithm</td>
                 </tr>
@@ -416,9 +428,9 @@
                     <td class="section-linkography">Linkography</td>
                     <td>Metrics</td>
                     <td><strong>Link Density</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Ratio showing how interconnected design decisions are">Links / moves</td>
+                    <td class="tooltip-cell" data-tooltip="Simple ratio: Total number of links divided by total design moves">total_links / total_moves</td>
                     <td class="tooltip-cell" data-tooltip="Visual network of connected design decisions"><code>Generated linkograph</code></td>
-                    <td class="tooltip-cell" data-tooltip="How efficiently designers generate and connect ideas"><em>Design productivity measure</em></td>
+                    <td class="tooltip-cell" data-tooltip="Comprehensive book on linkography methodology"><a href="https://direct.mit.edu/books/monograph/2197/LinkographyUnfolding-the-Design-Process" target="_blank" class="reference-link" title="Click to view source">Goldschmidt (2014) Unfolding the Design Process</a></td>
                     <td><code>linkography_engine.py:142-165</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -427,9 +439,9 @@
                     <td class="section-linkography">Linkography</td>
                     <td>Patterns</td>
                     <td><strong>Critical Moves</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Design decisions that influence many other decisions">High connectivity nodes</td>
+                    <td class="tooltip-cell" data-tooltip="Statistical threshold: Moves with link count > (mean + standard deviation)">moves[links > mean + std]</td>
                     <td class="tooltip-cell" data-tooltip="Data field or file: Link count analysis"><code>Link count analysis</code></td>
-                    <td class="tooltip-cell" data-tooltip="Finding the most impactful choices in design process"><em>Key decision identification</em></td>
+                    <td class="tooltip-cell" data-tooltip="Identifying pivotal moments in design process"><a href="https://users.metu.edu.tr/baykan/arch586/Readings/Cognition/PresentationPapers/Goldschmidt16.pdf" target="_blank" class="reference-link" title="Click to view source">Goldschmidt (2017) Concurrent Divergent and Convergent Thinking</a></td>
                     <td><code>linkography_analyzer.py:200-230</code></td>
                     <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
                 </tr>
@@ -438,9 +450,9 @@
                     <td class="section-proficiency">Proficiency Analysis</td>
                     <td>Characteristics</td>
                     <td><strong>Question Quality</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Rates questions from simple recall to complex synthesis">Complexity scoring</td>
+                    <td class="tooltip-cell" data-tooltip="Bloom's Taxonomy classifier: Maps questions to cognitive levels 1-6">bloom_level(question_text)</td>
                     <td class="tooltip-cell" data-tooltip="Measure of how sophisticated user questions are"><code>deep_thinking_engagement.question_complexity</code></td>
-                    <td class="tooltip-cell" data-tooltip="Hierarchy from factual to evaluative questions"><em>Bloom's question levels</em></td>
+                    <td class="tooltip-cell" data-tooltip="Research on deep learning through active construction and interaction"><a href="https://onlinelibrary.wiley.com/doi/10.1111/j.1756-8765.2008.01005.x" target="_blank" class="reference-link" title="Click to view source">Chi (2009) Active-Constructive-Interactive</a></td>
                     <td><code>benchmark_dashboard.py:239</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -449,9 +461,9 @@
                     <td class="section-proficiency">Proficiency Analysis</td>
                     <td>Characteristics</td>
                     <td><strong>Reflection Depth</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Examines depth and quality of user responses">Response analysis</td>
+                    <td class="tooltip-cell" data-tooltip="Composite score: Response length × depth × reflection indicators">len(response) * depth_score * reflection_count</td>
                     <td class="tooltip-cell" data-tooltip="Rate of engaging users in complex analytical thinking"><code>deep_thinking_engagement.overall_rate</code></td>
-                    <td class="tooltip-cell" data-tooltip="Learning through thinking about experiences"><em>Reflective practice theory (Schön, 1983)</em></td>
+                    <td class="tooltip-cell" data-tooltip="Strategies for encouraging deep vs surface learning"><a href="https://www.researchgate.net/publication/241049278_Promoting_deep_learning_through_teaching_and_assessment_Conceptual_frameworks_and_educational_contexts" target="_blank" class="reference-link" title="Click to view source">Entwistle (2000) Promoting Deep Learning</a></td>
                     <td><code>benchmark_dashboard.py:243</code></td>
                     <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
                 </tr>
@@ -460,9 +472,9 @@
                     <td class="section-proficiency">Proficiency Analysis</td>
                     <td>Progression</td>
                     <td><strong>Growth Potential</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Predicts future learning based on past patterns">Improvement trend analysis</td>
+                    <td class="tooltip-cell" data-tooltip="Scikit-learn: Linear regression slope indicates improvement trend">linear_regression(time, metrics).slope</td>
                     <td class="tooltip-cell" data-tooltip="Past learning patterns and improvements"><code>Historical progression data</code></td>
-                    <td class="tooltip-cell" data-tooltip="Belief that abilities can be developed through effort"><em>Growth mindset theory (Dweck, 2006)</em></td>
+                    <td class="tooltip-cell" data-tooltip="Study Process Questionnaire for measuring learning approaches"><a href="https://files.eric.ed.gov/fulltext/ED308201.pdf" target="_blank" class="reference-link" title="Click to view source">Biggs (1987) Student Approaches to Learning</a></td>
                     <td><code>benchmark_dashboard.py:317-348</code></td>
                     <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
                 </tr>
@@ -471,9 +483,9 @@
                     <td class="section-graphml">Graph ML</td>
                     <td>Construction</td>
                     <td><strong>Graph Building</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Builds a network where conversations are points connected by conceptual links">Nodes from interactions, edges from similarity</td>
+                    <td class="tooltip-cell" data-tooltip="NetworkX: Build graph with interactions as nodes">G = nx.Graph(); G.add_nodes(interactions)</td>
                     <td class="tooltip-cell" data-tooltip="Mathematical representations of text meaning"><code>Text embeddings</code></td>
-                    <td class="tooltip-cell" data-tooltip="AI that learns from network-structured data"><em>Graph neural networks</em></td>
+                    <td class="tooltip-cell" data-tooltip="Comprehensive survey of graph neural network architectures"><a href="https://dl.acm.org/doi/full/10.1145/3568022" target="_blank" class="reference-link" title="Click to view source">Gao et al. (2023) A Survey of GNN for Recommender Systems</a></td>
                     <td><code>graph_ml_benchmarking.py:90-120</code></td>
                     <td class="type-process tooltip-cell" data-tooltip="A systematic procedure or workflow">Process</td>
                 </tr>
@@ -482,9 +494,9 @@
                     <td class="section-graphml">Graph ML</td>
                     <td>GNN Analysis</td>
                     <td><strong>GraphSAGE Model</strong></td>
-                    <td class="tooltip-cell" data-tooltip="AI technique that learns from connected data points">Neighborhood aggregation</td>
+                    <td class="tooltip-cell" data-tooltip="PyTorch Geometric: GraphSAGE model with 64-dimensional embeddings">GraphSAGE(hidden_dim=64).forward(G)</td>
                     <td class="tooltip-cell" data-tooltip="The network of connections between interactions"><code>Graph structure</code></td>
-                    <td class="tooltip-cell" data-tooltip="GraphSAGE paper introducing scalable graph neural networks"><em>Hamilton et al. (2017)</em></td>
+                    <td class="tooltip-cell" data-tooltip="GraphSAGE - Graph neural network for inductive learning on graphs"><a href="https://cs.stanford.edu/people/jure/pubs/graphsage-nips17.pdf" target="_blank" class="reference-link" title="Click to view source">Hamilton et al. (2017) Learning on Large Graphs</a></td>
                     <td><code>graph_ml_benchmarking.py:250-320</code></td>
                     <td class="type-model tooltip-cell" data-tooltip="A machine learning or statistical model">Model</td>
                 </tr>
@@ -493,9 +505,9 @@
                     <td class="section-graphml">Graph ML</td>
                     <td>Clustering</td>
                     <td><strong>Proficiency Clustering</strong></td>
-                    <td class="tooltip-cell" data-tooltip="Groups users by finding patterns in their interaction data">K-means on embeddings</td>
+                    <td class="tooltip-cell" data-tooltip="Sentence-BERT embeddings clustered with K-means">embeddings = model.encode(texts); KMeans(4).fit(embeddings)</td>
                     <td class="tooltip-cell" data-tooltip="Mathematical properties of the interaction network"><code>Graph features</code></td>
-                    <td class="tooltip-cell" data-tooltip="AI finding patterns without labeled examples"><em>Unsupervised learning</em></td>
+                    <td class="tooltip-cell" data-tooltip="Survey of clustering algorithms and applications"><a href="https://i2pc.es/coss/Docencia/SignalProcessingReviews/Xu2005.pdf" target="_blank" class="reference-link" title="Click to view source">Xu & Wunsch (2005) Survey of Clustering Algorithms</a></td>
                     <td><code>graph_ml_benchmarking.py:359-395</code></td>
                     <td class="type-algorithm tooltip-cell" data-tooltip="A computational procedure for analysis">Algorithm</td>
                 </tr>
@@ -506,6 +518,63 @@
         <div class="stats">
             <p><strong>Total Features:</strong> <span id="totalCount">0</span> | 
                <strong>Filtered:</strong> <span id="filteredCount">0</span></p>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <details style="background-color: #e0ceb5; border-radius: 5px; padding: 10px; box-shadow: 0 2px 4px rgba(79, 58, 62, 0.1);">
+                <summary style="cursor: pointer; padding: 10px; font-size: 16px; font-weight: bold; color: #4f3a3e;">Core Metric Formulas (Click to expand)</summary>
+                <div style="margin-top: 15px; background-color: white; padding: 15px; border-radius: 3px; font-family: monospace; font-size: 14px;">
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #784c80; display: block; margin-bottom: 8px;">Cognitive Offloading Prevention (COP):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">COP = (prevented_direct_queries / total_queries) × inquiry_depth_weight</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #cd766d; display: block; margin-bottom: 8px;">Deep Thinking Engagement (DTE):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">DTE = Σ(response_complexity × time_spent × reflection_indicators) / total_interactions</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #5c4f73; display: block; margin-bottom: 8px;">Scaffolding Effectiveness (SE):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">SE = Σ(guidance_appropriateness × user_progress) / total_scaffolding_events</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #d99c66; display: block; margin-bottom: 8px;">Knowledge Integration (KI):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">KI = (integrated_sources + concept_connections) / total_knowledge_opportunities</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #b87189; display: block; margin-bottom: 8px;">Engagement Consistency (EC):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">EC = 1 - (std_dev(response_times) / mean(response_times))</code>
+                    </p>
+                </div>
+            </details>
+            
+            <details style="background-color: #e0ceb5; border-radius: 5px; padding: 10px; margin-top: 15px; box-shadow: 0 2px 4px rgba(79, 58, 62, 0.1);">
+                <summary style="cursor: pointer; padding: 10px; font-size: 16px; font-weight: bold; color: #4f3a3e;">Anthropomorphism Metrics (Click to expand)</summary>
+                <div style="margin-top: 15px; background-color: white; padding: 15px; border-radius: 3px; font-family: monospace; font-size: 14px;">
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #784c80; display: block; margin-bottom: 8px;">Cognitive Autonomy Index (CAI):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">CAI = autonomy_ratio - 0.5 × dependency_ratio</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #cd766d; display: block; margin-bottom: 8px;">Anthropomorphic Dependency Score (ADS):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">ADS = (personal_attribution_count / total_words) + emotion_language_score</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #5c4f73; display: block; margin-bottom: 8px;">Professional Boundary Index (PBI):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">PBI = 1 - (off_topic_ratio + personal_conversation_ratio)</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #d99c66; display: block; margin-bottom: 8px;">Neural Engagement Score (NES):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">NES = (unique_concepts_count / total_interactions) + technical_vocabulary_ratio</code>
+                    </p>
+                </div>
+            </details>
         </div>
         
         <script>
