@@ -15,8 +15,8 @@ from collections import Counter, defaultdict
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from linkography_analyzer import LinkographySessionAnalyzer
-from thesis_colors import THESIS_COLORS, METRIC_COLORS
+from benchmarking.linkography_analyzer import LinkographySessionAnalyzer
+from benchmarking.thesis_colors import THESIS_COLORS, METRIC_COLORS
 
 
 def render_enhanced_graph_ml_section(dashboard):
@@ -25,7 +25,22 @@ def render_enhanced_graph_ml_section(dashboard):
     st.markdown('<h2 class="sub-header">Graph ML Analysis</h2>', unsafe_allow_html=True)
     
     # Check if PyVis visualizations exist for Knowledge Graph and Learning Trajectories
-    pyvis_dir = dashboard.results_path / "visualizations" / "pyvis"
+    # Try multiple possible paths for PyVis directory
+    possible_pyvis_paths = [
+        dashboard.results_path / "visualizations" / "pyvis",
+        Path("benchmarking/results/visualizations/pyvis"),
+        Path.cwd() / "benchmarking/results/visualizations/pyvis",
+    ]
+    
+    pyvis_dir = None
+    for path in possible_pyvis_paths:
+        if path.exists():
+            pyvis_dir = path
+            print(f"DEBUG: Found PyVis dir at: {pyvis_dir}")
+            break
+    
+    if pyvis_dir is None:
+        print(f"DEBUG: Could not find PyVis dir. Tried: {possible_pyvis_paths}")
     
     # Initialize linkography analyzer for new tabs
     analyzer = LinkographySessionAnalyzer()
@@ -46,7 +61,7 @@ def render_enhanced_graph_ml_section(dashboard):
     with tabs[0]:
         # Framework visualization first
         st.markdown("#### Framework")
-        if pyvis_dir and pyvis_dir.exists():
+        if pyvis_dir is not None:
             st.markdown("""
             This interactive graph shows the theoretical relationships between architectural concepts, 
             cognitive processes, and AI components that guide the MEGA system.
@@ -69,7 +84,8 @@ def render_enhanced_graph_ml_section(dashboard):
             - **Coral nodes**: AI system components
             """)
         else:
-            st.info("Framework visualization not available. Run full benchmarking to generate.")
+            st.info("Framework visualization not available. PyVis directory not found.")
+            st.info("Run full benchmarking to generate PyVis visualizations.")
         
         # Session-based graphs below
         st.markdown("---")
@@ -158,7 +174,7 @@ def render_enhanced_graph_ml_section(dashboard):
     with tabs[1]:
         # Theoretical framework visualization first
         st.markdown("#### Theoretical Framework")
-        if pyvis_dir and pyvis_dir.exists():
+        if pyvis_dir is not None:
             st.markdown("""
             This interactive graph shows the theoretical skill progression framework that guides 
             learning assessment in the MEGA system.
@@ -183,7 +199,8 @@ def render_enhanced_graph_ml_section(dashboard):
             </div>
             """, unsafe_allow_html=True)
         else:
-            st.info("PyVis visualizations not available. Run full benchmarking to generate.")
+            st.info("PyVis visualizations not available. PyVis directory not found.")
+            st.info("Run full benchmarking to generate PyVis visualizations.")
         
         # Session-based trajectories below
         st.markdown("---")

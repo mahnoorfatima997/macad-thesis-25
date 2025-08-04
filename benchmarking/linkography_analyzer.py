@@ -11,12 +11,12 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-from linkography_types import (
+from benchmarking.linkography_types import (
     DesignMove, Linkograph, LinkographSession, DesignPhase,
     MoveType, Modality, LinkographPattern, LinkographLink, LinkographMetrics
 )
-from linkography_engine import LinkographyEngine
-from linkography_cognitive_mapping import CognitiveMappingService
+from benchmarking.linkography_engine import LinkographyEngine
+from benchmarking.linkography_cognitive_mapping import CognitiveMappingService
 import time
 
 

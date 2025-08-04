@@ -15,6 +15,7 @@ from datetime import datetime
 import base64
 import re
 from collections import defaultdict
+from typing import Dict, List, Any, Optional
 from thesis_colors import (
     THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
     PLOTLY_COLORSCALES, CHART_COLORS, UI_COLORS,
@@ -770,18 +771,29 @@ class BenchmarkDashboard:
     def load_data(self):
         """Load all benchmarking results"""
         try:
-            # Load benchmark report
-            with open(self.results_path / "benchmark_report.json", 'r') as f:
-                self.benchmark_report = json.load(f)
+            # Load benchmark report if it exists
+            benchmark_report_path = self.results_path / "benchmark_report.json"
+            if benchmark_report_path.exists():
+                with open(benchmark_report_path, 'r') as f:
+                    self.benchmark_report = json.load(f)
+            else:
+                print(f"Warning: benchmark_report.json not found at {benchmark_report_path}")
+                self.benchmark_report = {}
             
             # Load evaluation reports
             self.evaluation_reports = {}
             eval_dir = self.results_path / "evaluation_reports"
-            for eval_file in eval_dir.glob("*.json"):
-                with open(eval_file, 'r') as f:
-                    session_data = json.load(f)
-                    session_id = session_data['session_metrics']['session_id']
-                    self.evaluation_reports[session_id] = session_data
+            if eval_dir.exists():
+                for eval_file in eval_dir.glob("*.json"):
+                    try:
+                        with open(eval_file, 'r') as f:
+                            session_data = json.load(f)
+                            session_id = session_data.get('session_metrics', {}).get('session_id', eval_file.stem)
+                            self.evaluation_reports[session_id] = session_data
+                    except Exception as e:
+                        print(f"Warning: Error loading {eval_file}: {e}")
+            else:
+                print(f"Warning: evaluation_reports directory not found at {eval_dir}")
             
             # Load benchmark summary if exists
             summary_path = self.results_path / "benchmark_summary.md"
@@ -836,7 +848,7 @@ class BenchmarkDashboard:
             
             for session_id, metrics in self.thesis_data_metrics.items():
                 metrics_data.append({
-                    'session_id': session_id[:8] if len(session_id) > 8 else session_id,
+                    'session_id': str(session_id)[:8] if session_id and len(str(session_id)) > 8 else str(session_id) if session_id else 'Unknown',
                     'prevention': metrics['prevention_rate'],
                     'deep_thinking': metrics['deep_thinking_rate'],
                     'improvement': min(metrics['improvement'], 500),  # Cap at 500% to handle outliers
@@ -1405,8 +1417,17 @@ class BenchmarkDashboard:
         # Use master metrics if available (primary source)
         if self.master_session_metrics is not None and not self.master_session_metrics.empty:
             for _, row in self.master_session_metrics.iterrows():
+                # Handle None or float session_ids
+                session_id = row['session_id']
+                if pd.isna(session_id) or session_id is None:
+                    session_display = 'Unknown'
+                elif isinstance(session_id, (int, float)):
+                    session_display = f'Session_{int(session_id)}'
+                else:
+                    session_display = str(session_id)[:8]
+                    
                 sessions_data.append({
-                    'Session': row['session_id'][:8],
+                    'Session': session_display,
                     'Cognitive Offloading Prevention': row['prevention_rate'],
                     'Deep Thinking': row['deep_thinking_rate'],
                     'Scaffolding Effectiveness': row['scaffolding_effectiveness'],
@@ -1428,7 +1449,7 @@ class BenchmarkDashboard:
                 engagement = min((prevention_rate + deep_thinking_rate) / 2 * 1.1, 1.0)  # Slightly higher than average
                 
                 sessions_data.append({
-                    'Session': session_id[:8] if len(session_id) > 8 else session_id,
+                    'Session': str(session_id)[:8] if session_id and len(str(session_id)) > 8 else str(session_id) if session_id else 'Unknown',
                     'Cognitive Offloading Prevention': prevention_rate,
                     'Deep Thinking': deep_thinking_rate,
                     'Scaffolding Effectiveness': scaffolding_effectiveness,
@@ -1441,7 +1462,7 @@ class BenchmarkDashboard:
             for session_id, report in self.evaluation_reports.items():
                 metrics = report['session_metrics']
                 sessions_data.append({
-                    'Session': session_id[:8],  # Shortened ID for display
+                    'Session': str(session_id)[:8] if session_id else 'Unknown',  # Shortened ID for display
                     'Cognitive Offloading Prevention': metrics['cognitive_offloading_prevention']['overall_rate'],
                     'Deep Thinking': metrics['deep_thinking_engagement']['overall_rate'],
                     'Scaffolding Effectiveness': metrics['scaffolding_effectiveness']['overall_rate'],
@@ -1592,8 +1613,17 @@ class BenchmarkDashboard:
             # Create temporal data from master metrics
             # Note: Master CSV doesn't have timestamps, so we use session order
             for idx, row in self.master_session_metrics.iterrows():
+                # Handle None or float session_ids
+                session_id = row['session_id']
+                if pd.isna(session_id) or session_id is None:
+                    session_display = 'Unknown'
+                elif isinstance(session_id, (int, float)):
+                    session_display = f'Session_{int(session_id)}'
+                else:
+                    session_display = str(session_id)[:8]
+                    
                 temporal_data.append({
-                    'Session': row['session_id'][:8],
+                    'Session': session_display,
                     'Timestamp': idx,  # Use index as temporal order
                     'Skill Level': row['proficiency_level'],
                     'Improvement': row['improvement_score'],
@@ -1631,7 +1661,7 @@ class BenchmarkDashboard:
                     skill_level = 'beginner'
                 
                 temporal_data.append({
-                    'Session': session_id[:8] if len(session_id) > 8 else session_id,
+                    'Session': str(session_id)[:8] if session_id and len(str(session_id)) > 8 else str(session_id) if session_id else 'Unknown',
                     'Timestamp': timestamp,
                     'Skill Level': skill_level,
                     'Improvement': metrics['improvement'],
@@ -1646,7 +1676,7 @@ class BenchmarkDashboard:
             for session_id, report in self.evaluation_reports.items():
                 metrics = report['session_metrics']
                 temporal_data.append({
-                    'Session': session_id[:8],
+                    'Session': str(session_id)[:8] if session_id else 'Unknown',
                     'Timestamp': metrics['timestamp'],
                     'Skill Level': metrics['skill_progression']['final_level'],
                     'Improvement': metrics['improvement_over_baseline']['overall_improvement'],
@@ -2295,28 +2325,42 @@ class BenchmarkDashboard:
             
             temporal_data = self._get_temporal_comparison_data()
             
-            fig_temp = go.Figure()
+            # Debug output
+            print(f"DEBUG: Temporal data keys: {temporal_data.keys()}")
+            print(f"DEBUG: Temporal data lengths: {[(k, len(v)) for k, v in temporal_data.items()]}")
             
-            # Use our line chart colors
-            line_colors = get_color_palette('line', len(temporal_data))
-            for idx, (metric, values) in enumerate(temporal_data.items()):
-                fig_temp.add_trace(go.Scatter(
-                    x=list(range(len(values))),
-                    y=values,
-                    mode='lines+markers',
-                    name=metric,
-                    line=dict(width=3, color=line_colors[idx])
-                ))
-            
-            fig_temp.update_layout(
-                title="Improvement Trends Over Sessions",
-                xaxis_title="Session Number",
-                yaxis_title="Improvement %",
-                hovermode='x unified',
-                height=450
-            )
-            
-            st.plotly_chart(fig_temp, use_container_width=True)
+            # Check if we have valid data
+            if temporal_data and any(len(v) > 0 for v in temporal_data.values() if isinstance(v, list)):
+                fig_temp = go.Figure()
+                
+                # Use our line chart colors
+                line_colors = get_color_palette('line', len(temporal_data))
+                for idx, (metric, values) in enumerate(temporal_data.items()):
+                    if len(values) > 0:  # Only add traces with data
+                        fig_temp.add_trace(go.Scatter(
+                            x=list(range(len(values))),
+                            y=values,
+                            mode='lines+markers',
+                            name=metric,
+                            line=dict(width=3, color=line_colors[idx])
+                        ))
+                
+                fig_temp.update_layout(
+                    title="Improvement Trends Over Sessions",
+                    xaxis_title="Session Number",
+                    yaxis_title="Improvement %",
+                    hovermode='x unified',
+                    height=450
+                )
+                
+                st.plotly_chart(fig_temp, use_container_width=True)
+            else:
+                st.info("No temporal data available. Run more sessions to see improvement trends.")
+                # Show what data sources are available
+                if self.master_session_metrics is not None:
+                    st.caption(f"Master metrics loaded: {len(self.master_session_metrics)} sessions")
+                if self.thesis_data_metrics:
+                    st.caption(f"Thesis data loaded: {len(self.thesis_data_metrics)} sessions")
             
             st.markdown("---")  # Add separator
             
@@ -4266,30 +4310,271 @@ class BenchmarkDashboard:
             """)
     
     def render_export_options(self):
-        """Render export options"""
+        """Render comprehensive export options with professional report generation"""
         st.markdown('<h2 class="sub-header">Export Options</h2>', unsafe_allow_html=True)
         
+        # We'll use our simple report generator that doesn't need WeasyPrint
+        from benchmarking.simple_report_generator import SimpleReportGenerator
+        from benchmarking.report_insights_generator import ReportInsightsGenerator
+        
+        # Report Type Selection
+        st.markdown("### Select Report Type")
+        report_type = st.selectbox(
+            "Choose the type of report to generate:",
+            options=[
+                "full_benchmark",
+                "comparative", 
+                "group_analysis",
+                "session_analysis"
+            ],
+            format_func=lambda x: {
+                "full_benchmark": "Complete Benchmarking Report",
+                "comparative": "Comparative Analysis (MENTOR vs GENERIC AI vs CONTROL)",
+                "group_analysis": "Single Group Deep Dive",
+                "session_analysis": "Selected Sessions Analysis"
+            }.get(x, x)
+        )
+        
+        # Additional options based on report type
+        export_params = {}
+        
+        if report_type == "group_analysis":
+            export_params['group'] = st.selectbox(
+                "Select group to analyze:",
+                options=["MENTOR", "GENERIC_AI", "CONTROL"]
+            )
+            
+        elif report_type == "session_analysis":
+            # Get available sessions
+            available_sessions = []
+            if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+                available_sessions = self.master_session_metrics['session_id'].tolist()
+            elif self.thesis_data_metrics:
+                available_sessions = list(self.thesis_data_metrics.keys())
+                
+            if available_sessions:
+                export_params['sessions'] = st.multiselect(
+                    "Select sessions to include:",
+                    options=available_sessions,
+                    default=available_sessions[:5] if len(available_sessions) > 5 else available_sessions,
+                    format_func=lambda x: str(x)[:8] if x else 'Unknown'
+                )
+        
+        # Export format options
+        st.markdown("### Export Format")
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            if st.button("📊 Export Full Report (JSON)"):
-                report_data = {
-                    'benchmark_report': self.benchmark_report,
-                    'evaluation_reports': self.evaluation_reports,
-                    'generated_at': datetime.now().isoformat()
-                }
-                json_str = json.dumps(report_data, indent=2)
-                b64 = base64.b64encode(json_str.encode()).decode()
-                href = f'<a href="data:application/json;base64,{b64}" download="benchmark_report.json">Download JSON Report</a>'
-                st.markdown(href, unsafe_allow_html=True)
+            st.markdown("#### Professional HTML Report")
+            if st.button("Generate Report", key="html_export"):
+                with st.spinner("Generating professional report..."):
+                    try:
+                        # Initialize generators
+                        insights_gen = ReportInsightsGenerator(
+                            results_path=self.results_path
+                        )
+                        
+                        report_gen = SimpleReportGenerator(
+                            results_path=self.results_path,
+                            insights_generator=insights_gen
+                        )
+                        
+                        # Generate HTML report
+                        html_content = report_gen.generate_report(
+                            report_type=report_type,
+                            **export_params
+                        )
+                        
+                        # Create download link
+                        b64 = base64.b64encode(html_content.encode()).decode()
+                        filename = f"{report_type}_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+                        href = f'<a href="data:text/html;base64,{b64}" download="{filename}">Download Report</a>'
+                        st.success("Report generated successfully!")
+                        st.markdown(href, unsafe_allow_html=True)
+                        st.info("Open the HTML file in your browser to view the report")
+                        
+                    except Exception as e:
+                        st.error(f"Error generating report: {str(e)}")
         
         with col2:
-            if st.button("📄 Export Summary (PDF)"):
-                st.info("PDF export functionality would be implemented here")
+            st.markdown("#### Raw Data Export (JSON)")
+            if st.button("Export JSON Data", key="json_export"):
+                # Prepare data based on report type
+                export_data = {
+                    'report_type': report_type,
+                    'generated_at': datetime.now().isoformat(),
+                    'parameters': export_params
+                }
+                
+                if report_type == "full_benchmark":
+                    export_data['benchmark_report'] = self.benchmark_report
+                    export_data['evaluation_reports'] = self.evaluation_reports
+                    if self.master_session_metrics is not None:
+                        export_data['master_metrics'] = self.master_session_metrics.to_dict('records')
+                        
+                elif report_type == "comparative":
+                    # Filter data by groups
+                    export_data['group_comparison'] = self._prepare_comparative_export_data()
+                    
+                elif report_type == "group_analysis":
+                    # Filter data for specific group
+                    export_data['group_data'] = self._prepare_group_export_data(export_params['group'])
+                    
+                elif report_type == "session_analysis":
+                    # Filter data for specific sessions
+                    export_data['session_data'] = self._prepare_session_export_data(export_params.get('sessions', []))
+                
+                # Create download link
+                json_str = json.dumps(export_data, indent=2, default=str)
+                b64 = base64.b64encode(json_str.encode()).decode()
+                href = f'<a href="data:application/json;base64,{b64}" download="{report_type}_data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json">Download JSON Data</a>'
+                st.markdown(href, unsafe_allow_html=True)
         
         with col3:
-            if st.button("📈 Export Visualizations"):
-                st.info("Visualization export functionality would be implemented here")
+            st.markdown("#### CSV Data Tables")
+            if st.button("Export CSV Tables", key="csv_export"):
+                # Export multiple CSV files as a zip
+                import zipfile
+                from io import BytesIO
+                
+                zip_buffer = BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    # Export master metrics
+                    if self.master_session_metrics is not None:
+                        csv_buffer = BytesIO()
+                        self.master_session_metrics.to_csv(csv_buffer, index=False)
+                        zip_file.writestr('master_session_metrics.csv', csv_buffer.getvalue())
+                    
+                    # Export aggregate metrics
+                    if self.master_aggregate_metrics is not None:
+                        csv_buffer = BytesIO()
+                        self.master_aggregate_metrics.to_csv(csv_buffer, index=False)
+                        zip_file.writestr('master_aggregate_metrics.csv', csv_buffer.getvalue())
+                    
+                    # Export insights summary
+                    if report_type == "full_benchmark":
+                        insights_df = pd.DataFrame([
+                            {'metric': 'Total Sessions', 'value': len(self.master_session_metrics) if self.master_session_metrics is not None else 0},
+                            {'metric': 'Avg Prevention Rate', 'value': self.master_session_metrics['prevention_rate'].mean() if self.master_session_metrics is not None and 'prevention_rate' in self.master_session_metrics else 0},
+                            {'metric': 'Avg Deep Thinking Rate', 'value': self.master_session_metrics['deep_thinking_rate'].mean() if self.master_session_metrics is not None and 'deep_thinking_rate' in self.master_session_metrics else 0}
+                        ])
+                        csv_buffer = BytesIO()
+                        insights_df.to_csv(csv_buffer, index=False)
+                        zip_file.writestr('insights_summary.csv', csv_buffer.getvalue())
+                
+                # Create download link
+                zip_buffer.seek(0)
+                b64_zip = base64.b64encode(zip_buffer.read()).decode()
+                href = f'<a href="data:application/zip;base64,{b64_zip}" download="{report_type}_csv_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip">Download CSV Tables</a>'
+                st.markdown(href, unsafe_allow_html=True)
+        
+        # Preview section
+        st.markdown("### Report Preview")
+        st.info(f"Selected report type: **{report_type.replace('_', ' ').title()}**")
+        
+        if export_params:
+            st.write("Parameters:", export_params)
+            
+        # Show what will be included
+        with st.expander("What will be included in the report?"):
+            if report_type == "full_benchmark":
+                st.markdown("""
+                - Executive summary with key findings
+                - Complete statistical analysis of all sessions
+                - Performance trends and patterns
+                - Proficiency distribution analysis
+                - Feature effectiveness evaluation
+                - Comprehensive recommendations
+                - All visualizations and charts
+                """)
+            elif report_type == "comparative":
+                st.markdown("""
+                - Group-by-group performance comparison
+                - Statistical significance testing
+                - Improvement metrics for each approach
+                - Strengths and weaknesses analysis
+                - Recommendations for each group
+                - Comparative visualizations
+                """)
+            elif report_type == "group_analysis":
+                st.markdown("""
+                - Deep dive into selected group performance
+                - Session-by-session progression
+                - User behavior patterns
+                - Cognitive metric trends
+                - Group-specific recommendations
+                - Detailed visualizations
+                """)
+            elif report_type == "session_analysis":
+                st.markdown("""
+                - Individual session breakdowns
+                - Interaction-level analysis
+                - Cognitive metric evolution
+                - Learning trajectory mapping
+                - Session-specific insights
+                - Detailed charts and timelines
+                """)
+    
+    def _prepare_comparative_export_data(self) -> Dict[str, Any]:
+        """Prepare data for comparative export"""
+        data = {}
+        
+        if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+            # Group metrics by assumed test groups
+            # This is a simplified approach - in reality you'd need proper group identification
+            groups = ['MENTOR', 'GENERIC_AI', 'CONTROL']
+            for group in groups:
+                group_data = self.master_session_metrics[
+                    self.master_session_metrics['session_id'].str.contains(group.lower(), case=False, na=False)
+                ] if 'session_id' in self.master_session_metrics else pd.DataFrame()
+                
+                if not group_data.empty:
+                    data[group] = {
+                        'session_count': len(group_data),
+                        'avg_prevention_rate': group_data['prevention_rate'].mean() if 'prevention_rate' in group_data else 0,
+                        'avg_deep_thinking_rate': group_data['deep_thinking_rate'].mean() if 'deep_thinking_rate' in group_data else 0,
+                        'avg_improvement': group_data['improvement_score'].mean() if 'improvement_score' in group_data else 0,
+                        'sessions': group_data['session_id'].tolist() if 'session_id' in group_data else []
+                    }
+        
+        return data
+    
+    def _prepare_group_export_data(self, group: str) -> Dict[str, Any]:
+        """Prepare data for group-specific export"""
+        data = {'group': group, 'sessions': []}
+        
+        if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+            # Filter sessions for the group
+            group_data = self.master_session_metrics[
+                self.master_session_metrics['session_id'].str.contains(group.lower(), case=False, na=False)
+            ] if 'session_id' in self.master_session_metrics else pd.DataFrame()
+            
+            if not group_data.empty:
+                data['summary'] = {
+                    'total_sessions': len(group_data),
+                    'metrics': group_data.describe().to_dict()
+                }
+                data['sessions'] = group_data.to_dict('records')
+        
+        return data
+    
+    def _prepare_session_export_data(self, sessions: List[str]) -> Dict[str, Any]:
+        """Prepare data for session-specific export"""
+        data = {'selected_sessions': sessions, 'data': []}
+        
+        if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+            session_data = self.master_session_metrics[
+                self.master_session_metrics['session_id'].isin(sessions)
+            ]
+            
+            if not session_data.empty:
+                data['data'] = session_data.to_dict('records')
+                data['summary'] = {
+                    'session_count': len(session_data),
+                    'avg_metrics': session_data.mean().to_dict()
+                }
+        
+        return data
     
     # Helper methods for data analysis
     def _analyze_proficiency_from_sessions(self):
@@ -4636,12 +4921,45 @@ class BenchmarkDashboard:
         }
     
     def _get_temporal_comparison_data(self):
-        """Get temporal comparison data"""
-        num_sessions = len(self.evaluation_reports)
-        return {
-            'Cognitive Offloading': [80 + i*3 for i in range(num_sessions)],
-            'Deep Thinking': [60 + i*4 for i in range(num_sessions)],
-            'Overall Improvement': [70 + i*2.5 for i in range(num_sessions)]
+        """Get temporal comparison data from actual session metrics"""
+        temporal_data = {
+            'Cognitive Offloading Prevention': [],
+            'Deep Thinking Engagement': [],
+            'Overall Improvement': []
+        }
+        
+        # Use master metrics if available
+        if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+            # Sort by session order (assuming index represents temporal order)
+            sorted_metrics = self.master_session_metrics.sort_index()
+            
+            for _, row in sorted_metrics.iterrows():
+                # Get actual prevention and deep thinking rates
+                prevention = row.get('prevention_rate', 0) * 100  # Convert to percentage
+                deep_thinking = row.get('deep_thinking_rate', 0) * 100
+                improvement = row.get('improvement_score', 0)
+                
+                temporal_data['Cognitive Offloading Prevention'].append(prevention)
+                temporal_data['Deep Thinking Engagement'].append(deep_thinking)
+                temporal_data['Overall Improvement'].append(improvement)
+                
+        # Fallback to thesis data if no master metrics
+        elif self.thesis_data_metrics:
+            # Sort sessions by some order (e.g., alphabetically by session ID)
+            sorted_sessions = sorted(self.thesis_data_metrics.items())
+            
+            for session_id, metrics in sorted_sessions:
+                prevention = metrics.get('prevention_rate', 0) * 100
+                deep_thinking = metrics.get('deep_thinking_rate', 0) * 100
+                improvement = metrics.get('improvement', 0)
+                
+                temporal_data['Cognitive Offloading Prevention'].append(prevention)
+                temporal_data['Deep Thinking Engagement'].append(deep_thinking)
+                temporal_data['Overall Improvement'].append(improvement)
+        
+        # Return only if we have data
+        return temporal_data if any(len(v) > 0 for v in temporal_data.values()) else {
+            'No Data Available': [0]
         }
     
     def _analyze_feature_impact(self):
@@ -4653,7 +4971,7 @@ class BenchmarkDashboard:
         # Try to use the enhanced Graph ML section
         try:
             # Try the simple version that doesn't require PyTorch
-            from simple_graph_ml_dashboard import render_enhanced_graph_ml_section
+            from benchmarking.simple_graph_ml_dashboard import render_enhanced_graph_ml_section
             render_enhanced_graph_ml_section(self)
             return
         except ImportError as e:
@@ -4831,7 +5149,6 @@ class BenchmarkDashboard:
             "Anthropomorphism Analysis",
             "Linkography Analysis",
             "Graph ML Analysis",
-            "Recommendations",
             "Technical Details",
             "Export Options"
         ]
@@ -4861,8 +5178,6 @@ class BenchmarkDashboard:
                 self.render_linkography_analysis()
             elif selected_section == "Graph ML Analysis":
                 self.render_graph_ml_visualizations()
-            elif selected_section == "Recommendations":
-                self.render_recommendations()
             elif selected_section == "Technical Details":
                 self.render_technical_details()
             elif selected_section == "Export Options":

@@ -11,7 +11,8 @@
       "Bash(del:*)",
       "Bash(start cmd /c:*)",
       "Bash(git restore:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }

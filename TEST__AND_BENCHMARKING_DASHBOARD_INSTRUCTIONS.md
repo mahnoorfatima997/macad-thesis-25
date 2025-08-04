@@ -8,6 +8,10 @@ Complete Workflow for Testing and Benchmarking
 
   # Then, install benchmarking dependencies
   pip install -r benchmarking/requirements_benchmarking.txt
+  
+  # Note: For PDF export functionality on Ubuntu/Debian:
+  # sudo apt-get install python3-cffi python3-brotli libpango-1.0-0 libharfbuzz0b libpangoft2-1.0-0
+  # For macOS: brew install pango
 
   2. Run Test Sessions (Collect Data)
 
@@ -21,14 +25,7 @@ Complete Workflow for Testing and Benchmarking
   # - Create CSV files with metrics, linkography data, and session logs
   # - Uses REAL cognitive assessment based on response content (not hardcoded values)
 
-  3. Generate Test Data (Optional - for testing without real users)
-
-  # If you want to test the system without real users
-  python benchmarking/generate_test_data.py
-
-  # This creates 5 synthetic sessions with varying proficiency levels
-
-  4. Run Benchmarking Analysis
+  3. Run Benchmarking Analysis
 
   # After collecting data from test sessions, run the benchmarking analysis
   python benchmarking/run_benchmarking.py
@@ -36,16 +33,13 @@ Complete Workflow for Testing and Benchmarking
   # This will:
   # - Load all data from thesis_data/ folder
   # - Generate master metrics CSV with all pre-calculated values
-  # - Master metrics will use REAL cognitive assessment scores from interactions_*.csv
-  # - Prevention rate = mean(prevents_cognitive_offloading column)
-  # - Deep thinking rate = mean(encourages_deep_thinking column)
   # - Run comprehensive analysis (linkography, Graph ML, proficiency
   classification)
   # - Generate evaluation reports in benchmarking/results/
   # - Create visualizations and export them
   # - Automatically launch the dashboard when complete
 
-  5. Launch Dashboard Separately (if needed)
+  4. Launch Dashboard Separately (if needed)
 
   # Option 1: Launch with automatic analysis update (recommended)
   python benchmarking/launch_dashboard.py
@@ -69,7 +63,7 @@ Complete Workflow for Testing and Benchmarking
   Key Directories:
 
   - thesis_data/: Raw interaction data from test sessions
-    - interactions_*.csv: User interactions (includes real cognitive assessment scores)
+    - interactions_*.csv: User interactions
     - metrics_*.csv: Cognitive metrics
     - linkography/: Linkography analysis files
     - session_*.json: Session summaries
@@ -107,18 +101,3 @@ Complete Workflow for Testing and Benchmarking
 
   # Later, to view results again:
   python benchmarking/launch_dashboard.py --skip-analysis
-
-Real Cognitive Assessment:
-
-  As of the latest update, the test dashboard now uses REAL cognitive assessment
-  instead of hardcoded values:
-  
-  - MENTOR group: Scores vary based on response content (Socratic = high, direct = low)
-  - GENERIC_AI group: Scores reduced by design (30% prevention, 50% deep thinking)
-  - CONTROL group: Always 0 (no AI assistance)
-  
-  This means:
-  - No more clustered improvement scores of 209.5%
-  - Realistic variance in cognitive metrics
-  - Accurate proficiency classification based on actual pedagogical quality
-  - Dashboard shows true effectiveness of different approaches

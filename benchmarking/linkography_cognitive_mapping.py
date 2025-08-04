@@ -5,7 +5,7 @@ Maps linkography patterns to the existing cognitive assessment framework
 
 import numpy as np
 from typing import Dict, List, Optional
-from linkography_types import (
+from benchmarking.linkography_types import (
     Linkograph, LinkographPattern, CognitiveLinkographMapping,
     DesignMove, LinkographLink
 )

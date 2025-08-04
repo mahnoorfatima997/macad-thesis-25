@@ -11,8 +11,8 @@ import pandas as pd
 from typing import List, Dict, Optional, Tuple
 import streamlit as st
 
-from linkography_types import Linkograph, DesignMove, LinkographLink, LinkographPattern
-from thesis_colors import (
+from benchmarking.linkography_types import Linkograph, DesignMove, LinkographLink, LinkographPattern
+from benchmarking.thesis_colors import (
     THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
     PLOTLY_COLORSCALES, get_color_palette, get_metric_color
 )
