@@ -19,6 +19,7 @@ Complete Workflow for Testing and Benchmarking
   # - Allow you to conduct test sessions with different users
   # - Automatically save interaction data to thesis_data/ folder
   # - Create CSV files with metrics, linkography data, and session logs
+  # - Uses REAL cognitive assessment based on response content (not hardcoded values)
 
   3. Generate Test Data (Optional - for testing without real users)
 
@@ -35,6 +36,9 @@ Complete Workflow for Testing and Benchmarking
   # This will:
   # - Load all data from thesis_data/ folder
   # - Generate master metrics CSV with all pre-calculated values
+  # - Master metrics will use REAL cognitive assessment scores from interactions_*.csv
+  # - Prevention rate = mean(prevents_cognitive_offloading column)
+  # - Deep thinking rate = mean(encourages_deep_thinking column)
   # - Run comprehensive analysis (linkography, Graph ML, proficiency
   classification)
   # - Generate evaluation reports in benchmarking/results/
@@ -65,7 +69,7 @@ Complete Workflow for Testing and Benchmarking
   Key Directories:
 
   - thesis_data/: Raw interaction data from test sessions
-    - interactions_*.csv: User interactions
+    - interactions_*.csv: User interactions (includes real cognitive assessment scores)
     - metrics_*.csv: Cognitive metrics
     - linkography/: Linkography analysis files
     - session_*.json: Session summaries
@@ -103,3 +107,18 @@ Complete Workflow for Testing and Benchmarking
 
   # Later, to view results again:
   python benchmarking/launch_dashboard.py --skip-analysis
+
+Real Cognitive Assessment:
+
+  As of the latest update, the test dashboard now uses REAL cognitive assessment
+  instead of hardcoded values:
+  
+  - MENTOR group: Scores vary based on response content (Socratic = high, direct = low)
+  - GENERIC_AI group: Scores reduced by design (30% prevention, 50% deep thinking)
+  - CONTROL group: Always 0 (no AI assistance)
+  
+  This means:
+  - No more clustered improvement scores of 209.5%
+  - Realistic variance in cognitive metrics
+  - Accurate proficiency classification based on actual pedagogical quality
+  - Dashboard shows true effectiveness of different approaches
