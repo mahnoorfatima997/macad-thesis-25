@@ -4316,6 +4316,7 @@ class BenchmarkDashboard:
         # We'll use our simple report generator that doesn't need WeasyPrint
         from benchmarking.simple_report_generator import SimpleReportGenerator
         from benchmarking.report_insights_generator import ReportInsightsGenerator
+        from benchmarking.linkography_report_generator import LinkographyReportGenerator
         
         # Report Type Selection
         st.markdown("### Select Report Type")
@@ -4325,13 +4326,15 @@ class BenchmarkDashboard:
                 "full_benchmark",
                 "comparative", 
                 "group_analysis",
-                "session_analysis"
+                "session_analysis",
+                "linkography_report"
             ],
             format_func=lambda x: {
                 "full_benchmark": "Complete Benchmarking Report",
                 "comparative": "Comparative Analysis (MENTOR vs GENERIC AI vs CONTROL)",
                 "group_analysis": "Single Group Deep Dive",
-                "session_analysis": "Selected Sessions Analysis"
+                "session_analysis": "Selected Sessions Analysis",
+                "linkography_report": "Linkography Analysis Report"
             }.get(x, x)
         )
         
@@ -4359,6 +4362,31 @@ class BenchmarkDashboard:
                     default=available_sessions[:5] if len(available_sessions) > 5 else available_sessions,
                     format_func=lambda x: str(x)[:8] if x else 'Unknown'
                 )
+                
+        elif report_type == "linkography_report":
+            # Get available sessions with linkography data
+            linkography_dir = self.results_path / 'linkography'
+            available_sessions = []
+            
+            if linkography_dir.exists():
+                # Check for existing linkograph files
+                linkograph_files = list(linkography_dir.glob('*_linkograph.json'))
+                available_sessions = [f.stem.replace('_linkograph', '') for f in linkograph_files]
+            
+            if not available_sessions and self.thesis_data_metrics:
+                # Use all available sessions if no specific linkography files found
+                available_sessions = list(self.thesis_data_metrics.keys())
+                
+            if available_sessions:
+                export_params['sessions'] = st.multiselect(
+                    "Select sessions for linkography analysis:",
+                    options=available_sessions,
+                    default=available_sessions[:5] if len(available_sessions) > 5 else available_sessions,
+                    format_func=lambda x: str(x)[:8] if x else 'Unknown',
+                    help="Select sessions to include in the linkography report"
+                )
+            else:
+                st.warning("No sessions with linkography data found. Run linkography analysis first.")
         
         # Export format options
         st.markdown("### Export Format")
@@ -4380,10 +4408,24 @@ class BenchmarkDashboard:
                         )
                         
                         # Generate HTML report
-                        html_content = report_gen.generate_report(
-                            report_type=report_type,
-                            **export_params
-                        )
+                        if report_type == "linkography_report":
+                            # Use linkography report generator
+                            linkography_gen = LinkographyReportGenerator(
+                                results_path=self.results_path
+                            )
+                            report_path = linkography_gen.generate_report(
+                                session_ids=export_params.get('sessions', []),
+                                report_type='comprehensive'
+                            )
+                            # Read the generated file
+                            with open(report_path, 'r', encoding='utf-8') as f:
+                                html_content = f.read()
+                        else:
+                            # Use standard report generator
+                            html_content = report_gen.generate_report(
+                                report_type=report_type,
+                                **export_params
+                            )
                         
                         # Create download link
                         b64 = base64.b64encode(html_content.encode()).decode()
