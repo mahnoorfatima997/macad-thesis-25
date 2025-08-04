@@ -34,6 +34,7 @@ Complete Workflow for Testing and Benchmarking
 
   # This will:
   # - Load all data from thesis_data/ folder
+  # - Generate master metrics CSV with all pre-calculated values
   # - Run comprehensive analysis (linkography, Graph ML, proficiency
   classification)
   # - Generate evaluation reports in benchmarking/results/
@@ -69,6 +70,8 @@ Complete Workflow for Testing and Benchmarking
     - linkography/: Linkography analysis files
     - session_*.json: Session summaries
   - benchmarking/results/: Analysis outputs
+    - master_session_metrics.csv: Pre-calculated metrics for all sessions
+    - master_aggregate_metrics.csv: Aggregated metrics by proficiency level
     - benchmark_report.json: Main analysis report
     - evaluation_reports/: Per-session evaluations
     - visualizations/: Generated charts

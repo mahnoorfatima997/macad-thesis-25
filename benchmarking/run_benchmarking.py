@@ -908,6 +908,17 @@ def main():
         output_dir=args.output_dir
     )
     
+    # Generate master metrics first
+    print("\n" + "="*60)
+    print("Generating Master Metrics...")
+    print("="*60)
+    try:
+        from generate_master_metrics import MasterMetricsGenerator
+        generator = MasterMetricsGenerator(thesis_data_path=args.data_dir, output_path="results")
+        generator.generate_master_metrics()
+    except Exception as e:
+        print(f"Warning: Could not generate master metrics: {e}")
+    
     # Run benchmarking
     pipeline.run_full_pipeline(
         train_classifier=not args.no_classifier,

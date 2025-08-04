@@ -28,7 +28,6 @@ def main():
         
         # Run the benchmarking analysis
         try:
-            import subprocess
             result = subprocess.run([
                 sys.executable, 
                 str(Path(__file__).parent / "run_benchmarking.py"),
