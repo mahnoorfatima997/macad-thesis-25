@@ -544,6 +544,20 @@ class ContextAgent:
         if any(pattern in input_lower for pattern in feedback_patterns):
             return "feedback_request"
         
+        # Enhanced design guidance request detection (HIGH PRIORITY)
+        design_guidance_patterns = [
+            "what direction should", "how should i", "where should i",
+            "what's the best way to", "how do i design", "what's the optimal",
+            "which direction", "what orientation", "how to orient",
+            "what's the ideal", "what would be the best", "how can i arrange",
+            "what's the most effective", "how to position", "where to place",
+            "what's the recommended", "how to organize", "what's the proper",
+            "how to layout", "what's the strategic", "how to configure"
+        ]
+        
+        if any(pattern in input_lower for pattern in design_guidance_patterns):
+            return "design_guidance_request"
+        
         # Enhanced technical question detection
         technical_patterns = [
             "how to", "what is", "explain", "define", "describe",
@@ -1137,6 +1151,17 @@ class ContextAgent:
                 "priority": "medium",
                 "confidence": 0.85,
                 "reasoning": "Technical question - provide knowledge with application guidance"
+            }
+        
+        elif interaction_type == "design_guidance_request":
+            # Design guidance request - provide architectural principles with Socratic guidance
+            return {
+                "primary_route": "socratic_exploration",
+                "suggested_agents": ["domain_expert", "socratic_tutor"],
+                "response_type": "design_guidance",
+                "priority": "high",
+                "confidence": 0.9,
+                "reasoning": "Design guidance request - provide architectural principles with Socratic exploration"
             }
         
         elif interaction_type == "confusion_expression":

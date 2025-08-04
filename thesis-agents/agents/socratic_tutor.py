@@ -261,7 +261,7 @@ class SocraticTutorAgent:
             response_text = self._generate_focused_exploration_question(user_specified_focus, building_type, main_topic)
         else:
             # Generate dynamic topic-specific guidance
-            response_text = self._generate_dynamic_topic_guidance(main_topic, building_type, last_message)
+            response_text = await self._generate_dynamic_topic_guidance(main_topic, building_type, last_message)
         
         return {
             "agent": self.name,
@@ -875,44 +875,44 @@ Great! You've identified an important aspect of {main_topic} for your {building_
 *This will help me provide the most relevant guidance for your current design stage.*
 """)
     
-    def _generate_dynamic_topic_guidance(self, main_topic: str, building_type: str, last_message: str) -> str:
-        """Generate dynamic topic-specific guidance for any architectural topic"""
+    async def _generate_dynamic_topic_guidance(self, main_topic: str, building_type: str, last_message: str) -> str:
+        """Generate dynamic topic-specific guidance using AI for truly contextual responses"""
         
-        # Check if user is asking about a specific topic
-        if main_topic != "architectural design":
-            return f"""
-**🏗️ {main_topic.title()} - Let's Focus Your Thinking**
-
-Great topic! {main_topic.title()} is an important aspect of {building_type} projects. Before we dive into examples, let's clarify your specific interests:
-
-**What aspect of {main_topic} interests you most?**
-
-1. **Principles and concepts** - The fundamental ideas behind {main_topic}
-2. **Practical applications** - How to implement {main_topic} in real projects
-3. **Technical requirements** - Specific standards and specifications for {main_topic}
-4. **Design strategies** - Creative approaches to {main_topic}
-5. **Problem-solving** - How to address {main_topic} challenges
-
-**Or is there a specific challenge you're facing with {main_topic} in your {building_type} project?**
-
-*Tell me which direction feels most relevant to your current design thinking.*
-"""
-        else:
-            # Generic guidance for general architectural inquiries
-            return f"""
-**🤔 Let's Clarify Your Focus**
-
-I want to make sure I provide the most helpful guidance for your {building_type} project.
-
-**What would be most valuable for you right now?**
-
-1. **Specific examples** - Real projects that demonstrate best practices
-2. **Design principles** - The underlying concepts and approaches
-3. **Process guidance** - How to approach this type of project step-by-step
-4. **Technical details** - Specific requirements, codes, or standards
-5. **Creative inspiration** - Different ways to think about the problem
-
-**Or is there a particular challenge or question you're wrestling with?**
-
-*What would help you move forward most effectively?*
-"""
+        prompt = f"""
+        Generate a dynamic, contextual Socratic question for an architecture student.
+        
+        CONTEXT:
+        - Topic: {main_topic}
+        - Building Type: {building_type}
+        - Student's Last Message: "{last_message}"
+        
+        REQUIREMENTS:
+        1. Make it specific to their {building_type} project and {main_topic} interest
+        2. Reference their actual question/concern from the last message
+        3. Ask ONE focused question that will guide their thinking
+        4. Avoid generic templates - be specific and contextual
+        5. Use a warm, encouraging tone
+        6. Keep it under 100 words
+        
+        Generate ONE dynamic, contextual question:
+        """
+        
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=80,
+                temperature=0.7
+            )
+            
+            dynamic_question = response.choices[0].message.content.strip()
+            
+            if not dynamic_question.endswith('?'):
+                dynamic_question += '?'
+            
+            return dynamic_question
+            
+        except Exception as e:
+            print(f"⚠️ Dynamic guidance generation failed: {e}")
+            # Fallback to contextual template
+            return f"What specific aspect of {main_topic} in your {building_type} project would you like to explore first?"

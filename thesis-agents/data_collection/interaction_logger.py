@@ -357,6 +357,20 @@ class InteractionLogger:
         overall_cognitive_scores = []
         scientific_confidence_scores = []
         
+        # Internal grading and benchmarking metrics aggregation
+        cop_scores = []
+        dte_scores = []
+        ki_scores = []
+        cop_factors = []
+        dte_factors = []
+        ki_factors = []
+        milestone_progressions = []
+        quality_factors = []
+        engagement_factors = []
+        completed_milestones_list = []
+        total_milestones_list = []
+        average_grades = []
+        
         # Cognitive state tracking
         cognitive_states = {
             "engagement_levels": [],
@@ -404,6 +418,22 @@ class InteractionLogger:
                 overall_cognitive_scores.append(scientific_metrics.get("overall_cognitive_score", 0))
                 scientific_confidence_scores.append(scientific_metrics.get("scientific_confidence", 0))
             
+            # Internal grading and benchmarking metrics
+            benchmarking_metrics = interaction.get("metadata", {}).get("benchmarking_metrics", {})
+            if benchmarking_metrics:
+                cop_scores.append(benchmarking_metrics.get("cop_score", 0))
+                dte_scores.append(benchmarking_metrics.get("dte_score", 0))
+                ki_scores.append(benchmarking_metrics.get("ki_score", 0))
+                cop_factors.append(benchmarking_metrics.get("cop_factor", 0))
+                dte_factors.append(benchmarking_metrics.get("dte_factor", 0))
+                ki_factors.append(benchmarking_metrics.get("ki_factor", 0))
+                milestone_progressions.append(benchmarking_metrics.get("milestone_progression", 0))
+                quality_factors.append(benchmarking_metrics.get("quality_factor", 0))
+                engagement_factors.append(benchmarking_metrics.get("engagement_factor", 0))
+                completed_milestones_list.append(benchmarking_metrics.get("completed_milestones", 0))
+                total_milestones_list.append(benchmarking_metrics.get("total_milestones", 0))
+                average_grades.append(benchmarking_metrics.get("average_grade", 0))
+            
             # Cognitive state tracking
             cognitive_state = interaction.get("cognitive_state", {})
             if cognitive_state:
@@ -443,6 +473,20 @@ class InteractionLogger:
         avg_phase_confidence = np.mean(phase_confidence_scores) if phase_confidence_scores else 0
         avg_phase_progression = np.mean(phase_progression_scores) if phase_progression_scores else 0
         avg_response_complexity = np.mean(performance_metrics["response_complexity_scores"]) if performance_metrics["response_complexity_scores"] else 0
+        
+        # Calculate averages for internal grading and benchmarking metrics
+        avg_cop_score = np.mean(cop_scores) if cop_scores else 0
+        avg_dte_score = np.mean(dte_scores) if dte_scores else 0
+        avg_ki_score = np.mean(ki_scores) if ki_scores else 0
+        avg_cop_factor = np.mean(cop_factors) if cop_factors else 0
+        avg_dte_factor = np.mean(dte_factors) if dte_factors else 0
+        avg_ki_factor = np.mean(ki_factors) if ki_factors else 0
+        avg_milestone_progression = np.mean(milestone_progressions) if milestone_progressions else 0
+        avg_quality_factor = np.mean(quality_factors) if quality_factors else 0
+        avg_engagement_factor = np.mean(engagement_factors) if engagement_factors else 0
+        avg_completed_milestones = np.mean(completed_milestones_list) if completed_milestones_list else 0
+        avg_total_milestones = np.mean(total_milestones_list) if total_milestones_list else 0
+        avg_average_grade = np.mean(average_grades) if average_grades else 0
         
         # Most common values
         most_common_phase = max(phase_distribution.items(), key=lambda x: x[1])[0] if phase_distribution else "unknown"
@@ -523,6 +567,28 @@ class InteractionLogger:
             
             # SKILL PROGRESSION ANALYSIS
             "skill_progression": self._analyze_skill_progression(),
+            
+            # INTERNAL GRADING AND BENCHMARKING METRICS
+            "internal_grading_metrics": {
+                "average_cop_score": avg_cop_score,
+                "average_dte_score": avg_dte_score,
+                "average_ki_score": avg_ki_score,
+                "average_cop_factor": avg_cop_factor,
+                "average_dte_factor": avg_dte_factor,
+                "average_ki_factor": avg_ki_factor,
+                "average_milestone_progression": avg_milestone_progression,
+                "average_quality_factor": avg_quality_factor,
+                "average_engagement_factor": avg_engagement_factor,
+                "average_completed_milestones": avg_completed_milestones,
+                "average_total_milestones": avg_total_milestones,
+                "average_grade": avg_average_grade,
+                "benchmarking_summary": {
+                    "cognitive_offloading_prevention": "strong" if avg_cop_score > 70 else "moderate" if avg_cop_score > 40 else "weak",
+                    "deep_thinking_engagement": "strong" if avg_dte_score > 70 else "moderate" if avg_dte_score > 40 else "weak",
+                    "knowledge_integration": "strong" if avg_ki_score > 70 else "moderate" if avg_ki_score > 40 else "weak",
+                    "overall_learning_progression": "excellent" if avg_milestone_progression > 80 else "good" if avg_milestone_progression > 60 else "fair" if avg_milestone_progression > 40 else "poor"
+                }
+            },
             
             # DETAILED INTERACTIONS (for deep analysis)
             "interactions": self.interactions
@@ -641,6 +707,9 @@ class InteractionLogger:
             # SKILL PROGRESSION
             "skill_progression": session_summary.get("skill_progression", {}),
             
+            # INTERNAL GRADING AND BENCHMARKING METRICS
+            "internal_grading_metrics": session_summary.get("internal_grading_metrics", {}),
+            
             # DETAILED INTERACTIONS (for deep analysis)
             "detailed_interactions": []
         }
@@ -707,6 +776,9 @@ class InteractionLogger:
                 
                 # PERFORMANCE METRICS
                 "performance_metrics": interaction.get("performance_metrics", {}),
+                
+                # INTERNAL GRADING AND BENCHMARKING METRICS
+                "internal_grading_metrics": interaction.get("metadata", {}).get("benchmarking_metrics", {}),
                 
                 # COGNITIVE FLAGS
                 "cognitive_flags": {
