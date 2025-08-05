@@ -11,8 +11,8 @@ import pandas as pd
 from typing import List, Dict, Optional, Tuple
 import streamlit as st
 
-from linkography_types import Linkograph, DesignMove, LinkographLink, LinkographPattern
-from thesis_colors import (
+from benchmarking.linkography_types import Linkograph, DesignMove, LinkographLink, LinkographPattern
+from benchmarking.thesis_colors import (
     THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
     PLOTLY_COLORSCALES, get_color_palette, get_metric_color
 )
@@ -146,11 +146,12 @@ class LinkographVisualizer:
                 zeroline=True,
                 autorange='reversed'  # Links go down
             ),
-            plot_bgcolor='rgba(250, 248, 245, 0.5)',
+            plot_bgcolor='white',
             paper_bgcolor='white',
             hovermode='closest' if interactive else False,
             height=600,
-            dragmode='pan' if interactive else False
+            dragmode='pan' if interactive else False,
+            template='plotly_white'  # Force white theme
         )
         
         # Add phase annotations
@@ -162,11 +163,27 @@ class LinkographVisualizer:
         """Create a heatmap showing link density across the design process"""
         moves = linkograph.moves
         n_moves = len(moves)
-        window_size = max(5, n_moves // 10)  # Adaptive window size
+        
+        # Handle edge case for small linkographs
+        if n_moves < 2:
+            fig = go.Figure()
+            fig.add_annotation(
+                text="Not enough moves for density analysis",
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False
+            )
+            fig.update_layout(height=300)
+            return fig
+        
+        window_size = max(2, min(5, n_moves // 10))  # Adaptive window size with better bounds
         
         # Calculate link density for windows
         densities = []
         positions = []
+        
+        # Ensure we have at least one window
+        if n_moves < window_size:
+            window_size = n_moves
         
         for i in range(0, n_moves - window_size + 1):
             window_moves = moves[i:i + window_size]
@@ -183,6 +200,17 @@ class LinkographVisualizer:
             positions.append(i + window_size // 2)
         
         # Create heatmap data
+        if not densities:
+            # If no densities calculated, create a simple visualization
+            fig = go.Figure()
+            fig.add_annotation(
+                text="Insufficient data for density heatmap",
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False
+            )
+            fig.update_layout(height=300)
+            return fig
+        
         heatmap_data = []
         for i, density in enumerate(densities):
             heatmap_data.append([density] * 10)  # Make it wider for visibility
@@ -262,11 +290,12 @@ class LinkographVisualizer:
                     self._get_phase_color('materialization')
                 ]
             ),
+            textfont=dict(color="black", size=14, family="Arial"),
             link=dict(
                 source=source,
                 target=target,
                 value=value,
-                color=[c + '40' for c in colors]  # Add transparency
+                color=[self._hex_to_rgba(c, 0.25) for c in colors]  # Add transparency
             )
         )])
         
@@ -335,16 +364,14 @@ class LinkographVisualizer:
             fig.add_trace(go.Scatter(
                 x=critical_df['position'],
                 y=critical_df['connectivity'],
-                mode='markers+text',
+                mode='markers',
                 marker=dict(
                     size=20,
                     color=self.colors['accent_magenta'],
-                    symbol='star',
+                    symbol='circle',
                     line=dict(width=2, color=self.colors['primary_dark'])
                 ),
-                text=['★' for _ in range(len(critical_df))],
-                textposition='top center',
-                hovertemplate='CRITICAL MOVE %{x}<br>Connections: %{y}<br>%{text}<extra></extra>',
+                hovertemplate='CRITICAL MOVE %{x}<br>Connections: %{y}<extra></extra>',
                 name='Critical Moves'
             ))
         
@@ -619,6 +646,16 @@ class LinkographVisualizer:
         }
         return pattern_colors.get(pattern_type, self.colors['neutral_light'])
     
+    def _hex_to_rgba(self, hex_color: str, alpha: float = 0.2) -> str:
+        """Convert hex color to rgba format with specified alpha"""
+        # Remove '#' if present
+        hex_color = hex_color.lstrip('#')
+        # Convert hex to RGB
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+        return f'rgba({r},{g},{b},{alpha})'
+    
     def _add_phase_annotations(self, fig: go.Figure, moves: List[DesignMove]):
         """Add phase region annotations to figure"""
         if not moves:
@@ -635,9 +672,7 @@ class LinkographVisualizer:
                     y=0.5,
                     text=current_phase.capitalize(),
                     showarrow=False,
-                    bgcolor=self._get_phase_color(current_phase) + '20',
-                    bordercolor=self._get_phase_color(current_phase),
-                    borderwidth=1
+                    font=dict(color=self._get_phase_color(current_phase), size=14, weight='bold')
                 )
                 
                 if move is not None:

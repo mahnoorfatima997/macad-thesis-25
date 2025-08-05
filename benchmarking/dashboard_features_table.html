@@ -1,0 +1,608 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>MENTOR Benchmarking - Dashboard Features Documentation</title>
+        <meta charset="utf-8">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #faf8f5;
+            }
+            h1 {
+                color: #4f3a3e;
+                text-align: center;
+            }
+            .filters {
+                margin-bottom: 20px;
+                padding: 15px;
+                background-color: #e0ceb5;
+                border-radius: 5px;
+            }
+            .filter-group {
+                display: inline-block;
+                margin-right: 20px;
+            }
+            select, input {
+                padding: 5px;
+                margin-left: 5px;
+                border: 1px solid #cda29a;
+                border-radius: 3px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                background-color: white;
+                box-shadow: 0 2px 4px rgba(79, 58, 62, 0.1);
+            }
+            th {
+                background-color: #5c4f73;
+                color: white;
+                padding: 12px;
+                text-align: left;
+                position: sticky;
+                top: 0;
+                cursor: pointer;
+            }
+            th:hover {
+                background-color: #784c80;
+            }
+            td {
+                padding: 10px;
+                border-bottom: 1px solid #e0ceb5;
+            }
+            tr:nth-child(even) {
+                background-color: #faf8f5;
+            }
+            tr:hover {
+                background-color: #e0ceb5;
+            }
+            .section-overview { background-color: #dcc188; }
+            .section-cognitive { background-color: #cda29a; }
+            .section-learning { background-color: #b87189; }
+            .section-agent { background-color: #784c80; color: white; }
+            .section-comparative { background-color: #5c4f73; color: white; }
+            .section-anthropomorphism { background-color: #cd766d; color: white; }
+            .section-linkography { background-color: #d99c66; }
+            .section-proficiency { background-color: #dcc188; }
+            .section-graphml { background-color: #4f3a3e; color: white; }
+            .type-metric { font-weight: bold; color: #784c80; }
+            .type-visualization { font-weight: bold; color: #cd766d; }
+            .type-analysis { font-weight: bold; color: #5c4f73; }
+            .type-process { font-weight: bold; color: #d99c66; }
+            .type-algorithm { font-weight: bold; color: #b87189; }
+            .type-model { font-weight: bold; color: #4f3a3e; }
+            .type-reference { font-weight: bold; color: #cda29a; }
+            .type-table { font-weight: bold; color: #5c4f73; }
+            .stats {
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #e0ceb5;
+                border-radius: 5px;
+                text-align: center;
+            }
+            /* Tooltip styles */
+            .tooltip-cell {
+                position: relative;
+                cursor: help;
+            }
+            .tooltip-cell:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #4f3a3e;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                white-space: normal;
+                width: 250px;
+                font-size: 12px;
+                z-index: 1000;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                line-height: 1.4;
+            }
+            .tooltip-cell:hover::before {
+                content: '';
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translate(-50%, 5px);
+                border: 6px solid transparent;
+                border-top-color: #4f3a3e;
+                z-index: 1001;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>MENTOR Benchmarking - Dashboard Features Documentation</h1>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label>Section:</label>
+                <select id="sectionFilter" onchange="filterTable()">
+                    <option value="">All Sections</option>
+                    <option value="Overview">Overview</option>
+                    <option value="Cognitive Patterns">Cognitive Patterns</option>
+                    <option value="Learning Progression">Learning Progression</option>
+                    <option value="Agent Performance">Agent Performance</option>
+                    <option value="Comparative Analysis">Comparative Analysis</option>
+                    <option value="Anthropomorphism">Anthropomorphism</option>
+                    <option value="Linkography">Linkography</option>
+                    <option value="Proficiency Analysis">Proficiency Analysis</option>
+                    <option value="Graph ML">Graph ML</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Type:</label>
+                <select id="typeFilter" onchange="filterTable()">
+                    <option value="">All Types</option>
+                    <option value="Metric">Metric</option>
+                    <option value="Visualization">Visualization</option>
+                    <option value="Analysis">Analysis</option>
+                    <option value="Process">Process</option>
+                    <option value="Table">Table</option>
+                    <option value="Algorithm">Algorithm</option>
+                    <option value="Model">Model</option>
+                    <option value="Reference">Reference</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search features...">
+            </div>
+        </div>
+        
+        <table id="featuresTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Section ↕</th>
+                    <th onclick="sortTable(1)">Subsection ↕</th>
+                    <th onclick="sortTable(2)">Feature ↕</th>
+                    <th onclick="sortTable(3)">Calculation ↕</th>
+                    <th onclick="sortTable(4)">Data Source ↕</th>
+                    <th onclick="sortTable(5)">Theory ↕</th>
+                    <th onclick="sortTable(6)">Implementation ↕</th>
+                    <th onclick="sortTable(7)">Type ↕</th>
+                </tr>
+            </thead>
+            <tbody>
+    
+                <tr>
+                    <td class="section-overview">Overview</td>
+                    <td>Key Metrics Panel</td>
+                    <td><strong>Total Sessions</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Simply counts how many user sessions have been analyzed">Count of evaluation reports</td>
+                    <td class="tooltip-cell" data-tooltip="Processed analysis files containing session summaries"><code>evaluation_reports/*.json</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Tukey (1977) Exploratory Data Analysis"><a href="https://archive.org/details/exploratorydataa0000tuke_7616" target="_blank" style="color: inherit; text-decoration: underline;"><em>Tukey (1977) Exploratory Data Analysis</em></a></td>
+                    <td><code>benchmark_dashboard.py:335</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-overview">Overview</td>
+                    <td>Key Metrics Panel</td>
+                    <td><strong>Avg Cognitive Offloading Prevention</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Calculates the average rate at which the system prevents users from taking cognitive shortcuts">Mean of all session prevention rates</td>
+                    <td class="tooltip-cell" data-tooltip="Overall rate of preventing cognitive shortcuts"><code>session_metrics.cognitive_offloading_prevention.overall_rate</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Renkl (2002) Worked Examples & Cognitive Load"><a href="https://www.cambridge.org/core/books/abs/cognitive-load-theory/learning-from-workedout-examples-and-problem-solving/DBA85CE81E9A7B1B090547D12E2F2A04" target="_blank" style="color: inherit; text-decoration: underline;"><em>Renkl (2002) Worked Examples & Cognitive Load</em></a></td>
+                    <td><code>benchmark_dashboard.py:428-429</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-overview">Overview</td>
+                    <td>Key Metrics Panel</td>
+                    <td><strong>Avg Deep Thinking Engagement</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Average measure of how deeply users engage with complex thinking tasks">Mean of all session engagement rates</td>
+                    <td class="tooltip-cell" data-tooltip="Overall rate of engaging in complex thinking"><code>session_metrics.deep_thinking_engagement.overall_rate</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Marton & Säljö (1976) Deep vs Surface Learning"><a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/j.2044-8279.1976.tb02980.x" target="_blank" style="color: inherit; text-decoration: underline;"><em>Marton & Säljö (1976) Deep vs Surface Learning</em></a></td>
+                    <td><code>benchmark_dashboard.py:430-431</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-overview">Overview</td>
+                    <td>Key Metrics Panel</td>
+                    <td><strong>Overall Improvement</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Combines two key metrics with weights to show overall system effectiveness">Weighted avg of prevention and deep thinking improvements</td>
+                    <td class="tooltip-cell" data-tooltip="Comparison against research-based traditional tutoring rates"><code>Calculated vs. 30% and 35% baselines</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Bloom (1984) 2 Sigma Problem"><a href="https://journals.sagepub.com/doi/10.3102/0013189X013006004" target="_blank" style="color: inherit; text-decoration: underline;"><em>Bloom (1984) 2 Sigma Problem</em></a></td>
+                    <td><code>benchmark_dashboard.py:443-448</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-overview">Overview</td>
+                    <td>Learning Metrics Chart</td>
+                    <td><strong>Time Series Plot</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Shows how metrics change over time in a line graph">Session metrics plotted chronologically</td>
+                    <td class="tooltip-cell" data-tooltip="Time and date when each session occurred"><code>session_metrics.timestamp</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Newell & Rosenbloom (1981) Power Law of Practice"><a href="https://www.researchgate.net/profile/Paul-Rosenbloom/publication/243783833_Mechanisms_of_skill_acquisition_and_the_law_of_practice/links/5461086e0cf2c1a63bff7b62/Mechanisms-of-skill-acquisition-and-the-law-of-practice.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Newell & Rosenbloom (1981) Power Law of Practice</em></a></td>
+                    <td><code>benchmark_dashboard.py:467-505</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-overview">Overview</td>
+                    <td>Proficiency Distribution</td>
+                    <td><strong>Proficiency Pie Chart</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Machine learning algorithm that groups users into proficiency levels based on behavior patterns">K-means clustering on graph features</td>
+                    <td class="tooltip-cell" data-tooltip="Assigned skill level (beginner/intermediate/advanced/expert)"><code>proficiency_classification.level</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Dreyfus & Dreyfus (1980) Five-Stage Model"><a href="https://www.bumc.bu.edu/facdev-medicine/files/2012/03/Dreyfus-skill-level.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Dreyfus & Dreyfus (1980) Five-Stage Model</em></a></td>
+                    <td><code>graph_ml_benchmarking.py:359-395</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-cognitive">Cognitive Patterns</td>
+                    <td>Session Comparison</td>
+                    <td><strong>Session Comparison Table</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Raw performance data for each individual user session">Direct metrics per session</td>
+                    <td class="tooltip-cell" data-tooltip="Processed analysis files containing session summaries"><code>evaluation_reports/*.json</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Pellegrino et al. (2001) Knowing What Students Know"><a href="https://nap.nationalacademies.org/catalog/10019/knowing-what-students-know-the-science-and-design-of-educational" target="_blank" style="color: inherit; text-decoration: underline;"><em>Pellegrino et al. (2001) Knowing What Students Know</em></a></td>
+                    <td><code>benchmark_dashboard.py:776-780</code></td>
+                    <td class="type-table tooltip-cell" data-tooltip="Structured data in rows and columns">Table</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-cognitive">Cognitive Patterns</td>
+                    <td>Average Patterns</td>
+                    <td><strong>Cognitive Patterns Radar</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Combines five different thinking measures into a spider/radar chart">5 cognitive metrics averaged</td>
+                    <td class="tooltip-cell" data-tooltip="Combined data from all user sessions"><code>Session metrics aggregated</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Biggs (1996) Constructive Alignment"><a href="https://www.researchgate.net/publication/220017462_Enhancing_Teaching_Through_Constructive_Alignment" target="_blank" style="color: inherit; text-decoration: underline;"><em>Biggs (1996) Constructive Alignment</em></a></td>
+                    <td><code>benchmark_dashboard.py:790-835</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-cognitive">Cognitive Patterns</td>
+                    <td>Average Patterns</td>
+                    <td><strong>Baseline Comparison</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Comparison values from educational research studies">Literature values overlay</td>
+                    <td class="tooltip-cell" data-tooltip="Fixed comparison values from educational research"><code>[0.5, 0.35, 0.4, 0.45, 0.5]</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Cohen et al. (1982) Educational Outcomes Meta-Analysis"><a href="https://f.hubspotusercontent30.net/hubfs/5191137/attachments/publications/CEMWeb024%20Educational%20Outcomes%20Of%20Tutorings%20Meta%20Analysis.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Cohen et al. (1982) Educational Outcomes Meta-Analysis</em></a></td>
+                    <td><code>benchmark_dashboard.py:918</code></td>
+                    <td class="type-reference tooltip-cell" data-tooltip="Baseline or comparison values">Reference</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-learning">Learning Progression</td>
+                    <td>Skill Tracking</td>
+                    <td><strong>Skill Progression Over Time</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Tracks movement through skill levels (beginner→intermediate→advanced)">Ordinal progression mapping</td>
+                    <td class="tooltip-cell" data-tooltip="Starting and ending skill levels for each user"><code>skill_progression.initial/final_level</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Anderson (1982) Acquisition of Cognitive Skill"><a href="http://act-r.psy.cmu.edu/wordpress/wp-content/uploads/2012/12/63ACS_JRA_PR.1982.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Anderson (1982) Acquisition of Cognitive Skill</em></a></td>
+                    <td><code>evaluation_metrics.py:275-326</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-learning">Learning Progression</td>
+                    <td>Learning Velocity</td>
+                    <td><strong>Learning Velocity Chart</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Rate of change - how fast someone is learning">Delta metrics / time</td>
+                    <td class="tooltip-cell" data-tooltip="Changes in metrics over time"><code>Temporal metric differences</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Anderson (1982) Acquisition of Cognitive Skill"><a href="http://act-r.psy.cmu.edu/wordpress/wp-content/uploads/2012/12/63ACS_JRA_PR.1982.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Anderson (1982) Acquisition of Cognitive Skill</em></a></td>
+                    <td><code>benchmark_dashboard.py:1021-1065</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-agent">Agent Performance</td>
+                    <td>Usage Distribution</td>
+                    <td><strong>Agent Usage Bar Chart</strong></td>
+                    <td class="tooltip-cell" data-tooltip="How often each AI assistant is used">Frequency per agent type</td>
+                    <td class="tooltip-cell" data-tooltip="List of which AI assistants were activated"><code>agents_used field</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Wooldridge & Jennings (1995) Intelligent Agents"><a href="https://www.cs.cmu.edu/~motionplanning/papers/sbp_papers/integrated1/woodridge_intelligent_agents.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Wooldridge & Jennings (1995) Intelligent Agents</em></a></td>
+                    <td><code>benchmark_dashboard.py:1270-1280</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-agent">Agent Performance</td>
+                    <td>Effectiveness</td>
+                    <td><strong>Agent Effectiveness Metrics</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Performance measures for each individual AI assistant">Agent-specific cognitive metrics</td>
+                    <td class="tooltip-cell" data-tooltip="Data grouped by main AI assistant used"><code>Filtered by primary_agent</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems"><a href="https://arxiv.org/html/2507.18882v1" target="_blank" style="color: inherit; text-decoration: underline;"><em>Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems</em></a></td>
+                    <td><code>benchmark_dashboard.py:1282-1315</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-agent">Agent Performance</td>
+                    <td>Handoff Flow</td>
+                    <td><strong>Agent Handoff Sankey</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Shows how conversations flow between different AI assistants">Sequential agent pairs</td>
+                    <td class="tooltip-cell" data-tooltip="Order in which different AI assistants were used"><code>agents_used sequences</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Romero & Ventura (2020) Educational Data Mining"><a href="https://bookdown.org/chen/la-manual/files/Romero%20and%20Ventura%20-%202020.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Romero & Ventura (2020) Educational Data Mining</em></a></td>
+                    <td><code>benchmark_dashboard.py:1348-1380</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-comparative">Comparative Analysis</td>
+                    <td>Improvements</td>
+                    <td><strong>Improvement by Dimension</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Percentage improvement formula comparing before and after">(post - pre) / pre * 100</td>
+                    <td class="tooltip-cell" data-tooltip="Data field or file: Session start/end metrics"><code>Session start/end metrics</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Black & Wiliam (1998) Assessment in Education"><a href="https://www.gla.ac.uk/t4/learningandteaching/files/PGCTHE/BlackandWiliam1998.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Black & Wiliam (1998) Assessment in Education</em></a></td>
+                    <td><code>evaluation_metrics.py:425-450</code></td>
+                    <td class="type-visualization tooltip-cell" data-tooltip="A chart, graph, or visual representation">Visualization</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-comparative">Comparative Analysis</td>
+                    <td>Feature Impact</td>
+                    <td><strong>Feature Impact Analysis</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Statistical analysis showing which features most impact success">Correlation analysis with outcomes</td>
+                    <td class="tooltip-cell" data-tooltip="Data field or file: Real-time calculation from sessions"><code>Real-time calculation from sessions</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Breiman (2001) Random Forests"><a href="https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Breiman (2001) Random Forests</em></a></td>
+                    <td><code>benchmark_dashboard.py:163-212</code></td>
+                    <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-anthropomorphism">Anthropomorphism</td>
+                    <td>Cognitive Autonomy</td>
+                    <td><strong>CAI Score</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Formula measuring how independently users think">autonomy_ratio - 0.5 * dependency_ratio</td>
+                    <td class="tooltip-cell" data-tooltip="Classification of user questions (direct/exploratory/reflective)"><code>input_type categorization</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Ryan & Deci (2000) Self-Determination Theory"><a href="https://selfdeterminationtheory.org/SDT/documents/2000_RyanDeci_SDT.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Ryan & Deci (2000) Self-Determination Theory</em></a></td>
+                    <td><code>anthropomorphism_metrics.py:182-204</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-anthropomorphism">Anthropomorphism</td>
+                    <td>Dependency</td>
+                    <td><strong>ADS Score</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Detects when users treat AI too much like a human">personal_attributions + emotional_language</td>
+                    <td class="tooltip-cell" data-tooltip="Searches for specific words and phrases in conversations"><code>Text pattern matching</code></td>
+                    <td class="tooltip-cell" data-tooltip="Theoretical foundation: Nass & Moon (2000) Machines and Mindlessness"><a href="https://www.coli.uni-saarland.de/courses/agentinteraction/contents/papers/Nass00.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Nass & Moon (2000) Machines and Mindlessness</em></a></td>
+                    <td><code>anthropomorphism_metrics.py:218-250</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-anthropomorphism">Anthropomorphism</td>
+                    <td>Boundaries</td>
+                    <td><strong>PBI Score</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Measures professional focus of conversations">1 - conversation_drift - personal_intrusions</td>
+                    <td class="tooltip-cell" data-tooltip="Data field or file: Topic modeling"><code>Topic modeling</code></td>
+                    <td class="tooltip-cell" data-tooltip="Maintaining appropriate teacher-student boundaries"><a href="https://connect.springerpub.com/binary/sgrworks/34598e5a4cbf1a9c/0ceb67abe3678cce2ed9c8f19e188f04c646d46db5af983d91d6ce025c568e36/9780826135292_0004.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Cottone et al. (2021) Ethical Decision Making Processes</em></a></td>
+                    <td><code>anthropomorphism_metrics.py:258-290</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-anthropomorphism">Anthropomorphism</td>
+                    <td>Engagement</td>
+                    <td><strong>NES Score</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Complexity of architectural concepts discussed">concept_diversity + technical_vocabulary</td>
+                    <td class="tooltip-cell" data-tooltip="Data field or file: Concept extraction"><code>Concept extraction</code></td>
+                    <td class="tooltip-cell" data-tooltip="Ability to switch between different concepts and adapt thinking"><a href="https://core.ac.uk/download/pdf/4826446.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Spiro et al. (1988) Cognitive Flexibility Theory</em></a></td>
+                    <td><code>anthropomorphism_metrics.py:318-345</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-linkography">Linkography</td>
+                    <td>Design Moves</td>
+                    <td><strong>Move Extraction</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Identifies significant design decisions in user interactions">Meaningful action detection</td>
+                    <td class="tooltip-cell" data-tooltip="Deep analysis of what users say and do"><code>Interaction content analysis</code></td>
+                    <td class="tooltip-cell" data-tooltip="Method for analyzing design thinking through linked moves"><a href="https://direct.mit.edu/books/monograph/2197/LinkographyUnfolding-the-Design-Process" target="_blank" style="color: inherit; text-decoration: underline;"><em>Goldschmidt's linkography (1990, 2014)</em></a></td>
+                    <td><code>linkography_analyzer.py:45-120</code></td>
+                    <td class="type-process tooltip-cell" data-tooltip="A systematic procedure or workflow">Process</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-linkography">Linkography</td>
+                    <td>Link Generation</td>
+                    <td><strong>Fuzzy Linkography</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Links design moves that are conceptually related (65% similarity threshold)">Semantic similarity > 0.65</td>
+                    <td class="tooltip-cell" data-tooltip="Mathematical comparison of meaning between texts"><code>Cosine similarity of embeddings</code></td>
+                    <td class="tooltip-cell" data-tooltip="Design decisions are often partially related, not binary"><em>Fuzzy design reasoning (Kan & Gero, 2008)</em></td>
+                    <td><code>linkography_engine.py:85-140</code></td>
+                    <td class="type-algorithm tooltip-cell" data-tooltip="A computational procedure for analysis">Algorithm</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-linkography">Linkography</td>
+                    <td>Metrics</td>
+                    <td><strong>Link Density</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Ratio showing how interconnected design decisions are">Links / moves</td>
+                    <td class="tooltip-cell" data-tooltip="Visual network of connected design decisions"><code>Generated linkograph</code></td>
+                    <td class="tooltip-cell" data-tooltip="How efficiently designers generate and connect ideas"><em>Design productivity measure</em></td>
+                    <td><code>linkography_engine.py:142-165</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-linkography">Linkography</td>
+                    <td>Patterns</td>
+                    <td><strong>Critical Moves</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Design decisions that influence many other decisions">High connectivity nodes</td>
+                    <td class="tooltip-cell" data-tooltip="Data field or file: Link count analysis"><code>Link count analysis</code></td>
+                    <td class="tooltip-cell" data-tooltip="Finding the most impactful choices in design process"><em>Key decision identification</em></td>
+                    <td><code>linkography_analyzer.py:200-230</code></td>
+                    <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-proficiency">Proficiency Analysis</td>
+                    <td>Characteristics</td>
+                    <td><strong>Question Quality</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Rates questions from simple recall to complex synthesis">Complexity scoring</td>
+                    <td class="tooltip-cell" data-tooltip="Measure of how sophisticated user questions are"><code>deep_thinking_engagement.question_complexity</code></td>
+                    <td class="tooltip-cell" data-tooltip="Hierarchy from factual to evaluative questions"><em>Bloom's question levels</em></td>
+                    <td><code>benchmark_dashboard.py:239</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-proficiency">Proficiency Analysis</td>
+                    <td>Characteristics</td>
+                    <td><strong>Reflection Depth</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Examines depth and quality of user responses">Response analysis</td>
+                    <td class="tooltip-cell" data-tooltip="Rate of engaging users in complex analytical thinking"><code>deep_thinking_engagement.overall_rate</code></td>
+                    <td class="tooltip-cell" data-tooltip="Learning through thinking about experiences"><em>Reflective practice theory (Schön, 1983)</em></td>
+                    <td><code>benchmark_dashboard.py:243</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-proficiency">Proficiency Analysis</td>
+                    <td>Progression</td>
+                    <td><strong>Growth Potential</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Predicts future learning based on past patterns">Improvement trend analysis</td>
+                    <td class="tooltip-cell" data-tooltip="Past learning patterns and improvements"><code>Historical progression data</code></td>
+                    <td class="tooltip-cell" data-tooltip="Belief that abilities can be developed through effort"><em>Growth mindset theory (Dweck, 2006)</em></td>
+                    <td><code>benchmark_dashboard.py:317-348</code></td>
+                    <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-graphml">Graph ML</td>
+                    <td>Construction</td>
+                    <td><strong>Graph Building</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Builds a network where conversations are points connected by conceptual links">Nodes from interactions, edges from similarity</td>
+                    <td class="tooltip-cell" data-tooltip="Mathematical representations of text meaning"><code>Text embeddings</code></td>
+                    <td class="tooltip-cell" data-tooltip="AI that learns from network-structured data"><em>Graph neural networks</em></td>
+                    <td><code>graph_ml_benchmarking.py:90-120</code></td>
+                    <td class="type-process tooltip-cell" data-tooltip="A systematic procedure or workflow">Process</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-graphml">Graph ML</td>
+                    <td>GNN Analysis</td>
+                    <td><strong>GraphSAGE Model</strong></td>
+                    <td class="tooltip-cell" data-tooltip="AI technique that learns from connected data points">Neighborhood aggregation</td>
+                    <td class="tooltip-cell" data-tooltip="The network of connections between interactions"><code>Graph structure</code></td>
+                    <td class="tooltip-cell" data-tooltip="GraphSAGE paper introducing scalable graph neural networks"><a href="https://cs.stanford.edu/people/jure/pubs/graphsage-nips17.pdf" target="_blank" style="color: inherit; text-decoration: underline;"><em>Hamilton et al. (2017)</em></a></td>
+                    <td><code>graph_ml_benchmarking.py:250-320</code></td>
+                    <td class="type-model tooltip-cell" data-tooltip="A machine learning or statistical model">Model</td>
+                </tr>
+        
+                <tr>
+                    <td class="section-graphml">Graph ML</td>
+                    <td>Clustering</td>
+                    <td><strong>Proficiency Clustering</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Groups users by finding patterns in their interaction data">K-means on embeddings</td>
+                    <td class="tooltip-cell" data-tooltip="Mathematical properties of the interaction network"><code>Graph features</code></td>
+                    <td class="tooltip-cell" data-tooltip="AI finding patterns without labeled examples"><em>Unsupervised learning</em></td>
+                    <td><code>graph_ml_benchmarking.py:359-395</code></td>
+                    <td class="type-algorithm tooltip-cell" data-tooltip="A computational procedure for analysis">Algorithm</td>
+                </tr>
+        
+            </tbody>
+        </table>
+        
+        <div class="stats">
+            <p><strong>Total Features:</strong> <span id="totalCount">0</span> | 
+               <strong>Filtered:</strong> <span id="filteredCount">0</span></p>
+        </div>
+        
+        <script>
+            function filterTable() {
+                const sectionFilter = document.getElementById('sectionFilter').value.toLowerCase();
+                const typeFilter = document.getElementById('typeFilter').value.toLowerCase();
+                const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+                const table = document.getElementById('featuresTable');
+                const tr = table.getElementsByTagName('tr');
+                let visibleCount = 0;
+                
+                for (let i = 1; i < tr.length; i++) {
+                    const td = tr[i].getElementsByTagName('td');
+                    let shouldShow = true;
+                    
+                    // Check section filter
+                    if (sectionFilter && td[0].textContent.toLowerCase() !== sectionFilter) {
+                        shouldShow = false;
+                    }
+                    
+                    // Check type filter
+                    if (typeFilter && td[7].textContent.toLowerCase() !== typeFilter) {
+                        shouldShow = false;
+                    }
+                    
+                    // Check search filter
+                    if (searchFilter) {
+                        let found = false;
+                        for (let j = 0; j < td.length; j++) {
+                            if (td[j].textContent.toLowerCase().indexOf(searchFilter) > -1) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) shouldShow = false;
+                    }
+                    
+                    tr[i].style.display = shouldShow ? '' : 'none';
+                    if (shouldShow) visibleCount++;
+                }
+                
+                updateStats(visibleCount);
+            }
+            
+            function sortTable(n) {
+                const table = document.getElementById('featuresTable');
+                let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+                switching = true;
+                dir = 'asc';
+                
+                while (switching) {
+                    switching = false;
+                    rows = table.rows;
+                    
+                    for (i = 1; i < (rows.length - 1); i++) {
+                        shouldSwitch = false;
+                        x = rows[i].getElementsByTagName('TD')[n];
+                        y = rows[i + 1].getElementsByTagName('TD')[n];
+                        
+                        if (dir == 'asc') {
+                            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else if (dir == 'desc') {
+                            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (shouldSwitch) {
+                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                        switching = true;
+                        switchcount++;
+                    } else {
+                        if (switchcount == 0 && dir == 'asc') {
+                            dir = 'desc';
+                            switching = true;
+                        }
+                    }
+                }
+            }
+            
+            function updateStats(visibleCount) {
+                const total = document.getElementById('featuresTable').rows.length - 1;
+                document.getElementById('totalCount').textContent = total;
+                document.getElementById('filteredCount').textContent = visibleCount;
+            }
+            
+            // Initialize stats on load
+            window.onload = function() {
+                const total = document.getElementById('featuresTable').rows.length - 1;
+                updateStats(total);
+            };
+        </script>
+    </body>
+    </html>
+    

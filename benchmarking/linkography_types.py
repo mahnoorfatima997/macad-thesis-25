@@ -4,7 +4,7 @@ Types and interfaces for Gabriela Goldschmidt's Linkography methodology
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple, Literal
+from typing import List, Dict, Optional, Tuple, Literal, Any
 from datetime import datetime
 import numpy as np
 
@@ -161,6 +161,7 @@ class LinkographSession:
     overall_metrics: LinkographMetrics
     cognitive_mapping: CognitiveLinkographMapping
     patterns_detected: List[LinkographPattern]
+    raw_data: Optional[Dict[str, Any]] = None  # Raw session data for concept extraction
     
     def get_phase_linkograph(self, phase: DesignPhase) -> Optional[Linkograph]:
         """Get linkograph for a specific phase"""

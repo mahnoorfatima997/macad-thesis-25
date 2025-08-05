@@ -1,0 +1,31 @@
+Section,Subsection,Feature,Calculation,Data Source,Theory,Implementation,Type
+Overview,Key Metrics Panel,Total Sessions,Count of evaluation reports,evaluation_reports/*.json,Tukey (1977) Exploratory Data Analysis,benchmark_dashboard.py:335,Metric
+Overview,Key Metrics Panel,Avg Cognitive Offloading Prevention,Mean of all session prevention rates,session_metrics.cognitive_offloading_prevention.overall_rate,Renkl (2002) Worked Examples & Cognitive Load,benchmark_dashboard.py:428-429,Metric
+Overview,Key Metrics Panel,Avg Deep Thinking Engagement,Mean of all session engagement rates,session_metrics.deep_thinking_engagement.overall_rate,Marton & Säljö (1976) Deep vs Surface Learning,benchmark_dashboard.py:430-431,Metric
+Overview,Key Metrics Panel,Overall Improvement,Weighted avg of prevention and deep thinking improvements,Calculated vs. 30% and 35% baselines,Bloom (1984) 2 Sigma Problem,benchmark_dashboard.py:443-448,Metric
+Overview,Learning Metrics Chart,Time Series Plot,Session metrics plotted chronologically,session_metrics.timestamp,Newell & Rosenbloom (1981) Power Law of Practice,benchmark_dashboard.py:467-505,Visualization
+Overview,Proficiency Distribution,Proficiency Pie Chart,K-means clustering on graph features,proficiency_classification.level,Dreyfus & Dreyfus (1980) Five-Stage Model,graph_ml_benchmarking.py:359-395,Visualization
+Cognitive Patterns,Session Comparison,Session Comparison Table,Direct metrics per session,evaluation_reports/*.json,Pellegrino et al. (2001) Knowing What Students Know,benchmark_dashboard.py:776-780,Table
+Cognitive Patterns,Average Patterns,Cognitive Patterns Radar,5 cognitive metrics averaged,Session metrics aggregated,Biggs (1996) Constructive Alignment,benchmark_dashboard.py:790-835,Visualization
+Cognitive Patterns,Average Patterns,Baseline Comparison,Literature values overlay,"[0.5, 0.35, 0.4, 0.45, 0.5]",Cohen et al. (1982) Educational Outcomes Meta-Analysis,benchmark_dashboard.py:918,Reference
+Learning Progression,Skill Tracking,Skill Progression Over Time,Ordinal progression mapping,skill_progression.initial/final_level,Anderson (1982) Acquisition of Cognitive Skill,evaluation_metrics.py:275-326,Visualization
+Learning Progression,Learning Velocity,Learning Velocity Chart,Delta metrics / time,Temporal metric differences,Anderson (1982) Acquisition of Cognitive Skill,benchmark_dashboard.py:1021-1065,Visualization
+Agent Performance,Usage Distribution,Agent Usage Bar Chart,Frequency per agent type,agents_used field,Wooldridge & Jennings (1995) Intelligent Agents,benchmark_dashboard.py:1270-1280,Visualization
+Agent Performance,Effectiveness,Agent Effectiveness Metrics,Agent-specific cognitive metrics,Filtered by primary_agent,Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems,benchmark_dashboard.py:1282-1315,Metric
+Agent Performance,Handoff Flow,Agent Handoff Sankey,Sequential agent pairs,agents_used sequences,Romero & Ventura (2020) Educational Data Mining,benchmark_dashboard.py:1348-1380,Visualization
+Comparative Analysis,Improvements,Improvement by Dimension,(post - pre) / pre * 100,Session start/end metrics,Black & Wiliam (1998) Assessment in Education,evaluation_metrics.py:425-450,Visualization
+Comparative Analysis,Feature Impact,Feature Impact Analysis,Correlation analysis with outcomes,Real-time calculation from sessions,Breiman (2001) Random Forests,benchmark_dashboard.py:163-212,Analysis
+Anthropomorphism,Cognitive Autonomy,CAI Score,autonomy_ratio - 0.5 * dependency_ratio,input_type categorization,Ryan & Deci (2000) Self-Determination Theory,anthropomorphism_metrics.py:182-204,Metric
+Anthropomorphism,Dependency,ADS Score,personal_attributions + emotional_language,Text pattern matching,Nass & Moon (2000) Machines and Mindlessness,anthropomorphism_metrics.py:218-250,Metric
+Anthropomorphism,Boundaries,PBI Score,1 - conversation_drift - personal_intrusions,Topic modeling,Cottone et al. (2021) Ethical Decision Making Processes,anthropomorphism_metrics.py:258-290,Metric
+Anthropomorphism,Engagement,NES Score,concept_diversity + technical_vocabulary,Concept extraction,Spiro et al. (1988) Cognitive Flexibility Theory,anthropomorphism_metrics.py:318-345,Metric
+Linkography,Design Moves,Move Extraction,Meaningful action detection,Interaction content analysis,"Goldschmidt's linkography (1990, 2014)",linkography_analyzer.py:45-120,Process
+Linkography,Link Generation,Fuzzy Linkography,Semantic similarity > 0.65,Cosine similarity of embeddings,"Fuzzy design reasoning (Kan & Gero, 2008)",linkography_engine.py:85-140,Algorithm
+Linkography,Metrics,Link Density,Links / moves,Generated linkograph,Design productivity measure,linkography_engine.py:142-165,Metric
+Linkography,Patterns,Critical Moves,High connectivity nodes,Link count analysis,Key decision identification,linkography_analyzer.py:200-230,Analysis
+Proficiency Analysis,Characteristics,Question Quality,Complexity scoring,deep_thinking_engagement.question_complexity,Bloom's question levels,benchmark_dashboard.py:239,Metric
+Proficiency Analysis,Characteristics,Reflection Depth,Response analysis,deep_thinking_engagement.overall_rate,"Reflective practice theory (Schön, 1983)",benchmark_dashboard.py:243,Metric
+Proficiency Analysis,Progression,Growth Potential,Improvement trend analysis,Historical progression data,"Growth mindset theory (Dweck, 2006)",benchmark_dashboard.py:317-348,Analysis
+Graph ML,Construction,Graph Building,"Nodes from interactions, edges from similarity",Text embeddings,Graph neural networks,graph_ml_benchmarking.py:90-120,Process
+Graph ML,GNN Analysis,GraphSAGE Model,Neighborhood aggregation,Graph structure,Hamilton et al. (2017),graph_ml_benchmarking.py:250-320,Model
+Graph ML,Clustering,Proficiency Clustering,K-means on embeddings,Graph features,Unsupervised learning,graph_ml_benchmarking.py:359-395,Algorithm

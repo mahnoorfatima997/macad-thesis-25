@@ -1,20 +1,49 @@
 {
-  "generated_at": "2025-07-29T22:43:03.374986",
+  "generated_at": "2025-08-04T14:41:10.061761",
   "benchmark_profiles": {
+    "intermediate": {
+      "proficiency_level": "intermediate",
+      "target_metrics": {
+        "cognitive_load_range": [
+          0.13593749999999996,
+          0.4359375
+        ],
+        "learning_effectiveness_min": 0.46375,
+        "engagement_min": 0.5208333333333334,
+        "cognitive_offloading_prevention_min": 0.30625,
+        "deep_thinking_rate_min": 0.36875,
+        "scaffolding_effectiveness_min": 0.21874999999999997
+      },
+      "recommended_strategies": [
+        "Increase Socratic questioning to prevent direct answer seeking",
+        "Incorporate more 'why' and 'how' questions to encourage reflection",
+        "Provide more structured guidance with progressive complexity"
+      ],
+      "progression_indicators": {
+        "next_level": "advanced",
+        "requirements": {
+          "sustained_deep_thinking": 0.8,
+          "reduced_cognitive_offloading": 0.85,
+          "independent_problem_solving": 0.7,
+          "conceptual_connections": 0.7
+        }
+      }
+    },
     "beginner": {
       "proficiency_level": "beginner",
       "target_metrics": {
         "cognitive_load_range": [
-          0.4125,
-          0.7125
+          0.485,
+          0.785
         ],
-        "learning_effectiveness_min": 0.35,
-        "engagement_min": 0.8583333333333334,
-        "cognitive_offloading_prevention_min": 0.9,
-        "deep_thinking_rate_min": 0.15,
-        "scaffolding_effectiveness_min": 0
+        "learning_effectiveness_min": 0.16,
+        "engagement_min": 0.5972222222222222,
+        "cognitive_offloading_prevention_min": 0,
+        "deep_thinking_rate_min": 0.19999999999999998,
+        "scaffolding_effectiveness_min": 0.1
       },
       "recommended_strategies": [
+        "Increase Socratic questioning to prevent direct answer seeking",
         "Incorporate more 'why' and 'how' questions to encourage reflection",
         "Provide more structured guidance with progressive complexity"
       ],
@@ -28,42 +57,42 @@
         }
       }
     },
-    "intermediate": {
-      "proficiency_level": "intermediate",
+    "advanced": {
+      "proficiency_level": "advanced",
       "target_metrics": {
         "cognitive_load_range": [
-          0.85,
-          1
+          0.57,
+          0.87
         ],
-        "learning_effectiveness_min": 0.45000000000000007,
-        "engagement_min": 0.8583333333333334,
+        "learning_effectiveness_min": 0.9,
+        "engagement_min": 0.7416666666666667,
         "cognitive_offloading_prevention_min": 0.9,
         "deep_thinking_rate_min": 0.9,
-        "scaffolding_effectiveness_min": 0
+        "scaffolding_effectiveness_min": 0.9
       },
-      "recommended_strategies": [
-        "Provide more structured guidance with progressive complexity"
-      ],
+      "recommended_strategies": [],
       "progression_indicators": {
-        "next_level": "advanced",
+        "next_level": "expert",
         "requirements": {
-          "sustained_deep_thinking": 0.8,
-          "reduced_cognitive_offloading": 0.85,
-          "independent_problem_solving": 0.7,
-          "conceptual_connections": 0.7
+          "sustained_deep_thinking": 0.9,
+          "reduced_cognitive_offloading": 0.95,
+          "independent_problem_solving": 0.85,
+          "conceptual_connections": 0.85
         }
       }
     }
   },
   "cluster_analysis": {
-    "n_clusters": 2,
+    "n_clusters": 3,
     "proficiency_distribution": {
+      "intermediate": 1,
       "beginner": 1,
-      "intermediate": 1
+      "advanced": 1
     }
   },
   "recommendations": {
     "system_improvements": [
+      "Strengthen Socratic agent to better prevent cognitive offloading",
       "Enhance question generation to promote deeper critical thinking"
     ],
     "pedagogical_strategies": [

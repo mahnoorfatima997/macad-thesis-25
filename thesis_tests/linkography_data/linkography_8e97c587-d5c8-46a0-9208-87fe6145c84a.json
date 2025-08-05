@@ -1,0 +1,634 @@
+{
+  "session_id": "8e97c587-d5c8-46a0-9208-87fe6145c84a",
+  "timestamp": "2025-07-31T16:26:28.261088",
+  "linkograph": {
+    "id": "cc4e789a-8068-4ca5-bab8-f9e92d97c72a",
+    "session_id": "8e97c587-d5c8-46a0-9208-87fe6145c84a",
+    "phase": "ideation",
+    "generated_at": 1753997188.260088,
+    "move_count": 15,
+    "link_count": 64,
+    "moves": [
+      {
+        "id": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "timestamp": 1753997109.073203,
+        "content": "to better understand the users for which is meant to be designed for",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "timestamp": 1753997109.145533,
+        "content": "When designing a community center, understanding the users is crucial, but let's delve deeper into what that really means.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "b66e0b61-2ac9-4cf9-9d10-2524dba6e1a5",
+        "timestamp": 1753997109.145533,
+        "content": "Who exactly are these users?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "08925550-7ccd-4431-baea-498969f4d811",
+        "timestamp": 1753997109.145533,
+        "content": "Are they a homogenous group, or do they represent a diverse cross-section of the community?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "timestamp": 1753997109.145533,
+        "content": "How do their needs conflict or align with each other, and how will your design address these complexities?\n\nConsider the trade-offs involved in creating spaces that cater to different activities and user groups.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "c5238434-abdc-4f28-bdfe-29d31b74b8a7",
+        "timestamp": 1753997109.145533,
+        "content": "For instance, a multipurpose hall might serve both as a quiet reading area and a vibrant event space.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "3517085c-975a-4fe4-8ee0-6365297fd4a2",
+        "timestamp": 1753997109.145533,
+        "content": "How will you balance acoustic requirements, lighting, and furniture configurations to accommodate such diverse uses?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "timestamp": 1753997109.145533,
+        "content": "How does your design ensure that all community members, regardless of age, ability, or background, feel welcome and valued?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "60680b59-ab70-47c3-8ade-aad489bc38e7",
+        "timestamp": 1753997109.145533,
+        "content": "Are there elements of your design that might inadvertently exclude certain groups?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "timestamp": 1753997109.145533,
+        "content": "Moreover, how does your design respond to the site and its context?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "timestamp": 1753997109.145533,
+        "content": "Imagine we're trying to understand a new idea, like building a community.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "9898ae29-0cc9-413b-8eaa-52a3b8a3d265",
+        "timestamp": 1753997109.145533,
+        "content": "Think of it as constructing a house.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "timestamp": 1753997109.145533,
+        "content": "Then, we add walls and a roof, which are the details and examples that help support the main idea.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "timestamp": 1753997109.145533,
+        "content": "For example, if we're discussing how a community functions, the foundation is understanding that a community is a group of people who share common values, goals, or interests.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "7bbffa8a-a88f-46fa-9aef-1926e8c9e7dd",
+        "timestamp": 1753997109.145533,
+        "content": "**\ud83d\udca1 Quick Tip**: Use specific architectural terms like 'circulation', 'proportion', 'massing'\n\n*This assessment uses evidence-based formulas from educational psychology and design thinking research.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      }
+    ],
+    "links": [
+      {
+        "id": "7ce38127-bc16-4abd-85a6-432dfa459df9",
+        "source_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.5307946801185608,
+        "link_type": "forward"
+      },
+      {
+        "id": "3befdacd-93bb-40b1-bfb0-b4eaf1676ae2",
+        "source_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "target_move": "b66e0b61-2ac9-4cf9-9d10-2524dba6e1a5",
+        "strength": 0.3510045111179352,
+        "link_type": "forward"
+      },
+      {
+        "id": "c013f834-982c-438b-bb2c-ecd1072745c3",
+        "source_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.41700589656829834,
+        "link_type": "forward"
+      },
+      {
+        "id": "ec021965-ec1d-45d2-beb2-3780f1f17a64",
+        "source_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "target_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "strength": 0.4078713059425354,
+        "link_type": "forward"
+      },
+      {
+        "id": "5af3058e-278b-4fa0-bd58-56ad9dd341ab",
+        "source_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "target_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "strength": 0.5065351724624634,
+        "link_type": "forward"
+      },
+      {
+        "id": "c4455cc6-8f21-4f2d-afd3-e989ce3122d6",
+        "source_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "target_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "strength": 0.42206138372421265,
+        "link_type": "forward"
+      },
+      {
+        "id": "5073aba7-0ecf-45bd-b65c-5b2b7fd0407e",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "strength": 0.5307946801185608,
+        "link_type": "backward"
+      },
+      {
+        "id": "717c1370-be80-4647-baaa-4d3b089c465a",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "strength": 0.3581525981426239,
+        "link_type": "forward"
+      },
+      {
+        "id": "a88e82cb-7810-4917-a58f-963d89527253",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.4058384895324707,
+        "link_type": "forward"
+      },
+      {
+        "id": "05fda6df-803f-4564-b549-1a89ab0ea60a",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "strength": 0.5736210346221924,
+        "link_type": "forward"
+      },
+      {
+        "id": "f1f75948-6dc1-48a1-b444-ea95d3762386",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "strength": 0.4094710946083069,
+        "link_type": "forward"
+      },
+      {
+        "id": "c2c6c198-85d9-4d57-959d-de165b3a7e7e",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "strength": 0.5950952768325806,
+        "link_type": "forward"
+      },
+      {
+        "id": "536bf5e4-2c10-4b52-935b-e899067f6d0c",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "strength": 0.35930824279785156,
+        "link_type": "forward"
+      },
+      {
+        "id": "910be1cb-6ca4-47c0-8124-c96bf55951dd",
+        "source_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "target_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "strength": 0.5473438501358032,
+        "link_type": "forward"
+      },
+      {
+        "id": "af191695-30a1-4d80-9d17-19bfee1b3f3b",
+        "source_move": "b66e0b61-2ac9-4cf9-9d10-2524dba6e1a5",
+        "target_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "strength": 0.3510045111179352,
+        "link_type": "backward"
+      },
+      {
+        "id": "d9530746-8847-4d7e-a651-7165e3d6e841",
+        "source_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.3581525981426239,
+        "link_type": "backward"
+      },
+      {
+        "id": "a34e46e4-55d5-47a0-b414-d34e18021fc0",
+        "source_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.38807791471481323,
+        "link_type": "forward"
+      },
+      {
+        "id": "cd03fd92-20de-40f9-b7a4-a8bff791fa65",
+        "source_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "target_move": "60680b59-ab70-47c3-8ade-aad489bc38e7",
+        "strength": 0.3867795765399933,
+        "link_type": "forward"
+      },
+      {
+        "id": "f99b882d-cafb-4c52-a1b2-8c72c4dcc5df",
+        "source_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "target_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "strength": 0.47848081588745117,
+        "link_type": "forward"
+      },
+      {
+        "id": "e0a2354a-0583-4d8a-83d1-8415c0b991fa",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "strength": 0.41700589656829834,
+        "link_type": "backward"
+      },
+      {
+        "id": "70131969-f8f6-4151-80f4-643c97503b0a",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.4058384895324707,
+        "link_type": "backward"
+      },
+      {
+        "id": "77dd65e3-1cfb-4dc5-976d-93d007da8ce3",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "strength": 0.38807791471481323,
+        "link_type": "backward"
+      },
+      {
+        "id": "1d4b3f85-017d-4290-9670-e49cc96781f3",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "c5238434-abdc-4f28-bdfe-29d31b74b8a7",
+        "strength": 0.3698374629020691,
+        "link_type": "forward"
+      },
+      {
+        "id": "9b4680de-0b64-4ced-be2a-eacabc150449",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "3517085c-975a-4fe4-8ee0-6365297fd4a2",
+        "strength": 0.4173314571380615,
+        "link_type": "forward"
+      },
+      {
+        "id": "95a7d225-bf4f-4b45-bccf-1e8275c9b7a6",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "strength": 0.3724067807197571,
+        "link_type": "forward"
+      },
+      {
+        "id": "f4bf624e-4cf5-48e9-955f-0d42dadf1b39",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "60680b59-ab70-47c3-8ade-aad489bc38e7",
+        "strength": 0.4524049758911133,
+        "link_type": "forward"
+      },
+      {
+        "id": "0e46cf5e-1377-4441-8ece-ccdca27825f5",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "strength": 0.37176191806793213,
+        "link_type": "forward"
+      },
+      {
+        "id": "e4f54c04-312a-4f49-b588-43c2eef79c1d",
+        "source_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "target_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "strength": 0.3692249655723572,
+        "link_type": "forward"
+      },
+      {
+        "id": "405c1c24-17ca-4fe6-ba05-a4af4a58df01",
+        "source_move": "c5238434-abdc-4f28-bdfe-29d31b74b8a7",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.3698374629020691,
+        "link_type": "backward"
+      },
+      {
+        "id": "52a80f29-801e-4930-8f85-dbbdf82a0336",
+        "source_move": "c5238434-abdc-4f28-bdfe-29d31b74b8a7",
+        "target_move": "3517085c-975a-4fe4-8ee0-6365297fd4a2",
+        "strength": 0.3616263270378113,
+        "link_type": "forward"
+      },
+      {
+        "id": "b967f848-e64d-431b-a856-1e8b764170f9",
+        "source_move": "3517085c-975a-4fe4-8ee0-6365297fd4a2",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.4173314571380615,
+        "link_type": "backward"
+      },
+      {
+        "id": "b2050248-73b9-495a-b1c7-f99b49dcf691",
+        "source_move": "3517085c-975a-4fe4-8ee0-6365297fd4a2",
+        "target_move": "c5238434-abdc-4f28-bdfe-29d31b74b8a7",
+        "strength": 0.3616263270378113,
+        "link_type": "backward"
+      },
+      {
+        "id": "387d8a7c-6061-4dea-8c0b-c542f71eec7e",
+        "source_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "target_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "strength": 0.4078713059425354,
+        "link_type": "backward"
+      },
+      {
+        "id": "704d1d1a-6294-4475-9391-2cf950ee3216",
+        "source_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.5736210346221924,
+        "link_type": "backward"
+      },
+      {
+        "id": "f87a8e9e-eb28-4a71-88e6-7ec08d027bb9",
+        "source_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.3724067807197571,
+        "link_type": "backward"
+      },
+      {
+        "id": "5de09e2e-333c-4210-bd2f-7a12bdd6a7f9",
+        "source_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "target_move": "60680b59-ab70-47c3-8ade-aad489bc38e7",
+        "strength": 0.36557459831237793,
+        "link_type": "forward"
+      },
+      {
+        "id": "cd90b95f-0dbf-4e4e-aa14-c1e063eba3b7",
+        "source_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "target_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "strength": 0.4412698745727539,
+        "link_type": "forward"
+      },
+      {
+        "id": "48e4b2a7-d3f0-443b-91bd-ab787c0ee858",
+        "source_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "target_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "strength": 0.42836177349090576,
+        "link_type": "forward"
+      },
+      {
+        "id": "5a30cb75-7248-4fee-9e71-20cb3f373e18",
+        "source_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "target_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "strength": 0.44574081897735596,
+        "link_type": "forward"
+      },
+      {
+        "id": "ee5a0107-9590-4d37-bfac-7730a9084b51",
+        "source_move": "60680b59-ab70-47c3-8ade-aad489bc38e7",
+        "target_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "strength": 0.3867795765399933,
+        "link_type": "backward"
+      },
+      {
+        "id": "b5504348-39c4-4e0c-9130-1bf0b577f5f5",
+        "source_move": "60680b59-ab70-47c3-8ade-aad489bc38e7",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.4524049758911133,
+        "link_type": "backward"
+      },
+      {
+        "id": "8802abab-3358-40b7-bccd-69cf1dd15ab2",
+        "source_move": "60680b59-ab70-47c3-8ade-aad489bc38e7",
+        "target_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "strength": 0.36557459831237793,
+        "link_type": "backward"
+      },
+      {
+        "id": "9cb2aab8-ba58-4af1-bf6f-f8fbaaa3612f",
+        "source_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "target_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "strength": 0.5065351724624634,
+        "link_type": "backward"
+      },
+      {
+        "id": "8da90f9e-905b-41cf-b16f-2f1b80dd57cb",
+        "source_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.4094710946083069,
+        "link_type": "backward"
+      },
+      {
+        "id": "7b5f2662-fc78-4100-a718-e18212055127",
+        "source_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.37176191806793213,
+        "link_type": "backward"
+      },
+      {
+        "id": "f52be196-f1ba-4f9b-a913-4769a014be39",
+        "source_move": "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+        "target_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "strength": 0.4412698745727539,
+        "link_type": "backward"
+      },
+      {
+        "id": "7bbbd19d-ea5c-4539-b613-660011fcbc41",
+        "source_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "target_move": "938b71f1-cd46-4edb-8671-61b16e81d692",
+        "strength": 0.42206138372421265,
+        "link_type": "backward"
+      },
+      {
+        "id": "e6fea498-a4fb-42f4-a03e-9731583577ea",
+        "source_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.5950952768325806,
+        "link_type": "backward"
+      },
+      {
+        "id": "5a9c7112-eeaa-4be5-9c55-bfb479b81018",
+        "source_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "target_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "strength": 0.42836177349090576,
+        "link_type": "backward"
+      },
+      {
+        "id": "fae94beb-9a1e-46b8-aff6-dcee3449d2da",
+        "source_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "target_move": "9898ae29-0cc9-413b-8eaa-52a3b8a3d265",
+        "strength": 0.4167761206626892,
+        "link_type": "forward"
+      },
+      {
+        "id": "7d08b9ba-e120-481a-8004-3a755801b4fe",
+        "source_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "target_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "strength": 0.49733883142471313,
+        "link_type": "forward"
+      },
+      {
+        "id": "3a09a1b2-3f16-4901-adcd-7153d789d319",
+        "source_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "target_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "strength": 0.5451102256774902,
+        "link_type": "forward"
+      },
+      {
+        "id": "3239b92a-da00-462d-a71e-046731a2ec3f",
+        "source_move": "9898ae29-0cc9-413b-8eaa-52a3b8a3d265",
+        "target_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "strength": 0.4167761206626892,
+        "link_type": "backward"
+      },
+      {
+        "id": "29c2033b-5d3e-4b22-929b-d51c251363e0",
+        "source_move": "9898ae29-0cc9-413b-8eaa-52a3b8a3d265",
+        "target_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "strength": 0.568257212638855,
+        "link_type": "forward"
+      },
+      {
+        "id": "f1751c80-a4ad-4150-a297-8b5abb614c38",
+        "source_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.35930824279785156,
+        "link_type": "backward"
+      },
+      {
+        "id": "5ac00466-ec57-4786-9fa5-6f2e241a1dc9",
+        "source_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "target_move": "ef9953cc-e90e-4116-bacb-267b58866013",
+        "strength": 0.3692249655723572,
+        "link_type": "backward"
+      },
+      {
+        "id": "24550be8-674b-465b-8b47-a8d087cc467c",
+        "source_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "target_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "strength": 0.49733883142471313,
+        "link_type": "backward"
+      },
+      {
+        "id": "b3be7e11-d406-4f00-aeac-6be625605987",
+        "source_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "target_move": "9898ae29-0cc9-413b-8eaa-52a3b8a3d265",
+        "strength": 0.568257212638855,
+        "link_type": "backward"
+      },
+      {
+        "id": "dd094c40-4108-43b5-b07c-f0a0023f0633",
+        "source_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "target_move": "7bbffa8a-a88f-46fa-9aef-1926e8c9e7dd",
+        "strength": 0.4191383719444275,
+        "link_type": "forward"
+      },
+      {
+        "id": "d792ce1a-ea5b-4d61-934e-dc2bb7639973",
+        "source_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "target_move": "455e814e-224c-4f19-915b-a6f77f6dcec7",
+        "strength": 0.5473438501358032,
+        "link_type": "backward"
+      },
+      {
+        "id": "3aae9515-f186-42c7-91f6-67a51f20c1ab",
+        "source_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "target_move": "08925550-7ccd-4431-baea-498969f4d811",
+        "strength": 0.47848081588745117,
+        "link_type": "backward"
+      },
+      {
+        "id": "629a6c74-bc29-45fa-a979-bff878d771a3",
+        "source_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "target_move": "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+        "strength": 0.44574081897735596,
+        "link_type": "backward"
+      },
+      {
+        "id": "73f02332-f30d-42c4-8007-1619dba1d88c",
+        "source_move": "a27350f6-faaa-4893-bf79-f54735d94cf7",
+        "target_move": "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+        "strength": 0.5451102256774902,
+        "link_type": "backward"
+      },
+      {
+        "id": "95be6e17-68da-4fb8-92f9-61b8104bfa2f",
+        "source_move": "7bbffa8a-a88f-46fa-9aef-1926e8c9e7dd",
+        "target_move": "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+        "strength": 0.4191383719444275,
+        "link_type": "backward"
+      }
+    ]
+  },
+  "metrics": {
+    "link_density": 1.8639471411705018,
+    "critical_move_ratio": 0.8666666666666667,
+    "entropy": 0.9969290864828882,
+    "phase_balance": {
+      "ideation": 1.0,
+      "visualization": 0.0,
+      "materialization": 0.0
+    },
+    "cognitive_indicators": {
+      "deep_thinking": 0.0,
+      "offloading_prevention": 0.0,
+      "knowledge_integration": 0.0,
+      "learning_progression": 0.0,
+      "metacognitive_awareness": 0.0
+    },
+    "avg_link_strength": 0.43686261121183634,
+    "max_link_range": 12,
+    "orphan_move_ratio": 0.0,
+    "chunk_count": 8,
+    "web_count": 10,
+    "sawtooth_count": 2
+  },
+  "move_count": 15,
+  "link_count": 64,
+  "critical_moves": [
+    "938b71f1-cd46-4edb-8671-61b16e81d692",
+    "455e814e-224c-4f19-915b-a6f77f6dcec7",
+    "08925550-7ccd-4431-baea-498969f4d811",
+    "ef9953cc-e90e-4116-bacb-267b58866013",
+    "c5238434-abdc-4f28-bdfe-29d31b74b8a7",
+    "3517085c-975a-4fe4-8ee0-6365297fd4a2",
+    "6565044a-ba0d-4d29-a31f-fa531cda03ce",
+    "60680b59-ab70-47c3-8ade-aad489bc38e7",
+    "de3f5663-f44c-411a-b6b0-db36e7f9cf3f",
+    "c02a76bc-c16b-4640-9b64-05d62f85eb8d",
+    "9898ae29-0cc9-413b-8eaa-52a3b8a3d265",
+    "4e168da7-aacc-4fb2-a2e6-5094ed777306",
+    "a27350f6-faaa-4893-bf79-f54735d94cf7"
+  ],
+  "patterns": {
+    "chunks": 8,
+    "webs": 10,
+    "sawteeth": 2
+  },
+  "phase_distribution": {
+    "ideation": 1.0,
+    "visualization": 0.0,
+    "materialization": 0.0
+  }
+}

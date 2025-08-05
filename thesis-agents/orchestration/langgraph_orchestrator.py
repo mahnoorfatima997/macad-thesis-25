@@ -1222,15 +1222,49 @@ class LangGraphOrchestrator:
             routing_path, agent_results, user_input, classification, state
         )
         
-        # Add cognitive metrics if enabled
-        final_response = self._add_cognitive_metrics_if_enabled(
-            final_response, agent_results.get("cognitive"), state.get("student_state"), response_type
-        )
+        # Create sophisticated response by combining domain knowledge with Socratic guidance
+        if domain_result and socratic_result:
+            # Both domain knowledge and Socratic guidance available
+            domain_text = domain_result.get("response_text", "")
+            socratic_text = socratic_result.get("response_text", "")
+            
+            final_response = f"{domain_text}\n\n{socratic_text}"
+            response_type = "multi_agent_synthesis"
+            print(f"🔧 Combining domain knowledge + Socratic guidance")
+            
+        elif domain_result:
+            # Only domain knowledge available
+            final_response = domain_result.get("response_text", "")
+            response_type = "domain_knowledge"
+            print(f"🔧 Using domain knowledge only")
+            
+        elif socratic_result:
+            # Only Socratic guidance available
+            socratic_text = socratic_result.get("response_text", "")
+            
+            # Don't add cognitive assessment to keep response clean
+            final_response = socratic_text
+                
+            response_type = "socratic_guidance"
+            print(f"🔧 Using Socratic guidance only")
+            
+        elif cognitive_result:
+            # Only cognitive enhancement available
+            cognitive_text = cognitive_result.get("response_text", "")
+            
+            # Use only the detailed response, not the summary
+            final_response = cognitive_text
+            response_type = "cognitive_enhancement"
+            print(f"🔧 Using cognitive enhancement only")
+            
+        else:
+            # Fallback response
+            final_response = "I'd be happy to help you with your architectural project. What specific aspect would you like to explore?"
+            response_type = "fallback"
+            print(f"🔧 Using fallback response")
         
-        # Build metadata
-        metadata = self._build_metadata(
-            response_type, agent_results, routing_decision, classification
-        )
+        # Don't add cognitive assessment to keep responses clean
+        # The cognitive data is still tracked in metadata for analysis
         
         # Print summary if enabled
         self._print_summary_if_enabled(state, response_type, metadata)

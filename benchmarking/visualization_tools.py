@@ -523,6 +523,7 @@ class CognitiveBenchmarkVisualizer:
                 label=labels,
                 color=[self._get_node_color(label) for label in labels]
             ),
+            textfont=dict(color="black", size=14, family="Arial"),
             link=dict(
                 source=sources,
                 target=targets,

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="report_styles.css">
+</head>
+<body>
+    <div class="report-container">
+        <!-- Cover Page -->
+        <div class="cover-page">
+            <div class="cover-content">
+                <h1 class="report-title">{{ title }}</h1>
+                <div class="subtitle">MEGA Architectural Mentor - Cognitive Benchmarking System</div>
+                <div class="report-meta">
+                    <p>Generated on {{ generated_date }}</p>
+                    <p>Report Type: {{ report_type|replace('_', ' ')|title }}</p>
+                </div>
+            </div>
+            <div class="cover-footer">
+                <p>MaCAD Thesis Research</p>
+                <p>Preventing Cognitive Offloading in AI-Assisted Architectural Education</p>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="page-break"></div>
+        <section class="executive-summary">
+            <h2>Executive Summary</h2>
+            <div class="summary-content">
+                {{ insights.summary }}
+            </div>
+        </section>
+
+        <!-- Key Findings -->
+        <section class="key-findings">
+            <h2>Key Findings</h2>
+            <div class="findings-grid">
+                {% for finding in insights.key_findings %}
+                <div class="finding-card {{ finding.impact }}">
+                    <h3>{{ finding.category }}</h3>
+                    <h4>{{ finding.finding }}</h4>
+                    <p>{{ finding.detail }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Visualizations -->
+        <div class="page-break"></div>
+        <section class="visualizations">
+            <h2>Data Visualizations</h2>
+            {% for viz_name, viz_data in visualizations.items() %}
+            <div class="visualization-container">
+                <h3>{{ viz_name|replace('_', ' ')|title }}</h3>
+                <img src="{{ viz_data }}" alt="{{ viz_name }}" class="chart-image">
+            </div>
+            {% endfor %}
+        </section>
+
+        <!-- Statistical Analysis -->
+        <section class="statistical-analysis">
+            <h2>Statistical Analysis</h2>
+            <div class="stats-grid">
+                {% for metric, stats in insights.statistical_analysis.items() %}
+                {% if metric != 'correlations' %}
+                <div class="stat-card">
+                    <h3>{{ metric|replace('_', ' ')|title }}</h3>
+                    <table class="stat-table">
+                        <tr>
+                            <td>Mean</td>
+                            <td>{{ "%.2f"|format(stats.mean) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Std Dev</td>
+                            <td>{{ "%.2f"|format(stats.std) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Median</td>
+                            <td>{{ "%.2f"|format(stats.median) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Range</td>
+                            <td>{{ "%.2f"|format(stats.min) }} - {{ "%.2f"|format(stats.max) }}</td>
+                        </tr>
+                    </table>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Patterns & Insights -->
+        <div class="page-break"></div>
+        <section class="patterns">
+            <h2>Identified Patterns</h2>
+            {% for pattern_type, pattern_list in insights.patterns.items() %}
+            {% if pattern_list %}
+            <div class="pattern-section">
+                <h3>{{ pattern_type|replace('_', ' ')|title }} Patterns</h3>
+                <ul>
+                    {% for pattern in pattern_list %}
+                    <li>{{ pattern }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </section>
+
+        <!-- Recommendations -->
+        <section class="recommendations">
+            <h2>Recommendations</h2>
+            <div class="recommendations-list">
+                {% for rec in insights.recommendations %}
+                <div class="recommendation-card priority-{{ rec.priority }}">
+                    <div class="rec-header">
+                        <h3>{{ rec.area }}</h3>
+                        <span class="priority-badge">{{ rec.priority|upper }}</span>
+                    </div>
+                    <h4>{{ rec.recommendation }}</h4>
+                    <p class="rationale">{{ rec.rationale }}</p>
+                    <p class="impact"><strong>Expected Impact:</strong> {{ rec.expected_impact }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Metadata -->
+        <div class="page-break"></div>
+        <section class="metadata">
+            <h2>Report Metadata</h2>
+            <table class="metadata-table">
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                {% for key, value in metadata.items() %}
+                <tr>
+                    <td>{{ key|replace('_', ' ')|title }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>Generated by MEGA Architectural Mentor Benchmarking System</p>
+            <p>{{ generated_date }}</p>
+        </footer>
+    </div>
+</body>
+</html>

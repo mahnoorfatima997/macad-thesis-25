@@ -1,0 +1,64 @@
+{
+  "session_id": "028037b2-c5e7-4d35-bf4b-ed222f8b22a5",
+  "timestamp": "2025-07-31T16:20:17.015747",
+  "linkograph": {
+    "id": "33870d35-53fe-4821-aee6-b5b225f9f5f1",
+    "session_id": "028037b2-c5e7-4d35-bf4b-ed222f8b22a5",
+    "phase": "ideation",
+    "generated_at": 1753996817.015747,
+    "move_count": 3,
+    "link_count": 0,
+    "moves": [
+      {
+        "id": "37c67e66-4a81-4c7e-ad19-3c9fee706a1e",
+        "timestamp": 1753996816.889818,
+        "content": "I want to create an open community space",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "aa7f9a05-8e5b-4fa8-a736-47f00879a4d1",
+        "timestamp": 1753996816.889818,
+        "content": "What if we used circular forms to encourage gathering?",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "d17685ba-32fd-4c03-92f7-a9386d1ee4d5",
+        "timestamp": 1753996816.889818,
+        "content": "The circulation should connect all main functions",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      }
+    ],
+    "links": []
+  },
+  "metrics": {
+    "link_density": 0.0,
+    "critical_move_ratio": 0.0,
+    "entropy": 0.0,
+    "phase_balance": {
+      "ideation": 1.0,
+      "visualization": 0.0,
+      "materialization": 0.0
+    },
+    "cognitive_indicators": {
+      "deep_thinking": 0.0,
+      "offloading_prevention": 0.0,
+      "knowledge_integration": 0.0,
+      "learning_progression": 0.0,
+      "metacognitive_awareness": 0.0
+    },
+    "avg_link_strength": 0.0,
+    "max_link_range": 0,
+    "orphan_move_ratio": 1.0,
+    "chunk_count": 0,
+    "web_count": 0,
+    "sawtooth_count": 0
+  },
+  "move_count": 3,
+  "link_count": 0
+}

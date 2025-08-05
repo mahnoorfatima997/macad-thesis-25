@@ -611,6 +611,7 @@ class BenchmarkVisualizationExporter:
                 label=handoff_data['labels'],
                 color=handoff_data['colors']
             ),
+            textfont=dict(color="black", size=14, family="Arial"),
             link=dict(
                 source=handoff_data['source'],
                 target=handoff_data['target'],

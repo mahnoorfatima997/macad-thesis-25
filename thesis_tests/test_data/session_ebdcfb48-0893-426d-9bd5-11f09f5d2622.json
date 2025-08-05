@@ -1,0 +1,52 @@
+{
+  "session_id": "ebdcfb48-0893-426d-9bd5-11f09f5d2622",
+  "participant_id": "Biel",
+  "test_group": "MENTOR",
+  "start_time": "2025-07-31T15:56:09.249854",
+  "end_time": "2025-07-31T16:05:36.863873",
+  "phase_transitions": [
+    {
+      "timestamp": "2025-07-31T16:03:02.404042",
+      "from_phase": "PRE_TEST",
+      "to_phase": "IDEATION",
+      "duration_seconds": 413.154188
+    }
+  ],
+  "assessments": {
+    "pre_test": {
+      "assessment_type": "pre_test",
+      "scores": {
+        "critical_thinking": 0.6,
+        "architectural_knowledge": 0.2,
+        "spatial_reasoning": 0.0
+      },
+      "timestamp": "2025-07-31T16:02:39.292670",
+      "completion_time": null,
+      "responses": {}
+    }
+  },
+  "summary": {
+    "session_id": "ebdcfb48-0893-426d-9bd5-11f09f5d2622",
+    "participant_id": "Biel",
+    "test_group": "MENTOR",
+    "duration_minutes": 9.46023365,
+    "total_interactions": 0,
+    "total_moves": 0,
+    "phase_transitions": 1,
+    "avg_cognitive_score": 0.0,
+    "cognitive_scores": {
+      "cop": 0.0,
+      "dte": 0.0,
+      "se": 0.0,
+      "ki": 0.0,
+      "lp": 0.0,
+      "ma": 0.0,
+      "composite": 0.0
+    },
+    "phases_completed": [
+      "PRE_TEST",
+      "IDEATION"
+    ]
+  },
+  "cognitive_metrics_history": []
+}
