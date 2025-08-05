@@ -90,7 +90,7 @@ def install_packages_in_order(venv_name):
             print(f"   ❌ Failed to install {package}: {e}")
             return False
     
-    # Step 3: Install PyTorch first (critical for SAM)
+    # Step 3: Install PyTorch first
     print("   🔥 Installing PyTorch...")
     try:
         # Install PyTorch with CPU support (more reliable)
@@ -173,35 +173,7 @@ def install_packages_in_order(venv_name):
     print("   ✅ All packages installed successfully!")
     return True
 
-def install_sam_optional(venv_name):
-    """Install SAM dependencies optionally"""
-    print("🎨 Installing SAM dependencies (optional)...")
-    pip_path = get_venv_pip(venv_name)
-    
-    response = input("   Do you want to install SAM (Segment Anything Model)? This may take a while. (y/N): ")
-    if response.lower() != 'y':
-        print("   ⏭️  Skipping SAM installation")
-        return True
-    
-    try:
-        # Try to install segment-anything
-        print("   📦 Installing segment-anything...")
-        subprocess.run([pip_path, "install", "git+https://github.com/facebookresearch/segment-anything.git"], check=True)
-        print("   ✅ segment-anything installed")
-        
-        # Try to install groundingdino (may fail, that's okay)
-        print("   📦 Installing groundingdino...")
-        try:
-            subprocess.run([pip_path, "install", "git+https://github.com/IDEA-Research/GroundingDINO.git"], check=True)
-            print("   ✅ groundingdino installed")
-        except subprocess.CalledProcessError:
-            print("   ⚠️  groundingdino installation failed (this is okay, SAM will still work)")
-        
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"   ❌ SAM installation failed: {e}")
-        print("   ⚠️  You can still use the app without SAM")
-        return True
+
 
 def create_env_file():
     """Create .env file template"""
@@ -217,10 +189,6 @@ def create_env_file():
     env_content = """# Mega Architectural Mentor Environment Variables
 # Add your OpenAI API key here
 OPENAI_API_KEY=your_openai_api_key_here
-
-# Optional: SAM model configuration
-# SAM_MODEL_SIZE=base  # Options: base, large, huge
-# SAM_DEVICE=cpu       # Options: cpu, cuda
 
 # Optional: Logging configuration
 # LOG_LEVEL=INFO       # Options: DEBUG, INFO, WARNING, ERROR
@@ -364,8 +332,7 @@ def main():
     
     print()
     
-    # Install SAM optionally
-    install_sam_optional(venv_name)
+
     
     print()
     

@@ -397,6 +397,25 @@ class LangGraphOrchestrator:
     async def synthesizer_node(self, state: WorkflowState) -> WorkflowState:
         """Synthesizer: Combines all agent outputs (Section 7)"""
         self.logger.info("Synthesizer: Combining agent responses...")
+        
+        # Check if we already have a final_response (progressive conversation paths)
+        existing_response = state.get("final_response", "")
+        if existing_response:
+            self.logger.info("🎯 Using existing progressive response - skipping synthesis")
+            metadata = state.get("response_metadata", {})
+            
+            # HYBRID APPROACH: Add milestone question if needed
+            milestone_question = await self._add_milestone_question_if_needed(state, existing_response)
+            if milestone_question:
+                existing_response += f"\n\n🎯 **Milestone Question:** {milestone_question}"
+            
+            return {
+                **state,
+                "final_response": existing_response,
+                "response_metadata": metadata
+            }
+        
+        # Standard synthesis for multi-agent paths
         self.logger.debug("cognitive_enhancement_result: %s", state.get("cognitive_enhancement_result"))
         final_response, metadata = self.synthesize_responses(state)
         
@@ -467,10 +486,17 @@ class LangGraphOrchestrator:
             return mapped_route
         
         # PRIORITY 2: COGNITIVE PROTECTION (Fallback to orchestrator logic)
+        # ENHANCED: Only override context agent if cognitive offloading is detected AND context agent confidence is low
+        context_confidence = routing_suggestions.get("confidence", 0) if routing_suggestions else 0
         cognitive_offloading_indicators = self._detect_cognitive_offloading(classification, context_analysis)
+        
         if cognitive_offloading_indicators["detected"]:
-            self.logger.warning(f"🚨 COGNITIVE OFFLOADING DETECTED: {cognitive_offloading_indicators['type']}")
-            return "cognitive_intervention"
+            # Only override if context agent is not confident OR if cognitive offloading is very strong
+            if context_confidence < 0.7 or cognitive_offloading_indicators["confidence"] > 0.8:
+                self.logger.warning(f"🚨 COGNITIVE OFFLOADING DETECTED: {cognitive_offloading_indicators['type']} (overriding context agent)")
+                return "cognitive_intervention"
+            else:
+                self.logger.info(f"✅ Context agent confident ({context_confidence:.2f}) - ignoring cognitive offloading detection")
         
         # PRIORITY 3: EDUCATIONAL STRATEGY (Fallback logic)
         interaction_type = classification.get("interaction_type", "general_statement")
@@ -610,7 +636,22 @@ class LangGraphOrchestrator:
         if patterns.get("repetitive_topics", False):
             # Check if this is a legitimate response to a question (not repetitive dependency)
             interaction_type = classification.get("interaction_type", "")
+            
+            # ENHANCED: More nuanced detection - don't flag legitimate follow-up questions
             if interaction_type != "question_response":  # Only flag if not responding to a question
+                # ADDITIONAL CHECK: Don't flag knowledge_seeking questions as repetitive dependency
+                # These are legitimate follow-up questions that deserve direct answers
+                if interaction_type == "knowledge_seeking":
+                    self.logger.debug("✅ Knowledge seeking question - not flagging as repetitive dependency")
+                    return offloading_indicators
+                
+                # ADDITIONAL CHECK: Don't flag if the question is about a different aspect
+                # (e.g., "circulation" vs "lighting" are different aspects of design)
+                user_input = classification.get("last_message", "").lower()
+                if any(word in user_input for word in ["circulation", "lighting", "structure", "materials", "program", "context"]):
+                    self.logger.debug("✅ Different design aspect question - not flagging as repetitive dependency")
+                    return offloading_indicators
+                
                 offloading_indicators["detected"] = True
                 offloading_indicators["type"] = "repetitive_dependency"
                 offloading_indicators["confidence"] = 0.6
@@ -1216,6 +1257,11 @@ class LangGraphOrchestrator:
                          bool(agent_results.get("cognitive")))
         self.logger.debug("Routing path: %s", routing_decision.get('path', 'unknown'))
         
+        # Extract individual results for easier access
+        domain_result = agent_results.get("domain", {})
+        socratic_result = agent_results.get("socratic", {})
+        cognitive_result = agent_results.get("cognitive", {})
+        
         # Determine response type and synthesize
         routing_path = routing_decision.get("path", "default")
         final_response, response_type = self._synthesize_by_routing_path(
@@ -1230,13 +1276,11 @@ class LangGraphOrchestrator:
             
             final_response = f"{domain_text}\n\n{socratic_text}"
             response_type = "multi_agent_synthesis"
-            print(f"🔧 Combining domain knowledge + Socratic guidance")
             
         elif domain_result:
             # Only domain knowledge available
             final_response = domain_result.get("response_text", "")
             response_type = "domain_knowledge"
-            print(f"🔧 Using domain knowledge only")
             
         elif socratic_result:
             # Only Socratic guidance available
@@ -1246,7 +1290,6 @@ class LangGraphOrchestrator:
             final_response = socratic_text
                 
             response_type = "socratic_guidance"
-            print(f"🔧 Using Socratic guidance only")
             
         elif cognitive_result:
             # Only cognitive enhancement available
@@ -1255,16 +1298,17 @@ class LangGraphOrchestrator:
             # Use only the detailed response, not the summary
             final_response = cognitive_text
             response_type = "cognitive_enhancement"
-            print(f"🔧 Using cognitive enhancement only")
             
         else:
             # Fallback response
             final_response = "I'd be happy to help you with your architectural project. What specific aspect would you like to explore?"
             response_type = "fallback"
-            print(f"🔧 Using fallback response")
         
         # Don't add cognitive assessment to keep responses clean
         # The cognitive data is still tracked in metadata for analysis
+        
+        # Build metadata
+        metadata = self._build_metadata(response_type, agent_results, routing_decision, classification)
         
         # Print summary if enabled
         self._print_summary_if_enabled(state, response_type, metadata)
@@ -1302,9 +1346,12 @@ class LangGraphOrchestrator:
         elif routing_path == "cognitive_intervention":
             return self._synthesize_cognitive_intervention_response(agent_results)
         elif routing_path == "technical_question":
-            return self._synthesize_technical_response(agent_results, user_input, classification)
+            domain_result = agent_results.get("domain", {})
+            return self._synthesize_technical_response(domain_result, user_input, classification)
         elif routing_path == "feedback_request":
-            return self._synthesize_feedback_response(agent_results, user_input, classification)
+            socratic_result = agent_results.get("socratic", {})
+            domain_result = agent_results.get("domain", {})
+            return self._synthesize_feedback_response(socratic_result, domain_result, user_input, classification)
         elif routing_path == "design_guidance":
             return self._synthesize_design_guidance_response(agent_results, user_input, classification)
         else:
@@ -1567,10 +1614,22 @@ class LangGraphOrchestrator:
         """Extract building type from context"""
         try:
             # Try to get from analysis result
-            analysis_result = state.get('analysis_result', {})
-            text_analysis = analysis_result.get('text_analysis', {})
-            building_type = text_analysis.get('building_type', 'project')
-            return building_type if building_type != 'unknown' else 'project'
+            if hasattr(state, 'analysis_result') and state.analysis_result:
+                analysis_result = state.analysis_result
+                if isinstance(analysis_result, dict):
+                    text_analysis = analysis_result.get('text_analysis', {})
+                    building_type = text_analysis.get('building_type', 'project')
+                    return building_type if building_type != 'unknown' else 'project'
+            
+            # Try to get from current design brief
+            if hasattr(state, 'current_design_brief') and state.current_design_brief:
+                brief_lower = state.current_design_brief.lower()
+                building_types = ['residential', 'commercial', 'educational', 'healthcare', 'cultural', 'office', 'retail']
+                for btype in building_types:
+                    if btype in brief_lower:
+                        return btype
+            
+            return 'project'
         except:
             return 'project'
     
@@ -1657,7 +1716,7 @@ class LangGraphOrchestrator:
             return domain_result["response_text"]
         
         # Dynamic fallback feedback response
-        building_type = self._extract_building_type_from_context(state) if state else 'project'
+        building_type = 'project'  # Default fallback since we don't have state parameter
         return f"I'd be glad to provide feedback on your {building_type} design! To give you the most useful feedback, could you tell me what specific aspects of your project you'd like me to focus on?"
     
     def _synthesize_technical_response(self, domain_result: Dict, user_input: str, classification: Dict) -> str:

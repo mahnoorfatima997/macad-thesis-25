@@ -118,9 +118,7 @@ def create_env_file():
 # Add your OpenAI API key here
 OPENAI_API_KEY=your_openai_api_key_here
 
-# Optional: SAM model configuration
-# SAM_MODEL_SIZE=base  # Options: base, large, huge
-# SAM_DEVICE=cuda      # Options: cpu, cuda
+
 
 # Optional: Logging configuration
 # LOG_LEVEL=INFO       # Options: DEBUG, INFO, WARNING, ERROR

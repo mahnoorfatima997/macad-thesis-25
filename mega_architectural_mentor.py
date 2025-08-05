@@ -28,17 +28,7 @@ from agents.domain_expert import DomainExpertAgent
 from agents.cognitive_enhancement import CognitiveEnhancementAgent
 from agents.context_agent import ContextAgent
 from orchestration.langgraph_orchestrator import LangGraphOrchestrator
-from vision.gpt_sam_analyzer import GPTSAMAnalyzer
 from data_collection.interaction_logger import InteractionLogger
-
-# Import detection components (SAM is included in requirements)
-try:
-    sys.path.append('./src/core/detection')
-    from sam2_module_fixed import SAM2Segmenter
-    SAM_AVAILABLE = True
-except ImportError:
-    SAM_AVAILABLE = False
-    print("⚠️ SAM2 module not available - check installation")
 
 # Configure Streamlit for clean interface
 st.set_page_config(
@@ -385,11 +375,10 @@ def initialize_session_state():
         'chat_messages': [],
         'arch_state': None,
         'analysis_result': None,
-        'gpt_sam_results': None,
+
         'uploaded_image_path': None,
         'interaction_logger': InteractionLogger(),
         'orchestrator': None,
-        'use_sam': False,
         'input_mode': "Text Only",
         'mentor_type': "Socratic Agent" # Added for new logic
     }
@@ -404,10 +393,8 @@ initialize_session_state()
 class MegaArchitecturalMentor:
     """Main orchestrator class for the Mega Architectural Mentor system"""
     
-    def __init__(self, api_key: str, use_sam: bool = False):
+    def __init__(self, api_key: str):
         self.api_key = api_key
-        self.use_sam = use_sam and SAM_AVAILABLE
-        self.gpt_sam_analyzer = None
         self.orchestrator = None
         
         # Initialize components
@@ -416,11 +403,9 @@ class MegaArchitecturalMentor:
     def _initialize_components(self):
         """Initialize all system components"""
         try:
-            # Initialize GPT-SAM analyzer (SAM is optional)
-            self.gpt_sam_analyzer = GPTSAMAnalyzer(self.api_key)
-            print(f"✅ GPT Vision initialized (SAM: {'enabled' if self.use_sam else 'disabled'})")
-            
-            # Initialize orchestrator
+            # Initialize orchestrator with debug logging
+            import logging
+            logging.basicConfig(level=logging.DEBUG)
             self.orchestrator = LangGraphOrchestrator(domain="architecture")
             print("✅ Multi-agent orchestrator initialized")
             
@@ -444,7 +429,6 @@ class MegaArchitecturalMentor:
         ]
         
         # Step 2: Handle image if provided
-        gpt_sam_results = None
         vision_available = False
         
         if image_path and os.path.exists(image_path):
@@ -456,24 +440,6 @@ class MegaArchitecturalMentor:
             )
             state.current_sketch = artifact
             state.visual_artifacts.append(artifact)
-            
-            # Step 3: Run vision analysis (if SAM enabled)
-            if self.use_sam and self.gpt_sam_analyzer:
-                try:
-                    gpt_sam_results = self.gpt_sam_analyzer.analyze_image(image_path)
-                    print(f"✅ Vision analysis completed with SAM: {'enabled' if self.use_sam else 'disabled'}")
-                except Exception as e:
-                    print(f"⚠️ Vision analysis failed: {e}")
-                    gpt_sam_results = {"error": f"Vision analysis failed: {str(e)}"}
-            else:
-                # Basic GPT Vision analysis without SAM
-                try:
-                    if self.gpt_sam_analyzer:
-                        gpt_sam_results = self.gpt_sam_analyzer.analyze_with_coordinates(image_path)
-                        print("✅ Basic GPT Vision analysis completed")
-                except Exception as e:
-                    print(f"⚠️ Basic vision analysis failed: {e}")
-                    gpt_sam_results = {"error": f"Basic vision analysis failed: {str(e)}"}
         
         # Step 4: Run cognitive analysis
         analysis_agent = AnalysisAgent(domain)
@@ -483,9 +449,7 @@ class MegaArchitecturalMentor:
         return {
             "state": state,
             "analysis_result": analysis_result,
-            "gpt_sam_results": gpt_sam_results,
-            "vision_available": vision_available,
-            "sam_enabled": self.use_sam and vision_available
+            "vision_available": vision_available
         }
     
     async def process_chat_message(self, user_input: str, state: ArchMentorState) -> Dict[str, Any]:
@@ -514,7 +478,6 @@ def render_left_sidebar():
     """Render the left sidebar with app information"""
     # Get current mode from session state
     current_mode = st.session_state.get('input_mode', 'Text Only')
-    sam_status = "Enabled" if st.session_state.get('use_sam', False) else "Disabled"
     
     st.markdown(f"""
     <div class="left-sidebar">
@@ -522,10 +485,6 @@ def render_left_sidebar():
             <div class="info-item">
                 <span class="info-label">Mode:</span>
                 <span class="info-value">{current_mode}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">SAM:</span>
-                <span class="info-value">{sam_status}</span>
             </div>
             <div class="info-item">
                 <span class="info-label">Status:</span>
@@ -862,13 +821,12 @@ def reset_session():
     st.session_state.chat_messages = []
     st.session_state.arch_state = None
     st.session_state.analysis_result = None
-    st.session_state.gpt_sam_results = None
+    
     st.session_state.uploaded_image_path = None
     st.session_state.orchestrator = None
     st.session_state.interaction_logger = InteractionLogger()
-    # Reset input mode and SAM settings
+    # Reset input mode settings
     st.session_state.input_mode = "Text Only"
-    st.session_state.use_sam = False
     st.session_state.mentor_type = "Socratic Agent" # Reset mentor type
     st.rerun()
 
@@ -911,24 +869,13 @@ def main():
             else:
                 st.warning(f"**Mentor**: {mentor_type} 🤖")
             
-            if st.session_state.use_sam:
-                st.success("**SAM**: Enabled")
-            else:
-                st.info("**SAM**: Disabled")
+            st.info("**Vision**: GPT Vision Available")
         
         # System status
         if api_key:
             st.subheader("🤖 System Status")
             try:
-                # Test GPT-SAM
-                gpt_sam = GPTSAMAnalyzer(api_key)
                 st.success("GPT Vision: Ready")
-                
-                # Show SAM availability
-                if SAM_AVAILABLE:
-                    st.success("SAM: Available")
-                else:
-                    st.warning("SAM: Not available")
                 
                 # Test agents
                 if st.session_state.orchestrator:
@@ -949,13 +896,11 @@ def main():
         
         **Image + Text Mode**:
         - 🧠 GPT Vision analyzes image
-        - 🎨 SAM segmentation (optional)
         - 📝 Text + visual analysis
         - 🤖 Multi-agent enhancement
         
         **Image-Only Mode**:
         - 🧠 GPT Vision analysis
-        - 🎨 SAM segmentation (optional)
         - 🤖 Multi-agent interpretation
         """)
         
@@ -1042,16 +987,7 @@ def main():
                 # Store input_mode in session state
                 st.session_state.input_mode = input_mode
                 
-                # SAM analysis option (only show if image is involved)
-                use_sam = False
-                if input_mode in ["Image + Text", "Image Only"]:
-                    use_sam = st.checkbox(
-                        "🔍 Enable SAM Segmentation Analysis",
-                        value=st.session_state.get('use_sam', False),
-                        help="SAM provides precise spatial segmentation of architectural elements. Disable for faster analysis."
-                    )
-                # Store use_sam in session state
-                st.session_state.use_sam = use_sam
+
                 
                 # Mentor type selection
                 mentor_type = st.selectbox(
@@ -1123,7 +1059,7 @@ def main():
                         with st.spinner("🧠 Analyzing your design..."):
                             try:
                                 # Initialize Mega Mentor
-                                mentor = MegaArchitecturalMentor(api_key, use_sam)
+                                mentor = MegaArchitecturalMentor(api_key)
                                 
                                 # Handle image if provided
                                 temp_image_path = None
@@ -1146,10 +1082,8 @@ def main():
                                 # Store results
                                 st.session_state.arch_state = results["state"]
                                 st.session_state.analysis_result = results["analysis_result"]
-                                st.session_state.gpt_sam_results = results["gpt_sam_results"]
                                 st.session_state.orchestrator = mentor.orchestrator
                                 st.session_state.analysis_complete = True
-                                st.session_state.use_sam = use_sam
                                 st.session_state.input_mode = input_mode
                                 # mentor_type is already set from the dropdown selection
                                 
@@ -1234,7 +1168,6 @@ def main():
             # Get analysis data
             result = st.session_state.analysis_result
             input_mode = st.session_state.get('input_mode', 'Text Only')
-            gpt_sam_results = st.session_state.gpt_sam_results
             
             # Progress update button
             col1, col2, col3 = st.columns([1, 2, 1])
@@ -1744,81 +1677,9 @@ def main():
                         for opportunity in learning_opportunities[:2]:  # Show top 2
                             st.write(f"• {opportunity}")
             
-            # Design suggestions from analysis (only show if image was used and suggestions available)
-            if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:
-                gpt_analysis = gpt_sam_results.get('gpt_analysis', {})
-                design_insights = gpt_analysis.get('design_insights', {})
-                suggestions = design_insights.get('suggestions', [])
-                
-                if suggestions:
-                    st.markdown("---")
-                    st.markdown("""
-                    <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;">
-                        💡 Design Suggestions
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    for i, suggestion in enumerate(suggestions[:5], 1):
-                        st.markdown(f"**{i}.** {suggestion}")
+
             
-            # GPT-SAM Results (only show if image was used)
-            if gpt_sam_results and 'error' not in gpt_sam_results and input_mode in ["Image + Text", "Image Only"]:
-                with st.expander("🤖 GPT Vision + SAM Analysis", expanded=True):
-                    st.subheader("🎨 Vision Analysis Results")
-                    
-                    # Show visualization if available
-                    if gpt_sam_results.get('visualization') is not None:
-                        st.image(gpt_sam_results['visualization'], caption="AI Analysis Visualization", use_container_width=True)
-                    
-                    # Show detailed GPT analysis
-                    gpt_analysis = gpt_sam_results.get('gpt_analysis', {})
-                    if gpt_analysis:
-                        col_gpt1, col_gpt2 = st.columns(2)
-                        
-                        with col_gpt1:
-                            spatial_elements = gpt_analysis.get('spatial_elements', [])
-                            if spatial_elements:
-                                st.write("**🏗️ Spatial Elements Detected:**")
-                                for elem in spatial_elements[:6]:
-                                    elem_type = elem.get('type', 'unknown')
-                                    label = elem.get('label', 'unnamed')
-                                    confidence = elem.get('coordinate_confidence', 0)
-                                    st.write(f"• {elem_type.title()}: {label} ({confidence:.1%})")
-                            
-                            circulation = gpt_analysis.get('circulation_analysis', {})
-                            if circulation:
-                                st.write("**🔄 Circulation Analysis:**")
-                                primary = circulation.get('primary_path', 'Unknown')
-                                st.write(f"• Primary: {primary}")
-                                secondary = circulation.get('secondary_paths', [])
-                                if secondary:
-                                    st.write(f"• Secondary: {', '.join(secondary[:2])}")
-                        
-                        with col_gpt2:
-                            design_insights = gpt_analysis.get('design_insights', {})
-                            if design_insights:
-                                strengths = design_insights.get('strengths', [])
-                                if strengths:
-                                    st.write("**Design Strengths:**")
-                                    for strength in strengths[:3]:
-                                        st.write(f"• {strength}")
-                                
-                                issues = design_insights.get('issues', [])
-                                if issues:
-                                    st.write("**⚠️ Design Issues:**")
-                                    for issue in issues[:3]:
-                                        st.write(f"• {issue}")
-                                
-                                suggestions = design_insights.get('suggestions', [])
-                                if suggestions:
-                                    st.write("**💡 Suggestions:**")
-                                    for suggestion in suggestions[:3]:
-                                        st.write(f"• {suggestion}")
-                    
-                    # Show SAM segmentation results
-                    sam_results = gpt_sam_results.get('sam_results', {})
-                    if sam_results and 'error' not in sam_results:
-                        st.write(f"**🎨 SAM Segments Created:** {sam_results.get('num_segments', 0)}")
+
             
             # Dynamic Cognitive Analysis (based on latest interaction)
             if st.session_state.chat_messages:

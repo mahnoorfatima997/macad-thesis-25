@@ -16,11 +16,22 @@ import base64
 import re
 from collections import defaultdict
 from typing import Dict, List, Any, Optional
-from thesis_colors import (
-    THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
-    PLOTLY_COLORSCALES, CHART_COLORS, UI_COLORS,
-    get_color_palette, get_metric_color, get_proficiency_color, get_agent_color
-)
+try:
+    from thesis_colors import (
+        THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
+        PLOTLY_COLORSCALES, CHART_COLORS, UI_COLORS,
+        get_color_palette, get_metric_color, get_proficiency_color, get_agent_color
+    )
+except ImportError:
+    # Fallback for when imported from parent directory
+    import sys
+    import os
+    sys.path.append(os.path.dirname(__file__))
+    from thesis_colors import (
+        THESIS_COLORS, METRIC_COLORS, COLOR_GRADIENTS, 
+        PLOTLY_COLORSCALES, CHART_COLORS, UI_COLORS,
+        get_color_palette, get_metric_color, get_proficiency_color, get_agent_color
+    )
 
 # Import linkography components
 try:

@@ -1,5 +1,5 @@
 # Mega Architectural Mentor v2.0 - Complete Requirements
-# Core dependencies for the unified AI system with SAM included
+# Core dependencies for the unified AI system
 
 # Streamlit and web interface
 streamlit>=1.28.0
@@ -15,8 +15,7 @@ torchvision>=0.15.0
 transformers>=4.30.0
 openai>=1.0.0
 
-# SAM (Segment Anything Model) - INCLUDED
-segment-anything @ git+https://github.com/facebookresearch/segment-anything.git
+
 
 # Multi-agent orchestration
 langgraph>=0.0.20
@@ -69,14 +68,12 @@ python-decouple>=3.8
 # INSTALLATION INSTRUCTIONS
 # =============================================================================
 # 
-# 1. BASIC INSTALLATION (includes SAM):
+# 1. BASIC INSTALLATION:
 #    pip install -r requirements_mega.txt
 #
 # 2. GPU ACCELERATION (optional):
 #    # Install CUDA toolkit first, then uncomment GPU lines above
 #    pip install cuda-python cupy-cuda12x
-#
-# 3. SAM is included by default but can be disabled in the UI
 #
 # =============================================================================
 # SYSTEM REQUIREMENTS
@@ -89,7 +86,7 @@ python-decouple>=3.8
 #
 # RECOMMENDED:
 # - 8GB+ RAM
-# - GPU with 4GB+ VRAM (for faster SAM processing)
+# - GPU with 4GB+ VRAM (for faster processing)
 # - Python 3.8+
 # - OpenAI API key
 #
