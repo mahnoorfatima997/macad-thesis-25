@@ -167,11 +167,21 @@ class UserProficiencyClassifier:
             y_pred = self.classifier.predict(X_test)
             
             print("\nClassification Report:")
-            print(classification_report(
-                y_test, y_pred, 
-                target_names=self.label_encoder.classes_,
-                zero_division=0
-            ))
+            # Get unique labels from both y_test and y_pred
+            unique_labels = np.unique(np.concatenate([y_test, y_pred]))
+            # Get corresponding target names
+            target_names = [self.label_encoder.classes_[i] for i in unique_labels if i < len(self.label_encoder.classes_)]
+            
+            try:
+                print(classification_report(
+                    y_test, y_pred, 
+                    labels=unique_labels,
+                    target_names=target_names,
+                    zero_division=0
+                ))
+            except Exception as e:
+                print(f"Could not generate classification report: {e}")
+                print(f"Test accuracy: {np.mean(y_pred == y_test):.2%}")
         else:
             print("\nNote: Test set too small for evaluation")
         

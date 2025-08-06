@@ -351,6 +351,14 @@ class BenchmarkingPipeline:
         reports_dir = self.output_dir / "evaluation_reports"
         reports_dir.mkdir(exist_ok=True)
         
+        # Clean up old evaluation reports that don't match current sessions
+        current_session_ids = {metrics['session_id'] for metrics in all_metrics}
+        for old_report in reports_dir.glob("session_*_evaluation.json"):
+            # Extract session ID from filename
+            session_id = old_report.stem.replace('session_', '').replace('_evaluation', '')
+            if session_id not in current_session_ids:
+                old_report.unlink()  # Delete old report
+        
         for metrics in all_metrics:
             report_path = reports_dir / f"session_{metrics['session_id']}_evaluation.json"
             self.metrics_evaluator.generate_evaluation_report(metrics, str(report_path))

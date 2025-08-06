@@ -342,41 +342,55 @@ class LinkographVisualizer:
             )
             return fig
         
-        # Add regular moves
-        regular_moves = df[df['is_critical'] == False]
-        fig.add_trace(go.Scatter(
-            x=regular_moves['position'],
-            y=regular_moves['connectivity'],
-            mode='markers',
-            marker=dict(
-                size=8,
-                color=[self._get_phase_color(p) for p in regular_moves['phase']],
-                line=dict(width=1, color=self.colors['primary_dark'])
-            ),
-            text=regular_moves['content'],
-            hovertemplate='Move %{x}<br>Connections: %{y}<br>%{text}<extra></extra>',
-            name='Regular Moves'
-        ))
+        # USE THE EXACT SAME COLORS AS BACKGROUND REGIONS
+        # From _get_phase_color method:
+        phase_colors = {
+            'ideation': self.colors['accent_coral'],      # Coral
+            'visualization': self.colors['neutral_orange'], # Orange
+            'materialization': self.colors['primary_violet'] # Violet
+        }
         
-        # Add critical moves
-        critical_df = df[df['is_critical'] == True]
-        if not critical_df.empty:
-            fig.add_trace(go.Scatter(
-                x=critical_df['position'],
-                y=critical_df['connectivity'],
-                mode='markers',
-                marker=dict(
-                    size=20,
-                    color=self.colors['accent_magenta'],
-                    symbol='circle',
-                    line=dict(width=2, color=self.colors['primary_dark'])
-                ),
-                hovertemplate='CRITICAL MOVE %{x}<br>Connections: %{y}<extra></extra>',
-                name='Critical Moves'
-            ))
+        # Add regular moves grouped by phase for legend
+        for phase in ['ideation', 'visualization', 'materialization']:
+            phase_regular = df[(df['phase'] == phase) & (df['is_critical'] == False)]
+            if not phase_regular.empty:
+                fig.add_trace(go.Scatter(
+                    x=phase_regular['position'],
+                    y=phase_regular['connectivity'],
+                    mode='markers',
+                    marker=dict(
+                        size=8,
+                        color=phase_colors[phase],  # Use exact phase color
+                        line=dict(width=1, color='white')
+                    ),
+                    text=phase_regular['content'],
+                    hovertemplate='Move %{x}<br>Connections: %{y}<br>%{text}<extra></extra>',
+                    name=f'{phase.capitalize()} - Regular',
+                    legendgroup=phase
+                ))
         
-        # Add phase regions
-        self._add_phase_regions(fig, moves)
+        # Add critical moves grouped by phase  
+        for phase in ['ideation', 'visualization', 'materialization']:
+            phase_critical = df[(df['phase'] == phase) & (df['is_critical'] == True)]
+            if not phase_critical.empty:
+                fig.add_trace(go.Scatter(
+                    x=phase_critical['position'],
+                    y=phase_critical['connectivity'],
+                    mode='markers',
+                    marker=dict(
+                        size=16,
+                        color=phase_colors[phase],  # SAME color as regular but bigger
+                        symbol='circle',
+                        line=dict(width=2, color=self.colors['primary_dark'])
+                    ),
+                    text=phase_critical['content'],
+                    hovertemplate='CRITICAL MOVE %{x}<br>Connections: %{y}<br>%{text}<extra></extra>',
+                    name=f'{phase.capitalize()} - Critical',
+                    legendgroup=phase
+                ))
+        
+        # Add phase regions with labels
+        self._add_phase_regions_with_labels(fig, moves)
         
         fig.update_layout(
             title="Critical Moves and Connectivity Timeline",
@@ -680,6 +694,34 @@ class LinkographVisualizer:
                     phase_start = i
     
     def _add_phase_regions(self, fig: go.Figure, moves: List[DesignMove]):
+        """Add colored background regions for phases"""
+        if not moves:
+            return
+            
+        current_phase = moves[0].phase
+        phase_start = 0
+        
+        for i, move in enumerate(moves + [None]):
+            if move is None or move.phase != current_phase:
+                # Add shape for phase region
+                fig.add_shape(
+                    type="rect",
+                    x0=phase_start - 0.5,
+                    x1=i - 0.5,
+                    y0=0,
+                    y1=1,
+                    yref="paper",
+                    fillcolor=self._get_phase_color(current_phase),
+                    opacity=0.1,
+                    layer="below",
+                    line_width=0
+                )
+                
+                if move is not None:
+                    current_phase = move.phase
+                    phase_start = i
+    
+    def _add_phase_regions_with_labels(self, fig: go.Figure, moves: List[DesignMove]):
         """Add colored background regions for phases"""
         if not moves:
             return
