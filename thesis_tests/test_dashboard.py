@@ -72,6 +72,8 @@ class TestDashboard:
             st.session_state.pre_test_complete = False
         if 'test_complete' not in st.session_state:
             st.session_state.test_complete = False
+        if 'bypass_pre_test' not in st.session_state:
+            st.session_state.bypass_pre_test = False
             
     def setup_environments(self):
         """Initialize test environments"""
@@ -97,8 +99,20 @@ class TestDashboard:
                     key="test_group_select"
                 )
                 
+                # Pre-test bypass toggle
+                st.divider()
+                st.subheader("Test Configuration")
+                bypass_pre_test = st.checkbox(
+                    "Skip Pre-Test Assessment", 
+                    value=False,
+                    key="bypass_pre_test_checkbox",
+                    help="Check this to skip the pre-test assessment and go directly to the main design test"
+                )
+                
                 if st.button("Start Test Session", key="start_session_btn"):
                     if participant_id:
+                        # Store bypass preference
+                        st.session_state.bypass_pre_test = bypass_pre_test
                         self.start_test_session(participant_id, TestGroup(test_group))
                     else:
                         st.error("Please enter a participant ID")
@@ -116,11 +130,16 @@ class TestDashboard:
                 st.subheader("Phase Progression")
                 
                 if st.session_state.current_phase == TestPhase.PRE_TEST:
-                    if st.button("Complete Pre-Test", key="complete_pretest_btn"):
-                        if st.session_state.pre_test_complete:
+                    if st.session_state.bypass_pre_test:
+                        st.info("Pre-test assessment was skipped")
+                        if st.button("Start Main Test", key="start_main_test_btn"):
                             self.advance_to_main_test()
-                        else:
-                            st.error("Please complete the pre-test assessment first")
+                    else:
+                        if st.button("Complete Pre-Test", key="complete_pretest_btn"):
+                            if st.session_state.pre_test_complete:
+                                self.advance_to_main_test()
+                            else:
+                                st.error("Please complete the pre-test assessment first")
                 
                 elif st.session_state.current_phase in [TestPhase.IDEATION, TestPhase.VISUALIZATION, TestPhase.MATERIALIZATION]:
                     col1, col2 = st.columns(2)
@@ -180,6 +199,15 @@ class TestDashboard:
         # Set test group
         st.session_state.test_group = test_group
         
+        # Check if pre-test should be bypassed
+        if st.session_state.bypass_pre_test:
+            st.session_state.current_phase = TestPhase.IDEATION
+            st.session_state.pre_test_complete = True
+            st.info("Pre-test assessment skipped - proceeding directly to main test")
+        else:
+            st.session_state.current_phase = TestPhase.PRE_TEST
+            st.session_state.pre_test_complete = False
+        
         # Log session start
         st.session_state.session_logger.log_session_start()
         
@@ -211,19 +239,34 @@ class TestDashboard:
         - **Control Group**: No AI assistance
         
         ### Test Structure:
-        1. **Pre-Test Assessment** (10 minutes)
+        1. **Pre-Test Assessment** (10 minutes) - *Optional*
         2. **Design Phases** (45 minutes total):
            - Ideation (15 minutes)
            - Visualization (20 minutes)
            - Materialization (20 minutes)
         3. **Post-Test Assessment** (10 minutes)
         
-        Please use the sidebar to begin when ready.
+        **Note**: You can choose to skip the pre-test assessment if you prefer to go directly to the main design test.
+        
+        Please use the sidebar to configure your test session and begin when ready.
         """)
     
     def render_pre_test(self):
         """Render pre-test assessment"""
         st.header("Pre-Test Assessment")
+        
+        # Check if pre-test was bypassed
+        if st.session_state.bypass_pre_test:
+            st.info("Pre-test assessment was skipped for this session.")
+            st.markdown("""
+            ### Skipped Assessment Components:
+            - **Critical Thinking Assessment**
+            - **Architectural Knowledge Baseline** 
+            - **Spatial Reasoning Test**
+            
+            You can proceed directly to the main design test using the sidebar controls.
+            """)
+            return
         
         tab1, tab2, tab3 = st.tabs(["Critical Thinking", "Architectural Knowledge", "Spatial Reasoning"])
         
