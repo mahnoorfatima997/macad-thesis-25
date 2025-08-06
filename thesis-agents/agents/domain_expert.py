@@ -150,13 +150,13 @@ class DomainExpertAgent:
             
             # Enhanced search query construction for architecture using flexible detection
             if "example" in topic.lower() or "project" in topic.lower():
-                # For example requests, focus on finding real projects
+                # For example requests, focus on finding real projects from architectural websites
                 modifiers = get_search_query_modifiers(topic)
-                search_query = f"{topic} {modifiers['include']} projects examples case studies built works {modifiers['exclude']}"
+                search_query = f"{topic} {modifiers['include']} site:dezeen.com OR site:archdaily.com OR site:archello.com OR site:architectural-review.com OR site:architecturaldigest.com OR site:architectmagazine.com OR site:architecturalrecord.com projects examples case studies built works {modifiers['exclude']}"
             else:
                 # For general topics, focus on principles and best practices
                 modifiers = get_search_query_modifiers(topic)
-                search_query = f"{topic} {modifiers['include']} design principles best practices examples {modifiers['exclude']}"
+                search_query = f"{topic} {modifiers['include']} site:dezeen.com OR site:archdaily.com OR site:archello.com OR site:architectural-review.com OR site:architecturaldigest.com OR site:architectmagazine.com OR site:architecturalrecord.com design principles best practices examples {modifiers['exclude']}"
             
             encoded_query = quote(search_query)
             
@@ -1199,6 +1199,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         7. IMPORTANT: The student specifically asked for BUILDING examples. Only provide examples of actual buildings or structures that have been converted/adapted. Do NOT include landscape projects, parks, urban spaces, or outdoor projects.
         """
         
+        # Enhanced prompt for better examples
         prompt = f"""
         Provide specific architectural examples for this student's request:
         
@@ -1213,7 +1214,10 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         3. Each example should demonstrate {dynamic_topic} in a way that connects to the student's context
         4. Include project names, architects, and locations where possible
         5. Explain WHY these examples work for {dynamic_topic} in {building_type} contexts
-        6. Avoid generic examples - be specific to the topic and building type{building_requirement}
+        6. Avoid generic examples - be specific to the topic and building type
+        7. If the topic involves facade design, shading, or Nordic climate considerations, prioritize examples from Nordic countries or similar climates
+        8. For community centers, focus on examples that show how the design serves diverse user groups
+        9. Include specific technical details about how the {dynamic_topic} was implemented{building_requirement}
         
         FORMAT:
         **Example 1: [Project Name]**
@@ -1224,14 +1228,14 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         [Brief description of how this project specifically addresses {dynamic_topic}]
         Why it works: [Specific reason relevant to {building_type} design]
         
-        Keep it under 200 words and focus on practical, actionable examples that directly relate to {dynamic_topic}.
+        Keep it under 250 words and focus on practical, actionable examples that directly relate to {dynamic_topic}.
         """
         
         try:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,
+                max_tokens=500,
                 temperature=0.4
             )
             

@@ -1,0 +1,681 @@
+# utils/routing_decision_tree.py - Advanced Routing Decision Tree
+from typing import Dict, Any, List, Optional, Tuple
+from enum import Enum
+import logging
+from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
+
+class RouteType(Enum):
+    """Advanced route types matching original orchestrator"""
+    PROGRESSIVE_OPENING = "progressive_opening"
+    TOPIC_TRANSITION = "topic_transition"
+    KNOWLEDGE_ONLY = "knowledge_only"
+    SOCRATIC_EXPLORATION = "socratic_exploration"
+    COGNITIVE_CHALLENGE = "cognitive_challenge"
+    MULTI_AGENT_COMPREHENSIVE = "multi_agent_comprehensive"
+    SOCRATIC_CLARIFICATION = "socratic_clarification"
+    SUPPORTIVE_SCAFFOLDING = "supportive_scaffolding"
+    FOUNDATIONAL_BUILDING = "foundational_building"
+    KNOWLEDGE_WITH_CHALLENGE = "knowledge_with_challenge"
+    BALANCED_GUIDANCE = "balanced_guidance"
+    DESIGN_GUIDANCE = "design_guidance"
+    COGNITIVE_INTERVENTION = "cognitive_intervention"
+    ERROR = "error"
+    FALLBACK = "fallback"
+
+class InputType(Enum):
+    """Advanced input types"""
+    KNOWLEDGE_REQUEST = "knowledge_request"
+    GUIDANCE_REQUEST = "guidance_request"
+    FEEDBACK_REQUEST = "feedback_request"
+    CLARIFICATION_REQUEST = "clarification_request"
+    COGNITIVE_OFFLOADING = "cognitive_offloading"
+    EXAMPLE_REQUEST = "example_request"
+    TECHNICAL_QUESTION = "technical_question"
+    CONFUSION_EXPRESSION = "confusion_expression"
+    GENERAL_QUESTION = "general_question"
+    FIRST_MESSAGE = "first_message"
+    TOPIC_TRANSITION = "topic_transition"
+    UNKNOWN = "unknown"
+
+class UnderstandingLevel(Enum):
+    """Understanding levels"""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+class ConfidenceLevel(Enum):
+    """Confidence levels"""
+    UNCERTAIN = "uncertain"
+    CONFIDENT = "confident"
+    OVERCONFIDENT = "overconfident"
+
+class EngagementLevel(Enum):
+    """Engagement levels"""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+class CognitiveOffloadingType(Enum):
+    """Types of cognitive offloading"""
+    SOLUTION_REQUEST = "solution_request"
+    DIRECT_ANSWER_REQUEST = "direct_answer_request"
+    AVOIDANCE_PATTERN = "avoidance_pattern"
+    OVERRELIANCE = "overreliance"
+    NONE = "none"
+
+@dataclass
+class RoutingContext:
+    """Context for routing decisions"""
+    classification: Dict[str, Any]
+    context_analysis: Dict[str, Any]
+    routing_suggestions: Dict[str, Any]
+    student_state: Optional[Dict[str, Any]] = None
+    conversation_history: List[Dict[str, Any]] = field(default_factory=list)
+    current_phase: str = "ideation"
+    phase_progress: float = 0.0
+
+@dataclass
+class RoutingDecision:
+    """Detailed routing decision result"""
+    route: RouteType
+    reason: str
+    confidence: float
+    rule_applied: str
+    context_agent_override: bool = False
+    cognitive_offloading_detected: bool = False
+    cognitive_offloading_type: Optional[CognitiveOffloadingType] = None
+    context_agent_confidence: float = 0.0
+    classification: Dict[str, Any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+class AdvancedRoutingDecisionTree:
+    """Advanced routing decision tree matching original orchestrator complexity"""
+    
+    def __init__(self):
+        self.decision_rules = self._initialize_decision_rules()
+        self.route_mapping = self._initialize_route_mapping()
+        self.confidence_thresholds = self._initialize_confidence_thresholds()
+        self.cognitive_offloading_patterns = self._initialize_cognitive_offloading_patterns()
+    
+    def _initialize_decision_rules(self) -> Dict[str, Dict[str, Any]]:
+        """Initialize advanced decision rules"""
+        return {
+            "progressive_opening": {
+                "priority": 1,
+                "route": RouteType.PROGRESSIVE_OPENING,
+                "conditions": ["is_first_message == True"],
+                "description": "First message - use progressive opening",
+                "context_agent_override": True
+            },
+            "topic_transition": {
+                "priority": 2,
+                "route": RouteType.TOPIC_TRANSITION,
+                "conditions": ["routing_decision.path == 'topic_transition'"],
+                "description": "Topic transition detected",
+                "context_agent_override": True
+            },
+            "context_agent_high_confidence": {
+                "priority": 3,
+                "route": None,  # Dynamic based on mapping
+                "conditions": ["context_agent_confidence > 0.6"],
+                "description": "Use context agent suggestion with high confidence",
+                "context_agent_override": False
+            },
+            "cognitive_offloading_override": {
+                "priority": 4,
+                "route": RouteType.COGNITIVE_INTERVENTION,
+                "conditions": ["cognitive_offloading_detected == True", "context_agent_confidence < 0.7"],
+                "description": "Cognitive offloading detected - override context agent",
+                "context_agent_override": True
+            },
+            "pure_example_request": {
+                "priority": 5,
+                "route": RouteType.KNOWLEDGE_ONLY,
+                "conditions": ["interaction_type == 'example_request'", "is_pure_example_request == True"],
+                "description": "Pure example request - knowledge only",
+                "context_agent_override": False
+            },
+            "example_with_guidance": {
+                "priority": 6,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["interaction_type == 'example_request'", "is_pure_example_request == False"],
+                "description": "Example request with design guidance",
+                "context_agent_override": False
+            },
+            "feedback_request": {
+                "priority": 7,
+                "route": RouteType.MULTI_AGENT_COMPREHENSIVE,
+                "conditions": ["interaction_type == 'feedback_request'"],
+                "description": "Feedback request - comprehensive analysis",
+                "context_agent_override": False
+            },
+            "overconfident_user": {
+                "priority": 8,
+                "route": RouteType.COGNITIVE_CHALLENGE,
+                "conditions": ["confidence_level == 'overconfident'"],
+                "description": "Overconfident user - cognitive challenge",
+                "context_agent_override": False
+            },
+            "low_understanding": {
+                "priority": 9,
+                "route": RouteType.FOUNDATIONAL_BUILDING,
+                "conditions": ["understanding_level == 'low'"],
+                "description": "Low understanding - foundational building",
+                "context_agent_override": False
+            },
+            "confusion_expression": {
+                "priority": 10,
+                "route": RouteType.SUPPORTIVE_SCAFFOLDING,
+                "conditions": ["interaction_type == 'confusion_expression'"],
+                "description": "Confusion expressed - supportive scaffolding",
+                "context_agent_override": False
+            },
+            "technical_question_high_understanding": {
+                "priority": 11,
+                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "conditions": ["interaction_type == 'technical_question'", "understanding_level == 'high'"],
+                "description": "Technical question with high understanding",
+                "context_agent_override": False
+            },
+            "technical_question_low_understanding": {
+                "priority": 12,
+                "route": RouteType.SOCRATIC_CLARIFICATION,
+                "conditions": ["interaction_type == 'technical_question'", "understanding_level != 'high'"],
+                "description": "Technical question with low understanding",
+                "context_agent_override": False
+            },
+            "default_balanced": {
+                "priority": 13,
+                "route": RouteType.BALANCED_GUIDANCE,
+                "conditions": ["default"],
+                "description": "Default balanced guidance",
+                "context_agent_override": False
+            }
+        }
+    
+    def _initialize_route_mapping(self) -> Dict[str, str]:
+        """Initialize route mapping from context agent to orchestrator"""
+        return {
+            # Context agent route names → Orchestrator route names
+            "knowledge_only": "knowledge_only",
+            "socratic_exploration": "socratic_exploration",
+            "cognitive_challenge": "cognitive_challenge",
+            "multi_agent": "multi_agent_comprehensive",
+            "socratic_clarification": "socratic_clarification",
+            "supportive_scaffolding": "supportive_scaffolding",
+            "foundational_building": "foundational_building",
+            "knowledge_with_challenge": "knowledge_with_challenge",
+            "balanced_guidance": "balanced_guidance",
+            "design_guidance": "design_guidance",
+            "knowledge_exploration": "knowledge_only",
+            "analysis_guidance": "multi_agent_comprehensive",
+            "technical_guidance": "knowledge_with_challenge",
+            "clarification_support": "socratic_clarification",
+            "improvement_guidance": "socratic_exploration",
+            "knowledge_provision": "knowledge_only",
+            "exploratory_guidance": "socratic_exploration",
+            "confidence_building": "supportive_scaffolding",
+            "general_guidance": "balanced_guidance",
+            "default": "balanced_guidance"
+        }
+    
+    def _initialize_confidence_thresholds(self) -> Dict[str, float]:
+        """Initialize confidence thresholds"""
+        return {
+            "context_agent_confidence": 0.6,
+            "cognitive_offloading_confidence": 0.7,
+            "cognitive_offloading_override": 0.8,
+            "understanding_confidence": 0.6,
+            "confidence_level_confidence": 0.6,
+            "engagement_confidence": 0.6,
+            "overall_confidence": 0.6
+        }
+    
+    def _initialize_cognitive_offloading_patterns(self) -> Dict[str, List[str]]:
+        """Initialize cognitive offloading detection patterns"""
+        return {
+            "solution_request": [
+                "give me the answer", "tell me what to do", "what should i do",
+                "show me the solution", "give me the design", "solve this for me"
+            ],
+            "direct_answer_request": [
+                "what is", "how do i", "can you tell me", "what should",
+                "give me", "show me", "tell me"
+            ],
+            "avoidance_pattern": [
+                "i don't know", "i'm not sure", "i can't figure out",
+                "this is too hard", "i give up", "i'm stuck"
+            ],
+            "overreliance": [
+                "you decide", "you choose", "whatever you think",
+                "you know better", "i trust you", "do it for me"
+            ]
+        }
+    
+    def decide_route(self, context: RoutingContext) -> RoutingDecision:
+        """Make advanced routing decision based on context"""
+        try:
+            # Extract context data
+            classification = context.classification
+            routing_suggestions = context.routing_suggestions
+            context_analysis = context.context_analysis
+            
+            # Detect cognitive offloading
+            cognitive_offloading = self._detect_cognitive_offloading(classification, context_analysis)
+            
+            # Check for pure example requests
+            is_pure_example_request = self._is_pure_example_request(classification, context)
+            
+            # Prepare classification with additional data
+            enhanced_classification = {
+                **classification,
+                "cognitive_offloading_detected": cognitive_offloading["detected"],
+                "cognitive_offloading_type": cognitive_offloading["type"],
+                "cognitive_offloading_confidence": cognitive_offloading["confidence"],
+                "is_pure_example_request": is_pure_example_request,
+                "context_agent_confidence": routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0
+            }
+            
+            # Apply decision rules in priority order
+            for rule_name, rule in sorted(self.decision_rules.items(), key=lambda x: x[1]["priority"]):
+                if self._evaluate_rule(rule, enhanced_classification, context):
+                    route = self._determine_route(rule, enhanced_classification, context)
+                    
+                    decision = RoutingDecision(
+                        route=route,
+                        reason=rule["description"],
+                        confidence=self._calculate_route_confidence(enhanced_classification),
+                        rule_applied=rule_name,
+                        context_agent_override=rule.get("context_agent_override", False),
+                        cognitive_offloading_detected=cognitive_offloading["detected"],
+                        cognitive_offloading_type=cognitive_offloading["type"],
+                        context_agent_confidence=routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0,
+                        classification=enhanced_classification,
+                        metadata={
+                            "cognitive_offloading_indicators": cognitive_offloading["indicators"],
+                            "context_agent_primary_route": routing_suggestions.get("primary_route") if routing_suggestions else None,
+                            "is_pure_example_request": is_pure_example_request
+                        }
+                    )
+                    
+                    logger.info(f"Advanced routing decision: {decision.route.value} - {decision.reason}")
+                    return decision
+            
+            # Fallback decision
+            return RoutingDecision(
+                route=RouteType.BALANCED_GUIDANCE,
+                reason="Default balanced guidance",
+                confidence=0.5,
+                rule_applied="default_balanced",
+                classification=enhanced_classification
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in advanced routing decision: {e}")
+            return RoutingDecision(
+                route=RouteType.ERROR,
+                reason=f"Routing error: {str(e)}",
+                confidence=0.0,
+                rule_applied="error",
+                classification=classification
+            )
+    
+    def _evaluate_rule(self, rule: Dict[str, Any], classification: Dict[str, Any], context: RoutingContext) -> bool:
+        """Evaluate if a rule applies"""
+        conditions = rule.get("conditions", [])
+        
+        for condition in conditions:
+            if not self._evaluate_condition(condition, classification, context):
+                return False
+        
+        return True
+    
+    def _evaluate_condition(self, condition: str, classification: Dict[str, Any], context: RoutingContext) -> bool:
+        """Evaluate a single condition with context awareness"""
+        try:
+            # Handle special conditions
+            if condition == "default":
+                return True
+            
+            # Simple condition evaluation
+            if "==" in condition:
+                field, value = condition.split("==")
+                field = field.strip()
+                value = value.strip().strip("'").strip('"')
+                
+                # Handle boolean values
+                if value.lower() == "true":
+                    value = True
+                elif value.lower() == "false":
+                    value = False
+                
+                return classification.get(field) == value
+            
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error evaluating condition '{condition}': {e}")
+            return False
+    
+    def _determine_route(self, rule: Dict[str, Any], classification: Dict[str, Any], context: RoutingContext) -> RouteType:
+        """Determine the actual route based on rule and context"""
+        route = rule.get("route")
+        
+        # If route is None, use context agent mapping
+        if route is None and context.routing_suggestions:
+            primary_route = context.routing_suggestions.get("primary_route", "default")
+            mapped_route = self.route_mapping.get(primary_route, "balanced_guidance")
+            return RouteType(mapped_route)
+        
+        return route or RouteType.BALANCED_GUIDANCE
+    
+    def _detect_cognitive_offloading(self, classification: Dict[str, Any], context_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Detect cognitive offloading patterns"""
+        message = classification.get("last_message", "").lower()
+        interaction_type = classification.get("interaction_type", "")
+        
+        detected = False
+        offloading_type = CognitiveOffloadingType.NONE
+        confidence = 0.0
+        indicators = []
+        
+        # Check for cognitive offloading patterns
+        for pattern_type, patterns in self.cognitive_offloading_patterns.items():
+            for pattern in patterns:
+                if pattern in message:
+                    detected = True
+                    offloading_type = CognitiveOffloadingType(pattern_type)
+                    confidence = 0.8
+                    indicators.append(f"{pattern_type}: '{pattern}'")
+                    break
+        
+        # Check interaction type for cognitive offloading
+        if interaction_type in ["direct_answer_request", "solution_request"]:
+            detected = True
+            offloading_type = CognitiveOffloadingType(interaction_type)
+            confidence = max(confidence, 0.7)
+            indicators.append(f"interaction_type: {interaction_type}")
+        
+        # Check confidence level
+        confidence_level = classification.get("confidence_level", "confident")
+        if confidence_level == "uncertain" and "i don't know" in message:
+            detected = True
+            offloading_type = CognitiveOffloadingType.AVOIDANCE_PATTERN
+            confidence = max(confidence, 0.6)
+            indicators.append("avoidance_pattern: low confidence")
+        
+        return {
+            "detected": detected,
+            "type": offloading_type,
+            "confidence": confidence,
+            "indicators": indicators
+        }
+    
+    def _is_pure_example_request(self, classification: Dict[str, Any], context: RoutingContext) -> bool:
+        """Determine if this is a pure example request"""
+        message = classification.get("last_message", "").lower()
+        interaction_type = classification.get("interaction_type", "")
+        
+        if interaction_type != "example_request":
+            return False
+        
+        pure_example_keywords = [
+            "example", "examples", "project", "projects", "precedent", "precedents",
+            "case study", "case studies", "show me", "can you give", "can you provide",
+            "can you show", "real project", "built project", "actual project"
+        ]
+        
+        guidance_keywords = [
+            "how can i", "how do i", "how to", "how might", "incorporate", 
+            "integrate", "implement", "apply", "use", "adapt"
+        ]
+        
+        has_pure_keywords = any(keyword in message for keyword in pure_example_keywords)
+        has_guidance_keywords = any(keyword in message for keyword in guidance_keywords)
+        
+        return has_pure_keywords and not has_guidance_keywords
+    
+    def _calculate_route_confidence(self, classification: Dict[str, Any]) -> float:
+        """Calculate confidence in routing decision"""
+        confidences = []
+        
+        # Input type confidence
+        if "input_type" in classification:
+            confidences.append(classification.get("input_type_confidence", 0.5))
+        
+        # Understanding level confidence
+        if "understanding_level" in classification:
+            confidences.append(classification.get("understanding_confidence", 0.5))
+        
+        # Confidence level confidence
+        if "confidence_level" in classification:
+            confidences.append(classification.get("confidence_level_confidence", 0.5))
+        
+        # Engagement level confidence
+        if "engagement_level" in classification:
+            confidences.append(classification.get("engagement_confidence", 0.5))
+        
+        # Cognitive offloading confidence
+        if classification.get("cognitive_offloading_detected"):
+            confidences.append(classification.get("cognitive_offloading_confidence", 0.5))
+        
+        # Context agent confidence
+        if classification.get("context_agent_confidence", 0) > 0:
+            confidences.append(classification.get("context_agent_confidence", 0.5))
+        
+        # Return average confidence
+        return sum(confidences) / len(confidences) if confidences else 0.5
+    
+    def validate_classification(self, classification: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate classification data"""
+        validation_result = {
+            "is_valid": True,
+            "errors": [],
+            "warnings": [],
+            "missing_fields": []
+        }
+        
+        # Check required fields
+        required_fields = ["input_type", "understanding_level", "confidence_level", "engagement_level"]
+        for field in required_fields:
+            if field not in classification:
+                validation_result["missing_fields"].append(field)
+                validation_result["warnings"].append(f"Missing field: {field}")
+        
+        # Validate field values
+        valid_input_types = [e.value for e in InputType]
+        valid_understanding_levels = [e.value for e in UnderstandingLevel]
+        valid_confidence_levels = [e.value for e in ConfidenceLevel]
+        valid_engagement_levels = [e.value for e in EngagementLevel]
+        
+        if "input_type" in classification and classification["input_type"] not in valid_input_types:
+            validation_result["errors"].append(f"Invalid input_type: {classification['input_type']}")
+        
+        if "understanding_level" in classification and classification["understanding_level"] not in valid_understanding_levels:
+            validation_result["errors"].append(f"Invalid understanding_level: {classification['understanding_level']}")
+        
+        if "confidence_level" in classification and classification["confidence_level"] not in valid_confidence_levels:
+            validation_result["errors"].append(f"Invalid confidence_level: {classification['confidence_level']}")
+        
+        if "engagement_level" in classification and classification["engagement_level"] not in valid_engagement_levels:
+            validation_result["errors"].append(f"Invalid engagement_level: {classification['engagement_level']}")
+        
+        # Set default values for missing fields
+        if "input_type" not in classification:
+            classification["input_type"] = "unknown"
+        
+        if "understanding_level" not in classification:
+            classification["understanding_level"] = "medium"
+        
+        if "confidence_level" not in classification:
+            classification["confidence_level"] = "confident"
+        
+        if "engagement_level" not in classification:
+            classification["engagement_level"] = "medium"
+        
+        if "cognitive_offloading_detected" not in classification:
+            classification["cognitive_offloading_detected"] = False
+        
+        validation_result["is_valid"] = len(validation_result["errors"]) == 0
+        
+        return validation_result
+
+class AdvancedRoutingOptimizer:
+    """Advanced routing optimizer with performance tracking"""
+    
+    def __init__(self):
+        self.routing_history: List[Dict[str, Any]] = []
+        self.performance_metrics: Dict[str, Dict[str, float]] = {}
+        self.cognitive_offloading_tracking: Dict[str, int] = {}
+    
+    def record_routing_decision(self, decision: RoutingDecision, outcome: Dict[str, Any]):
+        """Record a routing decision and its outcome"""
+        record = {
+            "timestamp": outcome.get("timestamp", ""),
+            "route": decision.route.value,
+            "reason": decision.reason,
+            "confidence": decision.confidence,
+            "cognitive_offloading_detected": decision.cognitive_offloading_detected,
+            "cognitive_offloading_type": decision.cognitive_offloading_type.value if decision.cognitive_offloading_type else None,
+            "context_agent_override": decision.context_agent_override,
+            "user_satisfaction": outcome.get("user_satisfaction", 0.0),
+            "response_time": outcome.get("response_time", 0.0),
+            "cognitive_enhancement_score": outcome.get("cognitive_enhancement_score", 0.0)
+        }
+        
+        self.routing_history.append(record)
+        
+        # Update performance metrics
+        route = decision.route.value
+        if route:
+            if route not in self.performance_metrics:
+                self.performance_metrics[route] = {
+                    "total_decisions": 0,
+                    "avg_satisfaction": 0.0,
+                    "avg_response_time": 0.0,
+                    "avg_cognitive_score": 0.0,
+                    "cognitive_offloading_count": 0
+                }
+            
+            metrics = self.performance_metrics[route]
+            metrics["total_decisions"] += 1
+            
+            # Update averages
+            current_avg = metrics["avg_satisfaction"]
+            metrics["avg_satisfaction"] = (current_avg * (metrics["total_decisions"] - 1) + record["user_satisfaction"]) / metrics["total_decisions"]
+            
+            current_avg = metrics["avg_response_time"]
+            metrics["avg_response_time"] = (current_avg * (metrics["total_decisions"] - 1) + record["response_time"]) / metrics["total_decisions"]
+            
+            current_avg = metrics["avg_cognitive_score"]
+            metrics["avg_cognitive_score"] = (current_avg * (metrics["total_decisions"] - 1) + record["cognitive_enhancement_score"]) / metrics["total_decisions"]
+            
+            # Track cognitive offloading
+            if record["cognitive_offloading_detected"]:
+                metrics["cognitive_offloading_count"] += 1
+        
+        # Track cognitive offloading types
+        if record["cognitive_offloading_type"]:
+            offloading_type = record["cognitive_offloading_type"]
+            self.cognitive_offloading_tracking[offloading_type] = self.cognitive_offloading_tracking.get(offloading_type, 0) + 1
+    
+    def get_route_performance(self, route: str) -> Dict[str, float]:
+        """Get performance metrics for a specific route"""
+        return self.performance_metrics.get(route, {
+            "total_decisions": 0,
+            "avg_satisfaction": 0.0,
+            "avg_response_time": 0.0,
+            "avg_cognitive_score": 0.0,
+            "cognitive_offloading_count": 0
+        })
+    
+    def get_best_performing_route(self) -> str:
+        """Get the best performing route based on cognitive enhancement score"""
+        best_route = None
+        best_score = 0.0
+        
+        for route, metrics in self.performance_metrics.items():
+            if metrics["total_decisions"] >= 5:  # Minimum sample size
+                if metrics["avg_cognitive_score"] > best_score:
+                    best_score = metrics["avg_cognitive_score"]
+                    best_route = route
+        
+        return best_route or "balanced_guidance"
+    
+    def get_cognitive_offloading_analysis(self) -> Dict[str, Any]:
+        """Get analysis of cognitive offloading patterns"""
+        total_offloading = sum(self.cognitive_offloading_tracking.values())
+        
+        return {
+            "total_cognitive_offloading_instances": total_offloading,
+            "offloading_type_distribution": self.cognitive_offloading_tracking,
+            "most_common_offloading_type": max(self.cognitive_offloading_tracking.items(), key=lambda x: x[1])[0] if self.cognitive_offloading_tracking else None,
+            "routes_with_most_offloading": [
+                route for route, metrics in self.performance_metrics.items()
+                if metrics["cognitive_offloading_count"] > 0
+            ]
+        }
+    
+    def suggest_route_improvements(self) -> List[Dict[str, Any]]:
+        """Suggest improvements based on performance data"""
+        suggestions = []
+        
+        for route, metrics in self.performance_metrics.items():
+            if metrics["total_decisions"] >= 3:  # Minimum sample size
+                if metrics["avg_satisfaction"] < 0.6:
+                    suggestions.append({
+                        "route": route,
+                        "issue": "low_user_satisfaction",
+                        "suggestion": f"Consider improving {route} responses to increase user satisfaction"
+                    })
+                
+                if metrics["avg_response_time"] > 3.0:
+                    suggestions.append({
+                        "route": route,
+                        "issue": "slow_response_time",
+                        "suggestion": f"Optimize {route} for faster response times"
+                    })
+                
+                if metrics["avg_cognitive_score"] < 0.5:
+                    suggestions.append({
+                        "route": route,
+                        "issue": "low_cognitive_enhancement",
+                        "suggestion": f"Enhance {route} to improve cognitive enhancement scores"
+                    })
+                
+                if metrics["cognitive_offloading_count"] > metrics["total_decisions"] * 0.3:
+                    suggestions.append({
+                        "route": route,
+                        "issue": "high_cognitive_offloading",
+                        "suggestion": f"Route {route} has high cognitive offloading rate - consider more challenging responses"
+                    })
+        
+        return suggestions
+
+# Global instances
+advanced_routing_tree = AdvancedRoutingDecisionTree()
+advanced_routing_optimizer = AdvancedRoutingOptimizer()
+
+def make_advanced_routing_decision(context: RoutingContext) -> RoutingDecision:
+    """Convenience function to make advanced routing decision"""
+    # Validate classification
+    validation = advanced_routing_tree.validate_classification(context.classification)
+    
+    if not validation["is_valid"]:
+        logger.error(f"Classification validation failed: {validation['errors']}")
+        return RoutingDecision(
+            route=RouteType.ERROR,
+            reason=f"Classification validation failed: {validation['errors']}",
+            confidence=0.0,
+            rule_applied="validation_error",
+            classification=context.classification
+        )
+    
+    # Make routing decision
+    decision = advanced_routing_tree.decide_route(context)
+    
+    logger.info(f"Advanced routing decision made: {decision.route.value} with confidence {decision.confidence}")
+    
+    return decision 

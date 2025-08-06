@@ -18,6 +18,7 @@ from state_manager import ArchMentorState
 from agents.analysis_agent import AnalysisAgent
 from agents.socratic_tutor import SocraticTutorAgent
 from agents.domain_expert import DomainExpertAgent
+from agents.context_agent import ContextAgent
 from agents.cognitive_enhancement import CognitiveEnhancementAgent
 from config.orchestrator_config import OrchestratorConfig, DEFAULT_CONFIG
 from state_manager import*
@@ -34,7 +35,6 @@ class WorkflowState(TypedDict):
     
     # Context analysis
     student_classification: Dict[str, Any]
-    #3107 ADDED BELOW LINE
     context_analysis: Dict[str, Any]
     routing_decision: Dict[str, Any]
     
@@ -59,6 +59,7 @@ class LangGraphOrchestrator:
         self.socratic_agent = SocraticTutorAgent(domain)
         self.domain_expert = DomainExpertAgent(domain)
         self.cognitive_enhancement_agent = CognitiveEnhancementAgent(domain)
+        self.context_agent = ContextAgent(domain)   
         
         # Initialize progressive conversation system
         self.progression_manager = ConversationProgressionManager(domain)
@@ -157,11 +158,11 @@ class LangGraphOrchestrator:
     
     async def context_agent_node(self, state: WorkflowState) -> WorkflowState:
         """Enhanced context agent with progressive conversation support"""
+        #moved to top of the file
+        # from agents.context_agent import ContextAgent
         
-        from agents.context_agent import ContextAgent  # Import new agent
-        
-        if not hasattr(self, 'context_agent'):
-            self.context_agent = ContextAgent(self.domain)
+        # if not hasattr(self, 'context_agent'):
+        #     self.context_agent = ContextAgent(self.domain)
         
         student_state = state["student_state"]
         last_message = state["last_message"]
@@ -359,10 +360,8 @@ class LangGraphOrchestrator:
         student_state = state["student_state"]
         analysis_result = state.get("analysis_result", {})
         context_classification = state.get("student_classification", {})
-        #3107-BELOW LINE: ADDED DOMAIN EXPERT RESULT
+        # ENHANCED: Pass domain expert results to Socratic tutor so it can ask questions about examples
         domain_expert_result = state.get("domain_expert_result", {})
-        
-        # ENHANCED ONLY domain expert result: Pass domain expert results to Socratic tutor so it can ask questions about examples
         socratic_result = await self.socratic_agent.generate_response(
             student_state, analysis_result, context_classification, domain_expert_result
         )
@@ -374,7 +373,7 @@ class LangGraphOrchestrator:
 
     
     async def cognitive_enhancement_node(self, state: WorkflowState) -> WorkflowState:
-        """Cognitive Enhancement Agent node - FIXED"""
+        """Cognitive Enhancement Agent node"""
         self.logger.info("Cognitive Enhancement Agent: Enhancing cognition...")
         
         student_state = state["student_state"]
@@ -430,7 +429,7 @@ class LangGraphOrchestrator:
             "response_metadata": metadata
         }
     
-    # ROUTING LOGIC(3107-PRIORITY ENHANCEMENT-OLD VERSION BELOW)
+    # ROUTING LOGIC
     def route_decision(self, state: WorkflowState) -> str:
         """Enhanced routing that properly integrates context agent suggestions and progressive conversation"""
         
@@ -485,7 +484,7 @@ class LangGraphOrchestrator:
             self.logger.info(f"🎯 Using context agent route: {primary_route} → {mapped_route}")
             return mapped_route
         
-        # PRIORITY 2: COGNITIVE PROTECTION (Fallback to orchestrator logic)
+        # PRIORITY 4: COGNITIVE PROTECTION (Fallback to orchestrator logic)
         # ENHANCED: Only override context agent if cognitive offloading is detected AND context agent confidence is low
         context_confidence = routing_suggestions.get("confidence", 0) if routing_suggestions else 0
         cognitive_offloading_indicators = self._detect_cognitive_offloading(classification, context_analysis)
@@ -498,7 +497,7 @@ class LangGraphOrchestrator:
             else:
                 self.logger.info(f"✅ Context agent confident ({context_confidence:.2f}) - ignoring cognitive offloading detection")
         
-        # PRIORITY 3: EDUCATIONAL STRATEGY (Fallback logic)
+        # PRIORITY 5: EDUCATIONAL STRATEGY (Fallback logic)
         interaction_type = classification.get("interaction_type", "general_statement")
         
         # Handle example requests
@@ -530,7 +529,7 @@ class LangGraphOrchestrator:
         elif interaction_type == "feedback_request":
             return "multi_agent_comprehensive"
         
-        # PRIORITY 4: STUDENT STATE (Fallback logic)
+        # PRIORITY 6: STUDENT STATE (Fallback logic)
         confidence_level = classification.get("confidence_level", "confident")
         understanding_level = classification.get("understanding_level", "medium")
         
@@ -541,14 +540,14 @@ class LangGraphOrchestrator:
         elif interaction_type == "confusion_expression":
             return "supportive_scaffolding"
         
-        # PRIORITY 5: TECHNICAL NEEDS (Fallback logic)
+        # PRIORITY 7: TECHNICAL NEEDS (Fallback logic)
         elif interaction_type == "technical_question":
             if understanding_level == "high":
                 return "knowledge_with_challenge"
             else:
                 return "socratic_clarification"
         
-        # PRIORITY 6: DEFAULT (Fallback logic)
+        # PRIORITY 8: DEFAULT (Fallback logic)
         else:
             return "balanced_guidance"
     
@@ -659,7 +658,7 @@ class LangGraphOrchestrator:
         
         return offloading_indicators
     
-    # In orchestration/langgraph_orchestrator.py - Fix after_analysis_routing method
+    # Fix after_analysis_routing method
 
     def after_analysis_routing(self, state: WorkflowState) -> str:
         """Simplified routing after analysis that ensures comprehensive responses"""
@@ -673,14 +672,12 @@ class LangGraphOrchestrator:
         return "to_domain_expert"
     
     def after_domain_expert(self, state: WorkflowState) -> Literal["to_socratic", "to_synthesizer"]:
-        #3107-BEFORE IT WAS: """Always go to Socratic tutor after domain expert for comprehensive responses""" and only last return
         """Route after domain expert based on the original request type"""
         
         # Check if this was a knowledge_only request
         routing_decision = state.get("routing_decision", {})
         original_path = routing_decision.get("path", "default")
         
-        # FIXED: Always go to Socratic tutor after domain expert so it can ask questions about examples
         # The Socratic Tutor should ask questions about the examples that were just provided
         self.logger.info("🎯 After domain expert: Going to Socratic tutor to ask questions about provided examples")
         return "to_socratic"
@@ -722,7 +719,7 @@ class LangGraphOrchestrator:
         
         return routing_decision
         
-    # In orchestration/langgraph_orchestrator.py - Fix classify_student_input method
+    #Fix classify_student_input method
 
     def classify_student_input(self, message: str, student_state: ArchMentorState) -> Dict[str, Any]:
         """IMPROVED classification with better keyword detection"""
@@ -784,7 +781,7 @@ class LangGraphOrchestrator:
         else:
             understanding = "low"
 
-        # 2. Confidence Level - FIXED
+        # 2. Confidence Level
         if overconfidence_score >= 1:  # Lower threshold
             confidence = "overconfident"
         elif any(word in message_lower for word in ["think", "maybe", "might"]):
@@ -801,7 +798,7 @@ class LangGraphOrchestrator:
         else:
             engagement = "low"
 
-        # 4. Interaction Type - PATCHED
+        # 4. Interaction Type
         if is_feedback_request:
             interaction_type = "design_feedback_request"
         elif is_example_request:
@@ -836,14 +833,8 @@ class LangGraphOrchestrator:
             "is_example_request": is_example_request
         }
 
-    #  determine_routing method
 
-    # Fix for langgraph_orchestrator.py - Enhanced Routing  
-
-    # REPLACE the determine_routing method (around line 600) with this enhanced version:
-    # COMPLETE FIX for langgraph_orchestrator.py - determine_routing method
-    # REPLACE the entire determine_routing method with this complete version:
-
+    # COMPLETE FIX for determine_routing method
     async def determine_routing(self, routing_suggestions: Dict[str, Any], classification: Dict[str, Any], state: ArchMentorState = None) -> Dict[str, Any]:
         """Enhanced routing with better Socratic integration for design guidance"""
 

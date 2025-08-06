@@ -775,106 +775,140 @@ I sense you might be scratching the surface of this problem. Let's explore the l
     
     def _generate_focused_exploration_question(self, focus_area: str, building_type: str, main_topic: str) -> str:
         """Generate a focused exploration question based on user's specified focus and topic"""
+
+
+
+
+
+
+
+
+        # Generate contextual questions based on the specific focus area and topic
+        if focus_area == "examples":
+            return f"Great! You're looking for {main_topic} examples. What specific type of {main_topic} examples would be most helpful for your {building_type} project? Are you interested in seeing how other projects have successfully implemented {main_topic}, or are you looking for examples that solved particular challenges similar to yours?"
         
-        # Dynamic focus questions that work for any architectural topic
-        focus_questions = {
-            "principles": f"""
-**🏗️ {main_topic.title()} Principles - Deep Dive**
-
-Excellent choice! Understanding the principles of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
-
-**What specific aspect of {main_topic} principles would you like to explore first?**
-
-1. **Core concepts** - The fundamental ideas that guide {main_topic} decisions
-2. **Application strategies** - How to apply {main_topic} principles in practice
-3. **Design integration** - How {main_topic} principles relate to overall design
-4. **Performance considerations** - How {main_topic} principles affect building performance
-5. **User experience impact** - How {main_topic} principles influence occupant experience
-
-**Or is there a particular challenge you're facing with {main_topic} in your {building_type} project?**
-
-*What aspect of {main_topic} principles feels most relevant to your current design stage?*
-""",
-            "examples": f"""
-**🏗️ {main_topic.title()} Examples - Deep Dive**
-
-Great focus! Learning from real examples of {main_topic} can provide valuable insights for your {building_type} project. Let's explore this systematically:
-
-**What type of {main_topic} examples would be most helpful?**
-
-1. **Successful case studies** - Projects that demonstrate excellent {main_topic} implementation
-2. **Innovative approaches** - Creative and unique {main_topic} solutions
-3. **Problem-solving examples** - How {main_topic} challenges were overcome
-4. **Similar project types** - {main_topic} examples from {building_type} projects
-5. **Contemporary applications** - Modern approaches to {main_topic}
-
-**Or is there a specific {main_topic} challenge you're trying to solve in your project?**
-
-*What type of {main_topic} examples would be most relevant to your current design stage?*
-""",
-            "process": f"""
-**🏗️ {main_topic.title()} Process - Deep Dive**
-
-Excellent choice! Understanding the process of implementing {main_topic} is essential for your {building_type} project. Let's explore this systematically:
-
-**What aspect of the {main_topic} process would you like to explore first?**
-
-1. **Planning phase** - How to approach {main_topic} from the beginning
-2. **Design integration** - How to incorporate {main_topic} into your design process
-3. **Implementation steps** - The practical steps for {main_topic} execution
-4. **Evaluation methods** - How to assess {main_topic} effectiveness
-5. **Iteration and refinement** - How to improve {main_topic} solutions over time
-
-**Or is there a particular stage in the {main_topic} process where you need guidance?**
-
-*What aspect of the {main_topic} process feels most relevant to your current design stage?*
-""",
-            "technical_details": f"""
-**🏗️ {main_topic.title()} Technical Details - Deep Dive**
-
-Great focus! Technical understanding of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
-
-**What specific technical aspect of {main_topic} would you like to explore first?**
-
-1. **Specifications and standards** - Technical requirements for {main_topic}
-2. **Material and system selection** - Choosing appropriate {main_topic} solutions
-3. **Integration with other systems** - How {main_topic} works with building systems
-4. **Performance metrics** - How to measure {main_topic} effectiveness
-5. **Code compliance** - Regulatory requirements for {main_topic}
-
-**Or is there a particular technical challenge you're facing with {main_topic} in your project?**
-
-*What technical aspect of {main_topic} feels most relevant to your current design stage?*
-""",
-            "challenges": f"""
-**🏗️ {main_topic.title()} Challenges - Deep Dive**
-
-Excellent choice! Understanding the challenges of {main_topic} will help you prepare for your {building_type} project. Let's explore this systematically:
-
-**What type of {main_topic} challenges would you like to explore first?**
-
-1. **Common obstacles** - Typical challenges encountered in {main_topic} implementation
-2. **Site-specific challenges** - How {main_topic} challenges vary by context
-3. **Budget and resource constraints** - Financial and practical limitations
-4. **Integration challenges** - How {main_topic} conflicts with other design goals
-5. **Maintenance and long-term issues** - Ongoing challenges with {main_topic}
-
-**Or is there a specific {main_topic} challenge you're currently facing in your project?**
-
-*What type of {main_topic} challenge feels most relevant to your current design stage?*
-"""
-        }
+        elif focus_area == "principles":
+            return f"Excellent! Understanding {main_topic} principles is key. What aspect of {main_topic} principles feels most relevant to your {building_type} project right now? Are you looking for the fundamental concepts, or do you need help understanding how to apply these principles in practice?"
         
-        return focus_questions.get(focus_area, f"""
-**🏗️ {main_topic.title()} - Let's Explore Your Focus**
+        elif focus_area == "process":
+            return f"Perfect! The {main_topic} process is crucial. What stage of the {main_topic} process are you currently working through in your {building_type} project? Are you in the planning phase, or do you need guidance on implementation steps?"
+        
+        elif focus_area == "technical_details":
+            return f"Good focus! Technical details of {main_topic} are important. What specific technical aspect of {main_topic} are you wrestling with in your {building_type} project? Are you looking at materials, systems integration, or compliance requirements?"
+        
+        elif focus_area == "challenges":
+            return f"Smart thinking! Understanding {main_topic} challenges will help you prepare. What type of {main_topic} challenges are you most concerned about for your {building_type} project? Are you thinking about site-specific issues, budget constraints, or integration with other design elements?"
+        
+        else:
+            return f"Great! You've identified {main_topic} as important for your {building_type} project. What specific question or challenge about {main_topic} are you working through right now? This will help me provide the most relevant guidance for where you are in your design process."
 
-Great! You've identified an important aspect of {main_topic} for your {building_type} project. Let's dive deeper:
 
-**What specific {main_topic} question or challenge are you wrestling with right now?**
 
-*This will help me provide the most relevant guidance for your current design stage.*
-""")
-    
+#0508-commented out and replaced with the above functions
+#         # Dynamic focus questions that work for any architectural topic
+#         focus_questions = {
+#             "principles": f"""
+# **🏗️ {main_topic.title()} Principles - Deep Dive**
+
+# Excellent choice! Understanding the principles of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
+
+# **What specific aspect of {main_topic} principles would you like to explore first?**
+
+# 1. **Core concepts** - The fundamental ideas that guide {main_topic} decisions
+# 2. **Application strategies** - How to apply {main_topic} principles in practice
+# 3. **Design integration** - How {main_topic} principles relate to overall design
+# 4. **Performance considerations** - How {main_topic} principles affect building performance
+# 5. **User experience impact** - How {main_topic} principles influence occupant experience
+
+# **Or is there a particular challenge you're facing with {main_topic} in your {building_type} project?**
+
+# *What aspect of {main_topic} principles feels most relevant to your current design stage?*
+# """,
+#             "examples": f"""
+# **🏗️ {main_topic.title()} Examples - Deep Dive**
+
+# Great focus! Learning from real examples of {main_topic} can provide valuable insights for your {building_type} project. Let's explore this systematically:
+
+# **What type of {main_topic} examples would be most helpful?**
+
+# 1. **Successful case studies** - Projects that demonstrate excellent {main_topic} implementation
+# 2. **Innovative approaches** - Creative and unique {main_topic} solutions
+# 3. **Problem-solving examples** - How {main_topic} challenges were overcome
+# 4. **Similar project types** - {main_topic} examples from {building_type} projects
+# 5. **Contemporary applications** - Modern approaches to {main_topic}
+
+# **Or is there a specific {main_topic} challenge you're trying to solve in your project?**
+
+# *What type of {main_topic} examples would be most relevant to your current design stage?*
+# """,
+#             "process": f"""
+# **🏗️ {main_topic.title()} Process - Deep Dive**
+
+# Excellent choice! Understanding the process of implementing {main_topic} is essential for your {building_type} project. Let's explore this systematically:
+
+# **What aspect of the {main_topic} process would you like to explore first?**
+
+# 1. **Planning phase** - How to approach {main_topic} from the beginning
+# 2. **Design integration** - How to incorporate {main_topic} into your design process
+# 3. **Implementation steps** - The practical steps for {main_topic} execution
+# 4. **Evaluation methods** - How to assess {main_topic} effectiveness
+# 5. **Iteration and refinement** - How to improve {main_topic} solutions over time
+
+# **Or is there a particular stage in the {main_topic} process where you need guidance?**
+
+# *What aspect of the {main_topic} process feels most relevant to your current design stage?*
+# """,
+#             "technical_details": f"""
+# **🏗️ {main_topic.title()} Technical Details - Deep Dive**
+
+# Great focus! Technical understanding of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
+
+# **What specific technical aspect of {main_topic} would you like to explore first?**
+
+# 1. **Specifications and standards** - Technical requirements for {main_topic}
+# 2. **Material and system selection** - Choosing appropriate {main_topic} solutions
+# 3. **Integration with other systems** - How {main_topic} works with building systems
+# 4. **Performance metrics** - How to measure {main_topic} effectiveness
+# 5. **Code compliance** - Regulatory requirements for {main_topic}
+
+# **Or is there a particular technical challenge you're facing with {main_topic} in your project?**
+
+# *What technical aspect of {main_topic} feels most relevant to your current design stage?*
+# """,
+#             "challenges": f"""
+# **🏗️ {main_topic.title()} Challenges - Deep Dive**
+
+# Excellent choice! Understanding the challenges of {main_topic} will help you prepare for your {building_type} project. Let's explore this systematically:
+
+# **What type of {main_topic} challenges would you like to explore first?**
+
+# 1. **Common obstacles** - Typical challenges encountered in {main_topic} implementation
+# 2. **Site-specific challenges** - How {main_topic} challenges vary by context
+# 3. **Budget and resource constraints** - Financial and practical limitations
+# 4. **Integration challenges** - How {main_topic} conflicts with other design goals
+# 5. **Maintenance and long-term issues** - Ongoing challenges with {main_topic}
+
+# **Or is there a specific {main_topic} challenge you're currently facing in your project?**
+
+# *What type of {main_topic} challenge feels most relevant to your current design stage?*
+# """
+#         }
+        
+#         return focus_questions.get(focus_area, f"""
+# **🏗️ {main_topic.title()} - Let's Explore Your Focus**
+
+# Great! You've identified an important aspect of {main_topic} for your {building_type} project. Let's dive deeper:
+
+# **What specific {main_topic} question or challenge are you wrestling with right now?**
+
+# *This will help me provide the most relevant guidance for your current design stage.*
+# """)
+
+
+
+
+
+
     async def _generate_dynamic_topic_guidance(self, main_topic: str, building_type: str, last_message: str) -> str:
         """Generate dynamic topic-specific guidance using AI for truly contextual responses"""
         
