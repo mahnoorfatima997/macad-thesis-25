@@ -27,14 +27,13 @@ except ImportError:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'thesis-agents'))
     from orchestration.langgraph_orchestrator import LangGraphOrchestrator
 
-# Import benchmarking components
+# Import benchmarking components (for launch functionality)
 from benchmarking.benchmark_dashboard import BenchmarkDashboard
-from benchmarking.linkography_analyzer import LinkographySessionAnalyzer
 
 # Import test dashboard components
 from thesis_tests.test_dashboard import TestDashboard
 
-# Import data collection components
+# Import data collection components                                    
 from thesis_tests.logging_system import TestSessionLogger
 from thesis_tests.data_models import TestGroup, TestPhase
 import uuid
@@ -207,6 +206,15 @@ def initialize_session_state():
     
     if 'analysis_complete' not in st.session_state:
         st.session_state.analysis_complete = False
+    
+    if 'test_active' not in st.session_state:
+        st.session_state.test_active = False
+    
+    if 'test_paused' not in st.session_state:
+        st.session_state.test_paused = False
+    
+    if 'test_config' not in st.session_state:
+        st.session_state.test_config = None
 
 class UnifiedArchitecturalDashboard:
     def __init__(self):
@@ -221,7 +229,6 @@ class UnifiedArchitecturalDashboard:
         
         # Initialize benchmarking components
         self.benchmark_dashboard = BenchmarkDashboard()
-        self.linkography_analyzer = LinkographySessionAnalyzer()
         
         # Initialize test dashboard
         self.test_dashboard = TestDashboard()
@@ -326,16 +333,10 @@ class UnifiedArchitecturalDashboard:
             # Main navigation
             page = st.selectbox(
                 "Select Page",
-                ["Main Chat", "Benchmarking Dashboard", "Test Results", "Settings"]
+                ["Main Chat", "Test Dashboard", "Benchmarking Dashboard", "Test Results", "Settings"]
             )
             
-            # Quick benchmarking toggle
-            st.markdown("### 📊 Quick Access")
-            if st.button("📊 Go to Benchmarking Dashboard", use_container_width=True):
-                page = "Benchmarking Dashboard"
-            
-            if st.button("🧪 Go to Test Results", use_container_width=True):
-                page = "Test Results"
+            # Navigation handled by dropdown menu above
             
             return page
     
@@ -439,7 +440,6 @@ class UnifiedArchitecturalDashboard:
         try:
             # Log the interaction using the TestSessionLogger's actual methods
             from thesis_tests.data_models import InteractionData, MoveType, TestPhase, Modality, DesignFocus, MoveSource
-            from datetime import datetime
             
             interaction = InteractionData(
                  id=str(uuid.uuid4()),
@@ -472,12 +472,11 @@ class UnifiedArchitecturalDashboard:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
         # Use test dashboard's generic AI mode
-        response = self.test_dashboard.process_generic_ai(user_input)
+        response = self.test_dashboard.generic_ai_env.process_input(user_input)
         
         # Collect data for benchmarking (simplified for now)
         try:
             from thesis_tests.data_models import InteractionData
-            from datetime import datetime
             
             interaction = InteractionData(
                  id=str(uuid.uuid4()),
@@ -510,12 +509,11 @@ class UnifiedArchitecturalDashboard:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
         # Use test dashboard's control mode
-        response = self.test_dashboard.process_control(user_input)
+        response = self.test_dashboard.control_env.process_input(user_input)
         
         # Collect data for benchmarking (simplified for now)
         try:
             from thesis_tests.data_models import InteractionData
-            from datetime import datetime
             
             interaction = InteractionData(
                  id=str(uuid.uuid4()),
@@ -618,6 +616,9 @@ class UnifiedArchitecturalDashboard:
                             if not st.session_state.session_id:
                                 st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                             
+                            # Initialize data collector with session ID
+                            self.data_collector.session_id = st.session_state.session_id
+                            
                                                         # Run analysis based on selected mode
                             if current_mode == "MENTOR":
                                 # Use asyncio to run the async analyze_design method
@@ -707,6 +708,25 @@ class UnifiedArchitecturalDashboard:
                         "timestamp": datetime.now().isoformat()
                     })
                     
+                    # Log to data collector - create InteractionData object
+                    try:
+                        from thesis_tests.data_models import InteractionData, TestPhase
+                        
+                        interaction_data = InteractionData(
+                            id=str(uuid.uuid4()),
+                            session_id=st.session_state.session_id,
+                            timestamp=datetime.now(),
+                            phase=TestPhase.IDEATION,  # Default phase
+                            interaction_type="chat",
+                            user_input=user_input,
+                            system_response="Processing...",
+                            response_time=0.0,
+                            metadata={"mode": st.session_state.current_mode, "type": "user_input"}
+                        )
+                        self.data_collector.log_interaction(interaction_data)
+                    except Exception as e:
+                        st.warning(f"Data logging error: {e}")
+                    
                     # Display user message
                     self.render_chat_message({
                         "role": "user",
@@ -727,6 +747,16 @@ class UnifiedArchitecturalDashboard:
                                 "mentor_type": st.session_state.current_mode
                             })
                             
+                            # Update data collector with response - update the last interaction
+                            try:
+                                if self.data_collector.interactions:
+                                    # Update the last interaction's system_response
+                                    self.data_collector.interactions[-1].system_response = response
+                                    # Re-log the updated interaction
+                                    self.data_collector.log_interaction(self.data_collector.interactions[-1])
+                            except Exception as e:
+                                st.warning(f"Response logging error: {e}")
+                            
                         except Exception as e:
                             error_response = f"I apologize, but I encountered an error: {str(e)}"
                             st.session_state.messages.append({
@@ -738,473 +768,303 @@ class UnifiedArchitecturalDashboard:
                     
                     st.rerun()
         
-        # Analysis results section - show progression and milestones (matching mega_architectural_mentor)
-        if st.session_state.analysis_complete and st.session_state.analysis_results:
-             with st.columns([1, 2, 1])[1]:  # Center column
-                 st.markdown("---")
-                 st.markdown("""
-                 <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;">
-                     📊 Analysis Results
-                 </div>
-                 """, unsafe_allow_html=True)
-                 
-                 # Enhanced Cognitive Analysis Dashboard (matching mega_architectural_mentor)
-                 with st.expander("🧠 Cognitive Analysis Dashboard", expanded=True):
-                     st.markdown("""
-                     <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center; color: #1f77b4;">
-                         🧠 Your Learning Journey Analysis
-                     </div>
-                     <style>
-                     .stExpander .stMarkdown p { font-size: 13px !important; line-height: 1.3 !important; margin-bottom: 8px !important; }
-                     .stExpander .stMarkdown strong { font-size: 13px !important; }
-                     .stExpander .stMarkdown div { font-size: 13px !important; }
-                     </style>
-                     """, unsafe_allow_html=True)
-                     
-                     # Get analysis data
-                     result = st.session_state.analysis_results
-                     
-                     # Create three columns for different analysis sections
-                     col1, col2, col3 = st.columns([1, 1, 1])
-                     
-                     with col1:
-                         st.markdown("**🎯 Current Design Phase**")
-                         phase_analysis = result.get('phase_analysis', {})
-                         if phase_analysis:
-                             current_phase = phase_analysis.get('phase', 'unknown')
-                             phase_confidence = phase_analysis.get('confidence', 0)
-                             phase_completion = phase_analysis.get('progression_score', 0) * 100
-                             
-                             # Phase status with color coding
-                             if phase_confidence > 0.8:
-                                 phase_color = "🟢"
-                             elif phase_confidence > 0.6:
-                                 phase_color = "🟡"
-                             else:
-                                 phase_color = "🔴"
-                             
-                             st.write(f"{phase_color} **{current_phase.title()}**")
-                             st.write(f"Confidence: {phase_confidence:.1%}")
-                             st.write(f"Progress: {phase_completion:.0f}%")
-                             
-                             # Show next milestone if available
-                             next_milestone = phase_analysis.get('next_milestone')
-                             if next_milestone:
-                                 milestone_names = {
-                                     'site_analysis': 'Site Analysis',
-                                     'program_requirements': 'Program Requirements',
-                                     'concept_development': 'Concept Development',
-                                     'spatial_organization': 'Spatial Organization',
-                                     'circulation_design': 'Circulation Design',
-                                     'form_development': 'Form Development',
-                                     'lighting_strategy': 'Lighting Strategy',
-                                     'construction_systems': 'Construction Systems',
-                                     'material_selection': 'Material Selection',
-                                     'technical_details': 'Technical Details',
-                                     'presentation_prep': 'Presentation Preparation',
-                                     'documentation': 'Documentation'
-                                 }
-                                 next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
-                                 st.write(f"🎯 **Next:** {next_milestone_name}")
-                         else:
-                             st.write("🔍 Phase not detected yet")
-                     
-                     with col2:
-                         st.markdown("**💡 Learning Insights**")
-                         synthesis = result.get('synthesis', {})
-                         
-                         # Cognitive Challenges
-                         cognitive_challenges = synthesis.get('cognitive_challenges', [])
-                         if cognitive_challenges:
-                             st.write(f"🚧 **Challenges** ({len(cognitive_challenges)}):")
-                             for challenge in cognitive_challenges[:3]:  # Show top 3
-                                 challenge_name = challenge.replace('_', ' ').title()
-                                 st.write(f"• {challenge_name}")
-                             if len(cognitive_challenges) > 3:
-                                 st.write(f"• ... and {len(cognitive_challenges) - 3} more")
-                         else:
-                             st.write("✅ No major challenges detected")
-                         
-                         # Learning Opportunities
-                         learning_opportunities = synthesis.get('learning_opportunities', [])
-                         if learning_opportunities:
-                             st.write(f"🌟 **Opportunities** ({len(learning_opportunities)}):")
-                             for opportunity in learning_opportunities[:3]:  # Show top 3
-                                 st.write(f"• {opportunity}")
-                             if len(learning_opportunities) > 3:
-                                 st.write(f"• ... and {len(learning_opportunities) - 3} more")
-                         else:
-                             st.write("📚 Ready for new challenges")
-                     
-                     with col3:
-                         st.markdown("**📋 Project Context**")
-                         text_analysis = result.get('text_analysis', {})
-                         
-                         # Building Type
-                         building_type = text_analysis.get('building_type', 'unknown')
-                         if building_type != 'unknown':
-                             st.write(f"🏗️ **Type:** {building_type.title()}")
-                         else:
-                             st.write("🏗️ **Type:** Not specified")
-                         
-                         # Program Requirements
-                         requirements = text_analysis.get('program_requirements', [])
-                         if requirements:
-                             st.write(f"📝 **Requirements** ({len(requirements)}):")
-                             for req in requirements[:2]:  # Show top 2
-                                 st.write(f"• {req}")
-                             if len(requirements) > 2:
-                                 st.write(f"• ... and {len(requirements) - 2} more")
-                         else:
-                             st.write("📝 **Requirements:** Not specified")
-                         
-                         # Missing Considerations
-                         missing_considerations = synthesis.get('missing_considerations', [])
-                         if missing_considerations:
-                             st.write(f"⚠️ **Missing** ({len(missing_considerations)}):")
-                             for consideration in missing_considerations[:2]:  # Show top 2
-                                 st.write(f"• {consideration}")
-                             if len(missing_considerations) > 2:
-                                 st.write(f"• ... and {len(missing_considerations) - 2} more")
-                     
-                     # Dynamic recommendations section
-                     has_recommendations = False
-                     
-                     # Check if we have any meaningful recommendations
-                     next_focus_areas = synthesis.get('next_focus_areas', [])
-                     phase_recommendations = phase_analysis.get('phase_recommendations', [])
-                     missing_considerations = synthesis.get('missing_considerations', [])
-                     
-                     if next_focus_areas or phase_recommendations or missing_considerations:
-                         has_recommendations = True
-                         st.markdown("---")
-                         st.markdown("**🎯 Smart Recommendations**")
-                         
-                         # Next Focus Areas
-                         if next_focus_areas:
-                             st.write("**Focus on these areas next:**")
-                             for i, focus in enumerate(next_focus_areas[:3], 1):  # Show top 3
-                                 focus_name = focus.replace('_', ' ').title()
-                                 st.write(f"{i}. {focus_name}")
-                         
-                         # Phase Recommendations
-                         if phase_recommendations:
-                             st.write("**Phase-specific guidance:**")
-                             for rec in phase_recommendations[:2]:  # Show top 2
-                                 st.write(f"• {rec}")
-                         
-                         # Missing Considerations
-                         if missing_considerations:
-                             st.write("**Consider addressing:**")
-                             for consideration in missing_considerations[:2]:  # Show top 2
-                                 st.write(f"• {consideration}")
-                     
-                     # Overall progress summary
-                     if phase_analysis:
-                         completed_milestones = phase_analysis.get('completed_milestones', 0)
-                         total_milestones = phase_analysis.get('total_milestones', 0)
-                         phase_completion = phase_analysis.get('progression_score', 0) * 100
-                         
-                         if total_milestones > 0:
-                             if completed_milestones > 0:
-                                 st.markdown("---")
-                                 st.markdown(f"**📊 Overall Progress: {completed_milestones}/{total_milestones} milestones completed**")
-                                 
-                                 # Progress visualization
-                                 progress_ratio = completed_milestones / total_milestones
-                                 st.progress(progress_ratio)
-                                 
-                                 if progress_ratio < 0.25:
-                                     st.write("🔄 **Getting Started** - Building foundational knowledge")
-                                 elif progress_ratio < 0.5:
-                                     st.write("📝 **In Progress** - Developing design thinking")
-                                 elif progress_ratio < 0.75:
-                                     st.write("🎯 **Making Good Progress** - Applying concepts effectively")
-                                 elif progress_ratio < 1.0:
-                                     st.write("✨ **Almost Complete** - Refining and polishing")
-                                 else:
-                                     st.write("✅ **Project Complete** - Excellent work!")
-                             else:
-                                 # Show phase-based progress when no milestones completed
-                                 st.markdown("---")
-                                 st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
-                                 
-                                 # Progress visualization
-                                 progress_ratio = phase_completion / 100
-                                 st.progress(progress_ratio)
-                                 
-                                 if progress_ratio < 0.25:
-                                     st.write("🔄 **Getting Started** - Building foundational knowledge")
-                                 elif progress_ratio < 0.5:
-                                     st.write("📝 **In Progress** - Developing design thinking")
-                                 elif progress_ratio < 0.75:
-                                     st.write("🎯 **Making Good Progress** - Applying concepts effectively")
-                                 elif progress_ratio < 1.0:
-                                     st.write("✨ **Almost Complete** - Refining and polishing")
-                                 else:
-                                     st.write("✅ **Phase Complete** - Ready for next phase!")
-                         else:
-                             # Fallback to phase-based progress
-                             st.markdown("---")
-                             st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
-                             
-                             # Progress visualization
-                             progress_ratio = phase_completion / 100
-                             st.progress(progress_ratio)
-                             
-                             if progress_ratio < 0.25:
-                                 st.write("🔄 **Getting Started** - Building foundational knowledge")
-                             elif progress_ratio < 0.5:
-                                 st.write("📝 **In Progress** - Developing design thinking")
-                             elif progress_ratio < 0.75:
-                                 st.write("🎯 **Making Good Progress** - Applying concepts effectively")
-                             elif progress_ratio < 1.0:
-                                 st.write("✨ **Almost Complete** - Refining and polishing")
-                             else:
-                                 st.write("✅ **Phase Complete** - Ready for next phase!")
+        # Phase Progression and Learning Insights Section - show underneath chat
+        if len(st.session_state.messages) > 0:
+            with st.columns([1, 2, 1])[1]:  # Center column
+                st.markdown("---")
+                st.markdown("""
+                <div class="compact-text" style="font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: center; color: #1f77b4;">
+                    🎯 Phase Progression & Learning Insights
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Analyze phase progression and learning insights
+                try:
+                    # Create session data from chat messages
+                    chat_interactions = []
+                    for i in range(0, len(st.session_state.messages), 2):
+                        if i + 1 < len(st.session_state.messages):
+                            user_msg = st.session_state.messages[i]
+                            assistant_msg = st.session_state.messages[i + 1]
+                            if user_msg["role"] == "user" and assistant_msg["role"] == "assistant":
+                                chat_interactions.append({
+                                    "data": {
+                                        "input": user_msg["content"],
+                                        "response": assistant_msg["content"],
+                                        "mode": st.session_state.get('current_mode', 'MENTOR')
+                                    }
+                                })
+                    
+                    session_data = {
+                        "session_id": st.session_state.get('session_id', 'unknown'),
+                        "interactions": chat_interactions,
+                        "duration": 0
+                    }
+                    
+                    # Analyze phase progression
+                    phase_analysis = self._analyze_phase_progression(chat_interactions)
+                    
+                    # Display phase progression
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("**📋 Current Design Phase**")
+                        current_phase = phase_analysis.get('current_phase', 'Exploration')
+                        phase_progress = phase_analysis.get('phase_progress', 0)
+                        
+                        st.info(f"**{current_phase}** - {phase_progress:.0f}% Complete")
+                        
+                        # Phase indicators
+                        phases = ['ideation', 'visualization', 'materialization']
+                        current_phase_idx = phases.index(current_phase) if current_phase in phases else 0
+                        
+                        for i, phase in enumerate(phases):
+                            if i <= current_phase_idx:
+                                st.markdown(f"✅ {phase}")
+                            else:
+                                st.markdown(f"⏳ {phase}")
+                    
+                    with col2:
+                        st.markdown("**🎯 Key Challenges Identified**")
+                        challenges = phase_analysis.get('challenges', [
+                            "Understanding project requirements",
+                            "Balancing functionality and aesthetics",
+                            "Integrating sustainable design principles"
+                        ])
+                        
+                        for challenge in challenges[:3]:  # Show top 3 challenges
+                            st.markdown(f"• {challenge}")
+                        
+                        st.markdown("**💡 Learning Points**")
+                        learning_points = phase_analysis.get('learning_points', [
+                            "Developing systematic approach to design",
+                            "Enhancing spatial reasoning skills",
+                            "Improving design communication"
+                        ])
+                        
+                        for point in learning_points[:3]:  # Show top 3 learning points
+                            st.markdown(f"• {point}")
+                    
+                    # Session summary
+                    st.markdown("---")
+                    st.markdown("**📊 Session Summary**")
+                    total_interactions = len(chat_interactions)
+                    session_duration = phase_analysis.get('session_duration', 'Ongoing')
+                    
+                    summary_col1, summary_col2, summary_col3 = st.columns(3)
+                    with summary_col1:
+                        st.metric("Interactions", total_interactions)
+                    with summary_col2:
+                        st.metric("Phase Progress", f"{phase_progress:.0f}%")
+                    with summary_col3:
+                        st.metric("Session Status", session_duration)
+                    
+                except Exception as e:
+                    st.error(f"Error analyzing progression: {str(e)}")
+                    
+                    # Progress summary
+                    total_interactions = len(chat_interactions)
+                    st.markdown(f"**📊 Session: {total_interactions} interactions**")
      
     def render_benchmarking_dashboard(self):
-        """Render the benchmarking dashboard"""
-        st.markdown("### 📊 Benchmarking Dashboard")
+        """Render the benchmarking dashboard directly integrated"""
+        st.markdown("## 📊 Cognitive Benchmarking Dashboard")
+        st.markdown("Comprehensive analysis of cognitive patterns, learning progression, and performance metrics")
         
-        # Get session data
-        if st.session_state.session_id:
+        # Option selection
+        st.markdown("### 🚀 Launch Options")
+        launch_option = st.radio(
+            "Choose how to launch the benchmarking dashboard:",
+            ["Integrated (Recommended)", "Separate Process"],
+            help="Integrated: Runs within this dashboard | Separate Process: Opens in new browser tab"
+        )
+        
+        if launch_option == "Integrated (Recommended)":
+            # Run the benchmarking dashboard directly
             try:
-                # Try to get session data from the TestSessionLogger
-                session_data = {
-                    "session_id": st.session_state.session_id,
-                    "interactions": self.data_collector.interactions,
-                    "duration": (datetime.now() - self.data_collector.session_start_time).total_seconds()
-                }
-                
-                if session_data["interactions"]:
-                    # Create tabs for different benchmarking views
-                    tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Cognitive Analysis", "Linkography", "Raw Data"])
-                    
-                    with tab1:
-                        self._render_overview_tab(session_data)
-                    
-                    with tab2:
-                        self._render_cognitive_analysis_tab(session_data)
-                    
-                    with tab3:
-                        self._render_linkography_tab(session_data)
-                    
-                    with tab4:
-                        self._render_raw_data_tab(session_data)
-                else:
-                    st.info("No session data available. Start a conversation to see benchmarking data.")
+                # Run the full benchmarking dashboard
+                self.benchmark_dashboard.run()
             except Exception as e:
-                st.error(f"Error loading session data: {e}")
-                st.info("No session data available. Start a conversation to begin data collection.")
-        else:
-            st.info("No active session. Start a conversation to begin data collection.")
-    
-    def _render_overview_tab(self, session_data: Dict):
-        """Render overview tab"""
-        st.markdown("#### 📈 Session Overview")
-        
-        # Basic metrics
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("Total Interactions", len(session_data.get("interactions", [])))
-        
-        with col2:
-            st.metric("Session Duration", f"{session_data.get('duration', 0):.1f}s")
-        
-        with col3:
-            st.metric("User Inputs", len([i for i in session_data.get("interactions", []) if hasattr(i, 'student_input')]))
-        
-        with col4:
-            st.metric("AI Responses", len([i for i in session_data.get("interactions", []) if hasattr(i, 'agent_response')]))
-        
-        # Interaction timeline
-        if session_data.get("interactions"):
-            st.markdown("#### 📅 Interaction Timeline")
-            
-            # Create timeline data
-            timeline_data = []
-            for interaction in session_data["interactions"]:
-                if hasattr(interaction, 'timestamp') and hasattr(interaction, 'student_input'):
-                    timeline_data.append({
-                        "timestamp": interaction.timestamp.strftime("%H:%M:%S") if hasattr(interaction.timestamp, 'strftime') else str(interaction.timestamp),
-                        "type": "user_input",
-                        "mode": getattr(interaction, 'metadata', {}).get("mode", "Unknown"),
-                        "content": str(interaction.student_input)[:50] + "..."
-                    })
-                if hasattr(interaction, 'timestamp') and hasattr(interaction, 'agent_response'):
-                    timeline_data.append({
-                        "timestamp": interaction.timestamp.strftime("%H:%M:%S") if hasattr(interaction.timestamp, 'strftime') else str(interaction.timestamp),
-                        "type": "ai_response",
-                        "mode": getattr(interaction, 'metadata', {}).get("mode", "Unknown"),
-                        "content": str(interaction.agent_response)[:50] + "..."
-                    })
-            
-            if timeline_data:
-                df = pd.DataFrame(timeline_data)
-                st.dataframe(df, use_container_width=True)
-            else:
-                st.info("No interaction data available yet.")
-    
-    def _render_cognitive_analysis_tab(self, session_data: Dict):
-        """Render cognitive analysis tab using the actual multi-agent system"""
-        st.markdown("#### 🧠 Cognitive Analysis")
-        
-        # Use the actual multi-agent system for cognitive analysis
-        if session_data.get("interactions"):
-            st.markdown("**Multi-Agent Cognitive Analysis**")
-            
-            # Display agent interactions and routing decisions
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("**Agent Interactions**")
-                agent_interactions = [i for i in session_data.get("interactions", []) 
-                                    if i.get("data", {}).get("mode") == "MENTOR"]
-                st.metric("Multi-Agent Interactions", len(agent_interactions))
+                st.error(f"❌ Error loading benchmarking dashboard: {str(e)}")
+                st.info("Please check that all benchmarking dependencies are properly installed.")
                 
-                # Show agent routing patterns
-                if agent_interactions:
-                    st.markdown("**Agent Routing Patterns**")
-                    routing_patterns = {}
-                    for interaction in agent_interactions:
-                        mode = interaction.get("data", {}).get("mode", "Unknown")
-                        routing_patterns[mode] = routing_patterns.get(mode, 0) + 1
-                    
-                    for agent, count in routing_patterns.items():
-                        st.metric(f"{agent} Agent", count)
-            
-            with col2:
-                st.markdown("**Cognitive Enhancement Interventions**")
-                cognitive_interventions = [i for i in session_data.get("interactions", []) 
-                                         if "cognitive" in str(i).lower()]
-                st.metric("Cognitive Interventions", len(cognitive_interventions))
+                # Fallback information
+                st.markdown("### 🔧 Manual Access")
+                st.markdown("""
+                If the integrated dashboard fails to load, you can access it manually:
                 
-                # Show design thinking phases from multi-agent analysis
-                st.markdown("**Design Thinking Phases**")
-                phases = {
-                    "Analysis": len([i for i in agent_interactions if "analysis" in str(i).lower()]),
-                    "Socratic": len([i for i in agent_interactions if "socratic" in str(i).lower()]),
-                    "Domain Expert": len([i for i in agent_interactions if "domain" in str(i).lower()]),
-                    "Cognitive Enhancement": len(cognitive_interventions)
-                }
+                1. **Terminal Command:**
+                ```bash
+                cd benchmarking
+                python launch_dashboard.py
+                ```
                 
-                for phase, count in phases.items():
-                    st.metric(phase, count)
-            
-            # Show detailed multi-agent analysis
-            st.markdown("#### 🤖 Multi-Agent System Analysis")
-            
-            # Display recent interactions with agent details
-            if agent_interactions:
-                st.markdown("**Recent Multi-Agent Interactions**")
-                recent_interactions = agent_interactions[-5:]  # Show last 5
-                
-                for interaction in recent_interactions:
-                    with st.expander(f"Interaction at {interaction.get('timestamp', 'Unknown')}"):
-                        st.markdown(f"**Mode**: {interaction.get('data', {}).get('mode', 'Unknown')}")
-                        st.markdown(f"**Type**: {interaction.get('type', 'Unknown')}")
-                        content = interaction.get('data', {}).get('input', interaction.get('data', {}).get('response', ''))
-                        st.markdown(f"**Content**: {str(content)[:200]}...")
-            
-            # Show LangGraph routing visualization
-            st.markdown("#### 🔄 LangGraph Routing Analysis")
-            st.info("""
-            **Multi-Agent Routing System**:
-            - **Analysis Agent**: Processes design briefs and generates detailed analysis
-            - **Socratic Agent**: Provides guided questioning and learning
-            - **Domain Expert Agent**: Offers specialized architectural knowledge
-            - **Cognitive Enhancement Agent**: Prevents cognitive offloading and promotes learning
-            - **Context Agent**: Manages conversation flow and routing decisions
+                2. **Or run the dashboard directly:**
+                ```bash
+                cd benchmarking
+                streamlit run benchmark_dashboard.py
+                ```
+                """)
+        
+        else:  # Separate Process
+            st.markdown("### 🔗 Launch Separate Process")
+            st.markdown("""
+            This will launch the benchmarking dashboard in a separate browser tab.
+            The dashboard will run independently from this unified dashboard.
             """)
             
-            # Display routing metrics
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Total Agent Calls", len(agent_interactions))
-            with col2:
-                st.metric("Routing Decisions", len([i for i in agent_interactions if i.get("type") == "ai_response"]))
-            with col3:
-                st.metric("Cognitive Interventions", len(cognitive_interventions))
-    
-    def _render_linkography_tab(self, session_data: Dict):
-        """Render linkography analysis tab"""
-        st.markdown("#### 🔗 Linkography Analysis")
-        
-        if session_data.get("interactions"):
-            # Perform linkography analysis
-            linkography = self.linkography_analyzer.analyze_session(session_data)
-            
-            # Display linkography metrics
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("Total Links", linkography.get("total_links", 0))
-            
-            with col2:
-                st.metric("Link Density", f"{linkography.get('link_density', 0):.2f}")
-            
-            with col3:
-                st.metric("Critical Moves", linkography.get("critical_moves", 0))
-            
-            # Linkography visualization
-            if "link_graph" in linkography:
-                st.markdown("#### 🔗 Link Graph")
-                
-                # Create network visualization
-                nodes = linkography["link_graph"].get("nodes", [])
-                edges = linkography["link_graph"].get("edges", [])
-                
-                if nodes and edges:
-                    # Create a simple network visualization
-                    st.markdown("**Interaction Network**")
+            if st.button("🚀 Launch Benchmarking Dashboard", type="primary", use_container_width=True):
+                try:
+                    import subprocess
+                    import sys
+                    from pathlib import Path
+                    import webbrowser
+                    import time
                     
-                    # Display as a table for now
-                    edge_data = []
-                    for edge in edges:
-                        edge_data.append({
-                            "From": edge.get("from", ""),
-                            "To": edge.get("to", ""),
-                            "Type": edge.get("type", ""),
-                            "Weight": edge.get("weight", 0)
-                        })
+                    # Get the path to the benchmarking launch script
+                    benchmark_script = Path(__file__).parent / "benchmarking" / "launch_dashboard.py"
                     
-                    df = pd.DataFrame(edge_data)
-                    st.dataframe(df, use_container_width=True)
+                    if benchmark_script.exists():
+                        st.info("🔄 Launching benchmarking dashboard in separate process...")
+                        
+                        # Launch the script in a separate process
+                        process = subprocess.Popen([
+                            sys.executable, str(benchmark_script)
+                        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        
+                        # Wait a moment for the server to start
+                        time.sleep(3)
+                        
+                        # Try to open the browser
+                        try:
+                            webbrowser.open("http://localhost:8501")
+                            st.success("✅ Benchmarking dashboard launched successfully!")
+                            st.info("📱 The dashboard should open in a new browser tab")
+                            st.info("🔗 If it doesn't open automatically, go to: http://localhost:8501")
+                        except Exception as browser_error:
+                            st.warning(f"Could not automatically open browser: {browser_error}")
+                            st.info("🔗 Please manually navigate to: http://localhost:8501")
+                        
+                        # Show process info
+                        st.info(f"Process ID: {process.pid}")
+                        st.info("To stop the dashboard, close the browser tab or terminate the process")
+                        
+                    else:
+                        st.error("❌ Benchmarking dashboard script not found")
+                        st.info(f"Expected location: {benchmark_script}")
+                        
+                except Exception as e:
+                    st.error(f"❌ Error launching dashboard: {e}")
+                    st.info("Please try the integrated option or manual launch instead.")
     
-    def _render_raw_data_tab(self, session_data: Dict):
-        """Render raw data tab"""
-        st.markdown("#### 📋 Raw Session Data")
+    def _analyze_phase_progression(self, interactions: List[Dict]) -> Dict[str, Any]:
+        """Analyze design phase progression from interactions"""
+        if not interactions:
+            # Return sample phase progression for demonstration
+            return {
+                "current_phase": "ideation",
+                "phase_progress": 25,
+                "session_duration": "Active",
+                "challenges": [
+                    "Understanding project requirements and constraints",
+                    "Balancing functionality with aesthetic considerations",
+                    "Integrating sustainable design principles effectively"
+                ],
+                "learning_points": [
+                    "Developing systematic approach to design problems",
+                    "Enhancing spatial reasoning and visualization skills",
+                    "Improving design communication and presentation"
+                ]
+            }
         
-        # Display raw session data
-        st.json(session_data)
+        # Simple phase detection based on interaction content
+        content_text = " ".join([str(i.get("data", {}).get("input", "")) + " " + str(i.get("data", {}).get("response", "")) for i in interactions])
+        content_lower = content_text.lower()
         
-        # Export options
-        col1, col2 = st.columns(2)
+        # Design thinking phases with keywords (matching thesis framework)
+        design_phases = {
+            "ideation": ["concept", "idea", "approach", "strategy", "vision", "goal", "objective", "purpose", "intention", "brainstorm", "explore", "consider", "think about", "what if", "imagine", "envision", "precedent", "example", "reference", "inspiration", "influence", "site", "context", "requirements", "program"],
+            "visualization": ["form", "shape", "massing", "volume", "proportion", "scale", "circulation", "flow", "layout", "plan", "section", "elevation", "sketch", "drawing", "model", "3d", "render", "visualize", "spatial", "arrangement", "composition", "geometry", "structure", "lighting", "spatial organization"],
+            "materialization": ["construction", "structure", "system", "detail", "material", "technical", "engineering", "performance", "cost", "budget", "timeline", "schedule", "specification", "implementation", "fabrication", "assembly", "installation", "maintenance", "durability", "sustainability", "efficiency"]
+        }
         
-        with col1:
-            if st.button("📥 Download JSON"):
-                json_str = json.dumps(session_data, indent=2, default=str)
-                st.download_button(
-                    label="Download",
-                    data=json_str,
-                    file_name=f"session_data_{st.session_state.session_id}.json",
-                    mime="application/json"
-                )
+        # Calculate phase scores
+        phase_scores = {}
+        for phase, keywords in design_phases.items():
+            score = sum(1 for keyword in keywords if keyword in content_lower)
+            phase_scores[phase] = score
         
-        with col2:
-            if st.button("📊 Export to CSV"):
-                # Convert interactions to CSV
-                if session_data.get("interactions"):
-                    df = pd.DataFrame(session_data["interactions"])
-                    csv = df.to_csv(index=False)
-                    st.download_button(
-                        label="Download CSV",
-                        data=csv,
-                        file_name=f"session_data_{st.session_state.session_id}.csv",
-                        mime="text/csv"
-                    )
+        # Determine current phase
+        if phase_scores:
+            current_phase = max(phase_scores, key=phase_scores.get)
+            max_score = phase_scores[current_phase]
+            total_possible = max(len(keywords) for keywords in design_phases.values())
+            phase_progress = min((max_score / total_possible) * 100, 100)
+        else:
+            current_phase = "ideation"
+            phase_progress = 0
+        
+        # Identify challenges based on content analysis
+        challenges = []
+        if "requirement" in content_lower or "constraint" in content_lower:
+            challenges.append("Clarifying project requirements and constraints")
+        if "balance" in content_lower or "trade" in content_lower:
+            challenges.append("Balancing competing design priorities")
+        if "sustain" in content_lower or "green" in content_lower:
+            challenges.append("Integrating sustainable design principles")
+        if "budget" in content_lower or "cost" in content_lower:
+            challenges.append("Working within budget constraints")
+        if "time" in content_lower or "schedule" in content_lower:
+            challenges.append("Managing project timeline effectively")
+        if "client" in content_lower or "stakeholder" in content_lower:
+            challenges.append("Addressing stakeholder needs and feedback")
+        
+        # Default challenges if none detected
+        if not challenges:
+            challenges = [
+                "Understanding project requirements and constraints",
+                "Balancing functionality with aesthetic considerations",
+                "Integrating sustainable design principles effectively"
+            ]
+        
+        # Identify learning points based on interaction patterns
+        learning_points = []
+        if len(interactions) > 5:
+            learning_points.append("Developing systematic approach to design problems")
+        if "spatial" in content_lower or "layout" in content_lower:
+            learning_points.append("Enhancing spatial reasoning and visualization skills")
+        if "communicat" in content_lower or "present" in content_lower:
+            learning_points.append("Improving design communication and presentation")
+        if "detail" in content_lower or "technical" in content_lower:
+            learning_points.append("Understanding technical and construction details")
+        if "material" in content_lower or "finish" in content_lower:
+            learning_points.append("Learning about material properties and applications")
+        if "light" in content_lower or "climate" in content_lower:
+            learning_points.append("Integrating environmental and lighting considerations")
+        
+        # Default learning points if none detected
+        if not learning_points:
+            learning_points = [
+                "Developing systematic approach to design problems",
+                "Enhancing spatial reasoning and visualization skills",
+                "Improving design communication and presentation"
+            ]
+        
+        return {
+            "current_phase": current_phase,
+            "phase_progress": phase_progress,
+            "session_duration": "Active" if len(interactions) > 0 else "New",
+            "challenges": challenges,
+            "learning_points": learning_points
+        }
+    
+    def render_test_dashboard(self):
+        """Render the test dashboard using the full TestDashboard functionality"""
+        st.markdown("## 🧪 Test Dashboard")
+        st.markdown("Comprehensive testing environment for architectural design evaluation")
+        
+        # Run the full test dashboard
+        self.test_dashboard.run()
     
     def render_test_results(self):
         """Render test results page"""
@@ -1247,6 +1107,8 @@ class UnifiedArchitecturalDashboard:
         # Render main content based on page
         if current_page == "Main Chat":
             self.render_main_chat()
+        elif current_page == "Test Dashboard":
+            self.render_test_dashboard()
         elif current_page == "Benchmarking Dashboard":
             self.render_benchmarking_dashboard()
         elif current_page == "Test Results":
