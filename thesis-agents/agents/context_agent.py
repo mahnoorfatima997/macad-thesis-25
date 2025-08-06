@@ -10,6 +10,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from state_manager import ArchMentorState
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 load_dotenv()
 
@@ -116,7 +117,7 @@ class ContextAgent:
 
 
 
-    async def analyze_student_input(self, state: ArchMentorState, current_input: str) -> Dict[str, Any]:
+    async def analyze_student_input(self, state: ArchMentorState, current_input: str) -> AgentResponse:
         """Main context analysis function - transforms raw input into rich context"""
         
         print(f"\n🔍 {self.name}: Analyzing student input...")
@@ -172,7 +173,8 @@ class ContextAgent:
         print(f"   💭 Confidence: {core_classification['confidence_level']}")
         print(f"   ⚡ Engagement: {core_classification['engagement_level']}")
         
-        return context_package
+        # Convert to AgentResponse format
+        return self._convert_to_agent_response(context_package, current_input, state)
     
     #0208super enhanced AI-powered classification for learning state detection
     async def _perform_core_classification(self, input_text: str, state: ArchMentorState) -> Dict[str, Any]:
@@ -1593,6 +1595,219 @@ class ContextAgent:
                 indicators.append(keyword)
         
         return indicators
+
+    def _convert_to_agent_response(self, context_package: Dict[str, Any], current_input: str, state: ArchMentorState) -> AgentResponse:
+        """Convert context package to AgentResponse format while preserving original data"""
+        
+        # Extract core classification for response text generation
+        core_classification = context_package.get('core_classification', {})
+        
+        # Generate response text based on classification
+        response_text = self._generate_response_text(core_classification, current_input)
+        
+        # Extract cognitive flags
+        cognitive_flags = self._extract_cognitive_flags(core_classification)
+        
+        # Calculate enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(context_package)
+        
+        # Create AgentResponse using ResponseBuilder
+        return ResponseBuilder.create_context_analysis_response(
+            response_text=response_text,
+            cognitive_flags=cognitive_flags,
+            enhancement_metrics=enhancement_metrics,
+            metadata=context_package  # Preserve all original data for interaction_logger.py
+        )
+    
+    def _generate_response_text(self, core_classification: Dict[str, Any], current_input: str) -> str:
+        """Generate response text based on classification"""
+        
+        interaction_type = core_classification.get('interaction_type', 'general')
+        understanding_level = core_classification.get('understanding_level', 'medium')
+        confidence_level = core_classification.get('confidence_level', 'confident')
+        
+        # Generate appropriate response text based on classification
+        if interaction_type == 'question_response':
+            return f"Context analysis: Student provided a response to previous question with {understanding_level} understanding and {confidence_level} confidence."
+        elif interaction_type == 'question':
+            return f"Context analysis: Student asked a question showing {understanding_level} understanding and {confidence_level} confidence."
+        elif interaction_type == 'statement':
+            return f"Context analysis: Student made a statement with {understanding_level} understanding and {confidence_level} confidence."
+        else:
+            return f"Context analysis: {interaction_type} interaction detected with {understanding_level} understanding and {confidence_level} confidence."
+    
+    def _extract_cognitive_flags(self, core_classification: Dict[str, Any]) -> List[CognitiveFlag]:
+        """Extract cognitive flags from classification"""
+        
+        flags = []
+        
+        # Check for various cognitive indicators
+        if core_classification.get('shows_confusion', False):
+            flags.append(CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED)
+        
+        if core_classification.get('requests_help', False):
+            flags.append(CognitiveFlag.SCAFFOLDING_PROVIDED)
+        
+        if core_classification.get('demonstrates_overconfidence', False):
+            flags.append(CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED)
+        
+        if core_classification.get('seeks_validation', False):
+            flags.append(CognitiveFlag.METACOGNITIVE_AWARENESS)
+        
+        # Check confidence level
+        confidence_level = core_classification.get('confidence_level', 'confident')
+        if confidence_level == 'overconfident':
+            flags.append(CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED)
+        elif confidence_level == 'uncertain':
+            flags.append(CognitiveFlag.SCAFFOLDING_PROVIDED)
+        
+        # Check understanding level
+        understanding_level = core_classification.get('understanding_level', 'medium')
+        if understanding_level == 'low':
+            flags.append(CognitiveFlag.SCAFFOLDING_PROVIDED)
+        elif understanding_level == 'high':
+            flags.append(CognitiveFlag.DEEP_THINKING_ENCOURAGED)
+        
+        # Check engagement level
+        engagement_level = core_classification.get('engagement_level', 'medium')
+        if engagement_level == 'high':
+            flags.append(CognitiveFlag.ENGAGEMENT_MAINTAINED)
+        
+        return flags
+    
+    def _calculate_enhancement_metrics(self, context_package: Dict[str, Any]) -> EnhancementMetrics:
+        """Calculate enhancement metrics from context package"""
+        
+        core_classification = context_package.get('core_classification', {})
+        content_analysis = context_package.get('content_analysis', {})
+        
+        # Calculate various scores
+        cognitive_offloading_prevention_score = self._calculate_cognitive_offloading_prevention(core_classification)
+        deep_thinking_engagement_score = self._calculate_deep_thinking_engagement(core_classification)
+        knowledge_integration_score = self._calculate_knowledge_integration(content_analysis)
+        scaffolding_effectiveness_score = self._assess_scaffolding_effectiveness(context_package)
+        learning_progression_score = self._calculate_learning_progression(context_package)
+        metacognitive_awareness_score = self._calculate_metacognitive_awareness(core_classification)
+        
+        # Calculate overall cognitive score
+        overall_cognitive_score = (
+            cognitive_offloading_prevention_score + 
+            deep_thinking_engagement_score + 
+            knowledge_integration_score + 
+            scaffolding_effectiveness_score + 
+            learning_progression_score + 
+            metacognitive_awareness_score
+        ) / 6.0
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cognitive_offloading_prevention_score,
+            deep_thinking_engagement_score=deep_thinking_engagement_score,
+            knowledge_integration_score=knowledge_integration_score,
+            scaffolding_effectiveness_score=scaffolding_effectiveness_score,
+            learning_progression_score=learning_progression_score,
+            metacognitive_awareness_score=metacognitive_awareness_score,
+            overall_cognitive_score=overall_cognitive_score,
+            scientific_confidence=self._calculate_scientific_confidence(core_classification)
+        )
+    
+    def _calculate_cognitive_offloading_prevention(self, core_classification: Dict[str, Any]) -> float:
+        """Calculate cognitive offloading prevention score"""
+        
+        # Higher score for detecting and preventing cognitive offloading
+        confidence_level = core_classification.get('confidence_level', 'confident')
+        demonstrates_overconfidence = core_classification.get('demonstrates_overconfidence', False)
+        
+        if confidence_level == 'overconfident' or demonstrates_overconfidence:
+            return 0.8  # High score for detecting overconfidence
+        elif confidence_level == 'uncertain':
+            return 0.6  # Medium score for uncertainty
+        else:
+            return 0.4  # Lower score for normal confidence
+    
+    def _calculate_deep_thinking_engagement(self, core_classification: Dict[str, Any]) -> float:
+        """Calculate deep thinking engagement score"""
+        
+        understanding_level = core_classification.get('understanding_level', 'medium')
+        engagement_level = core_classification.get('engagement_level', 'medium')
+        
+        if understanding_level == 'high' and engagement_level == 'high':
+            return 0.9
+        elif understanding_level == 'high' or engagement_level == 'high':
+            return 0.7
+        elif understanding_level == 'low' and engagement_level == 'low':
+            return 0.3
+        else:
+            return 0.5
+    
+    def _calculate_knowledge_integration(self, content_analysis: Dict[str, Any]) -> float:
+        """Calculate knowledge integration score"""
+        
+        technical_terms = content_analysis.get('technical_terms', [])
+        complexity_score = content_analysis.get('complexity_score', 0.5)
+        
+        # Higher score for more technical terms and appropriate complexity
+        if len(technical_terms) > 3 and 0.4 <= complexity_score <= 0.8:
+            return 0.8
+        elif len(technical_terms) > 1:
+            return 0.6
+        else:
+            return 0.4
+    
+    def _calculate_learning_progression(self, context_package: Dict[str, Any]) -> float:
+        """Calculate learning progression score"""
+        
+        patterns = context_package.get('conversation_patterns', {})
+        progression = patterns.get('understanding_progression', 'stable')
+        
+        if progression == 'improving':
+            return 0.8
+        elif progression == 'stable':
+            return 0.6
+        else:
+            return 0.4
+    
+    def _calculate_metacognitive_awareness(self, core_classification: Dict[str, Any]) -> float:
+        """Calculate metacognitive awareness score"""
+        
+        seeks_validation = core_classification.get('seeks_validation', False)
+        requests_help = core_classification.get('requests_help', False)
+        shows_confusion = core_classification.get('shows_confusion', False)
+        
+        # Higher score for metacognitive behaviors
+        if seeks_validation or requests_help:
+            return 0.8
+        elif shows_confusion:
+            return 0.6
+        else:
+            return 0.4
+    
+    def _calculate_scientific_confidence(self, core_classification: Dict[str, Any]) -> float:
+        """Calculate scientific confidence score"""
+        
+        # Based on the quality of the classification
+        is_technical = core_classification.get('is_technical_question', False)
+        understanding_level = core_classification.get('understanding_level', 'medium')
+        
+        if is_technical and understanding_level == 'high':
+            return 0.9
+        elif is_technical:
+            return 0.7
+        else:
+            return 0.5
+    
+    def _assess_scaffolding_effectiveness(self, context_package: Dict[str, Any]) -> float:
+        """Assess scaffolding effectiveness based on context"""
+        
+        # Simple heuristic based on understanding progression
+        patterns = context_package.get('conversation_patterns', {})
+        progression = patterns.get('understanding_progression', 'stable')
+        
+        if progression == 'improving':
+            return 0.8
+        elif progression == 'stable':
+            return 0.6
+        else:
+            return 0.4
 
 # Test function
 async def test_context_agent():

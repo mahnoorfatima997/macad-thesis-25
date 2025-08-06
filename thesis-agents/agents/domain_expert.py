@@ -25,6 +25,7 @@ except ImportError:
 
 from state_manager import ArchMentorState
 from knowledge_base.knowledge_manager import KnowledgeManager
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 # Comprehensive architectural keyword configuration for flexible detection
 ARCHITECTURAL_KEYWORDS = {
@@ -817,8 +818,8 @@ class DomainExpertAgent:
             Keep under 100 words.
             """
     
-    async def provide_knowledge(self, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
-        """Provide knowledge that encourages thinking rather than passive acceptance"""
+    async def provide_knowledge(self, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> AgentResponse:
+        """Provide knowledge that encourages thinking rather than passive acceptance - now returns AgentResponse"""
         
         print(f"\n📚 {self.name} providing knowledge with cognitive protection...")
         
@@ -827,7 +828,8 @@ class DomainExpertAgent:
         user_input = user_messages[-1] if user_messages else ""
         
         if not user_input:
-            return self._generate_fallback_knowledge()
+            fallback_response = self._generate_fallback_knowledge()
+            return self._convert_to_agent_response(fallback_response, state, analysis_result, gap_type)
         
         building_type = self._extract_building_type_from_context(state)
         project_context = state.current_design_brief
@@ -839,15 +841,18 @@ class DomainExpertAgent:
         # 3107 ADDED: Handle legitimate example requests properly
         if knowledge_pattern["type"] == "legitimate_example_request":
             print(f"📚 Legitimate example request detected - providing examples")
-            return await self._provide_focused_examples(state, user_input, gap_type)
+            response_result = await self._provide_focused_examples(state, user_input, gap_type)
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
         #0108-added for 5 min message requirement   
         # Handle premature example requests (cognitive offloading protection)
         if knowledge_pattern["type"] == "premature_example_request":
             print(f"🛡️ Cognitive protection: Example request too early")
-            return await self._generate_premature_example_response(user_input, building_type, project_context)
+            response_result = await self._generate_premature_example_response(user_input, building_type, project_context)
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
         
         if knowledge_pattern["type"] == "direct_answer_seeking":
-            return await self._generate_thinking_prompt(user_input, building_type, project_context)
+            response_result = await self._generate_thinking_prompt(user_input, building_type, project_context)
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
         
         # Use AI to generate knowledge that encourages thinking
         prompt = f"""
@@ -887,7 +892,7 @@ class DomainExpertAgent:
             ai_response = response.choices[0].message.content.strip()
             print(f"📚 AI-generated knowledge response: {ai_response[:100]}...")
             
-            return {
+            response_result = {
                 "agent": self.name,
                 "response_text": ai_response,
                 "response_type": "thinking_prompt_knowledge",
@@ -898,9 +903,167 @@ class DomainExpertAgent:
                 "sources": []
             }
             
+            # Add cognitive flags to the original response result for backward compatibility
+            cognitive_flags = self._extract_cognitive_flags(response_result, state, gap_type)
+            response_result["cognitive_flags"] = cognitive_flags
+            
+            # Convert to standardized AgentResponse format
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
+            
         except Exception as e:
             print(f"⚠️ AI response generation failed: {e}")
-            return self._generate_fallback_knowledge(user_input, building_type)
+            fallback_response = self._generate_fallback_knowledge(user_input, building_type)
+            return self._convert_to_agent_response(fallback_response, state, analysis_result, gap_type)
+    
+    def _convert_to_agent_response(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> AgentResponse:
+        """Convert the original response to AgentResponse format while preserving all data"""
+        
+        # Calculate enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(response_result, state, analysis_result, gap_type)
+        
+        # Convert cognitive flags to standardized format
+        cognitive_flags = self._extract_cognitive_flags(response_result, state, gap_type)
+        cognitive_flags_standardized = self._convert_cognitive_flags(cognitive_flags)
+        
+        # Create standardized response while preserving original data
+        response = ResponseBuilder.create_knowledge_response(
+            response_text=response_result.get("response_text", ""),
+            sources_used=response_result.get("sources", []),
+            cognitive_flags=cognitive_flags_standardized,
+            enhancement_metrics=enhancement_metrics,
+            quality_score=response_result.get("quality_score", 0.5),
+            confidence_score=response_result.get("confidence_score", 0.5),
+            metadata={
+                # Preserve all original data for backward compatibility
+                "original_response_result": response_result,
+                "knowledge_gap_addressed": response_result.get("knowledge_gap_addressed", ""),
+                "building_type": response_result.get("building_type", ""),
+                "user_input_addressed": response_result.get("user_input_addressed", ""),
+                "knowledge_pattern": response_result.get("knowledge_pattern", {}),
+                "analysis_result": analysis_result,
+                "gap_type": gap_type,
+                "cognitive_flags": cognitive_flags  # Original format
+            }
+        )
+        
+        return response
+    
+    def _calculate_enhancement_metrics(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> EnhancementMetrics:
+        """Calculate cognitive enhancement metrics for domain expertise"""
+        
+        response_type = response_result.get("response_type", "")
+        knowledge_pattern = response_result.get("knowledge_pattern", {})
+        building_type = response_result.get("building_type", "")
+        
+        # Cognitive offloading prevention score
+        # Higher score if using thinking prompts or cognitive protection
+        cognitive_protection_strategies = ["thinking_prompt_knowledge", "premature_example_response"]
+        cop_score = 0.8 if response_type in cognitive_protection_strategies else 0.4
+        
+        # Deep thinking engagement score
+        # Higher score if response encourages thinking and reasoning
+        thinking_encouragement = "?" in response_result.get("response_text", "")
+        dte_score = 0.9 if thinking_encouragement else 0.5
+        
+        # Knowledge integration score
+        # Higher score if knowledge is contextualized to the project
+        has_project_context = bool(response_result.get("building_type") and response_result.get("user_input_addressed"))
+        ki_score = 0.8 if has_project_context else 0.3
+        
+        # Scaffolding effectiveness score
+        # Higher score if providing structured knowledge with examples
+        has_sources = len(response_result.get("sources", [])) > 0
+        scaffolding_score = 0.9 if has_sources else 0.5
+        
+        # Learning progression score
+        # Based on knowledge gap type and response quality
+        gap_complexity = len(gap_type.split("_"))  # More complex gaps indicate progression
+        learning_progression = min(gap_complexity * 0.2, 1.0)
+        
+        # Metacognitive awareness score
+        # Higher score if response encourages self-reflection
+        metacognitive_indicators = ["consider", "think about", "reflect", "evaluate"]
+        response_text = response_result.get("response_text", "").lower()
+        metacognitive_score = 0.8 if any(indicator in response_text for indicator in metacognitive_indicators) else 0.4
+        
+        # Overall cognitive score
+        overall_score = (cop_score + dte_score + ki_score + scaffolding_score + learning_progression + metacognitive_score) / 6
+        
+        # Scientific confidence
+        # Based on response quality and knowledge pattern analysis
+        response_quality = response_result.get("quality_score", 0.5)
+        pattern_confidence = 0.8 if knowledge_pattern.get("cognitive_risk") == "low" else 0.6
+        scientific_confidence = (response_quality + pattern_confidence) / 2
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cop_score,
+            deep_thinking_engagement_score=dte_score,
+            knowledge_integration_score=ki_score,
+            scaffolding_effectiveness_score=scaffolding_score,
+            learning_progression_score=learning_progression,
+            metacognitive_awareness_score=metacognitive_score,
+            overall_cognitive_score=overall_score,
+            scientific_confidence=scientific_confidence
+        )
+    
+    def _extract_cognitive_flags(self, response_result: Dict, state: ArchMentorState, gap_type: str) -> List[str]:
+        """Extract cognitive flags from the response and knowledge context"""
+        
+        flags = []
+        response_type = response_result.get("response_type", "")
+        knowledge_pattern = response_result.get("knowledge_pattern", {})
+        
+        # Add flags based on response type
+        if response_type == "thinking_prompt_knowledge":
+            flags.append("deep_thinking_encouraged")
+        elif response_type == "premature_example_response":
+            flags.append("cognitive_offloading_detected")
+        elif response_type == "legitimate_example_request":
+            flags.append("knowledge_integration")
+        
+        # Add flags based on knowledge pattern
+        cognitive_risk = knowledge_pattern.get("cognitive_risk", "low")
+        if cognitive_risk == "high":
+            flags.append("cognitive_offloading_detected")
+        elif cognitive_risk == "low":
+            flags.append("scaffolding_provided")
+        
+        # Add flags based on knowledge gap type
+        if "technical" in gap_type:
+            flags.append("knowledge_integration")
+        elif "conceptual" in gap_type:
+            flags.append("deep_thinking_encouraged")
+        
+        # Add engagement flag if user is actively seeking knowledge
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        if len(user_messages) > 0:
+            flags.append("engagement_maintained")
+        
+        return flags
+    
+    def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
+        """Convert cognitive flags to standardized format"""
+        
+        flag_mapping = {
+            "deep_thinking_encouraged": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "scaffolding_provided": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "cognitive_offloading_detected": CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED,
+            "engagement_maintained": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "knowledge_integration": CognitiveFlag.KNOWLEDGE_INTEGRATION,
+            "learning_progression": CognitiveFlag.LEARNING_PROGRESSION,
+            "metacognitive_awareness": CognitiveFlag.METACOGNITIVE_AWARENESS
+        }
+        
+        converted_flags = []
+        for flag in cognitive_flags:
+            if flag in flag_mapping:
+                converted_flags.append(flag_mapping[flag])
+            else:
+                # Default to knowledge integration for unknown flags
+                converted_flags.append(CognitiveFlag.KNOWLEDGE_INTEGRATION)
+        
+        return converted_flags
+    
     #0108 state added for 5 min message requirement
     def _analyze_knowledge_request(self, user_input: str, gap_type: str, state: ArchMentorState = None) -> Dict[str, Any]:
         """Analyze the type of knowledge request to prevent cognitive offloading"""

@@ -10,6 +10,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from state_manager import ArchMentorState
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 load_dotenv()
 
@@ -21,8 +22,8 @@ class SocraticTutorAgent:
         print(f"🤔 {self.name} initialized for domain: {domain}")
     
     #3107 ADDED DOMAIN EXPERT RESULT ONLY
-    async def generate_response(self, state: ArchMentorState, analysis_result: Dict[str, Any], context_classification: Optional[Dict] = None, domain_expert_result: Optional[Dict] = None) -> Dict[str, Any]:
-        """Generate sophisticated Socratic responses with advanced analysis"""
+    async def generate_response(self, state: ArchMentorState, analysis_result: Dict[str, Any], context_classification: Optional[Dict] = None, domain_expert_result: Optional[Dict] = None) -> AgentResponse:
+        """Generate sophisticated Socratic responses with advanced analysis - now returns AgentResponse"""
         
         print(f"\n🤔 {self.name} generating sophisticated Socratic response...")
         
@@ -34,7 +35,8 @@ class SocraticTutorAgent:
                 break
         
         if not last_message:
-            return self._generate_fallback_response()
+            fallback_response = self._generate_fallback_response()
+            return self._convert_to_agent_response(fallback_response, state, analysis_result, context_classification, domain_expert_result)
         
         # 0208 UPDATED: Check if this is a first-time interaction or early in conversation
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
@@ -93,7 +95,168 @@ class SocraticTutorAgent:
             "educational_intent": self._get_educational_intent(response_strategy, student_analysis)
         })
         
-        return response_result
+        # Add cognitive flags to the original response result for backward compatibility
+        cognitive_flags = self._extract_cognitive_flags(response_result, state)
+        response_result["cognitive_flags"] = cognitive_flags
+        
+        # Convert to standardized AgentResponse format
+        return self._convert_to_agent_response(response_result, state, analysis_result, context_classification, domain_expert_result)
+    
+    def _convert_to_agent_response(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict, context_classification: Optional[Dict], domain_expert_result: Optional[Dict]) -> AgentResponse:
+        """Convert the original response to AgentResponse format while preserving all data"""
+        
+        # Calculate enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(response_result, state, analysis_result)
+        
+        # Convert cognitive flags to standardized format
+        cognitive_flags = self._extract_cognitive_flags(response_result, state)
+        cognitive_flags_standardized = self._convert_cognitive_flags(cognitive_flags)
+        
+        # Create standardized response while preserving original data
+        response = ResponseBuilder.create_socratic_response(
+            response_text=response_result.get("response_text", ""),
+            cognitive_flags=cognitive_flags_standardized,
+            enhancement_metrics=enhancement_metrics,
+            quality_score=response_result.get("quality_score", 0.5),
+            confidence_score=response_result.get("confidence_score", 0.5),
+            metadata={
+                # Preserve all original data for backward compatibility
+                "original_response_result": response_result,
+                "student_analysis": response_result.get("student_analysis", {}),
+                "conversation_progression": response_result.get("conversation_progression", {}),
+                "student_insights": response_result.get("student_insights", {}),
+                "response_strategy": response_result.get("response_strategy", ""),
+                "educational_intent": response_result.get("educational_intent", ""),
+                "analysis_result": analysis_result,
+                "context_classification": context_classification,
+                "domain_expert_result": domain_expert_result,
+                "cognitive_flags": cognitive_flags  # Original format
+            }
+        )
+        
+        return response
+    
+    def _calculate_enhancement_metrics(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict) -> EnhancementMetrics:
+        """Calculate cognitive enhancement metrics for Socratic tutoring"""
+        
+        response_strategy = response_result.get("response_strategy", "")
+        student_analysis = response_result.get("student_analysis", {})
+        conversation_progression = response_result.get("conversation_progression", {})
+        
+        # Cognitive offloading prevention score
+        # Higher score if using challenging questions or assumption challenges
+        challenging_strategies = ["challenging_question", "assumption_challenge", "depth_promotion"]
+        cop_score = 0.8 if response_strategy in challenging_strategies else 0.4
+        
+        # Deep thinking engagement score
+        # Higher score if using exploratory or clarifying questions
+        deep_thinking_strategies = ["exploratory_question", "clarifying_guidance", "adaptive_question"]
+        dte_score = 0.9 if response_strategy in deep_thinking_strategies else 0.6
+        
+        # Knowledge integration score
+        # Based on whether domain expert results were used
+        has_domain_expert = bool(response_result.get("domain_expert_result"))
+        ki_score = 0.8 if has_domain_expert else 0.3
+        
+        # Scaffolding effectiveness score
+        # Higher score for supportive guidance or clarifying guidance
+        scaffolding_strategies = ["supportive_guidance", "clarifying_guidance"]
+        scaffolding_score = 0.9 if response_strategy in scaffolding_strategies else 0.5
+        
+        # Learning progression score
+        # Based on conversation progression and student analysis
+        progression_stage = conversation_progression.get("stage", "early")
+        student_confidence = student_analysis.get("confidence_level", "medium")
+        
+        if progression_stage == "advanced" and student_confidence == "high":
+            learning_progression = 0.9
+        elif progression_stage == "intermediate":
+            learning_progression = 0.7
+        else:
+            learning_progression = 0.5
+        
+        # Metacognitive awareness score
+        # Higher score if using assumption challenges or depth promotion
+        metacognitive_strategies = ["assumption_challenge", "depth_promotion"]
+        metacognitive_score = 0.8 if response_strategy in metacognitive_strategies else 0.4
+        
+        # Overall cognitive score
+        overall_score = (cop_score + dte_score + ki_score + scaffolding_score + learning_progression + metacognitive_score) / 6
+        
+        # Scientific confidence
+        # Based on response quality and strategy effectiveness
+        response_quality = response_result.get("quality_score", 0.5)
+        strategy_confidence = 0.8 if response_strategy in ["challenging_question", "exploratory_question"] else 0.6
+        scientific_confidence = (response_quality + strategy_confidence) / 2
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cop_score,
+            deep_thinking_engagement_score=dte_score,
+            knowledge_integration_score=ki_score,
+            scaffolding_effectiveness_score=scaffolding_score,
+            learning_progression_score=learning_progression,
+            metacognitive_awareness_score=metacognitive_score,
+            overall_cognitive_score=overall_score,
+            scientific_confidence=scientific_confidence
+        )
+    
+    def _extract_cognitive_flags(self, response_result: Dict, state: ArchMentorState) -> List[str]:
+        """Extract cognitive flags from the response and student state"""
+        
+        flags = []
+        response_strategy = response_result.get("response_strategy", "")
+        student_analysis = response_result.get("student_analysis", {})
+        
+        # Add flags based on response strategy
+        if response_strategy == "challenging_question":
+            flags.append("deep_thinking_encouraged")
+        elif response_strategy == "supportive_guidance":
+            flags.append("scaffolding_provided")
+        elif response_strategy == "clarifying_guidance":
+            flags.append("scaffolding_provided")
+        elif response_strategy == "assumption_challenge":
+            flags.append("cognitive_offloading_detected")
+            flags.append("deep_thinking_encouraged")
+        elif response_strategy == "depth_promotion":
+            flags.append("deep_thinking_encouraged")
+        elif response_strategy == "exploratory_question":
+            flags.append("engagement_maintained")
+        
+        # Add flags based on student analysis
+        confidence_level = student_analysis.get("confidence_level", "medium")
+        if confidence_level == "low":
+            flags.append("scaffolding_provided")
+        elif confidence_level == "high":
+            flags.append("deep_thinking_encouraged")
+        
+        # Add engagement flag if student is responding
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        if len(user_messages) > 1:
+            flags.append("engagement_maintained")
+        
+        return flags
+    
+    def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
+        """Convert cognitive flags to standardized format"""
+        
+        flag_mapping = {
+            "deep_thinking_encouraged": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "scaffolding_provided": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "cognitive_offloading_detected": CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED,
+            "engagement_maintained": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "learning_progression": CognitiveFlag.LEARNING_PROGRESSION,
+            "metacognitive_awareness": CognitiveFlag.METACOGNITIVE_AWARENESS
+        }
+        
+        converted_flags = []
+        for flag in cognitive_flags:
+            if flag in flag_mapping:
+                converted_flags.append(flag_mapping[flag])
+            else:
+                # Default to scaffolding for unknown flags
+                converted_flags.append(CognitiveFlag.SCAFFOLDING_PROVIDED)
+        
+        return converted_flags
     
     def _analyze_student_state(self, state: ArchMentorState, analysis_result: Dict, context_classification: Optional[Dict]) -> Dict[str, Any]:
         """Analyze student's current learning state and confidence"""
@@ -801,108 +964,6 @@ I sense you might be scratching the surface of this problem. Let's explore the l
         
         else:
             return f"Great! You've identified {main_topic} as important for your {building_type} project. What specific question or challenge about {main_topic} are you working through right now? This will help me provide the most relevant guidance for where you are in your design process."
-
-
-
-#0508-commented out and replaced with the above functions
-#         # Dynamic focus questions that work for any architectural topic
-#         focus_questions = {
-#             "principles": f"""
-# **🏗️ {main_topic.title()} Principles - Deep Dive**
-
-# Excellent choice! Understanding the principles of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
-
-# **What specific aspect of {main_topic} principles would you like to explore first?**
-
-# 1. **Core concepts** - The fundamental ideas that guide {main_topic} decisions
-# 2. **Application strategies** - How to apply {main_topic} principles in practice
-# 3. **Design integration** - How {main_topic} principles relate to overall design
-# 4. **Performance considerations** - How {main_topic} principles affect building performance
-# 5. **User experience impact** - How {main_topic} principles influence occupant experience
-
-# **Or is there a particular challenge you're facing with {main_topic} in your {building_type} project?**
-
-# *What aspect of {main_topic} principles feels most relevant to your current design stage?*
-# """,
-#             "examples": f"""
-# **🏗️ {main_topic.title()} Examples - Deep Dive**
-
-# Great focus! Learning from real examples of {main_topic} can provide valuable insights for your {building_type} project. Let's explore this systematically:
-
-# **What type of {main_topic} examples would be most helpful?**
-
-# 1. **Successful case studies** - Projects that demonstrate excellent {main_topic} implementation
-# 2. **Innovative approaches** - Creative and unique {main_topic} solutions
-# 3. **Problem-solving examples** - How {main_topic} challenges were overcome
-# 4. **Similar project types** - {main_topic} examples from {building_type} projects
-# 5. **Contemporary applications** - Modern approaches to {main_topic}
-
-# **Or is there a specific {main_topic} challenge you're trying to solve in your project?**
-
-# *What type of {main_topic} examples would be most relevant to your current design stage?*
-# """,
-#             "process": f"""
-# **🏗️ {main_topic.title()} Process - Deep Dive**
-
-# Excellent choice! Understanding the process of implementing {main_topic} is essential for your {building_type} project. Let's explore this systematically:
-
-# **What aspect of the {main_topic} process would you like to explore first?**
-
-# 1. **Planning phase** - How to approach {main_topic} from the beginning
-# 2. **Design integration** - How to incorporate {main_topic} into your design process
-# 3. **Implementation steps** - The practical steps for {main_topic} execution
-# 4. **Evaluation methods** - How to assess {main_topic} effectiveness
-# 5. **Iteration and refinement** - How to improve {main_topic} solutions over time
-
-# **Or is there a particular stage in the {main_topic} process where you need guidance?**
-
-# *What aspect of the {main_topic} process feels most relevant to your current design stage?*
-# """,
-#             "technical_details": f"""
-# **🏗️ {main_topic.title()} Technical Details - Deep Dive**
-
-# Great focus! Technical understanding of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
-
-# **What specific technical aspect of {main_topic} would you like to explore first?**
-
-# 1. **Specifications and standards** - Technical requirements for {main_topic}
-# 2. **Material and system selection** - Choosing appropriate {main_topic} solutions
-# 3. **Integration with other systems** - How {main_topic} works with building systems
-# 4. **Performance metrics** - How to measure {main_topic} effectiveness
-# 5. **Code compliance** - Regulatory requirements for {main_topic}
-
-# **Or is there a particular technical challenge you're facing with {main_topic} in your project?**
-
-# *What technical aspect of {main_topic} feels most relevant to your current design stage?*
-# """,
-#             "challenges": f"""
-# **🏗️ {main_topic.title()} Challenges - Deep Dive**
-
-# Excellent choice! Understanding the challenges of {main_topic} will help you prepare for your {building_type} project. Let's explore this systematically:
-
-# **What type of {main_topic} challenges would you like to explore first?**
-
-# 1. **Common obstacles** - Typical challenges encountered in {main_topic} implementation
-# 2. **Site-specific challenges** - How {main_topic} challenges vary by context
-# 3. **Budget and resource constraints** - Financial and practical limitations
-# 4. **Integration challenges** - How {main_topic} conflicts with other design goals
-# 5. **Maintenance and long-term issues** - Ongoing challenges with {main_topic}
-
-# **Or is there a specific {main_topic} challenge you're currently facing in your project?**
-
-# *What type of {main_topic} challenge feels most relevant to your current design stage?*
-# """
-#         }
-        
-#         return focus_questions.get(focus_area, f"""
-# **🏗️ {main_topic.title()} - Let's Explore Your Focus**
-
-# Great! You've identified an important aspect of {main_topic} for your {building_type} project. Let's dive deeper:
-
-# **What specific {main_topic} question or challenge are you wrestling with right now?**
-
-# *This will help me provide the most relevant guidance for your current design stage.*
-# """)
 
 
 

@@ -246,6 +246,23 @@ class ResponseBuilder:
         )
     
     @staticmethod
+    def create_context_analysis_response(
+        response_text: str,
+        cognitive_flags: List[CognitiveFlag] = None,
+        enhancement_metrics: EnhancementMetrics = None,
+        **kwargs
+    ) -> AgentResponse:
+        """Create a context analysis response"""
+        return AgentResponse(
+            response_text=response_text,
+            response_type=ResponseType.CONTEXT_CLASSIFICATION,
+            cognitive_flags=cognitive_flags or [],
+            enhancement_metrics=enhancement_metrics or EnhancementMetrics(),
+            agent_name="context_agent",
+            **kwargs
+        )
+    
+    @staticmethod
     def create_fallback_response(
         response_text: str,
         agent_name: str = "",

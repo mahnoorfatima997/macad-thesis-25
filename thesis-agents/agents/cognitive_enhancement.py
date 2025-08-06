@@ -12,6 +12,7 @@ import math
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from state_manager import ArchMentorState
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 load_dotenv()
 
@@ -139,8 +140,8 @@ class CognitiveEnhancementAgent:
             }
         }
     
-    async def provide_challenge(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> Dict[str, Any]:
-        """Enhanced cognitive challenge with MIT research-based protection strategies"""
+    async def provide_challenge(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
+        """Enhanced cognitive challenge with MIT research-based protection strategies - now returns AgentResponse"""
         
         print(f"\n🧠 {self.name} providing enhanced cognitive challenge...")
         
@@ -149,7 +150,8 @@ class CognitiveEnhancementAgent:
         
         if offloading_detection["detected"]:
             print(f"🚨 COGNITIVE OFFLOADING DETECTED: {offloading_detection['type']}")
-            return await self._generate_cognitive_intervention(offloading_detection, state, analysis_result)
+            intervention_result = await self._generate_cognitive_intervention(offloading_detection, state, analysis_result)
+            return self._convert_to_agent_response(intervention_result, state, context_classification, analysis_result, routing_decision)
         
         # COMPLETE COGNITIVE STATE ASSESSMENT
         cognitive_state = self.assess_cognitive_state(state, context_classification, analysis_result)
@@ -192,9 +194,166 @@ class CognitiveEnhancementAgent:
             "offloading_detection": offloading_detection
         })
         
+        # Add cognitive flags to the original response result for backward compatibility
+        cognitive_flags = self._extract_cognitive_flags(challenge_result, state, context_classification)
+        challenge_result["cognitive_flags"] = cognitive_flags
+        
         print(f"🧠 DEBUG: Generated enhanced cognitive challenge")
         
-        return challenge_result
+        # Convert to standardized AgentResponse format
+        return self._convert_to_agent_response(challenge_result, state, context_classification, analysis_result, routing_decision)
+    
+    def _convert_to_agent_response(self, challenge_result: Dict, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
+        """Convert the original response to AgentResponse format while preserving all data"""
+        
+        # Calculate enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(challenge_result, state, analysis_result)
+        
+        # Convert cognitive flags to standardized format
+        cognitive_flags = self._extract_cognitive_flags(challenge_result, state, context_classification)
+        cognitive_flags_standardized = self._convert_cognitive_flags(cognitive_flags)
+        
+        # Create standardized response while preserving original data
+        response = ResponseBuilder.create_cognitive_enhancement_response(
+            response_text=challenge_result.get("response_text", ""),
+            cognitive_flags=cognitive_flags_standardized,
+            enhancement_metrics=enhancement_metrics,
+            quality_score=challenge_result.get("quality_score", 0.5),
+            confidence_score=challenge_result.get("confidence_score", 0.5),
+            metadata={
+                # Preserve all original data for backward compatibility
+                "original_challenge_result": challenge_result,
+                "cognitive_state": challenge_result.get("cognitive_state", {}),
+                "scientific_metrics": challenge_result.get("scientific_metrics", {}),
+                "enhancement_strategy": challenge_result.get("enhancement_strategy", ""),
+                "context_used": challenge_result.get("context_used", {}),
+                "pedagogical_intent": challenge_result.get("pedagogical_intent", ""),
+                "cognitive_summary": challenge_result.get("cognitive_summary", ""),
+                "offloading_detection": challenge_result.get("offloading_detection", {}),
+                "analysis_result": analysis_result,
+                "routing_decision": routing_decision,
+                "cognitive_flags": cognitive_flags  # Original format
+            }
+        )
+        
+        return response
+    
+    def _calculate_enhancement_metrics(self, challenge_result: Dict, state: ArchMentorState, analysis_result: Dict) -> EnhancementMetrics:
+        """Calculate cognitive enhancement metrics for cognitive enhancement"""
+        
+        enhancement_strategy = challenge_result.get("enhancement_strategy", "")
+        cognitive_state = challenge_result.get("cognitive_state", {})
+        scientific_metrics = challenge_result.get("scientific_metrics", {})
+        offloading_detection = challenge_result.get("offloading_detection", {})
+        
+        # Cognitive offloading prevention score
+        # Higher score if cognitive offloading was detected and addressed
+        if offloading_detection.get("detected", False):
+            cop_score = 0.9  # Successfully prevented offloading
+        else:
+            cop_score = 0.7  # Proactive prevention
+        
+        # Deep thinking engagement score
+        # Higher score if using complex enhancement strategies
+        deep_thinking_strategies = ["metacognitive_challenge", "perspective_challenge", "alternative_challenge"]
+        dte_score = 0.9 if enhancement_strategy in deep_thinking_strategies else 0.6
+        
+        # Knowledge integration score
+        # Based on scientific metrics and cognitive state
+        knowledge_metrics = scientific_metrics.get("knowledge_integration", 0.5)
+        ki_score = min(knowledge_metrics * 1.2, 1.0)
+        
+        # Scaffolding effectiveness score
+        # Higher score if providing appropriate cognitive support
+        scaffolding_metrics = scientific_metrics.get("scaffolding_effectiveness", 0.5)
+        scaffolding_score = min(scaffolding_metrics * 1.2, 1.0)
+        
+        # Learning progression score
+        # Based on cognitive state and enhancement strategy
+        progression_metrics = scientific_metrics.get("learning_progression", 0.5)
+        learning_progression = min(progression_metrics * 1.2, 1.0)
+        
+        # Metacognitive awareness score
+        # Higher score if using metacognitive strategies
+        metacognitive_strategies = ["metacognitive_challenge", "reflection_promotion"]
+        metacognitive_score = 0.9 if enhancement_strategy in metacognitive_strategies else 0.5
+        
+        # Overall cognitive score
+        overall_score = (cop_score + dte_score + ki_score + scaffolding_score + learning_progression + metacognitive_score) / 6
+        
+        # Scientific confidence
+        # Based on scientific metrics validation
+        validation_result = self.validate_thesis_metrics(scientific_metrics)
+        scientific_confidence = 0.9 if validation_result.get("all_metrics_present", False) else 0.6
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cop_score,
+            deep_thinking_engagement_score=dte_score,
+            knowledge_integration_score=ki_score,
+            scaffolding_effectiveness_score=scaffolding_score,
+            learning_progression_score=learning_progression,
+            metacognitive_awareness_score=metacognitive_score,
+            overall_cognitive_score=overall_score,
+            scientific_confidence=scientific_confidence
+        )
+    
+    def _extract_cognitive_flags(self, challenge_result: Dict, state: ArchMentorState, context_classification: Dict) -> List[str]:
+        """Extract cognitive flags from the challenge and cognitive state"""
+        
+        flags = []
+        enhancement_strategy = challenge_result.get("enhancement_strategy", "")
+        cognitive_state = challenge_result.get("cognitive_state", {})
+        offloading_detection = challenge_result.get("offloading_detection", {})
+        
+        # Add flags based on enhancement strategy
+        if enhancement_strategy == "metacognitive_challenge":
+            flags.append("metacognitive_awareness")
+        elif enhancement_strategy == "constraint_challenge":
+            flags.append("deep_thinking_encouraged")
+        elif enhancement_strategy == "perspective_challenge":
+            flags.append("deep_thinking_encouraged")
+        elif enhancement_strategy == "alternative_challenge":
+            flags.append("deep_thinking_encouraged")
+        
+        # Add flags based on cognitive offloading detection
+        if offloading_detection.get("detected", False):
+            flags.append("cognitive_offloading_detected")
+        
+        # Add flags based on cognitive state
+        engagement_level = cognitive_state.get("engagement_level", "medium")
+        if engagement_level == "high":
+            flags.append("engagement_maintained")
+        elif engagement_level == "low":
+            flags.append("scaffolding_provided")
+        
+        # Add learning progression flag
+        if cognitive_state.get("learning_progression", "") == "advancing":
+            flags.append("learning_progression")
+        
+        return flags
+    
+    def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
+        """Convert cognitive flags to standardized format"""
+        
+        flag_mapping = {
+            "deep_thinking_encouraged": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "scaffolding_provided": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "cognitive_offloading_detected": CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED,
+            "engagement_maintained": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "learning_progression": CognitiveFlag.LEARNING_PROGRESSION,
+            "metacognitive_awareness": CognitiveFlag.METACOGNITIVE_AWARENESS,
+            "knowledge_integration": CognitiveFlag.KNOWLEDGE_INTEGRATION
+        }
+        
+        converted_flags = []
+        for flag in cognitive_flags:
+            if flag in flag_mapping:
+                converted_flags.append(flag_mapping[flag])
+            else:
+                # Default to deep thinking for unknown flags
+                converted_flags.append(CognitiveFlag.DEEP_THINKING_ENCOURAGED)
+        
+        return converted_flags
     
     def _detect_cognitive_offloading_patterns(self, context_classification: Dict, state: ArchMentorState) -> Dict[str, Any]:
         """Detect cognitive offloading patterns based on MIT research"""
@@ -310,7 +469,32 @@ I'm detecting patterns that suggest you might be relying too heavily on external
             "mitigation_strategy": mitigation_strategy,
             "offloading_detection": offloading_detection,
             "pedagogical_intent": "cognitive_protection",
-            "cognitive_summary": "Cognitive offloading intervention applied"
+            "cognitive_summary": "Cognitive offloading intervention applied",
+            # Add missing fields for backward compatibility
+            "cognitive_state": {
+                "engagement_level": "low",
+                "cognitive_load": "high",
+                "metacognitive_awareness": "low",
+                "passivity_level": "high",
+                "overconfidence_level": "high",
+                "conversation_depth": "shallow",
+                "learning_progression": "stuck"
+            },
+            "scientific_metrics": {
+                "cognitive_offloading_prevention": 0.9,
+                "deep_thinking_engagement": 0.3,
+                "knowledge_integration": 0.2,
+                "scaffolding_effectiveness": 0.8,
+                "learning_progression": 0.2,
+                "metacognitive_awareness": 0.3,
+                "overall_cognitive_score": 0.45,
+                "scientific_confidence": 0.8
+            },
+            "enhancement_strategy": "cognitive_intervention",
+            "context_used": {},
+            "quality_score": 0.8,
+            "confidence_score": 0.8,
+            "cognitive_flags": ["cognitive_offloading_detected", "deep_thinking_encouraged"]
         }
     
     def create_cognitive_assessment_summary(self, scientific_metrics: Dict, cognitive_state: Dict, analysis_result: Dict) -> str:

@@ -30,6 +30,64 @@ from agents.context_agent import ContextAgent
 from orchestration.langgraph_orchestrator import LangGraphOrchestrator
 from data_collection.interaction_logger import InteractionLogger
 
+# Add this function after the imports and before the main functions
+def convert_agent_response_to_dict(agent_response):
+    """Convert AgentResponse object to dictionary format for backward compatibility"""
+    if hasattr(agent_response, 'response_text'):  # AgentResponse object
+        return {
+            'response_text': agent_response.response_text,
+            'response_type': agent_response.response_type.value if hasattr(agent_response.response_type, 'value') else str(agent_response.response_type),
+            'cognitive_flags': [flag.value if hasattr(flag, 'value') else str(flag) for flag in agent_response.cognitive_flags],
+            'enhancement_metrics': {
+                'cognitive_offloading_prevention_score': agent_response.enhancement_metrics.cognitive_offloading_prevention_score,
+                'deep_thinking_engagement_score': agent_response.enhancement_metrics.deep_thinking_engagement_score,
+                'knowledge_integration_score': agent_response.enhancement_metrics.knowledge_integration_score,
+                'scaffolding_effectiveness_score': agent_response.enhancement_metrics.scaffolding_effectiveness_score,
+                'learning_progression_score': agent_response.enhancement_metrics.learning_progression_score,
+                'metacognitive_awareness_score': agent_response.enhancement_metrics.metacognitive_awareness_score,
+                'overall_cognitive_score': agent_response.enhancement_metrics.overall_cognitive_score,
+                'scientific_confidence': agent_response.enhancement_metrics.scientific_confidence
+            },
+            'agent_name': agent_response.agent_name,
+            'metadata': agent_response.metadata,
+            'journey_alignment': {
+                'current_phase': agent_response.journey_alignment.current_phase,
+                'phase_progress': agent_response.journey_alignment.phase_progress,
+                'milestone_progress': agent_response.journey_alignment.milestone_progress,
+                'next_milestone': agent_response.journey_alignment.next_milestone,
+                'journey_progress': agent_response.journey_alignment.journey_progress,
+                'phase_confidence': agent_response.journey_alignment.phase_confidence,
+                'milestone_questions_asked': agent_response.journey_alignment.milestone_questions_asked
+            },
+            'progress_update': {
+                'phase_progress': agent_response.progress_update.phase_progress,
+                'milestone_progress': agent_response.progress_update.milestone_progress,
+                'cognitive_state': agent_response.progress_update.cognitive_state,
+                'learning_progression': agent_response.progress_update.learning_progression,
+                'skill_level_update': agent_response.progress_update.skill_level_update,
+                'engagement_level_update': agent_response.progress_update.engagement_level_update
+            }
+        }
+    else:  # Already a dictionary
+        return agent_response
+
+def safe_get_nested_dict(obj, *keys, default=None):
+    """Safely get nested dictionary values, handling both dict and AgentResponse objects"""
+    if obj is None:
+        return default
+    
+    # Convert AgentResponse to dict if needed
+    if hasattr(obj, 'response_text'):
+        obj = convert_agent_response_to_dict(obj)
+    
+    current = obj
+    for key in keys:
+        if isinstance(current, dict) and key in current:
+            current = current[key]
+        else:
+            return default
+    return current
+
 # Configure Streamlit for clean interface
 st.set_page_config(
     page_title="🏗️ Architectural Mentor",
@@ -467,9 +525,15 @@ class MegaArchitecturalMentor:
         result = await self.orchestrator.process_student_input(state)
         
         # Update state with assistant response
+        # Handle both AgentResponse objects and dictionaries
+        if hasattr(result, 'response_text'):
+            response_content = result.response_text
+        else:
+            response_content = result.get("response", "")
+        
         state.messages.append({
             "role": "assistant",
-            "content": result["response"]
+            "content": response_content
         })
         
         return result
@@ -568,6 +632,11 @@ def run_async_analysis(mentor, design_brief: str, temp_image_path: Optional[str]
                 domain="architecture"
             )
         )
+        
+        # Convert AgentResponse to dictionary if needed
+        if hasattr(results["analysis_result"], 'response_text'):
+            results["analysis_result"] = convert_agent_response_to_dict(results["analysis_result"])
+        
         return results
     finally:
         loop.close()
@@ -686,16 +755,32 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             
             loop.close()
         
-        print(f"✅ Response generated: {result.get('response', 'No response')[:100]}...")
-        print(f"✅ Response type: {result.get('metadata', {}).get('response_type', 'Unknown')}")
-        print(f"✅ Agents used: {result.get('metadata', {}).get('agents_used', [])}")
+        # Handle both old dict format and new AgentResponse format
+        response_text = ""
+        response_metadata = {}
+        
+        if hasattr(result, 'response_text'):  # AgentResponse object
+            response_text = result.response_text
+            response_metadata = {
+                'response_type': result.response_type.value if hasattr(result.response_type, 'value') else str(result.response_type),
+                'agents_used': [result.agent_name] if result.agent_name else [],
+                'cognitive_flags': [flag.value if hasattr(flag, 'value') else str(flag) for flag in result.cognitive_flags],
+                'metadata': result.metadata
+            }
+        else:  # Old dict format
+            response_text = result.get('response', 'No response')
+            response_metadata = result.get('metadata', {})
+        
+        print(f"✅ Response generated: {response_text[:100]}...")
+        print(f"✅ Response type: {response_metadata.get('response_type', 'Unknown')}")
+        print(f"✅ Agents used: {response_metadata.get('agents_used', [])}")
         
         # Add assistant response to chat history
         st.session_state.chat_messages.append({
             "role": "assistant",
-            "content": result.get("response", "I apologize, but I couldn't generate a response."),
+            "content": response_text,
             "timestamp": datetime.now().isoformat(),
-            "metadata": result.get("metadata", {}),
+            "metadata": response_metadata,
             "mentor_type": mentor_type
         })
         
@@ -715,6 +800,10 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
                 
                 progress_loop.close()
                 
+                # Convert AgentResponse to dictionary if needed
+                if hasattr(updated_analysis, 'response_text'):
+                    updated_analysis = updated_analysis.to_dict()
+                
                 # Update the analysis result in session state
                 st.session_state.analysis_result = updated_analysis
                 
@@ -729,14 +818,15 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
         # Log interaction for data collection
         if st.session_state.interaction_logger:
             # Extract metadata for logging
-            metadata = result.get("metadata", {})
+            metadata = response_metadata  # Use the already processed metadata
             agents_used = metadata.get("agents_used", [])
             response_type = metadata.get("response_type", "unknown")
             routing_path = metadata.get("routing_path", "unknown")
             cognitive_flags = metadata.get("cognitive_flags", [])
             confidence_score = metadata.get("confidence_score", 0.5)
             sources_used = metadata.get("sources", [])
-            context_classification = metadata.get("classification", {})
+            # Get classification from the correct location in orchestrator result
+            context_classification = result.get("student_classification", {})
             
             # Get student skill level from session state
             student_skill_level = "intermediate"  # Default
@@ -747,24 +837,24 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             enhanced_metadata = metadata.copy()
             if st.session_state.analysis_result:
                 # Add detailed phase analysis with benchmarking metrics
-                enhanced_metadata["detailed_phase_analysis"] = st.session_state.analysis_result.get("phase_analysis", {})
+                enhanced_metadata["detailed_phase_analysis"] = safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis") or {}
                 # Add benchmarking metrics
                 enhanced_metadata["benchmarking_metrics"] = {
-                    "cop_score": st.session_state.analysis_result.get("phase_analysis", {}).get("cop_score", 0),
-                    "dte_score": st.session_state.analysis_result.get("phase_analysis", {}).get("dte_score", 0),
-                    "ki_score": st.session_state.analysis_result.get("phase_analysis", {}).get("ki_score", 0),
-                    "cop_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("cop_factor", 0),
-                    "dte_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("dte_factor", 0),
-                    "ki_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("ki_factor", 0),
-                    "milestone_progression": st.session_state.analysis_result.get("phase_analysis", {}).get("milestone_progression", 0),
-                    "quality_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("quality_factor", 0),
-                    "engagement_factor": st.session_state.analysis_result.get("phase_analysis", {}).get("engagement_factor", 0),
-                    "completed_milestones": st.session_state.analysis_result.get("phase_analysis", {}).get("completed_milestones", 0),
-                    "total_milestones": st.session_state.analysis_result.get("phase_analysis", {}).get("total_milestones", 0),
-                    "average_grade": st.session_state.analysis_result.get("phase_analysis", {}).get("average_grade", 0)
+                    "cop_score": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "cop_score") or 0,
+                    "dte_score": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "dte_score") or 0,
+                    "ki_score": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "ki_score") or 0,
+                    "cop_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "cop_factor") or 0,
+                    "dte_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "dte_factor") or 0,
+                    "ki_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "ki_factor") or 0,
+                    "milestone_progression": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "milestone_progression") or 0,
+                    "quality_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "quality_factor") or 0,
+                    "engagement_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "engagement_factor") or 0,
+                    "completed_milestones": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "completed_milestones") or 0,
+                    "total_milestones": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "total_milestones") or 0,
+                    "average_grade": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "average_grade") or 0
                 }
                 # Add assessment profile if available
-                assessment_profile = st.session_state.analysis_result.get("phase_analysis", {}).get("assessment_profile")
+                assessment_profile = safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "assessment_profile")
                 if assessment_profile:
                     enhanced_metadata["assessment_profile"] = {
                         "student_id": getattr(assessment_profile, 'student_id', 'unknown'),
@@ -779,7 +869,7 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             
             st.session_state.interaction_logger.log_interaction(
                 student_input=user_input,
-                agent_response=result.get("response", ""),
+                agent_response=response_text,
                 routing_path=routing_path,
                 agents_used=agents_used,
                 response_type=response_type,
@@ -791,7 +881,14 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
                 metadata=enhanced_metadata
             )
         
-        return result
+        # Return in the format expected by the app
+        return {
+            "response": response_text,
+            "metadata": response_metadata,
+            "routing_path": response_metadata.get("routing_path", "unknown"),
+            "classification": result.get("student_classification", {}),
+            "conversation_progression": result.get("conversation_progression", {})
+        }
         
     except Exception as e:
         print(f"❌ Error in process_chat_response: {e}")
@@ -812,7 +909,8 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             "response": error_response,
             "metadata": {"response_type": "error", "error": str(e)},
             "routing_path": "error",
-            "classification": {}
+            "classification": {},
+            "conversation_progression": {}
         }
 
 def reset_session():
@@ -1113,7 +1211,7 @@ def main():
                     </div>
                 </div>
                 """.format(
-                    building_type=st.session_state.analysis_result.get('text_analysis', {}).get('building_type', 'architectural').title()
+                    building_type=safe_get_nested_dict(st.session_state.analysis_result, 'text_analysis', 'building_type') or 'architectural'
                 ), unsafe_allow_html=True)
         
         # Chat interface - confined to center column
@@ -1191,49 +1289,60 @@ def main():
                 
                 with col1:
                     st.markdown("**🎯 Current Design Phase**")
-                    phase_analysis = result.get('phase_analysis', {})
-                    if phase_analysis:
+                    # Use conversation progression if available, otherwise fall back to analysis
+                    conversation_progression = result.get('conversation_progression', {})
+                    phase_analysis = safe_get_nested_dict(result, 'phase_analysis') or {}
+                    
+                    if conversation_progression:
+                        current_phase = conversation_progression.get('conversation_phase', 'unknown')
+                        phase_completion = conversation_progression.get('phase_progress', 0) * 100
+                        phase_confidence = conversation_progression.get('confidence', 0)
+                    elif phase_analysis:
                         current_phase = phase_analysis.get('phase', 'unknown')
                         phase_confidence = phase_analysis.get('confidence', 0)
                         phase_completion = phase_analysis.get('progression_score', 0) * 100
-                        
-                        # Phase status with color coding
-                        if phase_confidence > 0.8:
-                            phase_color = "🟢"
-                        elif phase_confidence > 0.6:
-                            phase_color = "🟡"
-                        else:
-                            phase_color = "🔴"
-                        
-                        st.write(f"{phase_color} **{current_phase.title()}**")
-                        st.write(f"Confidence: {phase_confidence:.1%}")
-                        st.write(f"Progress: {phase_completion:.0f}%")
-                        
-                        # Show next milestone if available
-                        next_milestone = phase_analysis.get('next_milestone')
-                        if next_milestone:
-                            milestone_names = {
-                                'site_analysis': 'Site Analysis',
-                                'program_requirements': 'Program Requirements',
-                                'concept_development': 'Concept Development',
-                                'spatial_organization': 'Spatial Organization',
-                                'circulation_design': 'Circulation Design',
-                                'form_development': 'Form Development',
-                                'lighting_strategy': 'Lighting Strategy',
-                                'construction_systems': 'Construction Systems',
-                                'material_selection': 'Material Selection',
-                                'technical_details': 'Technical Details',
-                                'presentation_prep': 'Presentation Preparation',
-                                'documentation': 'Documentation'
-                            }
-                            next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
-                            st.write(f"🎯 **Next:** {next_milestone_name}")
                     else:
-                        st.write("🔍 Phase not detected yet")
+                        current_phase = 'unknown'
+                        phase_confidence = 0
+                        phase_completion = 0
+                
+                # Phase status with color coding
+                if phase_confidence > 0.8:
+                    phase_color = "🟢"
+                elif phase_confidence > 0.6:
+                    phase_color = "🟡"
+                else:
+                    phase_color = "🔴"
+                
+                st.write(f"{phase_color} **{current_phase.title()}**")
+                st.write(f"Confidence: {phase_confidence:.1%}")
+                st.write(f"Progress: {phase_completion:.0f}%")
+                
+                # Show next milestone if available
+                next_milestone = phase_analysis.get('next_milestone')
+                if next_milestone:
+                    milestone_names = {
+                        'site_analysis': 'Site Analysis',
+                        'program_requirements': 'Program Requirements',
+                        'concept_development': 'Concept Development',
+                        'spatial_organization': 'Spatial Organization',
+                        'circulation_design': 'Circulation Design',
+                        'form_development': 'Form Development',
+                        'lighting_strategy': 'Lighting Strategy',
+                        'construction_systems': 'Construction Systems',
+                        'material_selection': 'Material Selection',
+                        'technical_details': 'Technical Details',
+                        'presentation_prep': 'Presentation Preparation',
+                        'documentation': 'Documentation'
+                    }
+                    next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
+                    st.write(f"🎯 **Next:** {next_milestone_name}")
+                else:
+                    st.write("🔍 Phase not detected yet")
                 
                 with col2:
                     st.markdown("**💡 Learning Insights**")
-                    synthesis = result.get('synthesis', {})
+                    synthesis = safe_get_nested_dict(result, 'synthesis') or {}
                     
                     # Cognitive Challenges
                     cognitive_challenges = synthesis.get('cognitive_challenges', [])
@@ -1260,7 +1369,7 @@ def main():
                 
                 with col3:
                     st.markdown("**📋 Project Context**")
-                    text_analysis = result.get('text_analysis', {})
+                    text_analysis = safe_get_nested_dict(result, 'text_analysis') or {}
                     
                     # Building Type
                     building_type = text_analysis.get('building_type', 'unknown')
@@ -1406,17 +1515,32 @@ def main():
             
             with col_metric1:
                 # Display current design phase with progress
-                phase_analysis = result.get('phase_analysis', {})
-                current_phase = phase_analysis.get('phase', 'unknown')
+                # Use conversation progression if available, otherwise fall back to analysis
+                conversation_progression = result.get('conversation_progression', {})
+                phase_analysis = safe_get_nested_dict(result, 'phase_analysis') or {}
+                
+                if conversation_progression:
+                    current_phase = conversation_progression.get('conversation_phase', 'unknown')
+                    phase_completion = conversation_progression.get('phase_progress', 0) * 100
+                else:
+                    current_phase = phase_analysis.get('phase', 'unknown')
+                    phase_completion = phase_analysis.get('progression_score', 0) * 100
+                
                 phase_confidence = phase_analysis.get('confidence', 0)
-                phase_completion = phase_analysis.get('progression_score', 0) * 100
                 
                 # Format phase display
                 phase_display = {
+                    # Design phases
                     'ideation': '💡 Ideation',
                     'visualization': '🎨 Visualization', 
                     'materialization': '🏗️ Materialization',
                     'completion': '✅ Completion',
+                    # Conversation progression phases
+                    'discovery': '🔍 Discovery',
+                    'exploration': '🔬 Exploration',
+                    'synthesis': '🧠 Synthesis',
+                    'application': '⚡ Application',
+                    'reflection': '🤔 Reflection',
                     'unknown': '❓ Unknown'
                 }
                 
@@ -1432,7 +1556,7 @@ def main():
             
             with col_metric2:
                 # Learning balance indicator
-                synthesis = result.get('synthesis', {})
+                synthesis = safe_get_nested_dict(result, 'synthesis') or {}
                 challenges = len(synthesis.get('cognitive_challenges', []))
                 opportunities = len(synthesis.get('learning_opportunities', []))
                 
@@ -1520,12 +1644,12 @@ def main():
             
             with col_metric4:
                 # Project complexity indicator
-                building_type = result.get('text_analysis', {}).get('building_type', 'unknown')
+                building_type = safe_get_nested_dict(result, 'text_analysis', 'building_type') or 'unknown'
                 if building_type and building_type != 'unknown':
                     formatted_type = building_type.replace('_', ' ').title()
                     
                     # Add project complexity indicator
-                    requirements = result.get('text_analysis', {}).get('program_requirements', [])
+                    requirements = safe_get_nested_dict(result, 'text_analysis', 'program_requirements') or []
                     if len(requirements) > 8:
                         complexity = "🔴 Complex"
                     elif len(requirements) > 4:
@@ -1563,7 +1687,7 @@ def main():
                     st.info("📝 **Text-Only Analysis**: No image uploaded for this session")
             
             # Phase Progress Section
-            phase_analysis = result.get('phase_analysis', {})
+            phase_analysis = safe_get_nested_dict(result, 'phase_analysis') or {}
             if phase_analysis:
                 st.markdown("---")
                 st.markdown("""
@@ -1670,7 +1794,7 @@ def main():
                             st.write(f"• {activity}")
                     
                     # Learning opportunities from synthesis
-                    synthesis = result.get('synthesis', {})
+                    synthesis = safe_get_nested_dict(result, 'synthesis') or {}
                     learning_opportunities = synthesis.get('learning_opportunities', [])
                     if learning_opportunities:
                         st.write("**Learning Opportunities:**")

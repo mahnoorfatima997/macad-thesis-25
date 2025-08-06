@@ -16,6 +16,7 @@ from vision.sketch_analyzer import SketchAnalyzer
 from state_manager import ArchMentorState, StudentProfile, VisualArtifact
 from knowledge_base.knowledge_manager import KnowledgeManager
 from phase_management.milestone_questions import MilestoneType
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 class AnalysisAgent:
     def __init__(self, domain="architecture"):
@@ -228,8 +229,8 @@ class AnalysisAgent:
             return analysis_result
 
 
-    async def process(self, state: ArchMentorState, context_package: Dict = None) -> Dict[str, Any]:
-        """Main analysis processing with dynamic skill assessment and phase detection"""
+    async def process(self, state: ArchMentorState, context_package: Dict = None) -> AgentResponse:
+        """Main analysis processing with dynamic skill assessment and phase detection - now returns AgentResponse"""
         
         print(f"\n🚀 {self.name} starting analysis...")
         
@@ -249,7 +250,7 @@ class AnalysisAgent:
         phase_analysis = self.detect_design_phase(state)
         print(f"🎯 Phase detection complete: {phase_analysis['phase']} (confidence: {phase_analysis['confidence']:.2f})")
         
-        # INITIALIZE ANALYSIS RESULT
+        # INITIALIZE ANALYSIS RESULT (preserve original structure for backward compatibility)
         analysis_result = {
             "agent": self.name,
             "domain": self.domain,
@@ -326,7 +327,38 @@ class AnalysisAgent:
             analysis_result = self.incorporate_context_insights(analysis_result, context_package)
             print("🔗 Incorporated context insights for continuity")
         
-        return analysis_result
+        # CONVERT TO STANDARDIZED RESPONSE FORMAT
+        # Create cognitive enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(analysis_result, state)
+        
+        # Convert cognitive flags to standardized format
+        cognitive_flags_standardized = self._convert_cognitive_flags(cognitive_flags)
+        
+        # Create response text from analysis
+        response_text = self._generate_response_text(analysis_result)
+        
+        # Create standardized response while preserving original data
+        response = ResponseBuilder.create_analysis_response(
+            response_text=response_text,
+            cognitive_flags=cognitive_flags_standardized,
+            enhancement_metrics=enhancement_metrics,
+            quality_score=analysis_result["confidence_score"],
+            confidence_score=phase_analysis.get("confidence", 0.5),
+            metadata={
+                # Preserve all original data for backward compatibility
+                "original_analysis_result": analysis_result,
+                "phase_analysis": phase_analysis,
+                "skill_assessment": analysis_result["skill_assessment"],
+                "visual_analysis": analysis_result["visual_analysis"],
+                "text_analysis": analysis_result["text_analysis"],
+                "synthesis": analysis_result["synthesis"],
+                "cognitive_flags": cognitive_flags,  # Original format
+                "knowledge_enhanced": analysis_result.get("knowledge_enhanced", {}),
+                "context_package": context_package
+            }
+        )
+        
+        return response
     
     async def enhance_with_knowledge(self, visual_analysis: Dict, design_brief: str) -> Dict:
         """Enhance visual analysis with relevant knowledge"""
@@ -1537,6 +1569,128 @@ class AnalysisAgent:
         }
         
         return question_templates.get(milestone, f"Tell me about your approach to {milestone.value.replace('_', ' ')}")
+
+    def _calculate_enhancement_metrics(self, analysis_result: Dict, state: ArchMentorState) -> EnhancementMetrics:
+        """Calculate cognitive enhancement metrics for the analysis"""
+        
+        # Calculate metrics based on analysis quality and cognitive flags
+        cognitive_flags = analysis_result.get("cognitive_flags", [])
+        phase_analysis = analysis_result.get("phase_analysis", {})
+        skill_assessment = analysis_result.get("skill_assessment", {})
+        
+        # Cognitive offloading prevention score
+        # Higher score if analysis identifies specific cognitive challenges
+        cognitive_challenges = analysis_result.get("synthesis", {}).get("cognitive_challenges", [])
+        cop_score = min(len(cognitive_challenges) * 0.2, 1.0)
+        
+        # Deep thinking engagement score
+        # Higher score if analysis provides detailed insights
+        synthesis_quality = len(analysis_result.get("synthesis", {}).get("learning_opportunities", []))
+        dte_score = min(synthesis_quality * 0.15, 1.0)
+        
+        # Knowledge integration score
+        # Higher score if knowledge base was used
+        knowledge_enhanced = analysis_result.get("knowledge_enhanced", {}).get("knowledge_enhanced", False)
+        ki_score = 0.8 if knowledge_enhanced else 0.3
+        
+        # Scaffolding effectiveness score
+        # Higher score if analysis identifies specific learning opportunities
+        learning_opportunities = analysis_result.get("synthesis", {}).get("learning_opportunities", [])
+        scaffolding_score = min(len(learning_opportunities) * 0.2, 1.0)
+        
+        # Learning progression score
+        # Based on phase progression and skill assessment
+        phase_progression = phase_analysis.get("progression_score", 0.5)
+        skill_confidence = skill_assessment.get("confidence", 0.5)
+        learning_progression = (phase_progression + skill_confidence) / 2
+        
+        # Metacognitive awareness score
+        # Based on cognitive flags that indicate self-reflection
+        metacognitive_flags = [flag for flag in cognitive_flags if "reflection" in flag or "awareness" in flag]
+        metacognitive_score = min(len(metacognitive_flags) * 0.3, 1.0)
+        
+        # Overall cognitive score
+        overall_score = (cop_score + dte_score + ki_score + scaffolding_score + learning_progression + metacognitive_score) / 6
+        
+        # Scientific confidence
+        # Based on analysis confidence and phase detection confidence
+        analysis_confidence = analysis_result.get("confidence_score", 0.5)
+        phase_confidence = phase_analysis.get("confidence", 0.5)
+        scientific_confidence = (analysis_confidence + phase_confidence) / 2
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cop_score,
+            deep_thinking_engagement_score=dte_score,
+            knowledge_integration_score=ki_score,
+            scaffolding_effectiveness_score=scaffolding_score,
+            learning_progression_score=learning_progression,
+            metacognitive_awareness_score=metacognitive_score,
+            overall_cognitive_score=overall_score,
+            scientific_confidence=scientific_confidence
+        )
+    
+    def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
+        """Convert cognitive flags to standardized format"""
+        
+        flag_mapping = {
+            "needs_circulation_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_lighting_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_material_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_acoustic_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_accessibility_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_sustainability_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_structural_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_programming_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_spatial_thinking_support": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "needs_brief_clarification": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_technical_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_design_strategy_guidance": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "stuck_on_topic": CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED,
+            "showing_growth": CognitiveFlag.LEARNING_PROGRESSION,
+            "engagement_declining": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "engagement_improving": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "responding_to_question": CognitiveFlag.ENGAGEMENT_MAINTAINED
+        }
+        
+        converted_flags = []
+        for flag in cognitive_flags:
+            if flag in flag_mapping:
+                converted_flags.append(flag_mapping[flag])
+            else:
+                # Default to scaffolding for unknown flags
+                converted_flags.append(CognitiveFlag.SCAFFOLDING_PROVIDED)
+        
+        return converted_flags
+    
+    def _generate_response_text(self, analysis_result: Dict) -> str:
+        """Generate response text from analysis results"""
+        
+        phase_analysis = analysis_result.get("phase_analysis", {})
+        skill_assessment = analysis_result.get("skill_assessment", {})
+        synthesis = analysis_result.get("synthesis", {})
+        
+        response_parts = []
+        
+        # Phase information
+        current_phase = phase_analysis.get("phase", "unknown")
+        phase_confidence = phase_analysis.get("confidence", 0.5)
+        response_parts.append(f"Analysis indicates you're in the {current_phase} phase (confidence: {phase_confidence:.1%})")
+        
+        # Skill assessment
+        detected_level = skill_assessment.get("detected_level", "intermediate")
+        response_parts.append(f"Your current skill level appears to be {detected_level}")
+        
+        # Cognitive challenges
+        cognitive_challenges = synthesis.get("cognitive_challenges", [])
+        if cognitive_challenges:
+            response_parts.append(f"Key areas for focus: {', '.join(cognitive_challenges)}")
+        
+        # Learning opportunities
+        learning_opportunities = synthesis.get("learning_opportunities", [])
+        if learning_opportunities:
+            response_parts.append(f"Learning opportunities: {learning_opportunities[0] if learning_opportunities else 'Continue exploring your design'}")
+        
+        return " | ".join(response_parts)
 
 # Test function
 async def test_analysis_agent():
