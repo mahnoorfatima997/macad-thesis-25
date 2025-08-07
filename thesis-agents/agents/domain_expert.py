@@ -339,14 +339,8 @@ class DomainExpertAgent:
                 
                 # Convert to standard format
                 for result in top_results:
-                    # Create more substantial content for architectural examples
-                    if result["snippet"] and len(result["snippet"]) > 20:
-                        if "example" in topic.lower() or "project" in topic.lower():
-                            content = f"Architectural project example: {result['snippet']}. This demonstrates practical approaches to {topic} that can inform design strategies and provide concrete inspiration for similar projects."
-                        else:
-                            content = f"Research on {topic} reveals: {result['snippet']}. This architectural knowledge provides insights into design principles, best practices, and professional approaches for implementation."
-                    else:
-                        content = f"Architectural resource about {topic} from {result['title']}. This source provides professional insights into design principles, case studies, and best practices relevant to {topic} in architectural projects."
+                    # Preserve original web content and links
+                    content = result["snippet"] if result["snippet"] else result["title"]
                     
                     # Extract domain for source tracking
                     domain = "unknown"
@@ -366,7 +360,8 @@ class DomainExpertAgent:
                             "url": result["url"],
                             "discovery_method": "context_aware_web_search",
                             "relevance_score": result["relevance_score"],
-                            "context_used": context
+                            "context_used": context,
+                            "is_web_result": True  # Flag to indicate this is a real web result
                         }
                     })
                 
@@ -2125,10 +2120,11 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             5. Varies the response style and approach based on the content available
             6. Keeps it informative and factual
             7. If the student asked for buildings, ONLY include building examples (not landscape/urban projects)
+            8. ALWAYS include the web links when available - they are crucial for credibility
             
             AVAILABLE URLS FOR LINKS: {urls}
             
-            Format: Present 2-3 specific examples with brief explanations. If URLs are available, include them in markdown format: [Source Name](URL). Keep it under 200 words. Focus on providing actual information, not questions.
+            Format: Present 2-3 specific examples with brief explanations. ALWAYS include the web links in markdown format: [Source Name](URL) at the end of the response. Keep it under 250 words. Focus on providing actual information, not questions. Make sure to vary the examples and not repeat the same projects.
             """
         else:
             synthesis_prompt = f"""

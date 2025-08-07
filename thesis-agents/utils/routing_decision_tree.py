@@ -201,99 +201,127 @@ class AdvancedRoutingDecisionTree:
                 "description": "Cognitive offloading detected - immediate intervention",
                 "context_agent_override": True
             },
-            "design_problem_high_engagement": {
+            "technical_question_high_understanding": {
                 "priority": 4,
+                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "conditions": ["user_intent == 'technical_question'", "understanding_level == 'high'"],
+                "description": "Technical question with high understanding",
+                "context_agent_override": False
+            },
+            "technical_question_medium_understanding": {
+                "priority": 5,
+                "route": RouteType.SOCRATIC_CLARIFICATION,
+                "conditions": ["user_intent == 'technical_question'", "understanding_level == 'medium'"],
+                "description": "Technical question with medium understanding - Socratic clarification",
+                "context_agent_override": False
+            },
+            "technical_question_low_understanding": {
+                "priority": 6,
+                "route": RouteType.SOCRATIC_CLARIFICATION,
+                "conditions": ["user_intent == 'technical_question'", "understanding_level == 'low'"],
+                "description": "Technical question with low understanding - Socratic clarification",
+                "context_agent_override": False
+            },
+            "general_question_high_engagement": {
+                "priority": 7,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'general_question'", "engagement_level == 'high'"],
+                "description": "General question with high engagement - Socratic exploration",
+                "context_agent_override": False
+            },
+            "general_question_medium_engagement": {
+                "priority": 8,
+                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "conditions": ["user_intent == 'general_question'", "engagement_level == 'medium'"],
+                "description": "General question with medium engagement - knowledge with challenge",
+                "context_agent_override": False
+            },
+            "general_question_low_engagement": {
+                "priority": 9,
+                "route": RouteType.SUPPORTIVE_SCAFFOLDING,
+                "conditions": ["user_intent == 'general_question'", "engagement_level == 'low'"],
+                "description": "General question with low engagement - supportive scaffolding",
+                "context_agent_override": False
+            },
+            "confusion_expression": {
+                "priority": 10,
+                "route": RouteType.SUPPORTIVE_SCAFFOLDING,
+                "conditions": ["user_intent == 'confusion_expression'"],
+                "description": "Confusion expressed - supportive scaffolding",
+                "context_agent_override": False
+            },
+            "design_problem_high_engagement": {
+                "priority": 11,
                 "route": RouteType.SOCRATIC_EXPLORATION,
                 "conditions": ["user_intent == 'design_problem'", "engagement_level == 'high'"],
                 "description": "Design problem with high engagement - Socratic exploration",
                 "context_agent_override": False
             },
             "design_problem_low_engagement": {
-                "priority": 5,
+                "priority": 12,
                 "route": RouteType.SUPPORTIVE_SCAFFOLDING,
                 "conditions": ["user_intent == 'design_problem'", "engagement_level == 'low'"],
                 "description": "Design problem with low engagement - supportive scaffolding",
                 "context_agent_override": False
             },
             "implementation_request_high_understanding": {
-                "priority": 6,
+                "priority": 13,
                 "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
                 "conditions": ["user_intent == 'implementation_request'", "understanding_level == 'high'"],
                 "description": "Implementation request with high understanding",
                 "context_agent_override": False
             },
             "implementation_request_low_understanding": {
-                "priority": 7,
+                "priority": 14,
                 "route": RouteType.FOUNDATIONAL_BUILDING,
                 "conditions": ["user_intent == 'implementation_request'", "understanding_level == 'low'"],
                 "description": "Implementation request with low understanding",
                 "context_agent_override": False
             },
             "pure_knowledge_request": {
-                "priority": 8,
+                "priority": 15,
                 "route": RouteType.KNOWLEDGE_ONLY,
                 "conditions": ["user_intent == 'knowledge_request'", "is_pure_knowledge_request == True"],
                 "description": "Pure knowledge request - knowledge only",
                 "context_agent_override": False
             },
             "knowledge_with_guidance": {
-                "priority": 9,
+                "priority": 16,
                 "route": RouteType.SOCRATIC_EXPLORATION,
                 "conditions": ["user_intent == 'knowledge_request'", "is_pure_knowledge_request == False"],
                 "description": "Knowledge request with guidance needed",
                 "context_agent_override": False
             },
             "evaluation_request": {
-                "priority": 10,
+                "priority": 17,
                 "route": RouteType.MULTI_AGENT_COMPREHENSIVE,
                 "conditions": ["user_intent == 'evaluation_request'"],
                 "description": "Evaluation request - comprehensive analysis",
                 "context_agent_override": False
             },
             "creative_exploration": {
-                "priority": 11,
+                "priority": 18,
                 "route": RouteType.SOCRATIC_EXPLORATION,
                 "conditions": ["user_intent == 'creative_exploration'"],
                 "description": "Creative exploration - Socratic questioning",
                 "context_agent_override": False
             },
             "overconfident_user": {
-                "priority": 12,
+                "priority": 19,
                 "route": RouteType.COGNITIVE_CHALLENGE,
                 "conditions": ["confidence_level == 'overconfident'"],
                 "description": "Overconfident user - cognitive challenge",
                 "context_agent_override": False
             },
-            "confusion_expression": {
-                "priority": 13,
-                "route": RouteType.SUPPORTIVE_SCAFFOLDING,
-                "conditions": ["user_intent == 'confusion_expression'"],
-                "description": "Confusion expressed - supportive scaffolding",
-                "context_agent_override": False
-            },
-            "technical_question_high_understanding": {
-                "priority": 14,
-                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
-                "conditions": ["user_intent == 'technical_question'", "understanding_level == 'high'"],
-                "description": "Technical question with high understanding",
-                "context_agent_override": False
-            },
-            "technical_question_low_understanding": {
-                "priority": 15,
-                "route": RouteType.SOCRATIC_CLARIFICATION,
-                "conditions": ["user_intent == 'technical_question'", "understanding_level != 'high'"],
-                "description": "Technical question with low understanding",
-                "context_agent_override": False
-            },
             "context_agent_high_confidence": {
-                "priority": 16,
+                "priority": 20,
                 "route": None,  # Dynamic based on mapping
                 "conditions": ["context_agent_confidence > 0.7"],
                 "description": "Use context agent suggestion with high confidence",
                 "context_agent_override": False
             },
             "default_balanced": {
-                "priority": 17,
+                "priority": 21,
                 "route": RouteType.BALANCED_GUIDANCE,
                 "conditions": ["default"],
                 "description": "Default balanced guidance",
@@ -540,7 +568,45 @@ class AdvancedRoutingDecisionTree:
                 elif value.lower() == "false":
                     value = False
                 
-                return classification.get(field) == value
+                # Get the actual value from classification
+                actual_value = classification.get(field)
+                
+                # Handle user_intent field specifically
+                if field == "user_intent":
+                    actual_value = classification.get("user_intent") or classification.get("interaction_type", "")
+                
+                # Handle understanding_level field
+                if field == "understanding_level":
+                    actual_value = classification.get("understanding_level", "medium")
+                
+                # Handle engagement_level field
+                if field == "engagement_level":
+                    actual_value = classification.get("engagement_level", "medium")
+                
+                # Handle confidence_level field
+                if field == "confidence_level":
+                    actual_value = classification.get("confidence_level", "uncertain")
+                
+                # Handle is_pure_knowledge_request field
+                if field == "is_pure_knowledge_request":
+                    actual_value = classification.get("is_pure_knowledge_request", False)
+                
+                # Handle cognitive_offloading_detected field
+                if field == "cognitive_offloading_detected":
+                    actual_value = classification.get("cognitive_offloading_detected", False)
+                
+                # Handle is_first_message field
+                if field == "is_first_message":
+                    actual_value = classification.get("is_first_message", False)
+                
+                # Handle context_agent_confidence field
+                if field == "context_agent_confidence":
+                    actual_value = classification.get("context_agent_confidence", 0.0)
+                
+                # Debug logging for condition evaluation
+                logger.debug(f"Condition evaluation: {field} == {value} (actual: {actual_value})")
+                
+                return actual_value == value
             
             return False
             

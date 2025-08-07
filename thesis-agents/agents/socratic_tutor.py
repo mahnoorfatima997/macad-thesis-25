@@ -456,22 +456,24 @@ class SocraticTutorAgent:
         
         {context_info}
         
+        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
+        
         Generate a specific, helpful guidance response that:
         1. Directly addresses {focus_area} for {building_type} projects
-        2. Incorporates the specific details and context the student has shared
-        3. Asks 2-3 specific probing questions about {focus_area} that will guide the student's thinking
-        4. Mentions specific architectural considerations related to {focus_area} (e.g., user groups, spatial relationships, technical requirements)
-        5. Encourages the student to think about how {focus_area} affects other design elements
+        2. INCORPORATES AND REFERENCES ALL the specific details the student has shared (user groups, activities, motivations, challenges, etc.)
+        3. Asks 2-3 specific probing questions about {focus_area} that build on the student's specific context
+        4. Mentions specific architectural considerations related to {focus_area} that are relevant to the student's specific project
+        5. Encourages the student to think about how {focus_area} affects other design elements they've mentioned
         6. Uses architectural terminology and concepts specific to {focus_area}
         7. Keeps the response conversational but educationally focused
-        8. References the specific details the student mentioned (user groups, activities, motivations, etc.)
+        8. EXPLICITLY REFERENCES the specific details the student mentioned (user groups, activities, motivations, etc.)
         
-        Important: 
-        - Make the response specific to {focus_area}
-        - Incorporate the student's specific context and details
-        - If {focus_area} is "circulation", mention user groups, destinations, wayfinding, flow patterns, etc.
-        - If {focus_area} is "materials", mention durability, aesthetics, sustainability, cost, maintenance, etc.
-        - If {focus_area} is "layout", mention spatial organization, adjacencies, flexibility, etc.
+        IMPORTANT INSTRUCTIONS:
+        - Reference the student's specific user groups, activities, and requirements
+        - Address the specific challenges or opportunities they've mentioned
+        - Build upon their existing understanding and insights
+        - Make connections to their specific project context
+        - Do not provide generic advice - make it specific to their situation
         
         Response should be 3-4 sentences with 2-3 specific questions that build on what the student has shared.
         """
@@ -480,7 +482,7 @@ class SocraticTutorAgent:
             response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=300,
+                max_tokens=400,
                 temperature=0.7
             )
             return response.choices[0].message.content
@@ -513,14 +515,23 @@ class SocraticTutorAgent:
         
         {context_info}
         
+        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
+        
         Generate a specific, helpful guidance response that:
         1. Addresses {main_topic} in the context of {building_type}
-        2. Incorporates the specific details and context the student has shared
-        3. Asks probing questions to guide discovery
-        4. Encourages deep thinking about {main_topic}
+        2. INCORPORATES AND REFERENCES ALL the specific details and context the student has shared
+        3. Asks probing questions to guide discovery that build on their specific context
+        4. Encourages deep thinking about {main_topic} in relation to their specific project
         5. Is specific to {building_type} but not overly prescriptive
-        6. Helps the student think through the design challenges
-        7. References the specific details the student mentioned (user groups, activities, motivations, etc.)
+        6. Helps the student think through the design challenges they've mentioned
+        7. EXPLICITLY REFERENCES the specific details the student mentioned (user groups, activities, motivations, etc.)
+        
+        IMPORTANT INSTRUCTIONS:
+        - Reference the student's specific user groups, activities, and requirements
+        - Address the specific challenges or opportunities they've mentioned
+        - Build upon their existing understanding and insights
+        - Make connections to their specific project context
+        - Do not provide generic advice - make it specific to their situation
         
         Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers, but make sure to acknowledge and build upon the specific context the student has provided.
         """
@@ -529,7 +540,7 @@ class SocraticTutorAgent:
             response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=300,
+                max_tokens=400,
                 temperature=0.7
             )
             return response.choices[0].message.content
@@ -561,61 +572,56 @@ class SocraticTutorAgent:
         }
     
     def _get_supportive_architectural_guidance(self, topic: str, building_type: str, student_analysis: Dict) -> str:
-        """Get specific supportive guidance for architectural topics using LLM"""
+        """Generate supportive architectural guidance using LLM"""
         
         # Extract key context from student analysis
         context_info = ""
         if student_analysis:
             context_info = f"""
             STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            STUDENT CONTEXT: {student_analysis.get('last_message', 'No specific context available')}
             """
         
         # Use LLM to generate context-aware supportive guidance
         prompt = f"""
-        You are an expert architectural mentor helping a student design a {building_type}.
-        The student is asking about {topic} and needs supportive, encouraging guidance.
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {topic} and needs supportive guidance.
         
         {context_info}
         
-        Generate a supportive, encouraging response that:
-        1. Acknowledges the student's interest in {topic} and validates their question
-        2. Incorporates the specific details and context the student has shared
-        3. Provides positive reinforcement for their architectural thinking
-        4. Offers specific, helpful guidance about {topic} for {building_type} projects
-        5. Mentions 2-3 key architectural considerations related to {topic}
-        6. Encourages deeper exploration with 1-2 specific follow-up questions
-        7. References the specific details the student mentioned (user groups, activities, motivations, etc.)
-        8. Uses encouraging language while maintaining educational focus
+        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
         
-        Important: 
-        - Make the response specific to {topic}
-        - Incorporate the student's specific context and details
-        - If {topic} is "design", mention user groups, activities, spatial relationships, functional requirements
-        - If {topic} is "materials", mention durability, aesthetics, sustainability, performance
-        - If {topic} is "layout", mention adjacencies, flow, flexibility, user experience
+        Generate supportive, encouraging guidance that:
+        1. Acknowledges the student's understanding and progress
+        2. INCORPORATES AND REFERENCES ALL the specific details the student has shared
+        3. Provides gentle guidance on {topic} that builds on their existing knowledge
+        4. Encourages them to explore {topic} further in relation to their specific project
+        5. Offers specific suggestions that are relevant to their context
+        6. Maintains a supportive, encouraging tone
+        7. EXPLICITLY REFERENCES the specific details the student mentioned
         
-        Response should be 3-4 sentences with 1-2 encouraging questions that build on what the student has shared.
+        IMPORTANT INSTRUCTIONS:
+        - Reference the student's specific user groups, activities, and requirements
+        - Address the specific challenges or opportunities they've mentioned
+        - Build upon their existing understanding and insights
+        - Make connections to their specific project context
+        - Do not provide generic advice - make it specific to their situation
+        
+        Keep the response encouraging and supportive while being educationally valuable.
         """
         
         try:
             response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=300,
+                max_tokens=400,
                 temperature=0.7
             )
             return response.choices[0].message.content
         except Exception as e:
-            # Enhanced fallback with specific supportive guidance
-            if topic == "design":
-                return f"Excellent question about design! This is a key aspect of your {building_type} project. What user groups will be using the space, and what activities do you need to accommodate? How can you create spaces that serve multiple functions while maintaining clear purpose and flow?"
-            elif topic == "materials":
-                return f"Great focus on materials! This is crucial for your {building_type} project. What are the key performance requirements - durability, aesthetics, sustainability, or cost? How will your material choices reflect the building's purpose and create the desired user experience?"
-            elif topic == "layout":
-                return f"Smart thinking about layout! This is fundamental to your {building_type} project. What are the primary functional zones and how should they relate to each other? How can you balance open, flexible spaces with areas that need acoustic or visual separation?"
-            else:
-                return f"Excellent question about {topic}! This is a key aspect of your {building_type} project. What specific aspects of {topic} are you most interested in exploring? Let's break this down step by step."
-
+            # Enhanced fallback with specific guidance
+            return f"Great question about {topic} for your {building_type}! You're thinking about this in the right way. What specific aspects of {topic} are most important for your project's goals? How might {topic} interact with other design elements you're considering?"
+    
     async def _generate_challenging_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
         """Generate challenging questions that push architectural thinking deeper"""
         
@@ -640,40 +646,42 @@ class SocraticTutorAgent:
         }
     
     def _get_challenging_architectural_question(self, topic: str, building_type: str, student_analysis: Dict) -> str:
-        """Get specific challenging questions for architectural topics using LLM"""
+        """Generate challenging architectural question using LLM"""
         
         # Extract key context from student analysis
         context_info = ""
         if student_analysis:
             context_info = f"""
             STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            STUDENT CONTEXT: {student_analysis.get('last_message', 'No specific context available')}
             """
         
         # Use LLM to generate context-aware challenging questions
         prompt = f"""
-        You are an expert architectural mentor helping a student design a {building_type}.
-        The student is asking about {topic} and needs a challenging question to push their thinking deeper.
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {topic} and needs a challenging question to deepen their thinking.
         
         {context_info}
         
+        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
+        
         Generate a challenging, thought-provoking question that:
-        1. Addresses complex trade-offs in {topic} for {building_type} projects
-        2. Incorporates the specific details and context the student has shared
-        3. Pushes the student to think about competing requirements and constraints
-        4. Encourages deeper analysis of {topic} decisions and their implications
-        5. Challenges common assumptions about {topic} in architectural design
-        6. Helps the student consider long-term implications and user experience
-        7. References the specific details the student mentioned (user groups, activities, motivations, etc.)
-        8. Uses specific architectural terminology and concepts related to {topic}
+        1. Pushes the student to think deeper about {topic}
+        2. INCORPORATES AND REFERENCES ALL the specific details the student has shared
+        3. Challenges their assumptions or current understanding
+        4. Encourages them to consider {topic} from a new perspective
+        5. Is specific to their project context and challenges
+        6. Promotes critical thinking and analysis
+        7. EXPLICITLY REFERENCES the specific details the student mentioned
         
-        Important: 
-        - Make the question specific to {topic}
-        - Incorporate the student's specific context and details
-        - If {topic} is "layout", mention acoustic separation, visual connections, spatial flexibility, user flow
-        - If {topic} is "materials", mention durability vs. aesthetics, cost vs. performance, sustainability vs. maintenance
-        - If {topic} is "circulation", mention user groups, wayfinding, accessibility, spatial hierarchy
+        IMPORTANT INSTRUCTIONS:
+        - Reference the student's specific user groups, activities, and requirements
+        - Address the specific challenges or opportunities they've mentioned
+        - Build upon their existing understanding and insights
+        - Make connections to their specific project context
+        - Do not provide generic questions - make them specific to their situation
         
-        The question should be 1-2 sentences and push the student to think about competing priorities while building on what they've shared.
+        The question should be challenging but not overwhelming, and should help the student think more critically about {topic} in relation to their specific project.
         """
         
         try:
@@ -685,15 +693,8 @@ class SocraticTutorAgent:
             )
             return response.choices[0].message.content
         except Exception as e:
-            # Enhanced fallback with specific challenging questions
-            if topic == "layout":
-                return f"Your layout choices will shape the entire project. How will you balance open, flexible spaces with areas that need acoustic or visual separation? What happens when your ideal open plan conflicts with the need for private meeting spaces or quiet study areas?"
-            elif topic == "materials":
-                return f"Your material choices will shape the entire project. How will you balance durability, aesthetics, sustainability, and cost? What happens when your ideal material solution conflicts with budget constraints or maintenance requirements?"
-            elif topic == "circulation":
-                return f"Your circulation choices will shape the entire project. How will you balance clear wayfinding with the need for visual connections between spaces? What happens when your ideal flow patterns conflict with accessibility requirements or security needs?"
-            else:
-                return f"Your {topic} choices will shape the entire project. How will you make decisions that balance function, aesthetics, and long-term value? What happens when your ideal {topic} solution conflicts with other project requirements?"
+            # Enhanced fallback with specific challenging question
+            return f"Here's a challenging question about {topic} for your {building_type}: How might {topic} create conflicts or trade-offs with other design priorities you've mentioned? What would you prioritize if you had to make difficult choices about {topic}?"
     
     async def _generate_exploratory_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
         """Generate exploratory questions for students in exploration stage"""

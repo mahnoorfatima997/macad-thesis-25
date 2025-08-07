@@ -31,6 +31,51 @@ from orchestration.langgraph_orchestrator import LangGraphOrchestrator
 from data_collection.interaction_logger import InteractionLogger
 
 # Add this function after the imports and before the main functions
+def _calculate_phase_progress(conversation_progression):
+    """Calculate phase progress percentage from conversation progression data"""
+    try:
+        # Get current phase
+        current_phase = conversation_progression.get('current_phase', 'discovery')
+        
+        # Define phase sequence and their progress values
+        phase_sequence = ['discovery', 'exploration', 'synthesis', 'application', 'reflection']
+        phase_progress_values = {
+            'discovery': 20,
+            'exploration': 40,
+            'synthesis': 60,
+            'application': 80,
+            'reflection': 100
+        }
+        
+        # Get base progress for current phase
+        base_progress = phase_progress_values.get(current_phase, 0)
+        
+        # Get conversation summary for additional progress within phase
+        conversation_summary = conversation_progression.get('conversation_summary', {})
+        learning_progress = conversation_summary.get('learning_progress', {})
+        current_phase_progress = learning_progress.get('current_phase_progress', 0.5)
+        
+        # Calculate total progress
+        if current_phase in phase_sequence:
+            phase_index = phase_sequence.index(current_phase)
+            if phase_index > 0:
+                # Add progress from previous phases
+                previous_phase = phase_sequence[phase_index - 1]
+                base_progress = phase_progress_values[previous_phase]
+            
+            # Add progress within current phase (20% per phase)
+            phase_width = 20
+            within_phase_progress = current_phase_progress * phase_width
+            total_progress = base_progress + within_phase_progress
+        else:
+            total_progress = base_progress
+        
+        return min(total_progress, 100)
+        
+    except Exception as e:
+        print(f"Error calculating phase progress: {e}")
+        return 0
+
 def convert_agent_response_to_dict(agent_response):
     """Convert AgentResponse object to dictionary format for backward compatibility"""
     if hasattr(agent_response, 'response_text'):  # AgentResponse object
@@ -1520,8 +1565,9 @@ def main():
                 phase_analysis = safe_get_nested_dict(result, 'phase_analysis') or {}
                 
                 if conversation_progression:
-                    current_phase = conversation_progression.get('conversation_phase', 'unknown')
-                    phase_completion = conversation_progression.get('phase_progress', 0) * 100
+                    current_phase = conversation_progression.get('current_phase', 'unknown')
+                    # Calculate phase progress based on conversation progression
+                    phase_completion = self._calculate_phase_progress(conversation_progression)
                 else:
                     current_phase = phase_analysis.get('phase', 'unknown')
                     phase_completion = phase_analysis.get('progression_score', 0) * 100
@@ -1557,8 +1603,16 @@ def main():
             with col_metric2:
                 # Learning balance indicator
                 synthesis = safe_get_nested_dict(result, 'synthesis') or {}
-                challenges = len(synthesis.get('cognitive_challenges', []))
-                opportunities = len(synthesis.get('learning_opportunities', []))
+                conversation_progression = result.get('conversation_progression', {})
+                
+                # Use conversation progression data if available
+                if conversation_progression:
+                    conversation_summary = conversation_progression.get('conversation_summary', {})
+                    challenges = len(conversation_summary.get('challenges', []))
+                    opportunities = len(conversation_summary.get('opportunities', []))
+                else:
+                    challenges = len(synthesis.get('cognitive_challenges', []))
+                    opportunities = len(synthesis.get('learning_opportunities', []))
                 
                 # Calculate learning balance
                 if challenges + opportunities > 0:
@@ -1583,16 +1637,26 @@ def main():
             
             with col_metric3:
                 # Milestone progress - show meaningful information
-                completed_milestones = phase_analysis.get('completed_milestones', 0)
-                total_milestones = phase_analysis.get('total_milestones', 0)
+                conversation_progression = result.get('conversation_progression', {})
+                phase_analysis = safe_get_nested_dict(result, 'phase_analysis') or {}
+                
+                if conversation_progression:
+                    conversation_summary = conversation_progression.get('conversation_summary', {})
+                    learning_progress = conversation_summary.get('learning_progress', {})
+                    completed_milestones = len(conversation_progression.get('milestones', []))
+                    total_milestones = 5  # Total phases in conversation progression
+                    milestone_progress = (completed_milestones / total_milestones) * 100 if total_milestones > 0 else 0
+                else:
+                    completed_milestones = phase_analysis.get('completed_milestones', 0)
+                    total_milestones = phase_analysis.get('total_milestones', 0)
+                    milestone_progress = (completed_milestones / total_milestones) * 100 if total_milestones > 0 else 0
                 
                 if total_milestones > 0:
                     if completed_milestones > 0:
-                        milestone_progress = (completed_milestones / total_milestones) * 100
                         # Custom metric display with smaller text
                         st.markdown(f"""
                             <div style='text-align: center;'>
-                                <h5 style='margin-bottom: 0.2rem;'>Milestone Progress</h5>
+                                <h5 style='margin-bottom: 0.2rem;'>Phase Progress</h5>
                                 <p style='font-size: 1rem; margin: 0;'>{completed_milestones}/{total_milestones}</p>
                                 <p style='font-size: 0.8rem; color: gray;'>{milestone_progress:.0f}%</p>
                             </div>
@@ -1643,16 +1707,28 @@ def main():
                     """, unsafe_allow_html=True)
             
             with col_metric4:
-                # Project complexity indicator
-                building_type = safe_get_nested_dict(result, 'text_analysis', 'building_type') or 'unknown'
-                if building_type and building_type != 'unknown':
+                # Project type and complexity
+                conversation_progression = result.get('conversation_progression', {})
+                analysis_result = safe_get_nested_dict(result, 'analysis_result') or {}
+                
+                # Use conversation progression data if available
+                if conversation_progression:
+                    conversation_summary = conversation_progression.get('conversation_summary', {})
+                    project_context = conversation_summary.get('project_context', {})
+                    building_type = project_context.get('building_type', 'Unknown')
+                    complexity_level = project_context.get('complexity_level', 'moderate')
+                else:
+                    building_type = analysis_result.get('building_type', 'Unknown')
+                    complexity_level = analysis_result.get('complexity_level', 'moderate')
+                
+                if building_type and building_type != 'Unknown':
+                    # Format building type for display
                     formatted_type = building_type.replace('_', ' ').title()
                     
-                    # Add project complexity indicator
-                    requirements = safe_get_nested_dict(result, 'text_analysis', 'program_requirements') or []
-                    if len(requirements) > 8:
+                    # Determine complexity indicator
+                    if complexity_level in ['high', 'complex', 'advanced']:
                         complexity = "🔴 Complex"
-                    elif len(requirements) > 4:
+                    elif complexity_level in ['medium', 'moderate', 'intermediate']:
                         complexity = "🟡 Moderate"
                     else:
                         complexity = "🟢 Simple"
