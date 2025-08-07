@@ -17,6 +17,7 @@ load_dotenv()
 class SocraticTutorAgent:
     def __init__(self, domain="architecture"):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.llm = self.client.chat.completions  # Fix LLM reference
         self.domain = domain
         self.name = "socratic_tutor"
         print(f"🤔 {self.name} initialized for domain: {domain}")
@@ -46,6 +47,9 @@ class SocraticTutorAgent:
         student_analysis = self._analyze_student_state(state, analysis_result, context_classification)
         conversation_progression = self._analyze_conversation_progression(state, last_message)
         student_insights = self._extract_student_insights(state, last_message)
+        
+        # Merge student insights into student analysis for context-aware responses
+        student_analysis.update(student_insights)
         
         # 3107-BELOW LINE: Check if we have domain expert results (examples) to ask questions about
         # 0108 added before: has_examples = domain_expert_result and domain_expert_result.get("response_text", "")Only consider it has examples if it's not a cognitive protection response
@@ -421,9 +425,9 @@ class SocraticTutorAgent:
         
         # Generate specific architectural guidance based on the topic
         if user_specified_focus:
-            response_text = self._generate_specific_architectural_guidance(user_specified_focus, building_type, main_topic)
+            response_text = self._generate_specific_architectural_guidance(user_specified_focus, building_type, main_topic, student_analysis, last_message)
         else:
-            response_text = await self._generate_topic_specific_guidance(main_topic, building_type, last_message)
+            response_text = await self._generate_topic_specific_guidance(main_topic, building_type, last_message, student_analysis)
         
         return {
             "agent": self.name,
@@ -434,52 +438,101 @@ class SocraticTutorAgent:
             "conversation_progression": conversation_progression
         }
     
-    def _generate_specific_architectural_guidance(self, focus_area: str, building_type: str, main_topic: str) -> str:
+    def _generate_specific_architectural_guidance(self, focus_area: str, building_type: str, main_topic: str, student_analysis: Dict = None, last_message: str = "") -> str:
         """Generate specific architectural guidance using LLM for any building type"""
+        
+        # Extract key context from student analysis and last message
+        context_info = ""
+        if student_analysis and last_message:
+            context_info = f"""
+            STUDENT CONTEXT: {last_message}
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            """
         
         # Use LLM to generate context-aware guidance instead of hardcoded templates
         prompt = f"""
-        You are an architectural mentor helping a student design a {building_type}.
+        You are an expert architectural mentor helping a student design a {building_type}.
         The student is asking about {focus_area} in the context of {main_topic}.
         
-        Generate a specific, helpful guidance response that:
-        1. Addresses the specific {focus_area} for {building_type}
-        2. Asks probing questions to guide discovery
-        3. Encourages deep thinking about the relationship between {focus_area} and {main_topic}
-        4. Is specific to {building_type} but not overly prescriptive
-        5. Helps the student think through the design challenges
+        {context_info}
         
-        Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers.
+        Generate a specific, helpful guidance response that:
+        1. Directly addresses {focus_area} for {building_type} projects
+        2. Incorporates the specific details and context the student has shared
+        3. Asks 2-3 specific probing questions about {focus_area} that will guide the student's thinking
+        4. Mentions specific architectural considerations related to {focus_area} (e.g., user groups, spatial relationships, technical requirements)
+        5. Encourages the student to think about how {focus_area} affects other design elements
+        6. Uses architectural terminology and concepts specific to {focus_area}
+        7. Keeps the response conversational but educationally focused
+        8. References the specific details the student mentioned (user groups, activities, motivations, etc.)
+        
+        Important: 
+        - Make the response specific to {focus_area}
+        - Incorporate the student's specific context and details
+        - If {focus_area} is "circulation", mention user groups, destinations, wayfinding, flow patterns, etc.
+        - If {focus_area} is "materials", mention durability, aesthetics, sustainability, cost, maintenance, etc.
+        - If {focus_area} is "layout", mention spatial organization, adjacencies, flexibility, etc.
+        
+        Response should be 3-4 sentences with 2-3 specific questions that build on what the student has shared.
         """
         
         try:
-            response = self.llm.invoke(prompt)
-            return response.content
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            # Fallback to generic guidance if LLM fails
-            return f"Let's focus on {focus_area} for your {building_type}. What specific challenges or opportunities do you see in this area? How does it relate to your overall design goals?"
+            # Enhanced fallback with specific guidance
+            if focus_area == "circulation":
+                return f"Let's focus on circulation for your {building_type}. What user groups will be moving through the space, and what are their primary destinations? How can you create clear pathways that serve different user needs while maintaining visual connections between spaces?"
+            elif focus_area == "materials":
+                return f"Let's explore material choices for your {building_type}. What are the key performance requirements - durability, aesthetics, sustainability, or cost? How will your material selections reflect the building's purpose and create the desired user experience?"
+            elif focus_area == "layout":
+                return f"Let's examine the layout for your {building_type}. What are the primary functional zones and how should they relate to each other? How can you balance open, flexible spaces with areas that need acoustic or visual separation?"
+            else:
+                return f"Let's focus on {focus_area} for your {building_type}. What specific challenges or opportunities do you see in this area? How does it relate to your overall design goals?"
     
-    async def _generate_topic_specific_guidance(self, main_topic: str, building_type: str, last_message: str) -> str:
+    async def _generate_topic_specific_guidance(self, main_topic: str, building_type: str, last_message: str, student_analysis: Dict = None) -> str:
         """Generate topic-specific architectural guidance using LLM"""
+        
+        # Extract key context from student analysis and last message
+        context_info = ""
+        if student_analysis and last_message:
+            context_info = f"""
+            STUDENT CONTEXT: {last_message}
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            """
         
         # Use LLM to generate context-aware guidance
         prompt = f"""
         You are an architectural mentor helping a student design a {building_type}.
         The student is asking about {main_topic}.
         
+        {context_info}
+        
         Generate a specific, helpful guidance response that:
         1. Addresses {main_topic} in the context of {building_type}
-        2. Asks probing questions to guide discovery
-        3. Encourages deep thinking about {main_topic}
-        4. Is specific to {building_type} but not overly prescriptive
-        5. Helps the student think through the design challenges
+        2. Incorporates the specific details and context the student has shared
+        3. Asks probing questions to guide discovery
+        4. Encourages deep thinking about {main_topic}
+        5. Is specific to {building_type} but not overly prescriptive
+        6. Helps the student think through the design challenges
+        7. References the specific details the student mentioned (user groups, activities, motivations, etc.)
         
-        Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers.
+        Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers, but make sure to acknowledge and build upon the specific context the student has provided.
         """
         
         try:
-            response = self.llm.invoke(prompt)
-            return response.content
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
         except Exception as e:
             # Fallback to generic guidance if LLM fails
             return f"Let's explore {main_topic} for your {building_type}. What specific aspects of {main_topic} are most important for your project? How does it relate to your overall design goals?"
@@ -510,27 +563,58 @@ class SocraticTutorAgent:
     def _get_supportive_architectural_guidance(self, topic: str, building_type: str, student_analysis: Dict) -> str:
         """Get specific supportive guidance for architectural topics using LLM"""
         
+        # Extract key context from student analysis
+        context_info = ""
+        if student_analysis:
+            context_info = f"""
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            """
+        
         # Use LLM to generate context-aware supportive guidance
         prompt = f"""
-        You are an architectural mentor helping a student design a {building_type}.
+        You are an expert architectural mentor helping a student design a {building_type}.
         The student is asking about {topic} and needs supportive, encouraging guidance.
         
-        Generate a supportive, encouraging response that:
-        1. Acknowledges the student's interest in {topic}
-        2. Provides positive reinforcement for their thinking
-        3. Offers helpful guidance specific to {building_type}
-        4. Encourages deeper exploration of {topic}
-        5. Maintains an encouraging, educational tone
+        {context_info}
         
-        Keep the response conversational and supportive. Focus on building confidence while guiding learning.
+        Generate a supportive, encouraging response that:
+        1. Acknowledges the student's interest in {topic} and validates their question
+        2. Incorporates the specific details and context the student has shared
+        3. Provides positive reinforcement for their architectural thinking
+        4. Offers specific, helpful guidance about {topic} for {building_type} projects
+        5. Mentions 2-3 key architectural considerations related to {topic}
+        6. Encourages deeper exploration with 1-2 specific follow-up questions
+        7. References the specific details the student mentioned (user groups, activities, motivations, etc.)
+        8. Uses encouraging language while maintaining educational focus
+        
+        Important: 
+        - Make the response specific to {topic}
+        - Incorporate the student's specific context and details
+        - If {topic} is "design", mention user groups, activities, spatial relationships, functional requirements
+        - If {topic} is "materials", mention durability, aesthetics, sustainability, performance
+        - If {topic} is "layout", mention adjacencies, flow, flexibility, user experience
+        
+        Response should be 3-4 sentences with 1-2 encouraging questions that build on what the student has shared.
         """
         
         try:
-            response = self.llm.invoke(prompt)
-            return response.content
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            # Fallback to generic supportive guidance if LLM fails
-            return f"Excellent question about {topic}! This is a key aspect of your {building_type} project. What specific aspects of {topic} are you most interested in exploring? Let's break this down step by step."
+            # Enhanced fallback with specific supportive guidance
+            if topic == "design":
+                return f"Excellent question about design! This is a key aspect of your {building_type} project. What user groups will be using the space, and what activities do you need to accommodate? How can you create spaces that serve multiple functions while maintaining clear purpose and flow?"
+            elif topic == "materials":
+                return f"Great focus on materials! This is crucial for your {building_type} project. What are the key performance requirements - durability, aesthetics, sustainability, or cost? How will your material choices reflect the building's purpose and create the desired user experience?"
+            elif topic == "layout":
+                return f"Smart thinking about layout! This is fundamental to your {building_type} project. What are the primary functional zones and how should they relate to each other? How can you balance open, flexible spaces with areas that need acoustic or visual separation?"
+            else:
+                return f"Excellent question about {topic}! This is a key aspect of your {building_type} project. What specific aspects of {topic} are you most interested in exploring? Let's break this down step by step."
 
     async def _generate_challenging_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
         """Generate challenging questions that push architectural thinking deeper"""
@@ -558,28 +642,58 @@ class SocraticTutorAgent:
     def _get_challenging_architectural_question(self, topic: str, building_type: str, student_analysis: Dict) -> str:
         """Get specific challenging questions for architectural topics using LLM"""
         
+        # Extract key context from student analysis
+        context_info = ""
+        if student_analysis:
+            context_info = f"""
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            """
+        
         # Use LLM to generate context-aware challenging questions
         prompt = f"""
-        You are an architectural mentor helping a student design a {building_type}.
+        You are an expert architectural mentor helping a student design a {building_type}.
         The student is asking about {topic} and needs a challenging question to push their thinking deeper.
         
-        Generate a challenging, thought-provoking question that:
-        1. Addresses complex trade-offs in {topic} for {building_type}
-        2. Pushes the student to think about competing requirements
-        3. Encourages deeper analysis of {topic} decisions
-        4. Challenges assumptions about {topic}
-        5. Helps the student consider long-term implications
+        {context_info}
         
-        Make the question specific to {building_type} but applicable to architectural thinking in general.
-        Keep it challenging but not overwhelming.
+        Generate a challenging, thought-provoking question that:
+        1. Addresses complex trade-offs in {topic} for {building_type} projects
+        2. Incorporates the specific details and context the student has shared
+        3. Pushes the student to think about competing requirements and constraints
+        4. Encourages deeper analysis of {topic} decisions and their implications
+        5. Challenges common assumptions about {topic} in architectural design
+        6. Helps the student consider long-term implications and user experience
+        7. References the specific details the student mentioned (user groups, activities, motivations, etc.)
+        8. Uses specific architectural terminology and concepts related to {topic}
+        
+        Important: 
+        - Make the question specific to {topic}
+        - Incorporate the student's specific context and details
+        - If {topic} is "layout", mention acoustic separation, visual connections, spatial flexibility, user flow
+        - If {topic} is "materials", mention durability vs. aesthetics, cost vs. performance, sustainability vs. maintenance
+        - If {topic} is "circulation", mention user groups, wayfinding, accessibility, spatial hierarchy
+        
+        The question should be 1-2 sentences and push the student to think about competing priorities while building on what they've shared.
         """
         
         try:
-            response = self.llm.invoke(prompt)
-            return response.content
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            # Fallback to generic challenging question if LLM fails
-            return f"Your {topic} choices will shape the entire project. How will you make decisions that balance function, aesthetics, and long-term value? What happens when your ideal {topic} solution conflicts with other project requirements?"
+            # Enhanced fallback with specific challenging questions
+            if topic == "layout":
+                return f"Your layout choices will shape the entire project. How will you balance open, flexible spaces with areas that need acoustic or visual separation? What happens when your ideal open plan conflicts with the need for private meeting spaces or quiet study areas?"
+            elif topic == "materials":
+                return f"Your material choices will shape the entire project. How will you balance durability, aesthetics, sustainability, and cost? What happens when your ideal material solution conflicts with budget constraints or maintenance requirements?"
+            elif topic == "circulation":
+                return f"Your circulation choices will shape the entire project. How will you balance clear wayfinding with the need for visual connections between spaces? What happens when your ideal flow patterns conflict with accessibility requirements or security needs?"
+            else:
+                return f"Your {topic} choices will shape the entire project. How will you make decisions that balance function, aesthetics, and long-term value? What happens when your ideal {topic} solution conflicts with other project requirements?"
     
     async def _generate_exploratory_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
         """Generate exploratory questions for students in exploration stage"""
@@ -604,7 +718,12 @@ class SocraticTutorAgent:
         """
         
         try:
-            response = self.llm.invoke(prompt)
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
             exploratory_question = response.content.strip()
             
             if not exploratory_question.endswith('?'):
@@ -641,7 +760,12 @@ class SocraticTutorAgent:
         """
         
         try:
-            response = self.llm.invoke(prompt)
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
             adaptive_question = response.content.strip()
             
             if not adaptive_question.endswith('?'):
@@ -915,27 +1039,79 @@ I sense you might be scratching the surface of this problem. Let's explore the l
         return "project"
     
     def _extract_main_topic(self, last_message: str) -> str:
-        """Extract the main architectural topic the user is asking about"""
+        """Extract the main architectural topic the user is asking about with enhanced pattern matching"""
         message_lower = last_message.lower()
         
-        # Common architectural topics - this is just for context, not hardcoding responses
-        architectural_topics = [
-            "adaptive reuse", "sustainability", "lighting", "acoustics", "circulation", 
-            "materials", "structure", "accessibility", "energy efficiency", "ventilation",
-            "thermal comfort", "daylighting", "spatial organization", "programming",
-            "site planning", "landscape", "interior design", "facade design", "construction",
-            "building codes", "fire safety", "mechanical systems", "electrical systems",
-            "plumbing", "roofing", "foundations", "seismic design", "wind loads",
-            "architectural history", "urban design", "placemaking", "community engagement"
-        ]
+        # Enhanced architectural topics with variations and related terms
+        topic_patterns = {
+            "circulation": ["circulation", "flow", "movement", "pathways", "routes", "wayfinding"],
+            "materials": ["materials", "material", "material choices", "material selection", "building materials"],
+            "layout": ["layout", "planning", "spatial arrangement", "floor plan", "space planning"],
+            "design": ["design", "design approach", "design process", "design strategy"],
+            "lighting": ["lighting", "light", "illumination", "daylighting", "natural light"],
+            "acoustics": ["acoustics", "acoustic", "sound", "noise", "audio"],
+            "structure": ["structure", "structural", "framing", "support", "load bearing"],
+            "accessibility": ["accessibility", "accessible", "universal design", "ada", "inclusive"],
+            "sustainability": ["sustainability", "sustainable", "green", "environmental", "eco-friendly"],
+            "energy efficiency": ["energy efficiency", "energy", "efficiency", "thermal", "heating", "cooling"],
+            "ventilation": ["ventilation", "air", "airflow", "fresh air", "mechanical ventilation"],
+            "thermal comfort": ["thermal comfort", "comfort", "temperature", "climate control"],
+            "spatial organization": ["spatial organization", "spatial", "organization", "arrangement"],
+            "programming": ["programming", "program", "function", "use", "activities"],
+            "site planning": ["site planning", "site", "landscape", "exterior", "outdoor"],
+            "interior design": ["interior design", "interior", "furnishings", "furniture"],
+            "facade design": ["facade design", "facade", "exterior", "envelope", "cladding"],
+            "construction": ["construction", "building", "assembly", "installation"],
+            "building codes": ["building codes", "codes", "regulations", "compliance", "standards"],
+            "fire safety": ["fire safety", "fire", "safety", "emergency", "egress"],
+            "mechanical systems": ["mechanical systems", "mechanical", "hvac", "plumbing"],
+            "electrical systems": ["electrical systems", "electrical", "power", "lighting systems"],
+            "plumbing": ["plumbing", "water", "sanitary", "bathrooms", "kitchens"],
+            "roofing": ["roofing", "roof", "waterproofing", "drainage"],
+            "foundations": ["foundations", "foundation", "footings", "substructure"],
+            "adaptive reuse": ["adaptive reuse", "reuse", "renovation", "conversion", "existing building"],
+            "architectural history": ["architectural history", "history", "heritage", "preservation"],
+            "urban design": ["urban design", "urban", "city", "public space", "street"],
+            "placemaking": ["placemaking", "place", "community", "public realm"],
+            "community engagement": ["community engagement", "community", "public", "stakeholders"]
+        }
         
-        # Find the most relevant topic mentioned
-        for topic in architectural_topics:
-            if topic in message_lower:
-                return topic
+        # Find the most relevant topic mentioned using pattern matching
+        for topic, patterns in topic_patterns.items():
+            for pattern in patterns:
+                if pattern in message_lower:
+                    return topic
+        
+        # Enhanced context extraction for common architectural terms
+        words = message_lower.split()
+        
+        # Look for architectural terms that might not be in the main list
+        architectural_terms = {
+            "approach": "design",
+            "choices": "materials", 
+            "flow": "circulation",
+            "plan": "layout",
+            "arrangement": "spatial organization",
+            "function": "programming",
+            "use": "programming",
+            "activities": "programming",
+            "comfort": "thermal comfort",
+            "efficiency": "energy efficiency",
+            "safety": "fire safety",
+            "systems": "mechanical systems",
+            "structure": "structure",
+            "materials": "materials",
+            "lighting": "lighting",
+            "acoustics": "acoustics",
+            "accessibility": "accessibility",
+            "sustainability": "sustainability"
+        }
+        
+        for word in words:
+            if word in architectural_terms:
+                return architectural_terms[word]
         
         # If no specific topic found, extract from context
-        words = message_lower.split()
         if "principles" in words:
             # Look for the word before "principles"
             for i, word in enumerate(words):
