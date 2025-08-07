@@ -193,40 +193,29 @@ def analyze_conversation_context_for_search(state: ArchMentorState) -> Dict[str,
 
 def generate_context_aware_search_query(topic: str, context: Dict[str, Any]) -> str:
     """
-    Generate a context-aware search query based on the conversation context.
+    Generate a simplified, effective context-aware search query.
     """
-    # Base query components
-    base_query = topic
+    # Start with the main topic
+    base_query = topic.strip()
     
-    # Add building type context
-    if context["building_type"] != "general":
-        base_query += f" {context['building_type']}"
+    # Add building type context if available and relevant
+    if context.get("building_type") and context["building_type"] != "general":
+        building_type = context["building_type"].replace("_", " ")
+        base_query += f" {building_type}"
     
-    # Add specific elements
-    if context["specific_elements"]:
-        elements_str = " ".join(context["specific_elements"][:3])  # Limit to 3 elements
-        base_query += f" {elements_str}"
+    # Add a few key architectural sources (limit to 3 for better results)
+    key_sources = ["site:dezeen.com", "site:archdaily.com", "site:archello.com"]
+    sources_str = " OR ".join(key_sources)
     
-    # Add user needs
-    if context["user_needs"]:
-        needs_str = " ".join(context["user_needs"])
-        base_query += f" {needs_str}"
-    
-    # Add design phase context
-    if context["design_phase"] != "ideation":
-        base_query += f" {context['design_phase']} phase"
-    
-    # Add architectural sources
-    sources_str = " OR ".join(ARCHITECTURAL_SOURCES[:8])  # Limit to 8 sources
-    
-    # Add search modifiers
-    modifiers = get_search_query_modifiers(topic)
-    
-    # Construct final query
+    # Create a focused query
     if "example" in topic.lower() or "project" in topic.lower() or "case study" in topic.lower():
-        search_query = f'"{base_query}" {sources_str} projects examples case studies built works completed {modifiers["include"]} {modifiers["exclude"]}'
+        search_query = f'"{base_query}" {sources_str}'
     else:
-        search_query = f'"{base_query}" {sources_str} design principles best practices guidelines {modifiers["include"]} {modifiers["exclude"]}'
+        search_query = f'"{base_query}" architecture {sources_str}'
+    
+    # Limit query length to avoid overwhelming search engines
+    if len(search_query) > 200:
+        search_query = search_query[:200]
     
     return search_query
 

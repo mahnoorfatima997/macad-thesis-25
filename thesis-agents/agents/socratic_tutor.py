@@ -48,6 +48,18 @@ class SocraticTutorAgent:
         conversation_progression = self._analyze_conversation_progression(state, last_message)
         student_insights = self._extract_student_insights(state, last_message)
         
+        # 0708-MILESTONE-DRIVEN ANALYSIS
+        # Check if we have milestone context from the orchestrator
+        milestone_context = analysis_result.get("milestone_context", {})
+        if milestone_context:
+            print(f"🎯 Milestone Context: {milestone_context.get('milestone_type', 'None')} in {milestone_context.get('phase', 'None')} phase")
+            print(f"🎯 Required Actions: {milestone_context.get('required_actions', [])}")
+            print(f"🎯 Success Criteria: {milestone_context.get('success_criteria', [])}")
+            
+            # Add milestone information to student analysis
+            student_analysis["milestone_context"] = milestone_context
+            student_analysis["milestone_guidance"] = milestone_context.get("agent_guidance", {})
+        
         # Merge student insights into student analysis for context-aware responses
         student_analysis.update(student_insights)
         
@@ -57,13 +69,31 @@ class SocraticTutorAgent:
                        domain_expert_result.get("response_text", "") and 
                        domain_expert_result.get("response_type") != "cognitive_protection_response")
         
-        # Determine response strategy based on analysis
+        # Determine response strategy based on analysis and milestone context
         response_strategy = self._determine_response_strategy(student_analysis, conversation_progression)
+        
+        # 0708-MILESTONE-AWARE STRATEGY ADJUSTMENT
+        if milestone_context:
+            milestone_type = milestone_context.get("milestone_type", "")
+            if milestone_type == "knowledge_acquisition":
+                response_strategy = "supportive_guidance"  # Focus on knowledge building
+            elif milestone_type == "skill_demonstration":
+                response_strategy = "challenging_question"  # Focus on application
+            elif milestone_type == "insight_formation":
+                response_strategy = "exploratory_question"  # Focus on connections
+            elif milestone_type == "problem_solving":
+                response_strategy = "assumption_challenge"  # Focus on critical thinking
+            elif milestone_type == "reflection_point":
+                response_strategy = "depth_promotion"  # Focus on evaluation
+            elif milestone_type == "readiness_assessment":
+                response_strategy = "clarifying_guidance"  # Focus on assessment
         
         print(f"📊 Student Analysis: {student_analysis}")
         print(f"🔄 Conversation Stage: {conversation_progression['stage']}")
         print(f"💡 Student Insights: {student_insights['key_insights']}")
         print(f"🎯 Response Strategy: {response_strategy}")
+        if milestone_context:
+            print(f"🎯 Milestone Strategy: {milestone_context.get('milestone_type', 'None')} -> {response_strategy}")
         
         # 0208 UPDATED: For early conversations, use enhanced clarifying guidance
         if is_early_conversation and not has_examples:
@@ -335,23 +365,32 @@ class SocraticTutorAgent:
         }
     
     def _extract_student_insights(self, state: ArchMentorState, current_message: str) -> Dict[str, Any]:
-        """Extract key insights from student's responses"""
+        """Extract key insights from student's responses with better conversation context understanding"""
         
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
         
-        # Use AI to extract insights
+        # Get the last few messages for context
+        recent_messages = user_messages[-3:] if len(user_messages) >= 3 else user_messages
+        
+        # Use AI to extract insights with conversation context awareness
         prompt = f"""
         Analyze these architecture student messages and extract key insights about their understanding and approach:
         
-        MESSAGES: {user_messages}
+        RECENT MESSAGES: {recent_messages}
         CURRENT MESSAGE: "{current_message}"
         
+        IMPORTANT: This is a conversation - the student is responding to previous questions/guidance. Do not treat their message as a new topic.
+        
         Extract:
-        1. Key insights about their design thinking
-        2. Areas where they show understanding
-        3. Potential misconceptions or gaps
+        1. Key insights about their design thinking and understanding
+        2. Areas where they show understanding or progress
+        3. Potential misconceptions or gaps in understanding
         4. Their design priorities and values
         5. Learning style indicators
+        6. Whether they're responding to previous guidance or asking something new
+        7. Specific details they've shared about their project (user groups, activities, challenges, etc.)
+        
+        Focus on understanding their current level of understanding and what they need next, not repeating what they said.
         
         Return as a structured analysis.
         """
@@ -369,7 +408,9 @@ class SocraticTutorAgent:
             return {
                 "key_insights": insights_analysis,
                 "message_count": len(user_messages),
-                "current_focus": self._identify_current_focus(current_message)
+                "current_focus": self._identify_current_focus(current_message),
+                "last_message": current_message,  # Add this for context in other methods
+                "is_conversation_response": len(user_messages) > 1  # Flag if this is a response to previous guidance
             }
             
         except Exception as e:
@@ -377,11 +418,21 @@ class SocraticTutorAgent:
             return {
                 "key_insights": "Unable to extract insights",
                 "message_count": len(user_messages),
-                "current_focus": "general inquiry"
+                "current_focus": "general inquiry",
+                "last_message": current_message,
+                "is_conversation_response": len(user_messages) > 1
             }
     
     def _determine_response_strategy(self, student_analysis: Dict, conversation_progression: Dict) -> str:
-        """Enhanced response strategy determination with cognitive protection focus"""
+        """Enhanced response strategy determination with better handling of detailed project briefs"""
+        
+        # Check if this is a detailed project brief (long message with comprehensive information)
+        last_message = student_analysis.get("last_message", "")
+        message_length = len(last_message.split())
+        
+        # If it's a detailed project brief (long message), use supportive guidance with focused questions
+        if message_length > 100:  # Comprehensive project brief
+            return "supportive_guidance"  # Acknowledge the detailed information and ask focused follow-ups
         
         # COGNITIVE OFFLOADING PROTECTION
         if student_analysis.get("shows_overconfidence") and student_analysis.get("engagement_level") == "low":
@@ -417,17 +468,25 @@ class SocraticTutorAgent:
                 last_message = msg['content']
                 break
         
-        # Extract the main topic the user is asking about
-        main_topic = self._extract_main_topic(last_message)
+        # Check if this is a detailed project brief
+        message_length = len(last_message.split())
+        is_detailed_brief = message_length > 100
         
-        # Check if user has already specified a focus area within that topic
-        user_specified_focus = self._extract_user_specified_focus(last_message)
-        
-        # Generate specific architectural guidance based on the topic
-        if user_specified_focus:
-            response_text = self._generate_specific_architectural_guidance(user_specified_focus, building_type, main_topic, student_analysis, last_message)
+        if is_detailed_brief:
+            # For detailed project briefs, provide concise acknowledgment and focused follow-up
+            response_text = self._get_supportive_architectural_guidance("project_brief", building_type, student_analysis)
         else:
-            response_text = await self._generate_topic_specific_guidance(main_topic, building_type, last_message, student_analysis)
+            # Extract the main topic the user is asking about
+            main_topic = self._extract_main_topic(last_message)
+            
+            # Check if user has already specified a focus area within that topic
+            user_specified_focus = self._extract_user_specified_focus(last_message)
+            
+            # Generate specific architectural guidance based on the topic
+            if user_specified_focus:
+                response_text = self._generate_specific_architectural_guidance(user_specified_focus, building_type, main_topic, student_analysis, last_message)
+            else:
+                response_text = await self._generate_topic_specific_guidance(main_topic, building_type, last_message, student_analysis)
         
         return {
             "agent": self.name,
@@ -458,10 +517,10 @@ class SocraticTutorAgent:
         
         CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
         
-        Generate a specific, helpful guidance response that:
+        Generate a CONCISE, helpful guidance response that:
         1. Directly addresses {focus_area} for {building_type} projects
         2. INCORPORATES AND REFERENCES ALL the specific details the student has shared (user groups, activities, motivations, challenges, etc.)
-        3. Asks 2-3 specific probing questions about {focus_area} that build on the student's specific context
+        3. Asks 1-2 specific probing questions about {focus_area} that build on the student's specific context
         4. Mentions specific architectural considerations related to {focus_area} that are relevant to the student's specific project
         5. Encourages the student to think about how {focus_area} affects other design elements they've mentioned
         6. Uses architectural terminology and concepts specific to {focus_area}
@@ -474,15 +533,17 @@ class SocraticTutorAgent:
         - Build upon their existing understanding and insights
         - Make connections to their specific project context
         - Do not provide generic advice - make it specific to their situation
+        - KEEP RESPONSE SHORT AND FOCUSED (2-3 sentences + 1-2 questions)
+        - Do not repeat what the student said - build on it
         
-        Response should be 3-4 sentences with 2-3 specific questions that build on what the student has shared.
+        Response should be 2-3 sentences with 1-2 specific questions that build on what the student has shared.
         """
         
         try:
             response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,
+                max_tokens=200,  # Reduced from 400
                 temperature=0.7
             )
             return response.choices[0].message.content
@@ -517,10 +578,10 @@ class SocraticTutorAgent:
         
         CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
         
-        Generate a specific, helpful guidance response that:
+        Generate a CONCISE, helpful guidance response that:
         1. Addresses {main_topic} in the context of {building_type}
         2. INCORPORATES AND REFERENCES ALL the specific details and context the student has shared
-        3. Asks probing questions to guide discovery that build on their specific context
+        3. Asks 1-2 probing questions to guide discovery that build on their specific context
         4. Encourages deep thinking about {main_topic} in relation to their specific project
         5. Is specific to {building_type} but not overly prescriptive
         6. Helps the student think through the design challenges they've mentioned
@@ -532,6 +593,9 @@ class SocraticTutorAgent:
         - Build upon their existing understanding and insights
         - Make connections to their specific project context
         - Do not provide generic advice - make it specific to their situation
+        - KEEP RESPONSE SHORT AND FOCUSED (2-3 sentences + 1-2 questions)
+        - Do not repeat what the student said - build on it
+        - Understand this is a conversation - respond to their specific question/comment
         
         Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers, but make sure to acknowledge and build upon the specific context the student has provided.
         """
@@ -540,7 +604,7 @@ class SocraticTutorAgent:
             response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,
+                max_tokens=200,  # Reduced from 400
                 temperature=0.7
             )
             return response.choices[0].message.content
@@ -572,7 +636,7 @@ class SocraticTutorAgent:
         }
     
     def _get_supportive_architectural_guidance(self, topic: str, building_type: str, student_analysis: Dict) -> str:
-        """Generate supportive architectural guidance using LLM"""
+        """Generate supportive architectural guidance using LLM with milestone awareness"""
         
         # Extract key context from student analysis
         context_info = ""
@@ -582,45 +646,90 @@ class SocraticTutorAgent:
             STUDENT CONTEXT: {student_analysis.get('last_message', 'No specific context available')}
             """
         
-        # Use LLM to generate context-aware supportive guidance
-        prompt = f"""
-        You are an architectural mentor helping a student design a {building_type}.
-        The student is asking about {topic} and needs supportive guidance.
+        # 0708-Get milestone context if available
+        milestone_context = student_analysis.get("milestone_context", {})
+        milestone_type = milestone_context.get("milestone_type", "")
+        required_actions = milestone_context.get("required_actions", [])
         
-        {context_info}
+        milestone_info = ""
+        if milestone_context:
+            milestone_info = f"""
+            MILESTONE CONTEXT:
+            Current Milestone: {milestone_type}
+            Required Actions: {required_actions}
+            """
         
-        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
+        # Check if this is a detailed project brief
+        last_message = student_analysis.get("last_message", "")
+        message_length = len(last_message.split())
+        is_detailed_brief = message_length > 100
         
-        Generate supportive, encouraging guidance that:
-        1. Acknowledges the student's understanding and progress
-        2. INCORPORATES AND REFERENCES ALL the specific details the student has shared
-        3. Provides gentle guidance on {topic} that builds on their existing knowledge
-        4. Encourages them to explore {topic} further in relation to their specific project
-        5. Offers specific suggestions that are relevant to their context
-        6. Maintains a supportive, encouraging tone
-        7. EXPLICITLY REFERENCES the specific details the student mentioned
-        
-        IMPORTANT INSTRUCTIONS:
-        - Reference the student's specific user groups, activities, and requirements
-        - Address the specific challenges or opportunities they've mentioned
-        - Build upon their existing understanding and insights
-        - Make connections to their specific project context
-        - Do not provide generic advice - make it specific to their situation
-        
-        Keep the response encouraging and supportive while being educationally valuable.
-        """
+        if is_detailed_brief:
+            # For detailed project briefs, provide concise acknowledgment and focused follow-up
+            prompt = f"""
+            You are an architectural mentor. The student has provided a comprehensive project brief for a {building_type}.
+            
+            STUDENT'S DETAILED PROJECT BRIEF: {last_message}
+            
+            Generate a CONCISE response (2-3 sentences maximum) that:
+            1. Briefly acknowledges their detailed planning and understanding
+            2. Asks ONE specific, focused question that builds on their specific project details
+            3. References their specific user groups, site conditions, or design goals
+            4. Does NOT repeat what they said - build on it
+            5. Is relevant to their specific project context
+            
+            Keep it short, focused, and relevant to their specific project.
+            """
+        else:
+            # Use LLM to generate context-aware supportive guidance
+            prompt = f"""
+            You are an architectural mentor helping a student design a {building_type}.
+            The student is asking about {topic} and needs supportive guidance.
+            
+            {context_info}
+            {milestone_info}
+            
+            CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
+            
+            Generate a CONCISE, supportive, encouraging guidance that:
+            1. Acknowledges the student's understanding and progress
+            2. INCORPORATES AND REFERENCES ALL the specific details the student has shared
+            3. Provides gentle guidance on {topic} that builds on their existing knowledge
+            4. Encourages them to explore {topic} further in relation to their specific project
+            5. Offers specific suggestions that are relevant to their context
+            6. Maintains a supportive, encouraging tone
+            7. EXPLICITLY REFERENCES the specific details the student mentioned
+            8. Aligns with the current milestone objectives: {milestone_type}
+            9. Helps the student achieve the required actions: {required_actions}
+            
+            IMPORTANT INSTRUCTIONS:
+            - Reference the student's specific user groups, activities, and requirements
+            - Address the specific challenges or opportunities they've mentioned
+            - Build upon their existing understanding and insights
+            - Make connections to their specific project context
+            - Do not provide generic advice - make it specific to their situation
+            - Support milestone progress and learning objectives
+            - KEEP RESPONSE SHORT AND FOCUSED (2-3 sentences + 1-2 questions)
+            - Do not repeat what the student said - build on it
+            - Understand this is a conversation - respond to their specific question/comment
+            
+            Keep the response encouraging and supportive while being educationally valuable and milestone-aware.
+            """
         
         try:
             response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,
+                max_tokens=150,  # Reduced from 200 for even more conciseness
                 temperature=0.7
             )
             return response.choices[0].message.content
         except Exception as e:
             # Enhanced fallback with specific guidance
-            return f"Great question about {topic} for your {building_type}! You're thinking about this in the right way. What specific aspects of {topic} are most important for your project's goals? How might {topic} interact with other design elements you're considering?"
+            if is_detailed_brief:
+                return f"Excellent comprehensive planning for your {building_type}! Your attention to user diversity and site constraints shows strong design thinking. What's your biggest concern about balancing the open warehouse space with the need for intimate, quiet areas?"
+            else:
+                return f"Great question about {topic} for your {building_type}! You're thinking about this in the right way. What specific aspects of {topic} are most important for your project's goals? How might {topic} interact with other design elements you're considering?"
     
     async def _generate_challenging_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
         """Generate challenging questions that push architectural thinking deeper"""
@@ -665,7 +774,7 @@ class SocraticTutorAgent:
         
         CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
         
-        Generate a challenging, thought-provoking question that:
+        Generate a CONCISE, challenging, thought-provoking question that:
         1. Pushes the student to think deeper about {topic}
         2. INCORPORATES AND REFERENCES ALL the specific details the student has shared
         3. Challenges their assumptions or current understanding
@@ -680,6 +789,9 @@ class SocraticTutorAgent:
         - Build upon their existing understanding and insights
         - Make connections to their specific project context
         - Do not provide generic questions - make them specific to their situation
+        - KEEP RESPONSE SHORT AND FOCUSED (1-2 sentences maximum)
+        - Do not repeat what the student said - challenge it
+        - Understand this is a conversation - respond to their specific question/comment
         
         The question should be challenging but not overwhelming, and should help the student think more critically about {topic} in relation to their specific project.
         """
@@ -688,7 +800,7 @@ class SocraticTutorAgent:
             response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=300,
+                max_tokens=150,  # Reduced from 300
                 temperature=0.7
             )
             return response.choices[0].message.content

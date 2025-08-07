@@ -15,7 +15,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from vision.sketch_analyzer import SketchAnalyzer
 from state_manager import ArchMentorState, StudentProfile, VisualArtifact
 from knowledge_base.knowledge_manager import KnowledgeManager
-from phase_management.milestone_questions import MilestoneType
+# 0708-ADDED BELOW 2 LINES
+from phase_management.milestone_questions import MilestoneType as ArchitecturalMilestoneType
+from conversation_progression import MilestoneType as ConversationMilestoneType, ConversationProgressionManager
 from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 class AnalysisAgent:
@@ -29,6 +31,9 @@ class AnalysisAgent:
         # Initialize phase detection parameters
         self.phase_indicators = self._initialize_phase_indicators()
         self.phase_weights = self._initialize_phase_weights()
+        
+        # 0708-Initialize conversation progression manager
+        self.conversation_progression = ConversationProgressionManager(domain)
         
         print(f"🔍 {self.name} initialized for domain: {domain}")
     
@@ -1341,70 +1346,68 @@ class AnalysisAgent:
         all_text = ' '.join(messages).lower()
         matches = sum(1 for indicator in indicators if indicator in all_text)
         return matches / len(indicators)
-    
+    #0708-UPDATED
     def _detect_milestone_content(self, user_messages: List[Dict], current_phase: str, progress_manager, student_id: str) -> Dict[str, Any]:
         """Detect milestone content in user messages and assess completion"""
         
-        from phase_management.milestone_questions import MilestoneType
-        
-        # Define milestone keywords and content indicators for each milestone
-        milestone_indicators = {
-            MilestoneType.SITE_ANALYSIS: {
+        # Define milestone keywords and content indicators for each architectural milestone
+        architectural_milestone_indicators = {
+            ArchitecturalMilestoneType.SITE_ANALYSIS: {
                 'keywords': ['site', 'location', 'context', 'surroundings', 'environment', 'climate', 'orientation', 'views', 'access'],
                 'concepts': ['site analysis', 'contextual understanding', 'environmental factors', 'site constraints', 'opportunities'],
                 'threshold': 3  # Need 3+ indicators to consider milestone addressed
             },
-            MilestoneType.PROGRAM_REQUIREMENTS: {
+            ArchitecturalMilestoneType.PROGRAM_REQUIREMENTS: {
                 'keywords': ['program', 'requirements', 'needs', 'functions', 'spaces', 'rooms', 'activities', 'users', 'occupants'],
                 'concepts': ['program development', 'functional requirements', 'user needs', 'space requirements', 'activity analysis'],
                 'threshold': 3
             },
-            MilestoneType.CONCEPT_DEVELOPMENT: {
+            ArchitecturalMilestoneType.CONCEPT_DEVELOPMENT: {
                 'keywords': ['concept', 'idea', 'approach', 'strategy', 'vision', 'philosophy', 'concept development', 'design approach'],
                 'concepts': ['conceptual thinking', 'design strategy', 'approach development', 'philosophical framework'],
                 'threshold': 2
             },
-            MilestoneType.SPATIAL_ORGANIZATION: {
+            ArchitecturalMilestoneType.SPATIAL_ORGANIZATION: {
                 'keywords': ['spatial', 'organization', 'layout', 'arrangement', 'planning', 'zoning', 'relationships', 'adjacencies'],
                 'concepts': ['spatial organization', 'layout planning', 'functional zoning', 'spatial relationships'],
                 'threshold': 3
             },
-            MilestoneType.CIRCULATION_DESIGN: {
+            ArchitecturalMilestoneType.CIRCULATION_DESIGN: {
                 'keywords': ['circulation', 'movement', 'flow', 'paths', 'corridors', 'stairs', 'elevators', 'accessibility'],
                 'concepts': ['circulation design', 'movement patterns', 'accessibility', 'flow planning'],
                 'threshold': 3
             },
-            MilestoneType.FORM_DEVELOPMENT: {
+            ArchitecturalMilestoneType.FORM_DEVELOPMENT: {
                 'keywords': ['form', 'shape', 'massing', 'volume', 'geometry', 'aesthetics', 'appearance', 'expression'],
                 'concepts': ['form development', 'massing studies', 'geometric exploration', 'aesthetic expression'],
                 'threshold': 2
             },
-            MilestoneType.LIGHTING_STRATEGY: {
+            ArchitecturalMilestoneType.LIGHTING_STRATEGY: {
                 'keywords': ['lighting', 'light', 'natural light', 'artificial light', 'illumination', 'daylight', 'shadows'],
                 'concepts': ['lighting strategy', 'natural lighting', 'artificial lighting', 'lighting design'],
                 'threshold': 2
             },
-            MilestoneType.CONSTRUCTION_SYSTEMS: {
+            ArchitecturalMilestoneType.CONSTRUCTION_SYSTEMS: {
                 'keywords': ['construction', 'structure', 'materials', 'building systems', 'structural', 'assembly'],
                 'concepts': ['construction systems', 'structural design', 'material selection', 'building assembly'],
                 'threshold': 3
             },
-            MilestoneType.MATERIAL_SELECTION: {
+            ArchitecturalMilestoneType.MATERIAL_SELECTION: {
                 'keywords': ['materials', 'material', 'finishes', 'texture', 'color', 'durability', 'sustainability'],
                 'concepts': ['material selection', 'finish specification', 'material properties', 'sustainability'],
                 'threshold': 2
             },
-            MilestoneType.TECHNICAL_DETAILS: {
+            ArchitecturalMilestoneType.TECHNICAL_DETAILS: {
                 'keywords': ['details', 'technical', 'specifications', 'construction details', 'junctions', 'connections'],
                 'concepts': ['technical detailing', 'construction details', 'specification', 'detail design'],
                 'threshold': 2
             },
-            MilestoneType.PRESENTATION_PREP: {
+            ArchitecturalMilestoneType.PRESENTATION_PREP: {
                 'keywords': ['presentation', 'communication', 'drawings', 'renderings', 'documentation', 'visualization'],
                 'concepts': ['presentation preparation', 'communication strategy', 'visual documentation'],
                 'threshold': 2
             },
-            MilestoneType.DOCUMENTATION: {
+            ArchitecturalMilestoneType.DOCUMENTATION: {
                 'keywords': ['documentation', 'drawings', 'plans', 'sections', 'elevations', 'specifications', 'contract documents'],
                 'concepts': ['documentation', 'drawing preparation', 'contract documents', 'specifications'],
                 'threshold': 3
@@ -1417,10 +1420,10 @@ class AnalysisAgent:
         detection_results = {}
         
         for milestone in phase_milestones:
-            if milestone not in milestone_indicators:
+            if milestone not in architectural_milestone_indicators:
                 continue
                 
-            indicators = milestone_indicators[milestone]
+            indicators = architectural_milestone_indicators[milestone]
             threshold = indicators['threshold']
             
             # Analyze user messages for milestone content
@@ -1550,25 +1553,48 @@ class AnalysisAgent:
         
         return question
     
-    def _generate_milestone_question(self, milestone: MilestoneType) -> str:
+    def _generate_milestone_question(self, milestone: ArchitecturalMilestoneType) -> str:
         """Generate a specific question for a milestone"""
         
         question_templates = {
-            MilestoneType.SITE_ANALYSIS: "How have you analyzed the site context and environmental factors for your project?",
-            MilestoneType.PROGRAM_REQUIREMENTS: "What are the key functional requirements and user needs for your building?",
-            MilestoneType.CONCEPT_DEVELOPMENT: "What is your main design concept or approach for this project?",
-            MilestoneType.SPATIAL_ORGANIZATION: "How are you organizing the spaces and functional relationships in your design?",
-            MilestoneType.CIRCULATION_DESIGN: "How are you designing the movement and circulation patterns?",
-            MilestoneType.FORM_DEVELOPMENT: "How are you developing the form and massing of your building?",
-            MilestoneType.LIGHTING_STRATEGY: "What is your approach to natural and artificial lighting?",
-            MilestoneType.CONSTRUCTION_SYSTEMS: "What construction systems and structural approach are you considering?",
-            MilestoneType.MATERIAL_SELECTION: "What materials and finishes are you planning to use?",
-            MilestoneType.TECHNICAL_DETAILS: "How are you addressing technical details and construction junctions?",
-            MilestoneType.PRESENTATION_PREP: "How are you preparing to communicate your design?",
-            MilestoneType.DOCUMENTATION: "What documentation and drawings are you developing?"
+            ArchitecturalMilestoneType.SITE_ANALYSIS: "How have you analyzed the site context and environmental factors for your project?",
+            ArchitecturalMilestoneType.PROGRAM_REQUIREMENTS: "What are the key functional requirements and user needs for your building?",
+            ArchitecturalMilestoneType.CONCEPT_DEVELOPMENT: "What is your main design concept or approach for this project?",
+            ArchitecturalMilestoneType.SPATIAL_ORGANIZATION: "How are you organizing the spaces and functional relationships in your design?",
+            ArchitecturalMilestoneType.CIRCULATION_DESIGN: "How are you designing the movement and circulation patterns?",
+            ArchitecturalMilestoneType.FORM_DEVELOPMENT: "How are you developing the form and massing of your building?",
+            ArchitecturalMilestoneType.LIGHTING_STRATEGY: "What is your approach to natural and artificial lighting?",
+            ArchitecturalMilestoneType.CONSTRUCTION_SYSTEMS: "What construction systems and structural approach are you considering?",
+            ArchitecturalMilestoneType.MATERIAL_SELECTION: "What materials and finishes are you planning to use?",
+            ArchitecturalMilestoneType.TECHNICAL_DETAILS: "How are you addressing technical details and construction junctions?",
+            ArchitecturalMilestoneType.PRESENTATION_PREP: "How are you preparing to communicate your design?",
+            ArchitecturalMilestoneType.DOCUMENTATION: "What documentation and drawings are you developing?"
         }
         
         return question_templates.get(milestone, f"Tell me about your approach to {milestone.value.replace('_', ' ')}")
+#0708-ADDED
+    def integrate_conversation_progression(self, state: ArchMentorState, user_input: str, current_response: str) -> Dict[str, Any]:
+        """Integrate conversation progression analysis with architectural milestone analysis"""
+        
+        # Get conversation progression analysis
+        progression_analysis = self.conversation_progression.progress_conversation(user_input, current_response, state)
+        
+        # Get current conversation milestone
+        current_milestone = self.conversation_progression.get_current_milestone()
+        
+        # Assess milestone completion
+        milestone_assessment = self.conversation_progression.assess_milestone_completion(user_input, current_response, state)
+        
+        # Get milestone-driven agent guidance
+        agent_guidance = self.conversation_progression.get_milestone_driven_agent_guidance(user_input, state)
+        
+        return {
+            "conversation_progression": progression_analysis,
+            "current_milestone": current_milestone,
+            "milestone_assessment": milestone_assessment,
+            "agent_guidance": agent_guidance,
+            "progression_manager": self.conversation_progression
+        }
 
     def _calculate_enhancement_metrics(self, analysis_result: Dict, state: ArchMentorState) -> EnhancementMetrics:
         """Calculate cognitive enhancement metrics for the analysis"""

@@ -932,7 +932,8 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             "metadata": response_metadata,
             "routing_path": response_metadata.get("routing_path", "unknown"),
             "classification": result.get("student_classification", {}),
-            "conversation_progression": result.get("conversation_progression", {})
+            "conversation_progression": result.get("conversation_progression", {}),
+            "milestone_guidance": result.get("milestone_guidance", {})
         }
         
     except Exception as e:
@@ -1599,10 +1600,74 @@ def main():
                         <p style='font-size: 0.8rem; color: gray;'>{phase_completion:.0f}% complete</p>
                     </div>
                 """, unsafe_allow_html=True)
+                #0708-ADDED
+                # Display milestone information if available - integrated with conversation progression
+                milestone_guidance = result.get('milestone_guidance', {})
+                conversation_progression = result.get('conversation_progression', {})
+                
+                # Try to get milestone from conversation progression first
+                current_milestone = None
+                milestone_progress = 0.0
+                
+                if conversation_progression:
+                    current_milestone = conversation_progression.get('current_milestone')
+                    milestone_assessment = conversation_progression.get('milestone_assessment', {})
+                    milestone_progress = milestone_assessment.get('completion_percentage', 0.0)
+                
+                # Fallback to milestone guidance
+                if not current_milestone:
+                    current_milestone = milestone_guidance.get('current_milestone')
+                    milestone_progress = current_milestone.get('progress_percentage', 0) if current_milestone else 0
+                
+                if current_milestone:
+                    # Handle both conversation milestones and architectural milestones
+                    if isinstance(current_milestone, dict):
+                        milestone_type = current_milestone.get('milestone_type', 'unknown')
+                    else:
+                        milestone_type = str(current_milestone)
+                    
+                    # Conversation milestone display
+                    conversation_milestone_display = {
+                        'phase_entry': '🚀 Phase Entry',
+                        'knowledge_acquisition': '📚 Knowledge Acquisition',
+                        'skill_demonstration': '💪 Skill Demonstration',
+                        'insight_formation': '🧠 Insight Formation',
+                        'problem_solving': '🔧 Problem Solving',
+                        'reflection_point': '🤔 Reflection Point',
+                        'readiness_assessment': '✅ Readiness Assessment'
+                    }
+                    
+                    # Architectural milestone display
+                    architectural_milestone_display = {
+                        'site_analysis': '🏗️ Site Analysis',
+                        'program_requirements': '📋 Program Requirements',
+                        'concept_development': '💭 Concept Development',
+                        'spatial_organization': '🏛️ Spatial Organization',
+                        'circulation_design': '🔄 Circulation Design',
+                        'form_development': '📐 Form Development',
+                        'lighting_strategy': '💡 Lighting Strategy',
+                        'construction_systems': '🏗️ Construction Systems',
+                        'material_selection': '🎨 Material Selection',
+                        'technical_details': '⚙️ Technical Details',
+                        'presentation_prep': '📊 Presentation Prep',
+                        'documentation': '📄 Documentation'
+                    }
+                    
+                    # Try conversation milestone first, then architectural
+                    milestone_name = (conversation_milestone_display.get(milestone_type) or 
+                                   architectural_milestone_display.get(milestone_type) or 
+                                   f"🎯 {milestone_type.replace('_', ' ').title()}")
+                    
+                    st.markdown(f"""
+                        <div style='text-align: center; margin-top: 0.5rem;'>
+                            <h6 style='margin-bottom: 0.2rem; font-size: 0.9rem;'>Current Milestone</h6>
+                            <p style='font-size: 0.8rem; margin: 0;'>{milestone_name}</p>
+                            <p style='font-size: 0.7rem; color: gray;'>{milestone_progress:.0f}% complete</p>
+                        </div>
+                    """, unsafe_allow_html=True)
             
             with col_metric2:
                 # Learning balance indicator
-                synthesis = safe_get_nested_dict(result, 'synthesis') or {}
                 conversation_progression = result.get('conversation_progression', {})
                 
                 # Use conversation progression data if available
@@ -1611,6 +1676,8 @@ def main():
                     challenges = len(conversation_summary.get('challenges', []))
                     opportunities = len(conversation_summary.get('opportunities', []))
                 else:
+                    # Fallback to synthesis data
+                    synthesis = safe_get_nested_dict(result, 'synthesis') or {}
                     challenges = len(synthesis.get('cognitive_challenges', []))
                     opportunities = len(synthesis.get('learning_opportunities', []))
                 

@@ -24,15 +24,29 @@ class DesignSpaceDimension(Enum):
     AESTHETIC = "aesthetic"         # Style, expression, meaning
     SUSTAINABLE = "sustainable"     # Environmental, social, economic
 
+class MilestoneType(Enum):
+    """Types of conversation milestones"""
+    PHASE_ENTRY = "phase_entry"           # Entering a new phase
+    KNOWLEDGE_ACQUISITION = "knowledge_acquisition"  # Gaining new understanding
+    SKILL_DEMONSTRATION = "skill_demonstration"      # Showing application ability
+    INSIGHT_FORMATION = "insight_formation"          # Connecting ideas
+    PROBLEM_SOLVING = "problem_solving"             # Applying to specific problems
+    REFLECTION_POINT = "reflection_point"           # Evaluating progress
+    READINESS_ASSESSMENT = "readiness_assessment"    # Checking if ready to advance
+
 @dataclass
 class ConversationMilestone:
     """Represents a milestone in the conversation progression"""
+    milestone_type: MilestoneType
     phase: ConversationPhase
     dimension: Optional[DesignSpaceDimension] = None
     topic: str = ""
     user_understanding: str = "unknown"  # low, medium, high
     confidence_level: str = "unknown"    # uncertain, confident, overconfident
     engagement_level: str = "unknown"    # low, medium, high
+    progress_percentage: float = 0.0     # 0-100% progress in current phase
+    required_actions: List[str] = field(default_factory=list)  # What needs to happen next
+    success_criteria: List[str] = field(default_factory=list)  # How to know milestone is complete
     timestamp: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -47,7 +61,7 @@ class DesignSpaceOpening:
     complexity_level: str = "beginner"  # beginner, intermediate, advanced
 
 class ConversationProgressionManager:
-    """Manages progressive conversation flow and design space exploration"""
+    """Manages progressive conversation flow and design space exploration with milestone-driven logic"""
     
     def __init__(self, domain: str = "architecture"):
         self.domain = domain
@@ -56,6 +70,8 @@ class ConversationProgressionManager:
         self.opened_dimensions: List[DesignSpaceDimension] = []
         self.user_profile = self._initialize_user_profile()
         self.design_space_map = self._initialize_design_space_map()
+        self.milestone_rules = self._initialize_milestone_rules()
+        self.progression_sequence = self._initialize_progression_sequence()
         
         logger.info(f"Conversation Progression Manager initialized for {domain}")
     
@@ -68,7 +84,88 @@ class ConversationProgressionManager:
             "strengths": [],
             "gaps": [],
             "engagement_patterns": [],
-            "conversation_preferences": []
+            "conversation_preferences": [],
+            "milestone_progress": {}  # Track progress through specific milestones
+        }
+    
+    def _initialize_milestone_rules(self) -> Dict[MilestoneType, Dict[str, Any]]:
+        """Initialize rules for milestone progression"""
+        return {
+            MilestoneType.PHASE_ENTRY: {
+                "required_understanding": "medium",
+                "min_engagement": "medium",
+                "next_milestone": MilestoneType.KNOWLEDGE_ACQUISITION,
+                "agent_focus": "context_agent"
+            },
+            MilestoneType.KNOWLEDGE_ACQUISITION: {
+                "required_understanding": "high",
+                "min_engagement": "high",
+                "next_milestone": MilestoneType.SKILL_DEMONSTRATION,
+                "agent_focus": "domain_expert"
+            },
+            MilestoneType.SKILL_DEMONSTRATION: {
+                "required_understanding": "high",
+                "min_engagement": "high",
+                "next_milestone": MilestoneType.INSIGHT_FORMATION,
+                "agent_focus": "socratic_tutor"
+            },
+            MilestoneType.INSIGHT_FORMATION: {
+                "required_understanding": "high",
+                "min_engagement": "high",
+                "next_milestone": MilestoneType.PROBLEM_SOLVING,
+                "agent_focus": "cognitive_enhancement"
+            },
+            MilestoneType.PROBLEM_SOLVING: {
+                "required_understanding": "high",
+                "min_engagement": "high",
+                "next_milestone": MilestoneType.REFLECTION_POINT,
+                "agent_focus": "analysis_agent"
+            },
+            MilestoneType.REFLECTION_POINT: {
+                "required_understanding": "high",
+                "min_engagement": "medium",
+                "next_milestone": MilestoneType.READINESS_ASSESSMENT,
+                "agent_focus": "context_agent"
+            },
+            MilestoneType.READINESS_ASSESSMENT: {
+                "required_understanding": "high",
+                "min_engagement": "high",
+                "next_milestone": None,  # Will determine based on assessment
+                "agent_focus": "analysis_agent"
+            }
+        }
+    
+    def _initialize_progression_sequence(self) -> Dict[ConversationPhase, List[MilestoneType]]:
+        """Initialize the progression sequence for each phase"""
+        return {
+            ConversationPhase.DISCOVERY: [
+                MilestoneType.PHASE_ENTRY,
+                MilestoneType.KNOWLEDGE_ACQUISITION,
+                MilestoneType.READINESS_ASSESSMENT
+            ],
+            ConversationPhase.EXPLORATION: [
+                MilestoneType.PHASE_ENTRY,
+                MilestoneType.KNOWLEDGE_ACQUISITION,
+                MilestoneType.SKILL_DEMONSTRATION,
+                MilestoneType.READINESS_ASSESSMENT
+            ],
+            ConversationPhase.SYNTHESIS: [
+                MilestoneType.PHASE_ENTRY,
+                MilestoneType.INSIGHT_FORMATION,
+                MilestoneType.SKILL_DEMONSTRATION,
+                MilestoneType.READINESS_ASSESSMENT
+            ],
+            ConversationPhase.APPLICATION: [
+                MilestoneType.PHASE_ENTRY,
+                MilestoneType.PROBLEM_SOLVING,
+                MilestoneType.SKILL_DEMONSTRATION,
+                MilestoneType.READINESS_ASSESSMENT
+            ],
+            ConversationPhase.REFLECTION: [
+                MilestoneType.PHASE_ENTRY,
+                MilestoneType.REFLECTION_POINT,
+                MilestoneType.READINESS_ASSESSMENT
+            ]
         }
     
     def _initialize_design_space_map(self) -> Dict[DesignSpaceDimension, DesignSpaceOpening]:
@@ -196,17 +293,16 @@ class ConversationProgressionManager:
         
         # Create first milestone
         first_milestone = ConversationMilestone(
+            milestone_type=MilestoneType.PHASE_ENTRY,
             phase=ConversationPhase.DISCOVERY,
             dimension=relevant_dimensions[0] if relevant_dimensions else None,
             topic=intent_analysis.get("primary_topic", ""),
             user_understanding=knowledge_assessment.get("level", "unknown"),
             confidence_level=intent_analysis.get("confidence", "unknown"),
             engagement_level=intent_analysis.get("engagement", "unknown"),
-            metadata={
-                "intent_analysis": intent_analysis,
-                "relevant_dimensions": [d.value for d in relevant_dimensions],
-                "opening_strategy": opening_strategy
-            }
+            progress_percentage=0.0, # Initial progress
+            required_actions=[],
+            success_criteria=[]
         )
         self.milestones.append(first_milestone)
         
@@ -609,6 +705,9 @@ class ConversationProgressionManager:
                             state: Any) -> Dict[str, Any]:
         """Progress the conversation to the next phase"""
         
+        # Store current state for context access
+        self.current_state = state
+        
         # Analyze current state
         current_analysis = self._analyze_conversation_state(user_input, current_response, state)
         
@@ -621,13 +720,16 @@ class ConversationProgressionManager:
             
             # Create new milestone
             new_milestone = ConversationMilestone(
+                milestone_type=MilestoneType.PHASE_ENTRY, # Always PHASE_ENTRY for phase transition
                 phase=new_phase,
                 dimension=current_analysis.get("active_dimension"),
                 topic=current_analysis.get("current_topic", ""),
                 user_understanding=current_analysis.get("understanding", "unknown"),
                 confidence_level=current_analysis.get("confidence", "unknown"),
                 engagement_level=current_analysis.get("engagement", "unknown"),
-                metadata={"transition_reason": current_analysis.get("transition_reason")}
+                progress_percentage=0.0, # Reset progress for new phase
+                required_actions=[],
+                success_criteria=[]
             )
             self.milestones.append(new_milestone)
         
@@ -947,13 +1049,65 @@ class ConversationProgressionManager:
     def _summarize_conversation_progress(self) -> Dict[str, Any]:
         """Summarize overall conversation progress"""
         
+        # Extract project context from state if available
+        project_context = {}
+        if hasattr(self, 'current_state') and self.current_state:
+            # Try to extract building type from design brief
+            design_brief = getattr(self.current_state, 'current_design_brief', '')
+            if design_brief:
+                # Simple extraction of building type from brief
+                brief_lower = design_brief.lower()
+                if 'community' in brief_lower and 'center' in brief_lower:
+                    project_context['building_type'] = 'community_center'
+                elif 'residential' in brief_lower or 'house' in brief_lower or 'home' in brief_lower:
+                    project_context['building_type'] = 'residential'
+                elif 'office' in brief_lower or 'commercial' in brief_lower:
+                    project_context['building_type'] = 'commercial'
+                elif 'museum' in brief_lower or 'cultural' in brief_lower:
+                    project_context['building_type'] = 'cultural'
+                elif 'school' in brief_lower or 'educational' in brief_lower:
+                    project_context['building_type'] = 'educational'
+                else:
+                    project_context['building_type'] = 'mixed_use'
+                
+                # Assess complexity based on brief content
+                if any(word in brief_lower for word in ['sustainable', 'complex', 'advanced', 'innovative']):
+                    project_context['complexity_level'] = 'high'
+                elif any(word in brief_lower for word in ['simple', 'basic', 'standard']):
+                    project_context['complexity_level'] = 'low'
+                else:
+                    project_context['complexity_level'] = 'moderate'
+        
+        # Generate challenges and opportunities based on current phase
+        challenges = []
+        opportunities = []
+        
+        if self.current_phase == ConversationPhase.DISCOVERY:
+            challenges = ["Understanding project scope", "Identifying key requirements"]
+            opportunities = ["Exploring design possibilities", "Building foundational knowledge"]
+        elif self.current_phase == ConversationPhase.EXPLORATION:
+            challenges = ["Processing complex information", "Connecting theoretical concepts"]
+            opportunities = ["Learning from examples", "Developing analytical skills"]
+        elif self.current_phase == ConversationPhase.SYNTHESIS:
+            challenges = ["Integrating diverse concepts", "Forming coherent insights"]
+            opportunities = ["Creating innovative solutions", "Building design confidence"]
+        elif self.current_phase == ConversationPhase.APPLICATION:
+            challenges = ["Applying knowledge practically", "Overcoming implementation barriers"]
+            opportunities = ["Demonstrating skills", "Receiving constructive feedback"]
+        elif self.current_phase == ConversationPhase.REFLECTION:
+            challenges = ["Evaluating progress objectively", "Identifying remaining gaps"]
+            opportunities = ["Celebrating achievements", "Planning next steps"]
+        
         return {
             "total_milestones": len(self.milestones),
             "current_phase": self.current_phase.value,
             "opened_dimensions": [d.value for d in self.opened_dimensions],
             "user_profile": self.user_profile,
             "learning_progress": self._assess_learning_progress(),
-            "conversation_quality": self._assess_conversation_quality()
+            "conversation_quality": self._assess_conversation_quality(),
+            "project_context": project_context,
+            "challenges": challenges,
+            "opportunities": opportunities
         }
     
     def _assess_learning_progress(self) -> Dict[str, Any]:
@@ -1013,3 +1167,394 @@ class ConversationProgressionManager:
             "engagement_trend": "improving" if avg_engagement > 0.5 else "declining",
             "understanding_trend": "improving" if avg_understanding > 0.5 else "declining"
         } 
+
+    def get_current_milestone(self) -> Optional[ConversationMilestone]:
+        """Get the current active milestone"""
+        if not self.milestones:
+            return None
+        return self.milestones[-1]
+    
+    def get_next_milestone(self) -> Optional[MilestoneType]:
+        """Get the next milestone type based on current progress"""
+        current_milestone = self.get_current_milestone()
+        if not current_milestone:
+            # First milestone for current phase
+            phase_sequence = self.progression_sequence.get(self.current_phase, [])
+            return phase_sequence[0] if phase_sequence else None
+        
+        # Get next milestone in sequence
+        phase_sequence = self.progression_sequence.get(self.current_phase, [])
+        try:
+            current_index = phase_sequence.index(current_milestone.milestone_type)
+            if current_index + 1 < len(phase_sequence):
+                return phase_sequence[current_index + 1]
+        except ValueError:
+            pass
+        
+        return None
+    
+    def assess_milestone_completion(self, user_input: str, current_response: str, state: Any) -> Dict[str, Any]:
+        """Assess if current milestone is complete and determine next steps"""
+        # Store state for context access
+        self.current_state = state
+        
+        current_milestone = self.get_current_milestone()
+        if not current_milestone:
+            return {"milestone_complete": False, "next_milestone": None, "guidance": "No active milestone"}
+        
+        # Assess completion based on milestone type
+        completion_criteria = self._get_completion_criteria(current_milestone.milestone_type)
+        completion_status = self._evaluate_completion_criteria(user_input, current_response, state, completion_criteria)
+        
+        if completion_status["complete"]:
+            # Create next milestone
+            next_milestone_type = self.get_next_milestone()
+            if next_milestone_type:
+                next_milestone = self._create_milestone(next_milestone_type, user_input, state)
+                self.milestones.append(next_milestone)
+                return {
+                    "milestone_complete": True,
+                    "next_milestone": next_milestone,
+                    "guidance": self._get_milestone_guidance(next_milestone)
+                }
+            else:
+                # Phase complete, check if ready for next phase
+                return self._assess_phase_transition(user_input, state)
+        
+        return {
+            "milestone_complete": False,
+            "next_milestone": current_milestone,
+            "guidance": self._get_milestone_guidance(current_milestone)
+        }
+    
+    def _get_completion_criteria(self, milestone_type: MilestoneType) -> Dict[str, Any]:
+        """Get completion criteria for a milestone type"""
+        criteria_map = {
+            MilestoneType.PHASE_ENTRY: {
+                "understanding_demonstrated": True,
+                "engagement_shown": True,
+                "topic_identified": True
+            },
+            MilestoneType.KNOWLEDGE_ACQUISITION: {
+                "new_knowledge_demonstrated": True,
+                "concept_understanding": True,
+                "application_readiness": True
+            },
+            MilestoneType.SKILL_DEMONSTRATION: {
+                "skill_application": True,
+                "problem_solving": True,
+                "confidence_demonstrated": True
+            },
+            MilestoneType.INSIGHT_FORMATION: {
+                "connections_made": True,
+                "patterns_identified": True,
+                "principles_formed": True
+            },
+            MilestoneType.PROBLEM_SOLVING: {
+                "problem_identified": True,
+                "solution_developed": True,
+                "approach_justified": True
+            },
+            MilestoneType.REFLECTION_POINT: {
+                "progress_evaluated": True,
+                "gaps_identified": True,
+                "next_steps_planned": True
+            },
+            MilestoneType.READINESS_ASSESSMENT: {
+                "phase_objectives_met": True,
+                "readiness_demonstrated": True,
+                "advancement_appropriate": True
+            }
+        }
+        return criteria_map.get(milestone_type, {})
+    
+    def _evaluate_completion_criteria(self, user_input: str, current_response: str, state: Any, criteria: Dict[str, Any]) -> Dict[str, Any]:
+        """Evaluate if completion criteria are met"""
+        evaluation = {"complete": True, "details": {}}
+        
+        for criterion, required in criteria.items():
+            if required:
+                result = self._evaluate_single_criterion(criterion, user_input, current_response, state)
+                evaluation["details"][criterion] = result
+                if not result["met"]:
+                    evaluation["complete"] = False
+        
+        return evaluation
+    
+    def _evaluate_single_criterion(self, criterion: str, user_input: str, current_response: str, state: Any) -> Dict[str, Any]:
+        """Evaluate a single completion criterion"""
+        # This is a simplified evaluation - in practice, you'd use more sophisticated analysis
+        user_input_lower = user_input.lower()
+        
+        criterion_evaluators = {
+            "understanding_demonstrated": lambda: {"met": len(user_input.split()) > 10, "confidence": 0.7},
+            "engagement_shown": lambda: {"met": "?" in user_input or "!" in user_input, "confidence": 0.6},
+            "topic_identified": lambda: {"met": len(self._extract_topics(user_input)) > 0, "confidence": 0.8},
+            "new_knowledge_demonstrated": lambda: {"met": any(word in user_input_lower for word in ["learned", "understood", "realized"]), "confidence": 0.7},
+            "concept_understanding": lambda: {"met": any(word in user_input_lower for word in ["because", "since", "therefore"]), "confidence": 0.6},
+            "application_readiness": lambda: {"met": any(word in user_input_lower for word in ["apply", "use", "implement"]), "confidence": 0.5},
+            "skill_application": lambda: {"met": any(word in user_input_lower for word in ["designed", "planned", "created"]), "confidence": 0.7},
+            "problem_solving": lambda: {"met": any(word in user_input_lower for word in ["solve", "address", "handle"]), "confidence": 0.6},
+            "confidence_demonstrated": lambda: {"met": any(word in user_input_lower for word in ["confident", "sure", "clear"]), "confidence": 0.5},
+            "connections_made": lambda: {"met": any(word in user_input_lower for word in ["connect", "relate", "link"]), "confidence": 0.6},
+            "patterns_identified": lambda: {"met": any(word in user_input_lower for word in ["pattern", "trend", "similar"]), "confidence": 0.5},
+            "principles_formed": lambda: {"met": any(word in user_input_lower for word in ["principle", "rule", "guideline"]), "confidence": 0.6},
+            "problem_identified": lambda: {"met": any(word in user_input_lower for word in ["problem", "issue", "challenge"]), "confidence": 0.7},
+            "solution_developed": lambda: {"met": any(word in user_input_lower for word in ["solution", "approach", "method"]), "confidence": 0.6},
+            "approach_justified": lambda: {"met": any(word in user_input_lower for word in ["because", "since", "therefore"]), "confidence": 0.5},
+            "progress_evaluated": lambda: {"met": any(word in user_input_lower for word in ["progress", "improved", "better"]), "confidence": 0.6},
+            "gaps_identified": lambda: {"met": any(word in user_input_lower for word in ["gap", "missing", "need"]), "confidence": 0.5},
+            "next_steps_planned": lambda: {"met": any(word in user_input_lower for word in ["next", "plan", "will"]), "confidence": 0.6},
+            "phase_objectives_met": lambda: {"met": self._assess_phase_objectives_met(state), "confidence": 0.7},
+            "readiness_demonstrated": lambda: {"met": self._assess_readiness_demonstrated(user_input), "confidence": 0.6},
+            "advancement_appropriate": lambda: {"met": self._assess_advancement_appropriate(state), "confidence": 0.5}
+        }
+        
+        evaluator = criterion_evaluators.get(criterion)
+        if evaluator:
+            return evaluator()
+        else:
+            return {"met": False, "confidence": 0.0}
+    
+    def _assess_phase_objectives_met(self, state: Any) -> bool:
+        """Assess if phase objectives have been met"""
+        # Simplified assessment - in practice, you'd analyze conversation history
+        return True  # Placeholder
+    
+    def _assess_readiness_demonstrated(self, user_input: str) -> bool:
+        """Assess if user demonstrates readiness for advancement"""
+        readiness_indicators = ["ready", "prepared", "confident", "understand", "clear"]
+        return any(indicator in user_input.lower() for indicator in readiness_indicators)
+    
+    def _assess_advancement_appropriate(self, state: Any) -> bool:
+        """Assess if advancement to next phase is appropriate"""
+        # Simplified assessment - in practice, you'd analyze comprehensive state
+        return True  # Placeholder
+    
+    def _create_milestone(self, milestone_type: MilestoneType, user_input: str, state: Any) -> ConversationMilestone:
+        """Create a new milestone"""
+        # Store state for context access
+        self.current_state = state
+        
+        current_topic = self._extract_current_topic(user_input)
+        understanding = self._assess_understanding_depth(user_input)
+        engagement = self._assess_engagement_trend(state)
+        
+        # Calculate progress percentage
+        phase_sequence = self.progression_sequence.get(self.current_phase, [])
+        try:
+            milestone_index = phase_sequence.index(milestone_type)
+            progress_percentage = (milestone_index / len(phase_sequence)) * 100
+        except ValueError:
+            progress_percentage = 0.0
+        
+        # Get required actions and success criteria
+        required_actions = self._get_milestone_required_actions(milestone_type)
+        success_criteria = self._get_milestone_success_criteria(milestone_type)
+        
+        return ConversationMilestone(
+            milestone_type=milestone_type,
+            phase=self.current_phase,
+            topic=current_topic,
+            user_understanding=understanding,
+            engagement_level=engagement,
+            progress_percentage=progress_percentage,
+            required_actions=required_actions,
+            success_criteria=success_criteria
+        )
+    
+    def _get_milestone_required_actions(self, milestone_type: MilestoneType) -> List[str]:
+        """Get required actions for a milestone type"""
+        actions_map = {
+            MilestoneType.PHASE_ENTRY: [
+                "Demonstrate understanding of phase objectives",
+                "Show engagement with current topic",
+                "Identify specific areas of interest"
+            ],
+            MilestoneType.KNOWLEDGE_ACQUISITION: [
+                "Demonstrate new knowledge acquisition",
+                "Show understanding of key concepts",
+                "Express readiness to apply knowledge"
+            ],
+            MilestoneType.SKILL_DEMONSTRATION: [
+                "Apply knowledge to specific problems",
+                "Show confidence in application",
+                "Demonstrate problem-solving skills"
+            ],
+            MilestoneType.INSIGHT_FORMATION: [
+                "Make connections between ideas",
+                "Identify patterns and relationships",
+                "Form principles or guidelines"
+            ],
+            MilestoneType.PROBLEM_SOLVING: [
+                "Identify specific problems or challenges",
+                "Develop and justify solutions",
+                "Show systematic approach to problem-solving"
+            ],
+            MilestoneType.REFLECTION_POINT: [
+                "Evaluate current progress and understanding",
+                "Identify remaining gaps or challenges",
+                "Plan next steps in learning journey"
+            ],
+            MilestoneType.READINESS_ASSESSMENT: [
+                "Demonstrate mastery of phase objectives",
+                "Show readiness for advancement",
+                "Express confidence in current understanding"
+            ]
+        }
+        return actions_map.get(milestone_type, [])
+    
+    def _get_milestone_success_criteria(self, milestone_type: MilestoneType) -> List[str]:
+        """Get success criteria for a milestone type"""
+        criteria_map = {
+            MilestoneType.PHASE_ENTRY: [
+                "Clear understanding of phase objectives demonstrated",
+                "Active engagement with topic shown",
+                "Specific interests or questions identified"
+            ],
+            MilestoneType.KNOWLEDGE_ACQUISITION: [
+                "New knowledge clearly demonstrated",
+                "Key concepts understood and explained",
+                "Readiness to apply knowledge expressed"
+            ],
+            MilestoneType.SKILL_DEMONSTRATION: [
+                "Knowledge successfully applied to problems",
+                "Confidence in application demonstrated",
+                "Problem-solving approach shown"
+            ],
+            MilestoneType.INSIGHT_FORMATION: [
+                "Connections between ideas made",
+                "Patterns or relationships identified",
+                "Principles or guidelines formed"
+            ],
+            MilestoneType.PROBLEM_SOLVING: [
+                "Specific problems clearly identified",
+                "Solutions developed and justified",
+                "Systematic approach demonstrated"
+            ],
+            MilestoneType.REFLECTION_POINT: [
+                "Current progress accurately evaluated",
+                "Gaps or challenges identified",
+                "Next steps clearly planned"
+            ],
+            MilestoneType.READINESS_ASSESSMENT: [
+                "Phase objectives mastered",
+                "Readiness for advancement demonstrated",
+                "Confidence in understanding expressed"
+            ]
+        }
+        return criteria_map.get(milestone_type, [])
+    
+    def _get_milestone_guidance(self, milestone: ConversationMilestone) -> str:
+        """Get guidance for the current milestone"""
+        guidance_map = {
+            MilestoneType.PHASE_ENTRY: f"Welcome to the {milestone.phase.value} phase! Let's explore {milestone.topic or 'your design interests'} together.",
+            MilestoneType.KNOWLEDGE_ACQUISITION: f"Let's deepen your understanding of {milestone.topic or 'key concepts'}. What specific aspects would you like to explore?",
+            MilestoneType.SKILL_DEMONSTRATION: f"Great! Now let's apply what you've learned about {milestone.topic or 'these concepts'}. How would you approach a specific problem?",
+            MilestoneType.INSIGHT_FORMATION: f"Excellent! Let's connect the ideas you've learned. What patterns or relationships do you see in {milestone.topic or 'your understanding'}?",
+            MilestoneType.PROBLEM_SOLVING: f"Perfect! Let's tackle a specific problem related to {milestone.topic or 'your design'}. What challenges are you facing?",
+            MilestoneType.REFLECTION_POINT: f"Let's reflect on your progress with {milestone.topic or 'your learning'}. What have you learned and what's next?",
+            MilestoneType.READINESS_ASSESSMENT: f"Let's assess your readiness to advance. How confident do you feel about {milestone.topic or 'your current understanding'}?"
+        }
+        return guidance_map.get(milestone.milestone_type, "Continue exploring and learning!")
+    
+    def _assess_phase_transition(self, user_input: str, state: Any) -> Dict[str, Any]:
+        """Assess if ready to transition to next phase"""
+        # Store state for context access
+        self.current_state = state
+        
+        phase_order = list(ConversationPhase)
+        try:
+            current_index = phase_order.index(self.current_phase)
+            if current_index + 1 < len(phase_order):
+                next_phase = phase_order[current_index + 1]
+                # Create phase entry milestone for next phase
+                phase_entry_milestone = self._create_milestone(MilestoneType.PHASE_ENTRY, user_input, state)
+                phase_entry_milestone.phase = next_phase
+                self.milestones.append(phase_entry_milestone)
+                self.current_phase = next_phase
+                
+                return {
+                    "milestone_complete": True,
+                    "phase_transition": True,
+                    "next_phase": next_phase,
+                    "next_milestone": phase_entry_milestone,
+                    "guidance": f"Congratulations! You're ready to move to the {next_phase.value} phase."
+                }
+        except ValueError:
+            pass
+        
+        return {
+            "milestone_complete": False,
+            "phase_transition": False,
+            "guidance": "Continue working on current objectives."
+        }
+
+    def get_milestone_driven_agent_guidance(self, user_input: str, state: Any) -> Dict[str, Any]:
+        """Get agent guidance based on current milestone"""
+        # Store state for context access
+        self.current_state = state
+        
+        current_milestone = self.get_current_milestone()
+        if not current_milestone:
+            # Create first milestone for current phase
+            first_milestone_type = self.progression_sequence.get(self.current_phase, [MilestoneType.PHASE_ENTRY])[0]
+            current_milestone = self._create_milestone(first_milestone_type, user_input, state)
+            self.milestones.append(current_milestone)
+        
+        # Get agent focus for current milestone
+        milestone_rules = self.milestone_rules.get(current_milestone.milestone_type, {})
+        agent_focus = milestone_rules.get("agent_focus", "context_agent")
+        
+        # Get specific guidance for the agent
+        agent_guidance = self._get_agent_specific_guidance(current_milestone, agent_focus)
+        
+        return {
+            "current_milestone": current_milestone,
+            "agent_focus": agent_focus,
+            "agent_guidance": agent_guidance,
+            "milestone_progress": current_milestone.progress_percentage,
+            "phase": self.current_phase.value
+        }
+    
+    def _get_agent_specific_guidance(self, milestone: ConversationMilestone, agent_focus: str) -> Dict[str, Any]:
+        """Get specific guidance for the focused agent"""
+        guidance_map = {
+            "context_agent": {
+                "primary_role": "Analyze user input and conversation context",
+                "focus_areas": ["intent classification", "conversation state", "routing decisions"],
+                "milestone_context": f"Current milestone: {milestone.milestone_type.value} in {milestone.phase.value} phase",
+                "guidance": f"Focus on understanding user intent and ensuring conversation aligns with {milestone.milestone_type.value} objectives"
+            },
+            "domain_expert": {
+                "primary_role": "Provide architectural knowledge and expertise",
+                "focus_areas": ["knowledge provision", "example provision", "web search"],
+                "milestone_context": f"Current milestone: {milestone.milestone_type.value} in {milestone.phase.value} phase",
+                "guidance": f"Provide knowledge that supports {milestone.milestone_type.value} objectives, focusing on {milestone.topic or 'relevant concepts'}"
+            },
+            "socratic_tutor": {
+                "primary_role": "Generate Socratic questions and guidance",
+                "focus_areas": ["question generation", "scaffolding", "critical thinking"],
+                "milestone_context": f"Current milestone: {milestone.milestone_type.value} in {milestone.phase.value} phase",
+                "guidance": f"Generate questions that help user achieve {milestone.milestone_type.value} objectives, focusing on {milestone.required_actions}"
+            },
+            "cognitive_enhancement": {
+                "primary_role": "Provide cognitive challenges and enhancement",
+                "focus_areas": ["cognitive challenges", "skill development", "complex thinking"],
+                "milestone_context": f"Current milestone: {milestone.milestone_type.value} in {milestone.phase.value} phase",
+                "guidance": f"Provide challenges that support {milestone.milestone_type.value} objectives, focusing on {milestone.success_criteria}"
+            },
+            "analysis_agent": {
+                "primary_role": "Analyze design and provide insights",
+                "focus_areas": ["design analysis", "skill assessment", "progress evaluation"],
+                "milestone_context": f"Current milestone: {milestone.milestone_type.value} in {milestone.phase.value} phase",
+                "guidance": f"Analyze progress toward {milestone.milestone_type.value} objectives and provide insights for advancement"
+            }
+        }
+        
+        return guidance_map.get(agent_focus, {
+            "primary_role": "Support conversation progression",
+            "focus_areas": ["general support"],
+            "milestone_context": f"Current milestone: {milestone.milestone_type.value}",
+            "guidance": "Support the current milestone objectives"
+        }) 
