@@ -3,6 +3,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from enum import Enum
 import logging
 from dataclasses import dataclass, field
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class RouteType(Enum):
     FALLBACK = "fallback"
 
 class InputType(Enum):
-    """Advanced input types"""
+    """Enhanced input types with better classification"""
     KNOWLEDGE_REQUEST = "knowledge_request"
     GUIDANCE_REQUEST = "guidance_request"
     FEEDBACK_REQUEST = "feedback_request"
@@ -37,6 +38,10 @@ class InputType(Enum):
     GENERAL_QUESTION = "general_question"
     FIRST_MESSAGE = "first_message"
     TOPIC_TRANSITION = "topic_transition"
+    DESIGN_PROBLEM = "design_problem"
+    IMPLEMENTATION_REQUEST = "implementation_request"
+    EVALUATION_REQUEST = "evaluation_request"
+    CREATIVE_EXPLORATION = "creative_exploration"
     UNKNOWN = "unknown"
 
 class UnderstandingLevel(Enum):
@@ -58,16 +63,19 @@ class EngagementLevel(Enum):
     HIGH = "high"
 
 class CognitiveOffloadingType(Enum):
-    """Types of cognitive offloading"""
+    """Enhanced types of cognitive offloading"""
     SOLUTION_REQUEST = "solution_request"
     DIRECT_ANSWER_REQUEST = "direct_answer_request"
     AVOIDANCE_PATTERN = "avoidance_pattern"
     OVERRELIANCE = "overreliance"
+    QUICK_FIX_REQUEST = "quick_fix_request"
+    COMPLETE_DESIGN_REQUEST = "complete_design_request"
+    STEP_BY_STEP_REQUEST = "step_by_step_request"
     NONE = "none"
 
 @dataclass
 class RoutingContext:
-    """Context for routing decisions"""
+    """Enhanced context for routing decisions"""
     classification: Dict[str, Any]
     context_analysis: Dict[str, Any]
     routing_suggestions: Dict[str, Any]
@@ -75,10 +83,13 @@ class RoutingContext:
     conversation_history: List[Dict[str, Any]] = field(default_factory=list)
     current_phase: str = "ideation"
     phase_progress: float = 0.0
+    project_context: Dict[str, Any] = field(default_factory=dict)
+    user_intent: str = "unknown"
+    cognitive_state: Dict[str, Any] = field(default_factory=dict)
 
 @dataclass
 class RoutingDecision:
-    """Detailed routing decision result"""
+    """Enhanced detailed routing decision result"""
     route: RouteType
     reason: str
     confidence: float
@@ -89,18 +100,85 @@ class RoutingDecision:
     context_agent_confidence: float = 0.0
     classification: Dict[str, Any] = field(default_factory=dict)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    user_intent: str = "unknown"
+    suggested_agents: List[str] = field(default_factory=list)
 
 class AdvancedRoutingDecisionTree:
-    """Advanced routing decision tree matching original orchestrator complexity"""
+    """Enhanced advanced routing decision tree with better context awareness"""
     
     def __init__(self):
         self.decision_rules = self._initialize_decision_rules()
         self.route_mapping = self._initialize_route_mapping()
         self.confidence_thresholds = self._initialize_confidence_thresholds()
         self.cognitive_offloading_patterns = self._initialize_cognitive_offloading_patterns()
+        self.intent_patterns = self._initialize_intent_patterns()
+        self.context_keywords = self._initialize_context_keywords()
     
+    def _initialize_intent_patterns(self) -> Dict[str, List[str]]:
+        """Initialize patterns for better intent classification"""
+        return {
+            "knowledge_request": [
+                r"what (are|is)", r"how (do|does)", r"can you (tell|show|explain)",
+                r"examples?", r"case studies?", r"best practices?", r"principles?",
+                r"guidelines?", r"standards?", r"requirements?", r"specifications?"
+            ],
+            "guidance_request": [
+                r"how should", r"what should", r"how do I", r"what do I",
+                r"guide me", r"help me", r"advice", r"suggestions?",
+                r"recommendations?", r"tips?", r"strategies?"
+            ],
+            "design_problem": [
+                r"problem", r"issue", r"challenge", r"difficulty",
+                r"stuck", r"confused", r"not sure", r"uncertain",
+                r"trouble", r"struggling", r"having difficulty"
+            ],
+            "implementation_request": [
+                r"how to", r"steps", r"process", r"procedure",
+                r"implementation", r"execution", r"construction",
+                r"build", r"create", r"develop", r"implement"
+            ],
+            "evaluation_request": [
+                r"is this", r"does this", r"will this", r"should I",
+                r"good idea", r"bad idea", r"better", r"worse",
+                r"evaluate", r"assess", r"review", r"check"
+            ],
+            "creative_exploration": [
+                r"what if", r"imagine", r"suppose", r"consider",
+                r"explore", r"experiment", r"try", r"test",
+                r"innovative", r"creative", r"different", r"alternative"
+            ],
+            "cognitive_offloading": [
+                r"just tell me", r"give me the answer", r"what's the solution",
+                r"do it for me", r"show me exactly", r"tell me exactly",
+                r"what should I design", r"design it for me", r"make it for me",
+                r"complete design", r"full design", r"finished design"
+            ]
+        }
+    
+    def _initialize_context_keywords(self) -> Dict[str, List[str]]:
+        """Initialize keywords for better context understanding"""
+        return {
+            "architectural_elements": [
+                "space", "room", "area", "zone", "layout", "plan", "section",
+                "elevation", "detail", "structure", "foundation", "roof", "wall",
+                "floor", "ceiling", "window", "door", "stair", "corridor"
+            ],
+            "design_phases": [
+                "concept", "schematic", "design development", "construction documents",
+                "ideation", "development", "refinement", "evaluation"
+            ],
+            "project_types": [
+                "residential", "commercial", "institutional", "community", "mixed-use",
+                "adaptive reuse", "renovation", "new construction", "preservation"
+            ],
+            "technical_aspects": [
+                "sustainability", "accessibility", "energy", "lighting", "acoustics",
+                "ventilation", "materials", "structure", "circulation", "programming"
+            ]
+        }
+
     def _initialize_decision_rules(self) -> Dict[str, Dict[str, Any]]:
-        """Initialize advanced decision rules"""
+        """Initialize enhanced decision rules with better context awareness"""
         return {
             "progressive_opening": {
                 "priority": 1,
@@ -116,78 +194,106 @@ class AdvancedRoutingDecisionTree:
                 "description": "Topic transition detected",
                 "context_agent_override": True
             },
-            "context_agent_high_confidence": {
-                "priority": 3,
-                "route": None,  # Dynamic based on mapping
-                "conditions": ["context_agent_confidence > 0.6"],
-                "description": "Use context agent suggestion with high confidence",
-                "context_agent_override": False
-            },
             "cognitive_offloading_override": {
-                "priority": 4,
+                "priority": 3,
                 "route": RouteType.COGNITIVE_INTERVENTION,
-                "conditions": ["cognitive_offloading_detected == True", "context_agent_confidence < 0.7"],
-                "description": "Cognitive offloading detected - override context agent",
+                "conditions": ["cognitive_offloading_detected == True"],
+                "description": "Cognitive offloading detected - immediate intervention",
                 "context_agent_override": True
             },
-            "pure_example_request": {
-                "priority": 5,
-                "route": RouteType.KNOWLEDGE_ONLY,
-                "conditions": ["interaction_type == 'example_request'", "is_pure_example_request == True"],
-                "description": "Pure example request - knowledge only",
-                "context_agent_override": False
-            },
-            "example_with_guidance": {
-                "priority": 6,
+            "design_problem_high_engagement": {
+                "priority": 4,
                 "route": RouteType.SOCRATIC_EXPLORATION,
-                "conditions": ["interaction_type == 'example_request'", "is_pure_example_request == False"],
-                "description": "Example request with design guidance",
+                "conditions": ["user_intent == 'design_problem'", "engagement_level == 'high'"],
+                "description": "Design problem with high engagement - Socratic exploration",
                 "context_agent_override": False
             },
-            "feedback_request": {
+            "design_problem_low_engagement": {
+                "priority": 5,
+                "route": RouteType.SUPPORTIVE_SCAFFOLDING,
+                "conditions": ["user_intent == 'design_problem'", "engagement_level == 'low'"],
+                "description": "Design problem with low engagement - supportive scaffolding",
+                "context_agent_override": False
+            },
+            "implementation_request_high_understanding": {
+                "priority": 6,
+                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "conditions": ["user_intent == 'implementation_request'", "understanding_level == 'high'"],
+                "description": "Implementation request with high understanding",
+                "context_agent_override": False
+            },
+            "implementation_request_low_understanding": {
                 "priority": 7,
+                "route": RouteType.FOUNDATIONAL_BUILDING,
+                "conditions": ["user_intent == 'implementation_request'", "understanding_level == 'low'"],
+                "description": "Implementation request with low understanding",
+                "context_agent_override": False
+            },
+            "pure_knowledge_request": {
+                "priority": 8,
+                "route": RouteType.KNOWLEDGE_ONLY,
+                "conditions": ["user_intent == 'knowledge_request'", "is_pure_knowledge_request == True"],
+                "description": "Pure knowledge request - knowledge only",
+                "context_agent_override": False
+            },
+            "knowledge_with_guidance": {
+                "priority": 9,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'knowledge_request'", "is_pure_knowledge_request == False"],
+                "description": "Knowledge request with guidance needed",
+                "context_agent_override": False
+            },
+            "evaluation_request": {
+                "priority": 10,
                 "route": RouteType.MULTI_AGENT_COMPREHENSIVE,
-                "conditions": ["interaction_type == 'feedback_request'"],
-                "description": "Feedback request - comprehensive analysis",
+                "conditions": ["user_intent == 'evaluation_request'"],
+                "description": "Evaluation request - comprehensive analysis",
+                "context_agent_override": False
+            },
+            "creative_exploration": {
+                "priority": 11,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'creative_exploration'"],
+                "description": "Creative exploration - Socratic questioning",
                 "context_agent_override": False
             },
             "overconfident_user": {
-                "priority": 8,
+                "priority": 12,
                 "route": RouteType.COGNITIVE_CHALLENGE,
                 "conditions": ["confidence_level == 'overconfident'"],
                 "description": "Overconfident user - cognitive challenge",
                 "context_agent_override": False
             },
-            "low_understanding": {
-                "priority": 9,
-                "route": RouteType.FOUNDATIONAL_BUILDING,
-                "conditions": ["understanding_level == 'low'"],
-                "description": "Low understanding - foundational building",
-                "context_agent_override": False
-            },
             "confusion_expression": {
-                "priority": 10,
+                "priority": 13,
                 "route": RouteType.SUPPORTIVE_SCAFFOLDING,
-                "conditions": ["interaction_type == 'confusion_expression'"],
+                "conditions": ["user_intent == 'confusion_expression'"],
                 "description": "Confusion expressed - supportive scaffolding",
                 "context_agent_override": False
             },
             "technical_question_high_understanding": {
-                "priority": 11,
+                "priority": 14,
                 "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
-                "conditions": ["interaction_type == 'technical_question'", "understanding_level == 'high'"],
+                "conditions": ["user_intent == 'technical_question'", "understanding_level == 'high'"],
                 "description": "Technical question with high understanding",
                 "context_agent_override": False
             },
             "technical_question_low_understanding": {
-                "priority": 12,
+                "priority": 15,
                 "route": RouteType.SOCRATIC_CLARIFICATION,
-                "conditions": ["interaction_type == 'technical_question'", "understanding_level != 'high'"],
+                "conditions": ["user_intent == 'technical_question'", "understanding_level != 'high'"],
                 "description": "Technical question with low understanding",
                 "context_agent_override": False
             },
+            "context_agent_high_confidence": {
+                "priority": 16,
+                "route": None,  # Dynamic based on mapping
+                "conditions": ["context_agent_confidence > 0.7"],
+                "description": "Use context agent suggestion with high confidence",
+                "context_agent_override": False
+            },
             "default_balanced": {
-                "priority": 13,
+                "priority": 17,
                 "route": RouteType.BALANCED_GUIDANCE,
                 "conditions": ["default"],
                 "description": "Default balanced guidance",
@@ -254,19 +360,94 @@ class AdvancedRoutingDecisionTree:
             ]
         }
     
+    def classify_user_intent(self, user_input: str, context: RoutingContext) -> str:
+        """Enhanced intent classification using pattern matching and context"""
+        
+        user_input_lower = user_input.lower()
+        
+        # Check for cognitive offloading first (highest priority)
+        for pattern in self.intent_patterns["cognitive_offloading"]:
+            if re.search(pattern, user_input_lower):
+                return "cognitive_offloading"
+        
+        # Check other intent patterns
+        for intent_type, patterns in self.intent_patterns.items():
+            if intent_type == "cognitive_offloading":
+                continue  # Already checked
+            for pattern in patterns:
+                if re.search(pattern, user_input_lower):
+                    return intent_type
+        
+        # Context-based classification
+        if context.project_context:
+            if "problem" in user_input_lower or "issue" in user_input_lower:
+                return "design_problem"
+            if "how to" in user_input_lower or "steps" in user_input_lower:
+                return "implementation_request"
+            if "is this" in user_input_lower or "should I" in user_input_lower:
+                return "evaluation_request"
+        
+        return "unknown"
+    
+    def _is_pure_knowledge_request(self, classification: Dict[str, Any], context: RoutingContext) -> bool:
+        """Enhanced check for pure knowledge requests"""
+        user_input = classification.get("user_input", "").lower()
+        
+        # Check for pure knowledge indicators
+        pure_knowledge_indicators = [
+            "what are", "what is", "examples", "case studies", "best practices",
+            "principles", "guidelines", "standards", "requirements"
+        ]
+        
+        # Check for guidance indicators (which would make it not pure knowledge)
+        guidance_indicators = [
+            "how should", "what should", "guide me", "help me", "advice",
+            "suggestions", "recommendations", "tips", "strategies"
+        ]
+        
+        has_pure_knowledge = any(indicator in user_input for indicator in pure_knowledge_indicators)
+        has_guidance = any(indicator in user_input for indicator in guidance_indicators)
+        
+        return has_pure_knowledge and not has_guidance
+    
+    def _extract_context_keywords(self, user_input: str) -> Dict[str, List[str]]:
+        """Extract context keywords from user input"""
+        user_input_lower = user_input.lower()
+        extracted_keywords = {}
+        
+        for category, keywords in self.context_keywords.items():
+            found_keywords = [kw for kw in keywords if kw in user_input_lower]
+            if found_keywords:
+                extracted_keywords[category] = found_keywords
+        
+        return extracted_keywords
+
     def decide_route(self, context: RoutingContext) -> RoutingDecision:
-        """Make advanced routing decision based on context"""
+        """Enhanced routing decision with better context awareness and intent classification"""
         try:
             # Extract context data
             classification = context.classification
             routing_suggestions = context.routing_suggestions
             context_analysis = context.context_analysis
             
+            # Use context agent's interaction_type as user_intent if available
+            interaction_type = classification.get("interaction_type", "")
+            user_input = classification.get("user_input", "")
+            
+            if interaction_type and interaction_type != "unknown":
+                user_intent = interaction_type
+            else:
+                # Fallback to pattern-based classification
+                user_intent = self.classify_user_intent(user_input, context)
+            
+            # Update context with user intent
+            context.user_intent = user_intent
+            
             # Detect cognitive offloading
             cognitive_offloading = self._detect_cognitive_offloading(classification, context_analysis)
             
-            # Check for pure example requests
-            is_pure_example_request = self._is_pure_example_request(classification, context)
+            # Check for pure knowledge requests (enhanced)
+            is_pure_knowledge_request = self._is_pure_knowledge_request(classification, context)
             
             # Prepare classification with additional data
             enhanced_classification = {
@@ -274,7 +455,8 @@ class AdvancedRoutingDecisionTree:
                 "cognitive_offloading_detected": cognitive_offloading["detected"],
                 "cognitive_offloading_type": cognitive_offloading["type"],
                 "cognitive_offloading_confidence": cognitive_offloading["confidence"],
-                "is_pure_example_request": is_pure_example_request,
+                "is_pure_knowledge_request": is_pure_knowledge_request,
+                "user_intent": user_intent,
                 "context_agent_confidence": routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0
             }
             
@@ -293,14 +475,21 @@ class AdvancedRoutingDecisionTree:
                         cognitive_offloading_type=cognitive_offloading["type"],
                         context_agent_confidence=routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0,
                         classification=enhanced_classification,
+                        user_intent=user_intent,
                         metadata={
                             "cognitive_offloading_indicators": cognitive_offloading["indicators"],
                             "context_agent_primary_route": routing_suggestions.get("primary_route") if routing_suggestions else None,
-                            "is_pure_example_request": is_pure_example_request
+                            "is_pure_knowledge_request": is_pure_knowledge_request,
+                            "intent_classification": user_intent,
+                            "context_keywords": self._extract_context_keywords(user_input)
                         }
                     )
                     
-                    logger.info(f"Advanced routing decision: {decision.route.value} - {decision.reason}")
+                    logger.info(f"🎯 Enhanced Routing Decision: {decision.route.value}")
+                    logger.info(f"   User Intent: {user_intent}")
+                    logger.info(f"   Reason: {decision.reason}")
+                    logger.info(f"   Confidence: {decision.confidence:.2f}")
+                    logger.info(f"   Rule Applied: {rule_name}")
                     return decision
             
             # Fallback decision

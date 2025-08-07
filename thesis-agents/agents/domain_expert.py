@@ -27,6 +27,16 @@ from state_manager import ArchMentorState
 from knowledge_base.knowledge_manager import KnowledgeManager
 from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
+# Enhanced architectural sources for better search results
+ARCHITECTURAL_SOURCES = [
+    "site:dezeen.com", "site:archdaily.com", "site:archello.com", 
+    "site:architectural-review.com", "site:architecturaldigest.com", 
+    "site:architectmagazine.com", "site:architecturalrecord.com",
+    "site:architect.org", "site:aia.org", "site:architecturalleague.org",
+    "site:architecturalfoundation.org", "site:architecturalassociation.org.uk",
+    "site:architecturalrecord.com", "site:architecturaldigest.com"
+]
+
 # Comprehensive architectural keyword configuration for flexible detection
 ARCHITECTURAL_KEYWORDS = {
     "building_types": {
@@ -131,6 +141,95 @@ def get_search_query_modifiers(text: str) -> Dict[str, str]:
             "exclude": ""
         }
 
+def analyze_conversation_context_for_search(state: ArchMentorState) -> Dict[str, Any]:
+    """
+    Analyze conversation context to extract search-relevant information.
+    Returns context that can be used to generate more targeted search queries.
+    """
+    context = {
+        "building_type": "general",
+        "project_scope": "unknown",
+        "specific_elements": [],
+        "user_needs": [],
+        "technical_requirements": [],
+        "design_phase": "ideation",
+        "conversation_themes": []
+    }
+    
+    # Extract building type from conversation
+    user_messages = [msg.get('content', '') for msg in state.messages if msg.get('role') == 'user']
+    assistant_messages = [msg.get('content', '') for msg in state.messages if msg.get('role') == 'assistant']
+    
+    # Analyze user messages for building type
+    for message in user_messages:
+        message_lower = message.lower()
+        
+        # Detect building types
+        for category, keywords in ARCHITECTURAL_KEYWORDS["building_types"].items():
+            if any(keyword in message_lower for keyword in keywords):
+                context["building_type"] = category
+                break
+        
+        # Detect specific elements
+        for element in ARCHITECTURAL_KEYWORDS["building_elements"]:
+            if element in message_lower:
+                context["specific_elements"].append(element)
+        
+        # Detect user needs (accessibility, sustainability, etc.)
+        if any(word in message_lower for word in ["accessible", "disability", "wheelchair", "elderly", "senior"]):
+            context["user_needs"].append("accessibility")
+        if any(word in message_lower for word in ["sustainable", "green", "eco", "energy", "solar"]):
+            context["user_needs"].append("sustainability")
+        if any(word in message_lower for word in ["budget", "cost", "affordable", "economic"]):
+            context["user_needs"].append("budget_constraints")
+        if any(word in message_lower for word in ["adaptive reuse", "conversion", "renovation", "repurpose"]):
+            context["user_needs"].append("adaptive_reuse")
+    
+    # Extract design phase from state
+    if hasattr(state, 'design_phase') and state.design_phase:
+        context["design_phase"] = state.design_phase.value if hasattr(state.design_phase, 'value') else str(state.design_phase)
+    
+    return context
+
+def generate_context_aware_search_query(topic: str, context: Dict[str, Any]) -> str:
+    """
+    Generate a context-aware search query based on the conversation context.
+    """
+    # Base query components
+    base_query = topic
+    
+    # Add building type context
+    if context["building_type"] != "general":
+        base_query += f" {context['building_type']}"
+    
+    # Add specific elements
+    if context["specific_elements"]:
+        elements_str = " ".join(context["specific_elements"][:3])  # Limit to 3 elements
+        base_query += f" {elements_str}"
+    
+    # Add user needs
+    if context["user_needs"]:
+        needs_str = " ".join(context["user_needs"])
+        base_query += f" {needs_str}"
+    
+    # Add design phase context
+    if context["design_phase"] != "ideation":
+        base_query += f" {context['design_phase']} phase"
+    
+    # Add architectural sources
+    sources_str = " OR ".join(ARCHITECTURAL_SOURCES[:8])  # Limit to 8 sources
+    
+    # Add search modifiers
+    modifiers = get_search_query_modifiers(topic)
+    
+    # Construct final query
+    if "example" in topic.lower() or "project" in topic.lower() or "case study" in topic.lower():
+        search_query = f'"{base_query}" {sources_str} projects examples case studies built works completed {modifiers["include"]} {modifiers["exclude"]}'
+    else:
+        search_query = f'"{base_query}" {sources_str} design principles best practices guidelines {modifiers["include"]} {modifiers["exclude"]}'
+    
+    return search_query
+
 class DomainExpertAgent:
     def __init__(self, domain="architecture"):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -140,25 +239,23 @@ class DomainExpertAgent:
         
         print(f"📚 {self.name} initialized with knowledge base for {domain}")
 
-    # Web search for knowledge if database is empty
-    async def search_web_for_knowledge(self, topic: str) -> List[Dict]:
-        """Enhanced web search with better architectural query construction and clickable links"""
+    # Enhanced web search with context awareness
+    async def search_web_for_knowledge(self, topic: str, state: ArchMentorState = None) -> List[Dict]:
+        """Enhanced web search with context-aware query construction and better result filtering"""
         
         try:
             import requests
             from urllib.parse import quote
             import re
             
-            # Enhanced search query construction for architecture using flexible detection
-            if "example" in topic.lower() or "project" in topic.lower():
-                # For example requests, focus on finding real projects from architectural websites
-                modifiers = get_search_query_modifiers(topic)
-                search_query = f"{topic} {modifiers['include']} site:dezeen.com OR site:archdaily.com OR site:archello.com OR site:architectural-review.com OR site:architecturaldigest.com OR site:architectmagazine.com OR site:architecturalrecord.com projects examples case studies built works {modifiers['exclude']}"
-            else:
-                # For general topics, focus on principles and best practices
-                modifiers = get_search_query_modifiers(topic)
-                search_query = f"{topic} {modifiers['include']} site:dezeen.com OR site:archdaily.com OR site:archello.com OR site:architectural-review.com OR site:architecturaldigest.com OR site:architectmagazine.com OR site:architecturalrecord.com design principles best practices examples {modifiers['exclude']}"
+            # Analyze conversation context for better search queries
+            context = {}
+            if state:
+                context = analyze_conversation_context_for_search(state)
+                print(f"🔍 Context analysis: {context}")
             
+            # Generate context-aware search query
+            search_query = generate_context_aware_search_query(topic, context)
             encoded_query = quote(search_query)
             
             # DuckDuckGo HTML search
@@ -168,7 +265,7 @@ class DomainExpertAgent:
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
             
-            print(f"🌐 Enhanced web search: {search_query}")
+            print(f"🌐 Context-aware web search: {search_query}")
             
             response = requests.get(search_url, headers=headers, timeout=15)
             
@@ -184,8 +281,9 @@ class DomainExpertAgent:
                 snippets = re.findall(snippet_pattern, response.text)
                 urls = re.findall(url_pattern, response.text)
                 
-                # Combine results (take up to 4 for better coverage)
-                for i in range(min(4, len(titles))):
+                # Filter and rank results based on relevance
+                filtered_results = []
+                for i in range(min(6, len(titles))):  # Get more results for filtering
                     try:
                         title = titles[i] if i < len(titles) else "Web Resource"
                         snippet = snippets[i] if i < len(snippets) else ""
@@ -195,40 +293,84 @@ class DomainExpertAgent:
                         title = re.sub(r'&[a-zA-Z]+;', '', title).strip()
                         snippet = re.sub(r'&[a-zA-Z]+;', '', snippet).strip()
                         
-                        # Create more substantial content for architectural examples
-                        if snippet and len(snippet) > 20:
-                            if "example" in topic.lower() or "project" in topic.lower():
-                                content = f"Architectural project example: {snippet}. This demonstrates practical approaches to {topic} that can inform design strategies and provide concrete inspiration for similar projects."
-                            else:
-                                content = f"Research on {topic} reveals: {snippet}. This architectural knowledge provides insights into design principles, best practices, and professional approaches for implementation."
-                        else:
-                            content = f"Architectural resource about {topic} from {title}. This source provides professional insights into design principles, case studies, and best practices relevant to {topic} in architectural projects."
+                        # Calculate relevance score
+                        relevance_score = 0
+                        topic_lower = topic.lower()
+                        title_lower = title.lower()
+                        snippet_lower = snippet.lower()
                         
-                        # Extract domain for source tracking
-                        domain = "unknown"
-                        if url:
-                            try:
-                                from urllib.parse import urlparse
-                                parsed_url = urlparse(url)
-                                domain = parsed_url.netloc
-                            except:
-                                domain = "web_resource"
+                        # Score based on topic presence
+                        if topic_lower in title_lower:
+                            relevance_score += 3
+                        if topic_lower in snippet_lower:
+                            relevance_score += 2
                         
-                        results.append({
-                            "content": content,
-                            "metadata": {
+                        # Score based on context elements
+                        for element in context.get("specific_elements", []):
+                            if element.lower() in title_lower or element.lower() in snippet_lower:
+                                relevance_score += 2
+                        
+                        # Score based on user needs
+                        for need in context.get("user_needs", []):
+                            if need.lower() in title_lower or need.lower() in snippet_lower:
+                                relevance_score += 1
+                        
+                        # Score based on architectural relevance
+                        if any(arch_word in title_lower or arch_word in snippet_lower 
+                               for arch_word in ["architecture", "architect", "design", "building", "project"]):
+                            relevance_score += 1
+                        
+                        # Only include results with minimum relevance
+                        if relevance_score >= 2:
+                            filtered_results.append({
                                 "title": title,
-                                "source": domain,
-                                "url": url,  # Include the actual URL for clickable links
-                                "discovery_method": "web_search"
-                            }
-                        })
-                        
+                                "snippet": snippet,
+                                "url": url,
+                                "relevance_score": relevance_score
+                            })
+                    
                     except Exception as e:
                         print(f"⚠️ Error processing web result {i}: {e}")
                         continue
                 
-                print(f"✅ Found {len(results)} web results for {topic}")
+                # Sort by relevance and take top 4
+                filtered_results.sort(key=lambda x: x["relevance_score"], reverse=True)
+                top_results = filtered_results[:4]
+                
+                # Convert to standard format
+                for result in top_results:
+                    # Create more substantial content for architectural examples
+                    if result["snippet"] and len(result["snippet"]) > 20:
+                        if "example" in topic.lower() or "project" in topic.lower():
+                            content = f"Architectural project example: {result['snippet']}. This demonstrates practical approaches to {topic} that can inform design strategies and provide concrete inspiration for similar projects."
+                        else:
+                            content = f"Research on {topic} reveals: {result['snippet']}. This architectural knowledge provides insights into design principles, best practices, and professional approaches for implementation."
+                    else:
+                        content = f"Architectural resource about {topic} from {result['title']}. This source provides professional insights into design principles, case studies, and best practices relevant to {topic} in architectural projects."
+                    
+                    # Extract domain for source tracking
+                    domain = "unknown"
+                    if result["url"]:
+                        try:
+                            from urllib.parse import urlparse
+                            parsed_url = urlparse(result["url"])
+                            domain = parsed_url.netloc
+                        except:
+                            domain = "web_resource"
+                    
+                    results.append({
+                        "content": content,
+                        "metadata": {
+                            "title": result["title"],
+                            "source": domain,
+                            "url": result["url"],
+                            "discovery_method": "context_aware_web_search",
+                            "relevance_score": result["relevance_score"],
+                            "context_used": context
+                        }
+                    })
+                
+                print(f"✅ Found {len(results)} relevant web results for {topic}")
                 return results
                 
             else:
@@ -1271,7 +1413,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         # If database search is insufficient, use web search
         if not knowledge_results or len(knowledge_results) < 2:
             print(f"   🌐 Database insufficient, searching web for: {user_topic}")
-            web_results = await self.search_web_for_knowledge(user_topic)
+            web_results = await self.search_web_for_knowledge(user_topic, state)
             if web_results:
                 knowledge_results.extend(web_results)
                 print(f"   🌐 Found {len(web_results)} web results")
@@ -2275,7 +2417,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             print(f"   Reasons: Examples={is_asking_for_examples}, MoreDetail={user_requests_more_detail}, Shallow={db_result_is_shallow}, FewResults={len(all_results) < 2}")
             
             # Use enhanced web search with better topic targeting
-            web_results = await self.search_web_for_knowledge(area_name)
+            web_results = await self.search_web_for_knowledge(area_name, state)
             if web_results:
                 print(f"   Found {len(web_results)} web results")
                 all_results.extend(web_results)
@@ -2519,14 +2661,8 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=800,
-                temperature=0.3
-            )
-            
-            direct_answer = response.choices[0].message.content.strip()
+            response = self.llm.invoke(prompt)
+            direct_answer = response.content.strip()
             print(f"📚 Direct answer generated: {direct_answer[:100]}...")
             
             return {
@@ -2552,16 +2688,16 @@ async def test_creative_domain_expert():
     print("🧪 Testing Creative Domain Expert Agent...")
     
     state = ArchMentorState()
-    state.current_design_brief = "Design a community center for elderly people in a cold climate"
+    state.current_design_brief = "Design a sustainable office building for a tech company"
     state.student_profile.skill_level = "intermediate"
     
     analysis_result = {
-        "text_analysis": {"building_type": "community center"},
-        "cognitive_flags": ["needs_accessibility_guidance"]
+        "text_analysis": {"building_type": "office"},
+        "cognitive_flags": ["needs_sustainability_guidance"]
     }
     
     expert = DomainExpertAgent("architecture")
-    result = await expert.provide_knowledge(state, analysis_result, "accessibility_awareness")
+    result = await expert.provide_knowledge(state, analysis_result, "sustainability_awareness")
     
     print(f"\n📚 Creative Discovery Results:")
     print(f"   Discovery Method: {result.get('discovery_method')}")

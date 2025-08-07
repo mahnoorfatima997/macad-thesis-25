@@ -61,9 +61,9 @@ class SocraticTutorAgent:
         print(f"💡 Student Insights: {student_insights['key_insights']}")
         print(f"🎯 Response Strategy: {response_strategy}")
         
-        # 0208 UPDATED: For early conversations, prioritize clarification over detailed examples
+        # 0208 UPDATED: For early conversations, use enhanced clarifying guidance
         if is_early_conversation and not has_examples:
-            print("🆕 Early conversation detected - providing clarifying guidance")
+            print("🆕 Early conversation detected - providing enhanced clarifying guidance")
             response_result = await self._generate_clarifying_guidance(state, student_analysis, conversation_progression)
         # 3107-BEFORE IT WAS if response_strategy == "clarifying_guidance": Generate response based on strategy, with special handling for examples
         elif has_examples:
@@ -402,7 +402,7 @@ class SocraticTutorAgent:
         return "adaptive_question"  # Default adaptive approach
     
     async def _generate_clarifying_guidance(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
-        """Generate clarifying guidance that builds understanding without giving answers"""
+        """Generate specific clarifying guidance that provides concrete architectural direction"""
         
         building_type = self._extract_building_type_from_context(state)
         
@@ -419,12 +419,11 @@ class SocraticTutorAgent:
         # Check if user has already specified a focus area within that topic
         user_specified_focus = self._extract_user_specified_focus(last_message)
         
-        # If user has already specified a focus, move to the next level of exploration
+        # Generate specific architectural guidance based on the topic
         if user_specified_focus:
-            response_text = self._generate_focused_exploration_question(user_specified_focus, building_type, main_topic)
+            response_text = self._generate_specific_architectural_guidance(user_specified_focus, building_type, main_topic)
         else:
-            # Generate dynamic topic-specific guidance
-            response_text = await self._generate_dynamic_topic_guidance(main_topic, building_type, last_message)
+            response_text = await self._generate_topic_specific_guidance(main_topic, building_type, last_message)
         
         return {
             "agent": self.name,
@@ -435,100 +434,152 @@ class SocraticTutorAgent:
             "conversation_progression": conversation_progression
         }
     
-    async def _generate_supportive_guidance(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
-        """Generate supportive guidance for students with low understanding"""
+    def _generate_specific_architectural_guidance(self, focus_area: str, building_type: str, main_topic: str) -> str:
+        """Generate specific architectural guidance using LLM for any building type"""
         
-        building_type = self._extract_building_type_from_context(state)
-        
+        # Use LLM to generate context-aware guidance instead of hardcoded templates
         prompt = f"""
-        The student has low understanding and needs supportive guidance. Provide encouraging, educational guidance.
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {focus_area} in the context of {main_topic}.
         
-        STUDENT STATE: {student_analysis}
-        CONVERSATION STAGE: {conversation_progression['stage']}
-        BUILDING TYPE: {building_type}
+        Generate a specific, helpful guidance response that:
+        1. Addresses the specific {focus_area} for {building_type}
+        2. Asks probing questions to guide discovery
+        3. Encourages deep thinking about the relationship between {focus_area} and {main_topic}
+        4. Is specific to {building_type} but not overly prescriptive
+        5. Helps the student think through the design challenges
         
-        Provide supportive guidance that:
-        1. Encourages their learning journey
-        2. Provides foundational knowledge
-        3. Builds their confidence
-        4. Guides them to the next step
-        5. Is encouraging and educational
-        
-        Give supportive guidance:
+        Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers.
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
-                temperature=0.4
-            )
-            
-            supportive_response = response.choices[0].message.content.strip()
-            
-            return {
-                "response_text": supportive_response,
-                "response_type": "supportive_guidance",
-                "user_input_addressed": "learning_support"
-            }
-            
+            response = self.llm.invoke(prompt)
+            return response.content
         except Exception as e:
-            print(f"⚠️ Supportive guidance generation failed: {e}")
-            return {
-                "response_text": "Great question! Let's build on this step by step. What aspect would you like to explore first?",
-                "response_type": "supportive_guidance",
-                "user_input_addressed": "learning_support"
-            }
+            # Fallback to generic guidance if LLM fails
+            return f"Let's focus on {focus_area} for your {building_type}. What specific challenges or opportunities do you see in this area? How does it relate to your overall design goals?"
     
-    async def _generate_challenging_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
-        """Generate challenging questions for confident students"""
+    async def _generate_topic_specific_guidance(self, main_topic: str, building_type: str, last_message: str) -> str:
+        """Generate topic-specific architectural guidance using LLM"""
         
-        building_type = self._extract_building_type_from_context(state)
-        
+        # Use LLM to generate context-aware guidance
         prompt = f"""
-        The student shows confidence and understanding. Generate a challenging question that pushes their thinking deeper.
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {main_topic}.
         
-        STUDENT STATE: {student_analysis}
-        CONVERSATION STAGE: {conversation_progression['stage']}
-        BUILDING TYPE: {building_type}
+        Generate a specific, helpful guidance response that:
+        1. Addresses {main_topic} in the context of {building_type}
+        2. Asks probing questions to guide discovery
+        3. Encourages deep thinking about {main_topic}
+        4. Is specific to {building_type} but not overly prescriptive
+        5. Helps the student think through the design challenges
         
-        Generate a challenging question that:
-        1. Challenges their assumptions
-        2. Forces them to consider trade-offs
-        3. Pushes them to justify their choices
-        4. Makes them think about implications
-        5. Is direct and thought-provoking
-        
-        Ask ONE challenging question:
+        Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers.
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=60,
-                temperature=0.3
-            )
-            
-            challenging_question = response.choices[0].message.content.strip()
-            
-            if not challenging_question.endswith('?'):
-                challenging_question += '?'
-            
-            return {
-                "response_text": challenging_question,
-                "response_type": "challenging_question",
-                "user_input_addressed": "critical_thinking"
-            }
-            
+            response = self.llm.invoke(prompt)
+            return response.content
         except Exception as e:
-            print(f"⚠️ Challenging question generation failed: {e}")
-            return {
-                "response_text": "What assumptions are you making about this design decision that might need to be questioned?",
-                "response_type": "challenging_question",
-                "user_input_addressed": "critical_thinking"
-            }
+            # Fallback to generic guidance if LLM fails
+            return f"Let's explore {main_topic} for your {building_type}. What specific aspects of {main_topic} are most important for your project? How does it relate to your overall design goals?"
+
+    async def _generate_supportive_guidance(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
+        """Generate supportive guidance with specific architectural knowledge"""
+        
+        building_type = self._extract_building_type_from_context(state)
+        
+        # Get the user's last message
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+        
+        main_topic = self._extract_main_topic(last_message)
+        
+        # Provide specific, encouraging guidance based on the topic
+        supportive_guidance = self._get_supportive_architectural_guidance(main_topic, building_type, student_analysis)
+        
+        return {
+            "response_text": supportive_guidance,
+            "response_type": "supportive_guidance",
+            "user_input_addressed": "learning_support"
+        }
+    
+    def _get_supportive_architectural_guidance(self, topic: str, building_type: str, student_analysis: Dict) -> str:
+        """Get specific supportive guidance for architectural topics using LLM"""
+        
+        # Use LLM to generate context-aware supportive guidance
+        prompt = f"""
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {topic} and needs supportive, encouraging guidance.
+        
+        Generate a supportive, encouraging response that:
+        1. Acknowledges the student's interest in {topic}
+        2. Provides positive reinforcement for their thinking
+        3. Offers helpful guidance specific to {building_type}
+        4. Encourages deeper exploration of {topic}
+        5. Maintains an encouraging, educational tone
+        
+        Keep the response conversational and supportive. Focus on building confidence while guiding learning.
+        """
+        
+        try:
+            response = self.llm.invoke(prompt)
+            return response.content
+        except Exception as e:
+            # Fallback to generic supportive guidance if LLM fails
+            return f"Excellent question about {topic}! This is a key aspect of your {building_type} project. What specific aspects of {topic} are you most interested in exploring? Let's break this down step by step."
+
+    async def _generate_challenging_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
+        """Generate challenging questions that push architectural thinking deeper"""
+        
+        building_type = self._extract_building_type_from_context(state)
+        
+        # Get the user's last message
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+        
+        main_topic = self._extract_main_topic(last_message)
+        
+        # Generate specific challenging questions based on the topic
+        challenging_question = self._get_challenging_architectural_question(main_topic, building_type, student_analysis)
+        
+        return {
+            "response_text": challenging_question,
+            "response_type": "challenging_question",
+            "user_input_addressed": "deep_thinking"
+        }
+    
+    def _get_challenging_architectural_question(self, topic: str, building_type: str, student_analysis: Dict) -> str:
+        """Get specific challenging questions for architectural topics using LLM"""
+        
+        # Use LLM to generate context-aware challenging questions
+        prompt = f"""
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {topic} and needs a challenging question to push their thinking deeper.
+        
+        Generate a challenging, thought-provoking question that:
+        1. Addresses complex trade-offs in {topic} for {building_type}
+        2. Pushes the student to think about competing requirements
+        3. Encourages deeper analysis of {topic} decisions
+        4. Challenges assumptions about {topic}
+        5. Helps the student consider long-term implications
+        
+        Make the question specific to {building_type} but applicable to architectural thinking in general.
+        Keep it challenging but not overwhelming.
+        """
+        
+        try:
+            response = self.llm.invoke(prompt)
+            return response.content
+        except Exception as e:
+            # Fallback to generic challenging question if LLM fails
+            return f"Your {topic} choices will shape the entire project. How will you make decisions that balance function, aesthetics, and long-term value? What happens when your ideal {topic} solution conflicts with other project requirements?"
     
     async def _generate_exploratory_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
         """Generate exploratory questions for students in exploration stage"""
@@ -553,14 +604,8 @@ class SocraticTutorAgent:
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=60,
-                temperature=0.4
-            )
-            
-            exploratory_question = response.choices[0].message.content.strip()
+            response = self.llm.invoke(prompt)
+            exploratory_question = response.content.strip()
             
             if not exploratory_question.endswith('?'):
                 exploratory_question += '?'
@@ -596,14 +641,8 @@ class SocraticTutorAgent:
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=60,
-                temperature=0.3
-            )
-            
-            adaptive_question = response.choices[0].message.content.strip()
+            response = self.llm.invoke(prompt)
+            adaptive_question = response.content.strip()
             
             if not adaptive_question.endswith('?'):
                 adaptive_question += '?'

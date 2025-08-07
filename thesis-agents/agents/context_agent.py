@@ -178,33 +178,41 @@ class ContextAgent:
     
     #0208super enhanced AI-powered classification for learning state detection
     async def _perform_core_classification(self, input_text: str, state: ArchMentorState) -> Dict[str, Any]:
-        """Enhanced AI-powered learning state detection with manual override for question responses"""
+        """Enhanced AI-powered learning state detection with manual override for specific interaction types"""
         
-        # FIRST: Check if this is a response to a question using manual classification (context-aware)
+        # FIRST: Check if this matches specific patterns using manual classification (context-aware)
         manual_interaction_type = self._classify_interaction_type(input_text, state)
         
-        # If it's a question response, prioritize this over AI classification
-        if manual_interaction_type == "question_response":
-            print(f"🎯 MANUAL OVERRIDE: Detected question_response, bypassing AI classification")
+        # Define interaction types that should use manual override (priority over AI)
+        manual_override_types = [
+            "question_response", "confusion_expression", "direct_answer_request", 
+            "knowledge_request", "implementation_request", "example_request",
+            "feedback_request", "technical_question", "improvement_seeking",
+            "general_question", "general_statement"
+        ]
+        
+        # If it matches a specific pattern, prioritize this over AI classification
+        if manual_interaction_type in manual_override_types:
+            print(f"🎯 MANUAL OVERRIDE: Detected {manual_interaction_type}, bypassing AI classification")
             
             # Use manual classification for interaction type, but get other metrics from AI
             ai_classification = await self._get_ai_classification_for_other_metrics(input_text, state)
             
             return {
-                "interaction_type": "question_response",  # Manual override
+                "interaction_type": manual_interaction_type,  # Manual override
                 "understanding_level": ai_classification.get("understanding_level", "medium"),
                 "confidence_level": ai_classification.get("confidence_level", "confident"),
                 "engagement_level": ai_classification.get("engagement_level", "medium"),
                 "overconfidence_score": 2 if ai_classification.get("confidence_level") == "overconfident" else 0,
-                "is_technical_question": ai_classification.get("is_technical_question", False),
-                "is_feedback_request": ai_classification.get("is_feedback_request", False),
-                "is_example_request": ai_classification.get("is_example_request", False),
-                "shows_confusion": ai_classification.get("shows_confusion", False),
-                "requests_help": ai_classification.get("requests_help", False),
+                "is_technical_question": manual_interaction_type == "technical_question",
+                "is_feedback_request": manual_interaction_type == "feedback_request",
+                "is_example_request": manual_interaction_type == "example_request",
+                "shows_confusion": manual_interaction_type == "confusion_expression",
+                "requests_help": manual_interaction_type in ["confusion_expression", "direct_answer_request"],
                 "demonstrates_overconfidence": ai_classification.get("demonstrates_overconfidence", False),
                 "seeks_validation": False,
                 "classification": "question" if "?" in input_text else "statement",
-                "ai_reasoning": ai_classification.get("reasoning", "Manual override for question response"),
+                "ai_reasoning": f"Manual override for {manual_interaction_type}",
                 "manual_override": True
             }
         
@@ -483,7 +491,7 @@ class ContextAgent:
 
     
     def _classify_interaction_type(self, input_text: str, state: ArchMentorState = None) -> str:
-        """Enhanced interaction type classification with contextual awareness for question responses"""
+        """Enhanced interaction type classification with improved pattern matching and context awareness"""
         
         input_lower = input_text.lower()
         
@@ -491,123 +499,145 @@ class ContextAgent:
         if state and self._is_response_to_previous_question(input_text, state):
             return "question_response"
         
-        # Check for response indicators first (highest priority) - but be more precise
-        # These should only trigger for actual responses, not general statements
-        response_indicators = [
-            "i would", "i will", "i think", "i believe", "i feel", "i see",
-            "i understand", "i know", "i can", "i should", "i might",
-            "yes", "no", "because", "since", "as", "therefore", "however"
+        # ENHANCED PATTERN SYSTEM - Level 1: High-Confidence Patterns
+        
+        # 1. Direct Answer Request (Cognitive Offloading) - HIGH PRIORITY
+        direct_answer_patterns = [
+            "can you design", "design this for me", "do it for me",
+            "make it for me", "complete design", "full design", "finished design",
+            "design it for me", "what should I design"
         ]
+        if any(pattern in input_lower for pattern in direct_answer_patterns):
+            return "direct_answer_request"
         
-        # But exclude cases where these are part of general statements, not responses
-        general_statement_indicators = [
-            "i would like to", "i would prefer to", "i would love to",
-            "i think this is", "i think that is", "i think it is",
-            "i would like to focus on", "i would like to learn", "i would like to explore",
-            "i would like to know", "i would like to understand"
+        # 2. Example Request - HIGH PRIORITY
+        example_request_patterns = [
+            "show me examples", "can you give me examples", "provide me with examples",
+            "can you show me precedents", "I need some references", "give me some examples"
         ]
-        
-        # Check for response patterns first (highest priority for actual responses)
-        response_patterns = [
-            "i would keep", "i would use", "i would add", "i would create",
-            "i would highlight", "i would maintain", "i would preserve",
-            "i would combine", "i would balance", "i would integrate",
-            "interests me the most", "i am most interested in", "i would choose"
-        ]
-        
-        if any(pattern in input_lower for pattern in response_patterns):
-            return "question_response"
-        
-        # Check if it's a general statement (but not if it has strong response indicators)
-        if any(indicator in input_lower for indicator in general_statement_indicators):
-            # This is likely a general statement, not a response
-            pass
-        elif any(indicator in input_lower for indicator in response_indicators):
-            # It has response indicators but not specific response patterns
-            # Let the AI classification handle it
-            pass
-        
-        # Enhanced example request detection with more patterns
-        example_patterns = [
-            "can you give", "show me", "provide examples", "give me examples",
-            "examples of", "show examples", "demonstrate", "illustrate",
-            "case studies", "precedents", "similar projects", "reference"
-        ]
-        
-        if any(pattern in input_lower for pattern in example_patterns):
+        if any(pattern in input_lower for pattern in example_request_patterns):
             return "example_request"
         
-        # Enhanced feedback request detection
+        # 3. Knowledge Request - HIGH PRIORITY
+        knowledge_request_patterns = [
+            "tell me about", "what are", "explain", "describe",
+            "I want to learn about", "can you explain"
+        ]
+        if any(pattern in input_lower for pattern in knowledge_request_patterns):
+            return "knowledge_request"
+        
+        # ENHANCED PATTERN SYSTEM - Level 2: Context-Dependent Patterns
+        
+        # 4. Enhanced example request detection with context awareness (HIGHER PRIORITY)
+        example_context_patterns = [
+            "I want to see case studies", "I'd like to see some", "Can I get references",
+            "I want to see precedents", "show me precedents", "I need references",
+            "I need some references"
+        ]
+        if any(pattern in input_lower for pattern in example_context_patterns):
+            return "example_request"
+        
+        # 5. Enhanced knowledge request detection with context awareness (HIGHER PRIORITY)
+        knowledge_context_patterns = [
+            "I need to understand", "I want to learn about", "I want to know about", 
+            "can you tell me about", "I'd like to learn"
+        ]
+        if any(pattern in input_lower for pattern in knowledge_context_patterns):
+            return "knowledge_request"
+        
+        # 6. Enhanced direct answer request detection with context awareness (HIGHER PRIORITY)
+        direct_answer_context_patterns = [
+            "I need you to create", "Could you build", "I want you to make",
+            "Please design", "Show me how to", "I want you to design"
+        ]
+        if any(pattern in input_lower for pattern in direct_answer_context_patterns):
+            return "direct_answer_request"
+        
+        # ENHANCED PATTERN SYSTEM - Level 3: Specific Pattern Disambiguation
+        
+        # 7. Disambiguate "show me" patterns based on context
+        if "show me" in input_lower:
+            if any(word in input_lower for word in ["exactly", "precisely", "the answer", "the solution", "how to"]):
+                return "direct_answer_request"
+            elif any(word in input_lower for word in ["examples", "precedents", "case studies", "references"]):
+                return "example_request"
+            else:
+                # Let AI handle ambiguous "show me" cases
+                return "unknown"
+        
+        # 8. Disambiguate "tell me" patterns based on context
+        if "tell me" in input_lower:
+            if any(word in input_lower for word in ["exactly", "precisely", "the answer", "the solution"]):
+                return "direct_answer_request"
+            elif any(word in input_lower for word in ["about", "more", "details", "information"]):
+                return "knowledge_request"
+            else:
+                # Let AI handle ambiguous "tell me" cases
+                return "unknown"
+        
+        # 9. Disambiguate "what is" patterns
+        if "what is" in input_lower:
+            # Check if it's asking for technical information
+            technical_indicators = ["requirement", "standard", "code", "regulation", "specification", "technical"]
+            if any(indicator in input_lower for indicator in technical_indicators):
+                return "technical_question"
+            else:
+                return "knowledge_request"
+        
+        # ENHANCED PATTERN SYSTEM - Level 4: Specific Interaction Types
+        
+        # 10. Feedback request detection
         feedback_patterns = [
             "feedback", "review", "critique", "evaluate", "assess",
             "what do you think", "how is this", "is this good", "am i on track"
         ]
-        
         if any(pattern in input_lower for pattern in feedback_patterns):
             return "feedback_request"
         
-        # Enhanced design guidance request detection (HIGH PRIORITY)
-        design_guidance_patterns = [
-            "what direction should", "how should i", "where should i",
-            "what's the best way to", "how do i design", "what's the optimal",
-            "which direction", "what orientation", "how to orient",
-            "what's the ideal", "what would be the best", "how can i arrange",
-            "what's the most effective", "how to position", "where to place",
-            "what's the recommended", "how to organize", "what's the proper",
-            "how to layout", "what's the strategic", "how to configure"
-        ]
-        
-        if any(pattern in input_lower for pattern in design_guidance_patterns):
-            return "design_guidance_request"
-        
-        # Enhanced technical question detection
+        # 11. Technical question detection
         technical_patterns = [
-            "how to", "what is", "explain", "define", "describe",
-            "technical", "specification", "requirement", "standard",
+            "how to", "technical", "specification", "requirement", "standard",
             "code", "regulation", "material", "system", "structure"
         ]
-        
         if any(pattern in input_lower for pattern in technical_patterns):
             return "technical_question"
         
-        # Enhanced confusion expression detection
+        # 12. Confusion expression detection
         confusion_patterns = [
             "confused", "don't understand", "unclear", "not sure",
             "help", "lost", "stuck", "struggling", "difficult",
             "what does this mean", "i don't get it"
         ]
-        
         if any(pattern in input_lower for pattern in confusion_patterns):
             return "confusion_expression"
         
-        # Enhanced improvement seeking detection
+        # 13. Improvement seeking detection
         improvement_patterns = [
             "improve", "better", "enhance", "optimize", "refine",
             "make it better", "how can i", "what should i change"
         ]
-        
         if any(pattern in input_lower for pattern in improvement_patterns):
             return "improvement_seeking"
         
-        # Enhanced knowledge seeking detection
-        knowledge_patterns = [
-            "learn", "study", "research", "find out", "discover",
-            "tell me about", "what are", "explain", "describe"
+        # 14. Implementation request detection (HIGHER PRIORITY)
+        implementation_patterns = [
+            "how do i", "how should i", "what steps", "how to implement",
+            "how to start", "how to begin", "what should i do", "what steps should i"
         ]
+        if any(pattern in input_lower for pattern in implementation_patterns):
+            return "implementation_request"
         
-        if any(pattern in input_lower for pattern in knowledge_patterns):
-            return "knowledge_seeking"
+        # ENHANCED PATTERN SYSTEM - Level 5: General Classification
         
-        # Enhanced general statement detection with more variety
+        # 15. Enhanced general statement detection
         statement_patterns = [
             "i am", "i have", "i want", "i need", "i like", "i prefer",
             "this is", "that is", "it is", "there is", "here is"
         ]
-        
         if any(pattern in input_lower for pattern in statement_patterns):
             return "general_statement"
         
-        # Default based on question mark presence
+        # 16. Default based on question mark presence
         if "?" in input_text:
             return "general_question"
         else:
