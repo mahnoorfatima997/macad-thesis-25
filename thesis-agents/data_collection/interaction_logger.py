@@ -1,19 +1,48 @@
-# Thesis data collection module interaction_logger.py
-# This module logs interactions between students and the tutoring system for thesis analysis.
-# Cognitive Offloading Prevention Rate - How often system avoids direct answers
-# Deep Thinking Encouragement Rate - How often responses promote reflection
-# Knowledge Integration Rate - How often relevant sources are used
-# Scaffolding Effectiveness - How well system addresses cognitive gaps
-# Agent Coordination Efficiency - Distribution of agent usage
-# Student Engagement Patterns - Input types and progression
+#!/usr/bin/env python3
+"""
+Enhanced Interaction Logger for Thesis Data Collection
+Comprehensive logging with scientific metrics, cognitive state tracking, and design move analysis
+"""
+
 import json
 import csv
 import datetime
+import logging
+import numpy as np
+from typing import Dict, List, Any, Optional
+from dataclasses import asdict, is_dataclass
+from enum import Enum
 import os
-from typing import Dict, Any, List, Optional
 import uuid
 import pandas as pd
-import numpy as np
+
+# Custom JSON encoder to handle ConversationMilestone and other non-serializable objects
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder to handle ConversationMilestone and other non-serializable objects"""
+    
+    def default(self, obj):
+        # Handle ConversationMilestone and other dataclasses
+        if is_dataclass(obj):
+            return asdict(obj)
+        
+        # Handle Enum objects
+        if isinstance(obj, Enum):
+            return obj.value
+        
+        # Handle datetime objects
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        
+        # Handle numpy types
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        
+        # For any other non-serializable objects, convert to string representation
+        return str(obj)
 
 class InteractionLogger:
     def __init__(self, session_id: str = None):
@@ -629,17 +658,49 @@ class InteractionLogger:
         
         print(f"Design moves saved to: {filename}")
     
+    def _save_all_interactions_to_csv(self):
+        """Save all interactions to CSV for analysis"""
+        
+        if not self.interactions:
+            print("No interactions to save to CSV")
+            return
+        
+        filename = f"./thesis_data/interactions_{self.session_id}.csv"
+        
+        with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+            # Get all fieldnames from all interactions
+            all_fieldnames = set()
+            for interaction in self.interactions:
+                all_fieldnames.update(interaction.keys())
+            
+            # Convert fieldnames to list and sort for consistent order
+            fieldnames = sorted(list(all_fieldnames))
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            # Write each interaction, filling missing fields with empty strings
+            for interaction in self.interactions:
+                # Ensure all fields are present
+                row = {field: interaction.get(field, '') for field in fieldnames}
+                writer.writerow(row)
+        
+        print(f"All interactions saved to: {filename}")
+    
     def export_for_thesis_analysis(self):
         """Export comprehensive data for thesis analysis with enhanced metrics"""
         
         # Export session summary
         summary = self.get_session_summary()
         with open(f"./thesis_data/session_summary_{self.session_id}.json", 'w') as f:
-            json.dump(summary, f, indent=2)
+            json.dump(summary, f, indent=2, cls=CustomJSONEncoder)
         
         # Export full interaction log
         with open(f"./thesis_data/full_log_{self.session_id}.json", 'w') as f:
-            json.dump(self.interactions, f, indent=2)
+            json.dump(self.interactions, f, indent=2, cls=CustomJSONEncoder)
+        
+        # Export all interactions to CSV
+        self._save_all_interactions_to_csv()
         
         # Export design moves for linkography analysis
         self._save_design_moves_to_csv()
@@ -804,7 +865,7 @@ class InteractionLogger:
         # Save to file
         filepath = os.path.join("./thesis_data", filename)
         with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(export_data, f, indent=2, ensure_ascii=False, default=str)
+            json.dump(export_data, f, indent=2, ensure_ascii=False, cls=CustomJSONEncoder)
         
         print(f"📊 Comprehensive JSON exported: {filepath}")
         print(f"📈 Data includes: {len(export_data['detailed_interactions'])} interactions, scientific metrics, cognitive state, phase analysis, and design moves")
@@ -1146,7 +1207,7 @@ def export_thesis_ready_data():
     
     # Export summary statistics
     with open("./thesis_data/thesis_summary_statistics.json", 'w') as f:
-        json.dump(analysis, f, indent=2)
+        json.dump(analysis, f, indent=2, cls=CustomJSONEncoder)
     
     # Export for statistical analysis software (R, SPSS, etc.)
     csv_files = [f for f in os.listdir("./thesis_data") if f.startswith("interactions_") and f.endswith(".csv")]

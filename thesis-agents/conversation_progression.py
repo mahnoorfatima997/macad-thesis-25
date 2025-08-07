@@ -72,8 +72,13 @@ class ConversationProgressionManager:
         self.design_space_map = self._initialize_design_space_map()
         self.milestone_rules = self._initialize_milestone_rules()
         self.progression_sequence = self._initialize_progression_sequence()
+        self.current_state = None  # Store current state for access in methods
         
         logger.info(f"Conversation Progression Manager initialized for {domain}")
+    
+    def update_state(self, state):
+        """Update the current state for use in progression analysis"""
+        self.current_state = state
     
     def _initialize_user_profile(self) -> Dict[str, Any]:
         """Initialize user learning profile"""

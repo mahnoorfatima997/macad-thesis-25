@@ -513,7 +513,9 @@ class ContextAgent:
         # 2. Example Request - HIGH PRIORITY
         example_request_patterns = [
             "show me examples", "can you give me examples", "provide me with examples",
-            "can you show me precedents", "I need some references", "give me some examples"
+            "can you show me precedents", "I need some references", "give me some examples",
+            "can you provide", "precedent projects", "case studies", "examples of",
+            "can you give some examples", "can you give examples", "give me examples"
         ]
         if any(pattern in input_lower for pattern in example_request_patterns):
             return "example_request"
@@ -532,7 +534,7 @@ class ContextAgent:
         example_context_patterns = [
             "I want to see case studies", "I'd like to see some", "Can I get references",
             "I want to see precedents", "show me precedents", "I need references",
-            "I need some references"
+            "I need some references", "precedent projects", "industrial buildings", "community centers"
         ]
         if any(pattern in input_lower for pattern in example_context_patterns):
             return "example_request"
@@ -563,6 +565,16 @@ class ContextAgent:
                 return "example_request"
             else:
                 # Let AI handle ambiguous "show me" cases
+                return "unknown"
+        
+        # 7.5. Enhanced "can you provide" pattern disambiguation
+        if "can you provide" in input_lower:
+            if any(word in input_lower for word in ["examples", "precedents", "case studies", "references", "projects"]):
+                return "example_request"
+            elif any(word in input_lower for word in ["information", "details", "explanation", "help"]):
+                return "knowledge_request"
+            else:
+                # Let AI handle ambiguous "can you provide" cases
                 return "unknown"
         
         # 8. Disambiguate "tell me" patterns based on context
@@ -701,7 +713,9 @@ class ContextAgent:
             "i would keep", "i would use", "i would add", "i would create",
             "i would highlight", "i would maintain", "i would preserve",
             "i would combine", "i would balance", "i would integrate",
-            "interests me the most", "i am most interested in", "i would choose"
+            "interests me the most", "i am most interested in", "i would choose",
+            "it's going to be", "it will be", "we've got", "they'll need",
+            "it should be", "i like that", "plus it's", "figuring out how to"
         ]
         
         # Check if user input contains response indicators
@@ -713,7 +727,17 @@ class ContextAgent:
             "can you", "help me", "show me", "give me", "provide", "explain"
         ])
         
-        return user_gave_response and not_asking_question and not_requesting_help
+        # Enhanced response detection: Check if user is describing their project/ideas
+        project_description_indicators = [
+            "it's going to be", "it will be", "we've got", "they'll need",
+            "it should be", "i like that", "plus it's", "figuring out how to",
+            "the main purpose", "the users will be", "the space needs to",
+            "i am considering", "i am working on", "my project is"
+        ]
+        
+        describing_project = any(indicator in current_input_lower for indicator in project_description_indicators)
+        
+        return (user_gave_response or describing_project) and not_asking_question and not_requesting_help
     
     def _detect_understanding_level(self, input_lower: str) -> str:
         """Detect understanding level from linguistic indicators"""

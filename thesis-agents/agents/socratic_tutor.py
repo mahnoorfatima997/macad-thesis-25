@@ -379,7 +379,7 @@ class SocraticTutorAgent:
         RECENT MESSAGES: {recent_messages}
         CURRENT MESSAGE: "{current_message}"
         
-        IMPORTANT: This is a conversation - the student is responding to previous questions/guidance. Do not treat their message as a new topic.
+        CRITICAL CONTEXT: This is a conversation - the student is responding to previous questions/guidance. Do not treat their message as a new topic. Build on what they've already shared.
         
         Extract:
         1. Key insights about their design thinking and understanding
@@ -389,6 +389,8 @@ class SocraticTutorAgent:
         5. Learning style indicators
         6. Whether they're responding to previous guidance or asking something new
         7. Specific details they've shared about their project (user groups, activities, challenges, etc.)
+        8. What specific question or guidance they're responding to
+        9. How their current message builds on previous conversation
         
         Focus on understanding their current level of understanding and what they need next, not repeating what they said.
         
@@ -689,7 +691,11 @@ class SocraticTutorAgent:
             {context_info}
             {milestone_info}
             
-            CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
+            CRITICAL CONTEXT UNDERSTANDING: 
+            - You MUST incorporate and reference the specific details the student has shared in their message
+            - Do not ignore any part of their context
+            - This is a conversation - they are responding to previous guidance or asking follow-up questions
+            - Build on what they've already shared, don't treat it as a new topic
             
             Generate a CONCISE, supportive, encouraging guidance that:
             1. Acknowledges the student's understanding and progress
@@ -702,7 +708,7 @@ class SocraticTutorAgent:
             8. Aligns with the current milestone objectives: {milestone_type}
             9. Helps the student achieve the required actions: {required_actions}
             
-            IMPORTANT INSTRUCTIONS:
+            CRITICAL INSTRUCTIONS:
             - Reference the student's specific user groups, activities, and requirements
             - Address the specific challenges or opportunities they've mentioned
             - Build upon their existing understanding and insights
@@ -712,6 +718,7 @@ class SocraticTutorAgent:
             - KEEP RESPONSE SHORT AND FOCUSED (2-3 sentences + 1-2 questions)
             - Do not repeat what the student said - build on it
             - Understand this is a conversation - respond to their specific question/comment
+            - If they mentioned specific details (warehouse, user groups, activities), reference them directly
             
             Keep the response encouraging and supportive while being educationally valuable and milestone-aware.
             """

@@ -198,24 +198,17 @@ def generate_context_aware_search_query(topic: str, context: Dict[str, Any]) -> 
     # Start with the main topic
     base_query = topic.strip()
     
-    # Add building type context if available and relevant
+    # Simplify the query - just use the main topic with architecture
+    search_query = f"{base_query} architecture"
+    
+    # Add building type if available
     if context.get("building_type") and context["building_type"] != "general":
         building_type = context["building_type"].replace("_", " ")
-        base_query += f" {building_type}"
+        search_query += f" {building_type}"
     
-    # Add a few key architectural sources (limit to 3 for better results)
-    key_sources = ["site:dezeen.com", "site:archdaily.com", "site:archello.com"]
-    sources_str = " OR ".join(key_sources)
-    
-    # Create a focused query
-    if "example" in topic.lower() or "project" in topic.lower() or "case study" in topic.lower():
-        search_query = f'"{base_query}" {sources_str}'
-    else:
-        search_query = f'"{base_query}" architecture {sources_str}'
-    
-    # Limit query length to avoid overwhelming search engines
-    if len(search_query) > 200:
-        search_query = search_query[:200]
+    # Limit query length
+    if len(search_query) > 150:
+        search_query = search_query[:150]
     
     return search_query
 
@@ -230,12 +223,13 @@ class DomainExpertAgent:
 
     # Enhanced web search with context awareness
     async def search_web_for_knowledge(self, topic: str, state: ArchMentorState = None) -> List[Dict]:
-        """Enhanced web search with context-aware query construction and better result filtering"""
+        """Enhanced web search with better search methods and fallback strategies"""
         
         try:
             import requests
             from urllib.parse import quote
             import re
+            import json
             
             # Analyze conversation context for better search queries
             context = {}
@@ -245,36 +239,181 @@ class DomainExpertAgent:
             
             # Generate context-aware search query
             search_query = generate_context_aware_search_query(topic, context)
-            encoded_query = quote(search_query)
+            print(f"🌐 Enhanced web search: {search_query}")
             
-            # DuckDuckGo HTML search
+            # Try multiple search strategies
+            results = []
+            
+            # Strategy 1: Try Google Custom Search API (if available)
+            google_results = await self._try_google_search(search_query)
+            if google_results:
+                results.extend(google_results)
+                print(f"✅ Google search found {len(google_results)} results")
+            
+            # Strategy 2: Try SerpAPI (if available)
+            if not results:
+                serp_results = await self._try_serp_search(search_query)
+                if serp_results:
+                    results.extend(serp_results)
+                    print(f"✅ SerpAPI search found {len(serp_results)} results")
+            
+            # Strategy 3: Enhanced DuckDuckGo with better parsing
+            if not results:
+                ddg_results = await self._try_enhanced_duckduckgo(search_query)
+                if ddg_results:
+                    results.extend(ddg_results)
+                    print(f"✅ Enhanced DuckDuckGo found {len(ddg_results)} results")
+            
+            # Strategy 4: Fallback to architectural knowledge base
+            if not results:
+                print("⚠️ No web results found, using architectural knowledge base")
+                results = await self._get_architectural_knowledge_fallback(topic, context)
+            
+            return results
+            
+        except Exception as e:
+            print(f"❌ Web search failed: {e}")
+            return await self._get_architectural_knowledge_fallback(topic, context)
+    
+    async def _try_google_search(self, query: str) -> List[Dict]:
+        """Try Google Custom Search API"""
+        try:
+            api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
+            cx = os.getenv("GOOGLE_SEARCH_CX")
+            
+            if not api_key or not cx:
+                return []
+            
+            url = "https://www.googleapis.com/customsearch/v1"
+            params = {
+                'key': api_key,
+                'cx': cx,
+                'q': query,
+                'num': 5
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                results = []
+                
+                for item in data.get('items', []):
+                    results.append({
+                        'title': item.get('title', ''),
+                        'snippet': item.get('snippet', ''),
+                        'url': item.get('link', ''),
+                        'source': 'google',
+                        'is_web_result': True
+                    })
+                
+                return results
+        except Exception as e:
+            print(f"Google search failed: {e}")
+        
+        return []
+    
+    async def _try_serp_search(self, query: str) -> List[Dict]:
+        """Try SerpAPI for web search"""
+        try:
+            api_key = os.getenv("SERPAPI_KEY")
+            if not api_key:
+                return []
+            
+            url = "https://serpapi.com/search"
+            params = {
+                'api_key': api_key,
+                'q': query,
+                'engine': 'google',
+                'num': 5
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                results = []
+                
+                for result in data.get('organic_results', []):
+                    results.append({
+                        'title': result.get('title', ''),
+                        'snippet': result.get('snippet', ''),
+                        'url': result.get('link', ''),
+                        'source': 'serpapi',
+                        'is_web_result': True
+                    })
+                
+                return results
+        except Exception as e:
+            print(f"SerpAPI search failed: {e}")
+        
+        return []
+    
+    async def _try_enhanced_duckduckgo(self, query: str) -> List[Dict]:
+        """Enhanced DuckDuckGo search with better parsing"""
+        try:
+            import requests
+            from urllib.parse import quote
+            
+            encoded_query = quote(query)
             search_url = f"https://duckduckgo.com/html/?q={encoded_query}"
             
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
             }
-            
-            print(f"🌐 Context-aware web search: {search_query}")
             
             response = requests.get(search_url, headers=headers, timeout=15)
             
             if response.status_code == 200:
                 results = []
                 
-                # Pattern to match DuckDuckGo result titles and snippets
-                title_pattern = r'<a[^>]*class="result__a"[^>]*>([^<]+)</a>'
-                snippet_pattern = r'<a[^>]*class="result__snippet"[^>]*>([^<]+)</a>'
-                url_pattern = r'<a[^>]*class="result__a"[^>]*href="([^"]+)"'
+                # Multiple patterns to catch different DuckDuckGo layouts
+                patterns = [
+                    r'<a[^>]*class="result__a"[^>]*>([^<]+)</a>',
+                    r'<a[^>]*class="result__title"[^>]*>([^<]+)</a>',
+                    r'<a[^>]*class="[^"]*result[^"]*"[^>]*>([^<]+)</a>',
+                    r'<h2[^>]*><a[^>]*>([^<]+)</a></h2>',
+                    r'<a[^>]*href="[^"]*"[^>]*>([^<]+)</a>'
+                ]
                 
-                titles = re.findall(title_pattern, response.text)
-                snippets = re.findall(snippet_pattern, response.text)
-                urls = re.findall(url_pattern, response.text)
+                snippet_patterns = [
+                    r'<a[^>]*class="result__snippet"[^>]*>([^<]+)</a>',
+                    r'<span[^>]*class="result__snippet"[^>]*>([^<]+)</span>',
+                    r'<div[^>]*class="[^"]*snippet[^"]*"[^>]*>([^<]+)</div>'
+                ]
                 
-                # Filter and rank results based on relevance
-                filtered_results = []
-                for i in range(min(6, len(titles))):  # Get more results for filtering
+                url_patterns = [
+                    r'<a[^>]*class="result__a"[^>]*href="([^"]+)"',
+                    r'<a[^>]*class="result__title"[^>]*href="([^"]+)"',
+                    r'<a[^>]*href="([^"]+)"[^>]*class="[^"]*result[^"]*"'
+                ]
+                
+                titles = []
+                snippets = []
+                urls = []
+                
+                # Try all patterns
+                for pattern in patterns:
+                    titles.extend(re.findall(pattern, response.text))
+                    if titles:
+                        break
+                
+                for pattern in snippet_patterns:
+                    snippets.extend(re.findall(pattern, response.text))
+                    if snippets:
+                        break
+                
+                for pattern in url_patterns:
+                    urls.extend(re.findall(pattern, response.text))
+                    if urls:
+                        break
+                
+                # Clean and filter results
+                for i in range(min(5, len(titles))):
                     try:
-                        title = titles[i] if i < len(titles) else "Web Resource"
+                        title = titles[i] if i < len(titles) else "Architectural Resource"
                         snippet = snippets[i] if i < len(snippets) else ""
                         url = urls[i] if i < len(urls) else ""
                         
@@ -282,87 +421,95 @@ class DomainExpertAgent:
                         title = re.sub(r'&[a-zA-Z]+;', '', title).strip()
                         snippet = re.sub(r'&[a-zA-Z]+;', '', snippet).strip()
                         
-                        # Calculate relevance score
-                        relevance_score = 0
-                        topic_lower = topic.lower()
-                        title_lower = title.lower()
-                        snippet_lower = snippet.lower()
-                        
-                        # Score based on topic presence
-                        if topic_lower in title_lower:
-                            relevance_score += 3
-                        if topic_lower in snippet_lower:
-                            relevance_score += 2
-                        
-                        # Score based on context elements
-                        for element in context.get("specific_elements", []):
-                            if element.lower() in title_lower or element.lower() in snippet_lower:
-                                relevance_score += 2
-                        
-                        # Score based on user needs
-                        for need in context.get("user_needs", []):
-                            if need.lower() in title_lower or need.lower() in snippet_lower:
-                                relevance_score += 1
-                        
-                        # Score based on architectural relevance
-                        if any(arch_word in title_lower or arch_word in snippet_lower 
-                               for arch_word in ["architecture", "architect", "design", "building", "project"]):
-                            relevance_score += 1
-                        
-                        # Only include results with minimum relevance
-                        if relevance_score >= 2:
-                            filtered_results.append({
-                                "title": title,
-                                "snippet": snippet,
-                                "url": url,
-                                "relevance_score": relevance_score
+                        # Filter out non-architectural results
+                        if any(arch_term in title.lower() or arch_term in snippet.lower() 
+                               for arch_term in ['architecture', 'design', 'building', 'construction', 'project']):
+                            results.append({
+                                'title': title,
+                                'snippet': snippet,
+                                'url': url,
+                                'source': 'duckduckgo',
+                                'is_web_result': True
                             })
                     
                     except Exception as e:
-                        print(f"⚠️ Error processing web result {i}: {e}")
+                        print(f"Error processing result {i}: {e}")
                         continue
                 
-                # Sort by relevance and take top 4
-                filtered_results.sort(key=lambda x: x["relevance_score"], reverse=True)
-                top_results = filtered_results[:4]
-                
-                # Convert to standard format
-                for result in top_results:
-                    # Preserve original web content and links
-                    content = result["snippet"] if result["snippet"] else result["title"]
-                    
-                    # Extract domain for source tracking
-                    domain = "unknown"
-                    if result["url"]:
-                        try:
-                            from urllib.parse import urlparse
-                            parsed_url = urlparse(result["url"])
-                            domain = parsed_url.netloc
-                        except:
-                            domain = "web_resource"
-                    
-                    results.append({
-                        "content": content,
-                        "metadata": {
-                            "title": result["title"],
-                            "source": domain,
-                            "url": result["url"],
-                            "discovery_method": "context_aware_web_search",
-                            "relevance_score": result["relevance_score"],
-                            "context_used": context,
-                            "is_web_result": True  # Flag to indicate this is a real web result
-                        }
-                    })
-                
-                print(f"✅ Found {len(results)} relevant web results for {topic}")
                 return results
                 
+        except Exception as e:
+            print(f"Enhanced DuckDuckGo search failed: {e}")
+        
+        return []
+    
+    async def _get_architectural_knowledge_fallback(self, topic: str, context: Dict) -> List[Dict]:
+        """Fallback to architectural knowledge base"""
+        try:
+            # Generate AI-based architectural examples
+            building_type = context.get('building_type', 'general')
+            
+            # Create structured architectural knowledge
+            knowledge_base = {
+                'adaptive_reuse': [
+                    {
+                        'title': 'Tate Modern, London',
+                        'snippet': 'Former power station transformed into world-class art museum, demonstrating successful adaptive reuse of industrial heritage.',
+                        'url': 'https://www.tate.org.uk/visit/tate-modern',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    },
+                    {
+                        'title': 'The High Line, New York',
+                        'snippet': 'Abandoned elevated railway converted into innovative public park, showing creative adaptive reuse of infrastructure.',
+                        'url': 'https://www.thehighline.org/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    }
+                ],
+                'community_center': [
+                    {
+                        'title': 'Kulturhuset Stadsteatern, Stockholm',
+                        'snippet': 'Cultural center utilizing extensive glazing for natural light, creating flexible community spaces.',
+                        'url': 'https://www.stadsteatern.stockholm.se/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    },
+                    {
+                        'title': 'The Factory, Manchester',
+                        'snippet': 'Former industrial building transformed into vibrant community arts and performance space.',
+                        'url': 'https://www.factorymanchester.com/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    }
+                ],
+                'sports_facility': [
+                    {
+                        'title': 'Olympic Park, London',
+                        'snippet': 'Former industrial site transformed into world-class sports facilities and public park.',
+                        'url': 'https://www.queenelizabetholympicpark.co.uk/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    }
+                ]
+            }
+            
+            # Match topic to knowledge base
+            if 'adaptive' in topic.lower() or 'reuse' in topic.lower():
+                return knowledge_base.get('adaptive_reuse', [])
+            elif 'community' in topic.lower() or 'center' in topic.lower():
+                return knowledge_base.get('community_center', [])
+            elif 'sport' in topic.lower():
+                return knowledge_base.get('sports_facility', [])
             else:
-                print(f"⚠️ Web search failed with status {response.status_code}")
-                return []
+                # Return general architectural examples
+                all_examples = []
+                for category in knowledge_base.values():
+                    all_examples.extend(category)
+                return all_examples[:3]
                 
         except Exception as e:
-            print(f"⚠️ Web search error: {e}")
+            print(f"Architectural knowledge fallback failed: {e}")
             return []
 
     def _create_enhanced_fallback_knowledge(self, topic: str) -> List[Dict]:
@@ -2113,7 +2260,14 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             
             AVAILABLE URLS FOR LINKS: {urls}
             
-            Format: Present 2-3 specific examples with brief explanations. ALWAYS include the web links in markdown format: [Source Name](URL) at the end of the response. Keep it under 250 words. Focus on providing actual information, not questions. Make sure to vary the examples and not repeat the same projects.
+            CRITICAL INSTRUCTIONS:
+            - ALWAYS include the web links in markdown format: [Source Name](URL)
+            - Keep response under 200 words to avoid cut-off
+            - Focus on providing actual information, not questions
+            - Make sure to vary the examples and not repeat the same projects
+            - If no web results available, clearly state "Based on architectural knowledge" instead of making up links
+            - Present 2-3 specific examples with brief explanations
+            - Address the student's specific question directly
             """
         else:
             synthesis_prompt = f"""
@@ -2135,7 +2289,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": synthesis_prompt}],
-                max_tokens=200,
+                max_tokens=250,
                 temperature=0.4
             )
             

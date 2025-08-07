@@ -146,13 +146,13 @@ st.markdown("""
 <style>
     /* Dark theme styling */
     .stApp {
-        background: #1a1a1a !important;
-        color: white !important;
+        background: #ffffff !important;
+        color: black !important;
     }
     
     /* Sidebar styling */
     .css-1d391kg {
-        background: #2a2a2a !important;
+        background: #ffffff !important;
         border-right: 1px solid #404040 !important;
         display: block !important;
         visibility: visible !important;
@@ -166,7 +166,7 @@ st.markdown("""
     
     /* Ensure main content doesn't overlap with sidebar */
     .main .block-container {
-        background: #1a1a1a !important;
+        background: #ffffff !important;
         max-width: 1200px;
         padding-top: 1rem;
         padding-bottom: 2rem;
@@ -195,8 +195,8 @@ st.markdown("""
     
     .plan-badge {
         display: inline-block;
-        background: #2a2a2a;
-        color: white;
+        background: #ffffff;
+        color: black;
         padding: 4px 12px;
         border-radius: 4px;
         font-size: 0.8rem;
@@ -211,7 +211,7 @@ st.markdown("""
     
     .greeting {
         font-size: 2rem;
-        color: white;
+        color: black;
         margin-bottom: 2rem;
     }
     
@@ -222,7 +222,7 @@ st.markdown("""
     
     /* Main chat input area */
     .chat-input-container {
-        background: #2a2a2a;
+        background: #ffffff;
         border-radius: 12px;
         padding: 1.5rem;
         margin: 0 auto;
@@ -234,7 +234,7 @@ st.markdown("""
     .chat-input {
         background: transparent;
         border: none;
-        color: white;
+        color: black;
         font-size: 1.1rem;
         width: 100%;
         min-height: 60px;
@@ -262,7 +262,7 @@ st.markdown("""
     }
     
     .control-button {
-        background: #404040;
+        background: #ffffff;
         border: none;
         border-radius: 50%;
         width: 32px;
@@ -270,7 +270,7 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: black;
         cursor: pointer;
         transition: background 0.2s;
     }
@@ -280,7 +280,7 @@ st.markdown("""
     }
     
     .model-selector {
-        color: white;
+        color: black;
         background: transparent;
         border: none;
         font-size: 0.9rem;
@@ -292,7 +292,7 @@ st.markdown("""
         border: none;
         border-radius: 8px;
         padding: 8px 16px;
-        color: white;
+        color: black;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -318,7 +318,7 @@ st.markdown("""
         border: 1px solid #404040;
         border-radius: 8px;
         padding: 8px 16px;
-        color: white;
+        color: black;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -339,7 +339,7 @@ st.markdown("""
         top: 0;
         width: 120px;
         height: 100vh;
-        background: #2a2a2a;
+        background: #ffffff;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -347,7 +347,7 @@ st.markdown("""
         padding: 1rem 0;
         z-index: 1000;
         font-size: 11px;
-        color: #ccc;
+        color: #000000;
     }
     
     .sidebar-info {
@@ -375,9 +375,9 @@ st.markdown("""
     }
     
     .info-value {
-        color: #fff;
+        color: #000000;
         font-size: 11px;
-        background: #404040;
+        background: #ffffff;
         padding: 0.2rem 0.4rem;
         border-radius: 4px;
         min-width: 60px;
@@ -395,19 +395,19 @@ st.markdown("""
     }
     
     .user-message {
-        background: #2a2a2a;
+        background: #ffffff;
         border-left: 4px solid #ff6b35;
     }
     
     .assistant-message {
-        background: #2a2a2a;
+        background: #ffffff;
         border-left: 4px solid #4CAF50;
     }
     
     /* Dropdown styling */
     .stSelectbox > div > div {
-        background: #404040 !important;
-        color: white !important;
+        background: #ffffff !important;
+        color: black !important;
         border: 1px solid #505050 !important;
     }
     
@@ -440,7 +440,7 @@ st.markdown("""
     
     /* Configuration container styling */
     .config-container {
-        background: #2a2a2a;
+        background: #ffffff;
         border: 1px solid #404040;
         border-radius: 10px;
         padding: 20px;
@@ -644,7 +644,7 @@ def render_chat_message(message: Dict[str, Any]):
     
     if message["role"] == "user":
         st.markdown(f"""
-        <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #4CAF50;">
+        <div style="background: #ffffff; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #4CAF50;">
             <strong>You:</strong><br>
             {message["content"]}
         </div>
@@ -656,7 +656,7 @@ def render_chat_message(message: Dict[str, Any]):
         mentor_label = f"{mentor_icon} {mentor_type}"
         
         st.markdown(f"""
-        <div style="background: #1e1e1e; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
+        <div style="background: #ffffff; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
             <strong>{mentor_label}:</strong><br>
             {message["content"]}
         </div>

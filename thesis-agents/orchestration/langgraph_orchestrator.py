@@ -58,6 +58,8 @@ class WorkflowState(TypedDict):
     
     # Conversation progression
     conversation_progression: Dict[str, Any]
+    #0708-ADDED
+    milestone_guidance: Dict[str, Any]  # Milestone-driven guidance for agents
     
     # Final output
     final_response: str
@@ -196,6 +198,15 @@ class LangGraphOrchestrator:
         self.logger.debug("Context Agent: Processing state with %d messages", len(student_state.messages))
         self.logger.debug("Context Agent: Messages: %s", [msg.get('role', 'unknown') for msg in student_state.messages])
         self.logger.debug("Context Agent: Last user message: %s...", last_message[:50])
+        
+        # 0708-MILESTONE-DRIVEN CONTEXT ANALYSIS
+        # Get milestone guidance for context analysis
+        milestone_guidance = state.get("milestone_guidance", {})
+        current_milestone = milestone_guidance.get("current_milestone")
+        agent_focus = milestone_guidance.get("agent_focus", "context_agent")
+        
+        self.logger.info(f"🎯 Context Agent - Current milestone: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+        self.logger.info(f"🎯 Context Agent - Agent focus: {agent_focus}")
         
         # Check if this is a first message or early conversation
         user_messages = [msg['content'] for msg in student_state.messages if msg.get('role') == 'user']
@@ -399,9 +410,9 @@ class LangGraphOrchestrator:
         self.state_monitor.record_state_change(result_state["student_state"], "router_node_output")
         
         return result_state
-    
+    #0708-UPDATED
     async def analysis_agent_node(self, state: WorkflowState) -> WorkflowState:
-        """Analysis Agent: Always runs for multi-agent paths"""
+        """Analysis Agent: Always runs for multi-agent paths with conversation progression integration"""
         
         # Validate input state
         validation_result = self.state_validator.validate_state(state["student_state"])
@@ -411,10 +422,16 @@ class LangGraphOrchestrator:
         # Monitor state changes
         self.state_monitor.record_state_change(state["student_state"], "analysis_agent_node_input")
         
-        self.logger.info("Analysis Agent: Processing...")
+        self.logger.info("Analysis Agent: Processing with conversation progression...")
         
         student_state = state["student_state"]
         context_package = state.get("context_package", {})
+        last_message = state.get("last_message", "")
+        
+        # Get conversation progression integration
+        progression_integration = self.analysis_agent.integrate_conversation_progression(
+            student_state, last_message, ""
+        )
         
         # Pass context package to analysis agent for better continuity
         analysis_result = await self.analysis_agent.process(student_state, context_package)
@@ -423,9 +440,19 @@ class LangGraphOrchestrator:
         if hasattr(analysis_result, 'response_text'):
             analysis_result = analysis_result.to_dict()
         
+        # Integrate conversation progression data into analysis result
+        analysis_result.update({
+            "conversation_progression": progression_integration.get("conversation_progression", {}),
+            "current_milestone": progression_integration.get("current_milestone"),
+            "milestone_assessment": progression_integration.get("milestone_assessment", {}),
+            "agent_guidance": progression_integration.get("agent_guidance", {})
+        })
+        
         result_state = {
             **state,
-            "analysis_result": analysis_result
+            "analysis_result": analysis_result,
+            "conversation_progression": progression_integration.get("conversation_progression", {}),
+            "milestone_guidance": progression_integration.get("agent_guidance", {})
         }
         
         # Validate and monitor output state
@@ -508,9 +535,9 @@ class LangGraphOrchestrator:
         self.state_monitor.record_state_change(result_state["student_state"], "domain_expert_node_output")
         
         return result_state
-    
+    #0708-UPDATED
     async def socratic_tutor_node(self, state: WorkflowState) -> WorkflowState:
-        """Socratic Tutor: AI-powered question generation for ANY topic"""
+        """Socratic Tutor: AI-powered question generation for ANY topic with milestone-driven guidance"""
         
         # Validate input state
         validation_result = self.state_validator.validate_state(state["student_state"])
@@ -520,13 +547,30 @@ class LangGraphOrchestrator:
         # Monitor state changes
         self.state_monitor.record_state_change(state["student_state"], "socratic_tutor_node_input")
         
-        self.logger.info("Socratic Tutor: Generating questions...")
+        # 0708-MILESTONE-DRIVEN SOCRATIC GUIDANCE
+        milestone_guidance = state.get("milestone_guidance", {})
+        current_milestone = milestone_guidance.get("current_milestone")
+        agent_guidance = milestone_guidance.get("agent_guidance", {})
+        
+        self.logger.info(f"🎯 Socratic Tutor - Current milestone: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+        self.logger.info(f"🎯 Socratic Tutor - Guidance: {agent_guidance.get('guidance', 'No specific guidance')}")
         
         student_state = state["student_state"]
         analysis_result = state.get("analysis_result", {})
         context_classification = state.get("student_classification", {})
         # ENHANCED: Pass domain expert results to Socratic tutor so it can ask questions about examples
         domain_expert_result = state.get("domain_expert_result", {})
+        
+        # 0708-Add milestone context to the analysis result for the Socratic agent
+        if current_milestone:
+            analysis_result["milestone_context"] = {
+                "milestone_type": current_milestone.milestone_type.value,
+                "phase": current_milestone.phase.value,
+                "required_actions": current_milestone.required_actions,
+                "success_criteria": current_milestone.success_criteria,
+                "agent_guidance": agent_guidance
+            }
+        
         socratic_result = await self.socratic_agent.generate_response(
             student_state, analysis_result, context_classification, domain_expert_result
         )
@@ -1984,42 +2028,64 @@ class LangGraphOrchestrator:
         
         self.logger.info(f"📝 Processing user input: {current_user_input[:100]}...")
 
-        # INTEGRATE CONVERSATION PROGRESSION
+        # MILESTONE-DRIVEN CONVERSATION PROGRESSION
+        # Update conversation progression manager with current state
+        self.progression_manager.update_state(student_state)
+        
+        # Get milestone guidance for current conversation state
+        milestone_guidance = self.progression_manager.get_milestone_driven_agent_guidance(current_user_input, student_state)
+        current_milestone = milestone_guidance.get("current_milestone")
+        agent_focus = milestone_guidance.get("agent_focus", "context_agent")
+        agent_guidance = milestone_guidance.get("agent_guidance", {})
+        
+        self.logger.info(f"🎯 Current milestone: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+        self.logger.info(f"🎯 Agent focus: {agent_focus}")
+        self.logger.info(f"🎯 Milestone progress: {milestone_guidance.get('milestone_progress', 0)}%")
+
         # Check if this is the first message (new conversation)
         if len(user_messages) == 1:
             # Analyze first message for conversation progression
             progression_analysis = self.progression_manager.analyze_first_message(current_user_input, student_state)
             self.logger.info(f"🎯 First message analysis: {progression_analysis.get('conversation_phase', 'unknown')}")
         else:
-            # Progress the conversation
+            # Progress the conversation and assess milestone completion
             last_assistant_message = ""
             for msg in reversed(student_state.messages):
                 if msg.get('role') == 'assistant':
                     last_assistant_message = msg.get('content', '')
                     break
             
+            # 0708-Assess milestone completion
+            milestone_assessment = self.progression_manager.assess_milestone_completion(
+                current_user_input, last_assistant_message, student_state
+            )
+            
+            if milestone_assessment.get("milestone_complete", False):
+                self.logger.info(f"✅ Milestone completed: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+                if milestone_assessment.get("phase_transition", False):
+                    self.logger.info(f"🔄 Phase transition to: {milestone_assessment.get('next_phase', 'unknown')}")
+            
             progression_analysis = self.progression_manager.progress_conversation(
                 current_user_input, last_assistant_message, student_state
             )
             self.logger.info(f"🔄 Conversation progression: {progression_analysis.get('conversation_phase', 'unknown')}")
 
-        # Initialize workflow state
+        # Initialize workflow state with milestone guidance
         initial_state = WorkflowState(
             student_state=student_state,
             last_message=current_user_input,
             student_classification={},
-            #3107 ADDED BELOW LINE
             context_analysis={},
             routing_decision={},
             analysis_result={},
             domain_expert_result={},
             socratic_result={},
-            #3107 ADDED BELOW LINE
             cognitive_enhancement_result={},
             final_response="",
             response_metadata={},
-            # Add conversation progression data
-            conversation_progression=progression_analysis
+            # Add conversation progression and milestone data
+            conversation_progression=progression_analysis,
+            milestone_guidance=milestone_guidance
         )
 
         # Execute the workflow
@@ -2031,8 +2097,9 @@ class LangGraphOrchestrator:
         # Add processing time to metadata
         if "response_metadata" in final_state:
             final_state["response_metadata"]["processing_time"] = f"{processing_time:.2f}s"
-            # Add conversation progression to metadata
+            # Add conversation progression and milestone data to metadata
             final_state["response_metadata"]["conversation_progression"] = progression_analysis
+            final_state["response_metadata"]["milestone_guidance"] = milestone_guidance
 
         self.logger.info("✅ LangGraph workflow completed!")
         
@@ -2044,7 +2111,8 @@ class LangGraphOrchestrator:
             "metadata": final_state["response_metadata"],
             "routing_path": final_state["routing_decision"].get("path", "unknown"),
             "classification": final_state["student_classification"],
-            "conversation_progression": progression_analysis
+            "conversation_progression": progression_analysis,
+            "milestone_guidance": milestone_guidance
         }
     
     def _detect_topic_transition(self, student_state: ArchMentorState, current_message: str) -> Optional[str]:

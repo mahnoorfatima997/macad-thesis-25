@@ -27,8 +27,7 @@ except ImportError:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'thesis-agents'))
     from orchestration.langgraph_orchestrator import LangGraphOrchestrator
 
-# Import benchmarking components (for launch functionality)
-from benchmarking.benchmark_dashboard import BenchmarkDashboard
+# Benchmarking components removed
 
 # Import test dashboard components
 from thesis_tests.test_dashboard import TestDashboard
@@ -51,13 +50,13 @@ st.markdown("""
 <style>
     /* Dark theme styling */
     .stApp {
-        background: #1a1a1a !important;
-        color: white !important;
+        background: #ffffff !important;
+        color: black !important;
     }
     
     /* Sidebar styling */
     .css-1d391kg {
-        background: #2a2a2a !important;
+        background: #ffffff !important;
         border-right: 1px solid #404040 !important;
         display: block !important;
         visibility: visible !important;
@@ -71,7 +70,7 @@ st.markdown("""
     
     /* Ensure main content doesn't overlap with sidebar */
     .main .block-container {
-        background: #1a1a1a !important;
+        background: #ffffff !important;
         max-width: 1200px;
         padding-top: 1rem;
         padding-bottom: 2rem;
@@ -100,8 +99,8 @@ st.markdown("""
     
     .plan-badge {
         display: inline-block;
-        background: #2a2a2a;
-        color: white;
+        background: #ffffff;
+        color: black;
         padding: 4px 12px;
         border-radius: 4px;
         font-size: 0.8rem;
@@ -111,19 +110,19 @@ st.markdown("""
     .greeting {
         font-size: 2.5rem;
         font-weight: bold;
-        color: white;
+        color: black;
         margin-bottom: 1rem;
     }
     
     .compact-text {
         font-size: 14px;
         line-height: 1.4;
-        color: #f0f0f0;
+        color: #000000;
     }
     
     /* Chat message styling */
     .chat-message {
-        background: #2a2a2a;
+        background: #ffffff;
         padding: 15px;
         border-radius: 10px;
         margin: 10px 0;
@@ -131,13 +130,13 @@ st.markdown("""
     }
     
     .chat-message.assistant {
-        background: #1e1e1e;
+        background: #ffffff;
         border-left: 4px solid #2196F3;
     }
     
     /* Metric cards */
     .metric-card {
-        background: #2a2a2a;
+        background: #ffffff;
         padding: 1rem;
         border-radius: 8px;
         border: 1px solid #404040;
@@ -167,7 +166,7 @@ st.markdown("""
     
     /* Mode selector styling */
     .mode-selector {
-        background: #2a2a2a;
+        background: #ffffff;
         padding: 1rem;
         border-radius: 8px;
         border: 1px solid #404040;
@@ -176,7 +175,7 @@ st.markdown("""
     
     /* Chat container */
     .chat-container {
-        background: #2a2a2a;
+        background: #ffffff;
         border-radius: 8px;
         padding: 1rem;
         border: 1px solid #404040;
@@ -195,9 +194,6 @@ def initialize_session_state():
     if 'analysis_results' not in st.session_state:
         st.session_state.analysis_results = None
     
-    if 'benchmark_data' not in st.session_state:
-        st.session_state.benchmark_data = {}
-    
     if 'test_results' not in st.session_state:
         st.session_state.test_results = {}
     
@@ -215,6 +211,10 @@ def initialize_session_state():
     
     if 'test_config' not in st.session_state:
         st.session_state.test_config = None
+    
+    # Performance optimization: Cache components
+    if 'dashboard_initialized' not in st.session_state:
+        st.session_state.dashboard_initialized = False
 
 class UnifiedArchitecturalDashboard:
     def __init__(self):
@@ -223,28 +223,37 @@ class UnifiedArchitecturalDashboard:
             st.error("❌ OPENAI_API_KEY not found. Please set it as an environment variable or in Streamlit secrets.")
             st.stop()
         
-        # Initialize components
-        self.mentor = MegaArchitecturalMentor(self.api_key)
-        self.orchestrator = LangGraphOrchestrator(self.api_key)
-        
-        # Initialize benchmarking components
-        self.benchmark_dashboard = BenchmarkDashboard()
-        
-        # Initialize test dashboard
-        self.test_dashboard = TestDashboard()
-        
-        # Initialize data collection
-        self.data_collector = TestSessionLogger(
-            session_id="unified_dashboard_session",
-            participant_id="unified_user",
-            test_group=TestGroup.MENTOR  # Use proper enum
-        )
-        
-        # Initialize cognitive analyzer using the actual multi-agent system
-        self.cognitive_analyzer = self.orchestrator
-        
-        # Initialize session state
+        # Initialize session state first
         initialize_session_state()
+        
+        # Performance optimization: Use cached components
+        if not st.session_state.dashboard_initialized:
+            with st.spinner("🚀 Initializing dashboard components..."):
+                # Initialize components only once
+                self.mentor = MegaArchitecturalMentor(self.api_key)
+                self.orchestrator = LangGraphOrchestrator(self.api_key)
+                self.test_dashboard = TestDashboard()
+                self.data_collector = TestSessionLogger(
+                    session_id="unified_dashboard_session",
+                    participant_id="unified_user",
+                    test_group=TestGroup.MENTOR
+                )
+                self.cognitive_analyzer = self.orchestrator
+                
+                # Cache components in session state
+                st.session_state.mentor = self.mentor
+                st.session_state.orchestrator = self.orchestrator
+                st.session_state.test_dashboard = self.test_dashboard
+                st.session_state.data_collector = self.data_collector
+                st.session_state.cognitive_analyzer = self.cognitive_analyzer
+                st.session_state.dashboard_initialized = True
+        else:
+            # Use cached components
+            self.mentor = st.session_state.mentor
+            self.orchestrator = st.session_state.orchestrator
+            self.test_dashboard = st.session_state.test_dashboard
+            self.data_collector = st.session_state.data_collector
+            self.cognitive_analyzer = st.session_state.cognitive_analyzer
     
     def _get_api_key(self) -> str:
         """Get API key from environment or Streamlit secrets"""
@@ -261,7 +270,7 @@ class UnifiedArchitecturalDashboard:
         
         if message["role"] == "user":
             st.markdown(f"""
-            <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #4CAF50;">
+            <div style="background: #ffffff; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #4CAF50;">
                 <strong>👤 You:</strong><br>
                 {message["content"]}
             </div>
@@ -283,7 +292,7 @@ class UnifiedArchitecturalDashboard:
                 mentor_label = mentor_type
             
             st.markdown(f"""
-            <div style="background: #1e1e1e; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
+            <div style="background: #ffffff; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
                 <strong>{mentor_icon} {mentor_label}:</strong><br>
                 {message["content"]}
             </div>
@@ -304,7 +313,6 @@ class UnifiedArchitecturalDashboard:
             st.markdown("### 🔧 System Status")
             st.info("**Vision**: GPT Vision Available")
             st.info("**Agents**: Multi-Agent System Ready")
-            st.info("**Benchmarking**: Data Collection Active")
             
             # Current session info
             if st.session_state.analysis_complete:
@@ -333,7 +341,7 @@ class UnifiedArchitecturalDashboard:
             # Main navigation
             page = st.selectbox(
                 "Select Page",
-                ["Main Chat", "Test Dashboard", "Benchmarking Dashboard", "Test Results", "Settings"]
+                ["Main Chat", "Test Dashboard", "Test Results", "Settings"]
             )
             
             # Navigation handled by dropdown menu above
@@ -344,7 +352,6 @@ class UnifiedArchitecturalDashboard:
         """Reset the current session"""
         st.session_state.messages = []
         st.session_state.analysis_results = None
-        st.session_state.benchmark_data = {}
         st.session_state.test_results = {}
         st.session_state.session_id = None
         st.session_state.analysis_complete = False
@@ -352,7 +359,7 @@ class UnifiedArchitecturalDashboard:
     
     def _export_session_data(self):
         """Export session data"""
-        if not st.session_state.messages and not st.session_state.benchmark_data:
+        if not st.session_state.messages:
             st.warning("No data to export")
             return
         
@@ -362,7 +369,6 @@ class UnifiedArchitecturalDashboard:
             "mode": st.session_state.current_mode,
             "messages": st.session_state.messages,
             "analysis_results": st.session_state.analysis_results,
-            "benchmark_data": st.session_state.benchmark_data,
             "test_results": st.session_state.test_results
         }
         
@@ -436,7 +442,7 @@ class UnifiedArchitecturalDashboard:
         result = await self.orchestrator.process_student_input(state)
         response = result.get("response", "I apologize, but I couldn't generate a response.")
         
-        # Collect data for benchmarking (simplified for now)
+        # Collect data for analysis (simplified for now)
         try:
             # Log the interaction using the TestSessionLogger's actual methods
             from thesis_tests.data_models import InteractionData, MoveType, TestPhase, Modality, DesignFocus, MoveSource
@@ -474,7 +480,7 @@ class UnifiedArchitecturalDashboard:
         # Use test dashboard's generic AI mode
         response = self.test_dashboard.generic_ai_env.process_input(user_input)
         
-        # Collect data for benchmarking (simplified for now)
+        # Collect data for analysis (simplified for now)
         try:
             from thesis_tests.data_models import InteractionData
             
@@ -511,7 +517,7 @@ class UnifiedArchitecturalDashboard:
         # Use test dashboard's control mode
         response = self.test_dashboard.control_env.process_input(user_input)
         
-        # Collect data for benchmarking (simplified for now)
+        # Collect data for analysis (simplified for now)
         try:
             from thesis_tests.data_models import InteractionData
             
@@ -550,7 +556,7 @@ class UnifiedArchitecturalDashboard:
         </div>
         <p style="text-align: center; color: #888; margin-top: 1rem;">
             Choose your testing mode and start a conversation. This unified dashboard combines 
-            multi-agent mentoring, benchmarking analysis, and research testing capabilities.
+            multi-agent mentoring and research testing capabilities.
         </p>
         </div>
         """, unsafe_allow_html=True)
@@ -866,97 +872,6 @@ class UnifiedArchitecturalDashboard:
                     total_interactions = len(chat_interactions)
                     st.markdown(f"**📊 Session: {total_interactions} interactions**")
      
-    def render_benchmarking_dashboard(self):
-        """Render the benchmarking dashboard directly integrated"""
-        st.markdown("## 📊 Cognitive Benchmarking Dashboard")
-        st.markdown("Comprehensive analysis of cognitive patterns, learning progression, and performance metrics")
-        
-        # Option selection
-        st.markdown("### 🚀 Launch Options")
-        launch_option = st.radio(
-            "Choose how to launch the benchmarking dashboard:",
-            ["Integrated (Recommended)", "Separate Process"],
-            help="Integrated: Runs within this dashboard | Separate Process: Opens in new browser tab"
-        )
-        
-        if launch_option == "Integrated (Recommended)":
-            # Run the benchmarking dashboard directly
-            try:
-                # Run the full benchmarking dashboard
-                self.benchmark_dashboard.run()
-            except Exception as e:
-                st.error(f"❌ Error loading benchmarking dashboard: {str(e)}")
-                st.info("Please check that all benchmarking dependencies are properly installed.")
-                
-                # Fallback information
-                st.markdown("### 🔧 Manual Access")
-                st.markdown("""
-                If the integrated dashboard fails to load, you can access it manually:
-                
-                1. **Terminal Command:**
-                ```bash
-                cd benchmarking
-                python launch_dashboard.py
-                ```
-                
-                2. **Or run the dashboard directly:**
-                ```bash
-                cd benchmarking
-                streamlit run benchmark_dashboard.py
-                ```
-                """)
-        
-        else:  # Separate Process
-            st.markdown("### 🔗 Launch Separate Process")
-            st.markdown("""
-            This will launch the benchmarking dashboard in a separate browser tab.
-            The dashboard will run independently from this unified dashboard.
-            """)
-            
-            if st.button("🚀 Launch Benchmarking Dashboard", type="primary", use_container_width=True):
-                try:
-                    import subprocess
-                    import sys
-                    from pathlib import Path
-                    import webbrowser
-                    import time
-                    
-                    # Get the path to the benchmarking launch script
-                    benchmark_script = Path(__file__).parent / "benchmarking" / "launch_dashboard.py"
-                    
-                    if benchmark_script.exists():
-                        st.info("🔄 Launching benchmarking dashboard in separate process...")
-                        
-                        # Launch the script in a separate process
-                        process = subprocess.Popen([
-                            sys.executable, str(benchmark_script)
-                        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        
-                        # Wait a moment for the server to start
-                        time.sleep(3)
-                        
-                        # Try to open the browser
-                        try:
-                            webbrowser.open("http://localhost:8501")
-                            st.success("✅ Benchmarking dashboard launched successfully!")
-                            st.info("📱 The dashboard should open in a new browser tab")
-                            st.info("🔗 If it doesn't open automatically, go to: http://localhost:8501")
-                        except Exception as browser_error:
-                            st.warning(f"Could not automatically open browser: {browser_error}")
-                            st.info("🔗 Please manually navigate to: http://localhost:8501")
-                        
-                        # Show process info
-                        st.info(f"Process ID: {process.pid}")
-                        st.info("To stop the dashboard, close the browser tab or terminate the process")
-                        
-                    else:
-                        st.error("❌ Benchmarking dashboard script not found")
-                        st.info(f"Expected location: {benchmark_script}")
-                        
-                except Exception as e:
-                    st.error(f"❌ Error launching dashboard: {e}")
-                    st.info("Please try the integrated option or manual launch instead.")
-    
     def _analyze_phase_progression(self, interactions: List[Dict]) -> Dict[str, Any]:
         """Analyze design phase progression from interactions"""
         if not interactions:
@@ -1091,7 +1006,6 @@ class UnifiedArchitecturalDashboard:
         
         # Data collection settings
         st.checkbox("Enable Data Collection", value=True, key="enable_data_collection")
-        st.checkbox("Enable Benchmarking", value=True, key="enable_benchmarking")
         st.checkbox("Enable Test Mode", value=True, key="enable_test_mode")
         
         # Export settings
@@ -1109,8 +1023,6 @@ class UnifiedArchitecturalDashboard:
             self.render_main_chat()
         elif current_page == "Test Dashboard":
             self.render_test_dashboard()
-        elif current_page == "Benchmarking Dashboard":
-            self.render_benchmarking_dashboard()
         elif current_page == "Test Results":
             self.render_test_results()
         elif current_page == "Settings":
