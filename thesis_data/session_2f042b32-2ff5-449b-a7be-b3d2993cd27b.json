@@ -1,0 +1,119 @@
+{
+  "session_id": "2f042b32-2ff5-449b-a7be-b3d2993cd27b",
+  "participant_id": "Biel",
+  "test_group": "GENERIC_AI",
+  "start_time": "2025-08-06T14:34:36.573574",
+  "end_time": "2025-08-06T14:38:41.851780",
+  "phase_transitions": [
+    {
+      "timestamp": "2025-08-06T14:35:49.661856",
+      "from_phase": "IDEATION",
+      "to_phase": "VISUALIZATION",
+      "duration_seconds": 0
+    },
+    {
+      "timestamp": "2025-08-06T14:37:29.035503",
+      "from_phase": "VISUALIZATION",
+      "to_phase": "MATERIALIZATION",
+      "duration_seconds": 99.373647
+    },
+    {
+      "timestamp": "2025-08-06T14:38:33.535848",
+      "from_phase": "POST_TEST",
+      "to_phase": "POST_TEST",
+      "duration_seconds": 0
+    }
+  ],
+  "assessments": {},
+  "summary": {
+    "session_id": "2f042b32-2ff5-449b-a7be-b3d2993cd27b",
+    "participant_id": "Biel",
+    "test_group": "GENERIC_AI",
+    "duration_minutes": 4.087970100000001,
+    "total_interactions": 5,
+    "total_moves": 73,
+    "phase_transitions": 3,
+    "avg_cognitive_score": 0.5439931047539105,
+    "cognitive_scores": {
+      "cop": 0.13999999999999999,
+      "dte": 0.8984782461862544,
+      "se": 0.356,
+      "ki": 1.563820004978718,
+      "lp": 0.26,
+      "ma": 0.045660377358490566,
+      "composite": 0.5439931047539105
+    },
+    "cognitive_metrics": {
+      "cop": 0.13999999999999999,
+      "dte": 0.8984782461862544,
+      "se": 0.356,
+      "ki": 1.563820004978718,
+      "lp": 0.26,
+      "ma": 0.045660377358490566,
+      "composite": 0.5439931047539105
+    },
+    "phases_completed": [
+      "PRE_TEST",
+      "VISUALIZATION",
+      "MATERIALIZATION",
+      "POST_TEST"
+    ]
+  },
+  "cognitive_metrics_history": [
+    {
+      "timestamp": "2025-08-06T14:34:58.021641",
+      "phase": "PRE_TEST",
+      "cop": 0.3,
+      "dte": 0.0,
+      "se": 0.3,
+      "ki": 0.0,
+      "lp": 0.3,
+      "ma": 0.2,
+      "composite": 0.18333333333333335
+    },
+    {
+      "timestamp": "2025-08-06T14:35:41.202436",
+      "phase": "PRE_TEST",
+      "cop": 0.1,
+      "dte": 1.1989578266441823,
+      "se": 0.33999999999999997,
+      "ki": 2.006695342808962,
+      "lp": 0.25,
+      "ma": 0.0,
+      "composite": 0.6492755282421907
+    },
+    {
+      "timestamp": "2025-08-06T14:36:45.166250",
+      "phase": "VISUALIZATION",
+      "cop": 0.1,
+      "dte": 1.2037807936822214,
+      "se": 0.33999999999999997,
+      "ki": 2.056949627014898,
+      "lp": 0.25,
+      "ma": 0.0,
+      "composite": 0.6584550701161865
+    },
+    {
+      "timestamp": "2025-08-06T14:37:20.669509",
+      "phase": "VISUALIZATION",
+      "cop": 0.1,
+      "dte": 1.034112278620402,
+      "se": 0.38,
+      "ki": 1.8445263113294328,
+      "lp": 0.25,
+      "ma": 0.0,
+      "composite": 0.6014397649916391
+    },
+    {
+      "timestamp": "2025-08-06T14:38:24.324812",
+      "phase": "MATERIALIZATION",
+      "cop": 0.1,
+      "dte": 1.055540331984466,
+      "se": 0.42,
+      "ki": 1.9109287437402975,
+      "lp": 0.25,
+      "ma": 0.02830188679245283,
+      "composite": 0.6274618270862028
+    }
+  ]
+}

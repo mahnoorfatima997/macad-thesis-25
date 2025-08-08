@@ -8,7 +8,7 @@ import os
 
 def launch_test_dashboard():
     """Launch the test dashboard using streamlit"""
-    print("🚀 Launching MEGA Test Dashboard...")
+    print("Launching MEGA Test Dashboard...")
     print("-" * 50)
     print("Test Groups:")
     print("1. MENTOR - Multi-agent scaffolding")
@@ -23,9 +23,9 @@ def launch_test_dashboard():
     try:
         subprocess.run([sys.executable, "-m", "streamlit", "run", dashboard_path])
     except KeyboardInterrupt:
-        print("\n\n✅ Test Dashboard closed.")
+        print("\n\nTest Dashboard closed.")
     except Exception as e:
-        print(f"\n❌ Error launching dashboard: {e}")
+        print(f"\nError launching dashboard: {e}")
         print("\nPlease ensure you have installed the requirements:")
         print("pip install -r thesis_tests/requirements_tests.txt")
 

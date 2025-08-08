@@ -1,51 +1,22 @@
 {
-  "generated_at": "2025-08-04T14:41:10.061761",
+  "generated_at": "2025-08-08T14:32:02.532006",
   "benchmark_profiles": {
-    "intermediate": {
-      "proficiency_level": "intermediate",
-      "target_metrics": {
-        "cognitive_load_range": [
-          0.13593749999999996,
-          0.4359375
-        ],
-        "learning_effectiveness_min": 0.46375,
-        "engagement_min": 0.5208333333333334,
-        "cognitive_offloading_prevention_min": 0.30625,
-        "deep_thinking_rate_min": 0.36875,
-        "scaffolding_effectiveness_min": 0.21874999999999997
-      },
-      "recommended_strategies": [
-        "Increase Socratic questioning to prevent direct answer seeking",
-        "Incorporate more 'why' and 'how' questions to encourage reflection",
-        "Provide more structured guidance with progressive complexity"
-      ],
-      "progression_indicators": {
-        "next_level": "advanced",
-        "requirements": {
-          "sustained_deep_thinking": 0.8,
-          "reduced_cognitive_offloading": 0.85,
-          "independent_problem_solving": 0.7,
-          "conceptual_connections": 0.7
-        }
-      }
-    },
     "beginner": {
       "proficiency_level": "beginner",
       "target_metrics": {
         "cognitive_load_range": [
-          0.485,
-          0.785
+          0.85,
+          1
         ],
-        "learning_effectiveness_min": 0.16,
-        "engagement_min": 0.5972222222222222,
-        "cognitive_offloading_prevention_min": 0,
-        "deep_thinking_rate_min": 0.19999999999999998,
-        "scaffolding_effectiveness_min": 0.1
+        "learning_effectiveness_min": 0.31599999999999995,
+        "engagement_min": 0.5066666666666667,
+        "cognitive_offloading_prevention_min": 0.11999999999999997,
+        "deep_thinking_rate_min": 0.2666666666666667,
+        "scaffolding_effectiveness_min": 0.45999999999999985
       },
       "recommended_strategies": [
         "Increase Socratic questioning to prevent direct answer seeking",
-        "Incorporate more 'why' and 'how' questions to encourage reflection",
-        "Provide more structured guidance with progressive complexity"
+        "Incorporate more 'why' and 'how' questions to encourage reflection"
       ],
       "progression_indicators": {
         "next_level": "intermediate",
@@ -57,20 +28,48 @@
         }
       }
     },
+    "intermediate": {
+      "proficiency_level": "intermediate",
+      "target_metrics": {
+        "cognitive_load_range": [
+          0.0020000000000000295,
+          0.30200000000000005
+        ],
+        "learning_effectiveness_min": 0.5,
+        "engagement_min": 0.5555555555555555,
+        "cognitive_offloading_prevention_min": 0.2333333333333333,
+        "deep_thinking_rate_min": 0.5666666666666667,
+        "scaffolding_effectiveness_min": 0.6333333333333333
+      },
+      "recommended_strategies": [
+        "Increase Socratic questioning to prevent direct answer seeking"
+      ],
+      "progression_indicators": {
+        "next_level": "advanced",
+        "requirements": {
+          "sustained_deep_thinking": 0.8,
+          "reduced_cognitive_offloading": 0.85,
+          "independent_problem_solving": 0.7,
+          "conceptual_connections": 0.7
+        }
+      }
+    },
     "advanced": {
       "proficiency_level": "advanced",
       "target_metrics": {
         "cognitive_load_range": [
-          0.57,
-          0.87
+          0.5737500000000001,
+          0.8737500000000001
         ],
-        "learning_effectiveness_min": 0.9,
-        "engagement_min": 0.7416666666666667,
+        "learning_effectiveness_min": 0.7000000000000001,
+        "engagement_min": 0.6958333333333334,
         "cognitive_offloading_prevention_min": 0.9,
-        "deep_thinking_rate_min": 0.9,
-        "scaffolding_effectiveness_min": 0.9
+        "deep_thinking_rate_min": 0.775,
+        "scaffolding_effectiveness_min": 0.15
       },
-      "recommended_strategies": [],
+      "recommended_strategies": [
+        "Provide more structured guidance with progressive complexity"
+      ],
       "progression_indicators": {
         "next_level": "expert",
         "requirements": {
@@ -85,8 +84,8 @@
   "cluster_analysis": {
     "n_clusters": 3,
     "proficiency_distribution": {
-      "intermediate": 1,
       "beginner": 1,
+      "intermediate": 1,
       "advanced": 1
     }
   },

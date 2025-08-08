@@ -27,7 +27,7 @@ METRIC_COLORS = {
     # Cognitive metrics
     'cognitive_offloading': THESIS_COLORS['primary_purple'],
     'deep_thinking': THESIS_COLORS['primary_violet'],
-    'scaffolding': THESIS_COLORS['primary_rose'],
+    'scaffolding': THESIS_COLORS['primary_dark'],  # Dark burgundy - distinct from rose
     'knowledge_integration': THESIS_COLORS['neutral_warm'],
     'engagement': THESIS_COLORS['neutral_orange'],
     'metacognition': THESIS_COLORS['accent_coral'],
@@ -93,9 +93,11 @@ PLOTLY_COLORSCALES = {
     ],
     
     'diverging': [
-        [0.0, THESIS_COLORS['accent_coral']],
-        [0.5, THESIS_COLORS['neutral_light']],
-        [1.0, THESIS_COLORS['primary_purple']]
+        [0.0, THESIS_COLORS['accent_coral']],      # Strong negative correlation (red-ish)
+        [0.25, THESIS_COLORS['primary_pink']],      # Weak negative 
+        [0.5, THESIS_COLORS['neutral_light']],      # No correlation (neutral)
+        [0.75, THESIS_COLORS['primary_violet']],    # Weak positive
+        [1.0, THESIS_COLORS['primary_dark']]        # Strong positive correlation (dark)
     ],
     
     'sequential': [

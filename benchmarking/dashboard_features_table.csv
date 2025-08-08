@@ -1,13 +1,42 @@
 Section,Subsection,Feature,Calculation,Data Source,Theory,Implementation,Type
+Complete Theory References,User References,Reference 1,N/A,Research Paper,Tukey (1977) Exploratory Data Analysis,N/A,Reference
+Complete Theory References,User References,Reference 2,N/A,Research Paper,Renkl (2002) Worked Examples & Cognitive Load,N/A,Reference
+Complete Theory References,User References,Reference 3,N/A,Research Paper,Marton & Säljö (1976) Deep vs Surface Learning,N/A,Reference
+Complete Theory References,User References,Reference 4,N/A,Research Paper,Bloom (1984) 2 Sigma Problem,N/A,Reference
+Complete Theory References,User References,Reference 5,N/A,Research Paper,Newell & Rosenbloom (1981) Power Law of Practice,N/A,Reference
+Complete Theory References,User References,Reference 6,N/A,Research Paper,Dreyfus & Dreyfus (1980) Five-Stage Model,N/A,Reference
+Complete Theory References,User References,Reference 7,N/A,Research Paper,Pellegrino et al. (2001) Knowing What Students Know,N/A,Reference
+Complete Theory References,User References,Reference 8,N/A,Research Paper,Biggs (1996) Constructive Alignment,N/A,Reference
+Complete Theory References,User References,Reference 9,N/A,Research Paper,Cohen et al. (1982) Educational Outcomes Meta-Analysis,N/A,Reference
+Complete Theory References,User References,Reference 10,N/A,Research Paper,Anderson (1982) Acquisition of Cognitive Skill,N/A,Reference
+Complete Theory References,User References,Reference 11,N/A,Research Paper,Wooldridge & Jennings (1995) Intelligent Agents,N/A,Reference
+Complete Theory References,User References,Reference 12,N/A,Research Paper,Zerkouk et al. (2025) AI-based Intelligent Tutoring Systems,N/A,Reference
+Complete Theory References,User References,Reference 13,N/A,Research Paper,Romero & Ventura (2020) Educational Data Mining,N/A,Reference
+Complete Theory References,User References,Reference 14,N/A,Research Paper,Black & Wiliam (1998) Assessment in Education,N/A,Reference
+Complete Theory References,User References,Reference 15,N/A,Research Paper,Breiman (2001) Random Forests,N/A,Reference
+Complete Theory References,User References,Reference 16,N/A,Research Paper,Ryan & Deci (2000) Self-Determination Theory,N/A,Reference
+Complete Theory References,User References,Reference 17,N/A,Research Paper,Nass & Moon (2000) Machines and Mindlessness,N/A,Reference
+Complete Theory References,User References,Reference 18,N/A,Research Paper,Cottone et al. (2021) Ethical Decision Making Processes,N/A,Reference
+Complete Theory References,User References,Reference 19,N/A,Research Paper,Spiro et al. (1988) Cognitive Flexibility Theory,N/A,Reference
+Complete Theory References,User References,Reference 20,N/A,Research Paper,Goldschmidt (1990) Linkography Method,N/A,Reference
+Complete Theory References,User References,Reference 21,N/A,Research Paper,Goldschmidt (1991) The Dialectics of Sketching,N/A,Reference
+Complete Theory References,User References,Reference 22,N/A,Research Paper,Goldschmidt (2014) Unfolding the Design Process,N/A,Reference
+Complete Theory References,User References,Reference 23,N/A,Research Paper,Goldschmidt (2017) Concurrent Divergent and Convergent Thinking,N/A,Reference
+Complete Theory References,User References,Reference 24,N/A,Research Paper,Chi (2009) Active-Constructive-Interactive,N/A,Reference
+Complete Theory References,User References,Reference 25,N/A,Research Paper,Entwistle (2000) Promoting Deep Learning,N/A,Reference
+Complete Theory References,User References,Reference 26,N/A,Research Paper,Biggs (1987) Student Approaches to Learning,N/A,Reference
+Complete Theory References,User References,Reference 27,N/A,Research Paper,Gao et al. (2023) A Survey of GNN for Recommender Systems,N/A,Reference
+Complete Theory References,User References,Reference 28,N/A,Research Paper,Hamilton et al. (2017) Learning on Large Graphs,N/A,Reference
+Complete Theory References,User References,Reference 29,N/A,Research Paper,Xu & Wunsch (2005) Survey of Clustering Algorithms,N/A,Reference
 Overview,Key Metrics Panel,Total Sessions,Count of evaluation reports,evaluation_reports/*.json,Tukey (1977) Exploratory Data Analysis,benchmark_dashboard.py:335,Metric
 Overview,Key Metrics Panel,Avg Cognitive Offloading Prevention,Mean of all session prevention rates,session_metrics.cognitive_offloading_prevention.overall_rate,Renkl (2002) Worked Examples & Cognitive Load,benchmark_dashboard.py:428-429,Metric
 Overview,Key Metrics Panel,Avg Deep Thinking Engagement,Mean of all session engagement rates,session_metrics.deep_thinking_engagement.overall_rate,Marton & Säljö (1976) Deep vs Surface Learning,benchmark_dashboard.py:430-431,Metric
-Overview,Key Metrics Panel,Overall Improvement,Weighted avg of prevention and deep thinking improvements,Calculated vs. 30% and 35% baselines,Bloom (1984) 2 Sigma Problem,benchmark_dashboard.py:443-448,Metric
+Overview,Key Metrics Panel,Overall Improvement,Weighted avg of prevention and deep thinking improvements,"Calculated vs. scientific baselines (48% prevention, 42% deep thinking)",Bloom (1984) 2 Sigma Problem,benchmark_dashboard.py:443-448,Metric
 Overview,Learning Metrics Chart,Time Series Plot,Session metrics plotted chronologically,session_metrics.timestamp,Newell & Rosenbloom (1981) Power Law of Practice,benchmark_dashboard.py:467-505,Visualization
 Overview,Proficiency Distribution,Proficiency Pie Chart,K-means clustering on graph features,proficiency_classification.level,Dreyfus & Dreyfus (1980) Five-Stage Model,graph_ml_benchmarking.py:359-395,Visualization
 Cognitive Patterns,Session Comparison,Session Comparison Table,Direct metrics per session,evaluation_reports/*.json,Pellegrino et al. (2001) Knowing What Students Know,benchmark_dashboard.py:776-780,Table
 Cognitive Patterns,Average Patterns,Cognitive Patterns Radar,5 cognitive metrics averaged,Session metrics aggregated,Biggs (1996) Constructive Alignment,benchmark_dashboard.py:790-835,Visualization
-Cognitive Patterns,Average Patterns,Baseline Comparison,Literature values overlay,"[0.5, 0.35, 0.4, 0.45, 0.5]",Cohen et al. (1982) Educational Outcomes Meta-Analysis,benchmark_dashboard.py:918,Reference
+Cognitive Patterns,Average Patterns,Baseline Comparison,Literature values overlay,"[0.48, 0.42, 0.61, 0.29, 0.35, 0.31]",Cohen et al. (1982) Educational Outcomes Meta-Analysis,benchmark_dashboard.py:918,Reference
 Learning Progression,Skill Tracking,Skill Progression Over Time,Ordinal progression mapping,skill_progression.initial/final_level,Anderson (1982) Acquisition of Cognitive Skill,evaluation_metrics.py:275-326,Visualization
 Learning Progression,Learning Velocity,Learning Velocity Chart,Delta metrics / time,Temporal metric differences,Anderson (1982) Acquisition of Cognitive Skill,benchmark_dashboard.py:1021-1065,Visualization
 Agent Performance,Usage Distribution,Agent Usage Bar Chart,Frequency per agent type,agents_used field,Wooldridge & Jennings (1995) Intelligent Agents,benchmark_dashboard.py:1270-1280,Visualization
@@ -29,3 +58,19 @@ Proficiency Analysis,Progression,Growth Potential,Improvement trend analysis,His
 Graph ML,Construction,Graph Building,"Nodes from interactions, edges from similarity",Text embeddings,Graph neural networks,graph_ml_benchmarking.py:90-120,Process
 Graph ML,GNN Analysis,GraphSAGE Model,Neighborhood aggregation,Graph structure,Hamilton et al. (2017),graph_ml_benchmarking.py:250-320,Model
 Graph ML,Clustering,Proficiency Clustering,K-means on embeddings,Graph features,Unsupervised learning,graph_ml_benchmarking.py:359-395,Algorithm
+Scientific Baselines,Meta-Analysis Derived,Cognitive Offloading Prevention Baseline,Meta-analysis derived baseline (48% prevention),UPenn (2023) study - 52% offloading rate inverted,UPenn (2023) AI Cognitive Offloading,scientific_baselines.md,Reference
+Scientific Baselines,Meta-Analysis Derived,Deep Thinking Engagement Baseline,Meta-analysis derived baseline (42% deep thinking),Belland et al. (2017) - Effect size g=0.46,Belland et al. (2017) Scaffolding Meta-Analysis,evaluation_metrics.py:39,Reference
+Scientific Baselines,Meta-Analysis Derived,Scaffolding Effectiveness Baseline,Meta-analysis derived baseline (61% scaffolding),Kulik & Fletcher (2016) - Median ES d=0.66,Kulik & Fletcher (2016) ITS Meta-Analysis,generate_master_metrics.py:147,Reference
+Scientific Baselines,Meta-Analysis Derived,Knowledge Integration Baseline,Meta-analysis derived baseline (29% integration),Cross-domain transfer studies - 27-32% range,Scientific baselines from meta-analyses,scientific_baselines.md,Reference
+Scientific Baselines,Meta-Analysis Derived,Learning Progression Baseline,Meta-analysis derived baseline (35% progression),Ma et al. (2014) - College ITS g=0.32-0.37,Ma et al. (2014) ITS Learning Outcomes,evaluation_metrics.py:41,Reference
+Scientific Baselines,Meta-Analysis Derived,Metacognitive Awareness Baseline,Meta-analysis derived baseline (31% metacognition),"STEM intervention studies - F(1,114)=28.61",Scientific baselines from meta-analyses,evaluation_metrics.py:42,Reference
+Scientific Baselines,Validation Requirements,Sample Size Requirements,Minimum 20 sessions per condition,Statistical power analysis (0.80),Cohen et al. (1982) Educational Outcomes Meta-Analysis,scientific_baselines.md,Reference
+Scientific Baselines,Validation Requirements,Statistical Significance Testing,t-tests and ANOVA with p < 0.05,Comparison against baseline metrics,Pellegrino et al. (2001) Knowing What Students Know,benchmark_dashboard.py:4590-4622,Analysis
+Theory References,Educational Psychology,Active-Constructive-Interactive Framework,Framework application,Theoretical foundation,Chi (2009) Active-Constructive-Interactive,theoretical_framework,Reference
+Theory References,Educational Psychology,Deep Learning Promotion,Conceptual framework,Theoretical foundation,Entwistle (2000) Promoting Deep Learning,theoretical_framework,Reference
+Theory References,Educational Psychology,Student Learning Approaches,Learning styles framework,Theoretical foundation,Biggs (1987) Student Approaches to Learning,theoretical_framework,Reference
+Theory References,Machine Learning,GNN for Recommender Systems,Graph neural network survey,Theoretical foundation,Gao et al. (2023) A Survey of GNN for Recommender Systems,theoretical_framework,Reference
+Theory References,Machine Learning,Clustering Algorithms Survey,Clustering techniques overview,Theoretical foundation,Xu & Wunsch (2005) Survey of Clustering Algorithms,theoretical_framework,Reference
+Theory References,Design Thinking,Linkography Method Foundation,Original linkography method,Theoretical foundation,Goldschmidt (1990) Linkography Method,theoretical_framework,Reference
+Theory References,Design Thinking,Dialectics of Sketching,Design thinking process,Theoretical foundation,Goldschmidt (1991) The Dialectics of Sketching,theoretical_framework,Reference
+Theory References,Design Thinking,Concurrent Thinking Patterns,Divergent and convergent thinking,Theoretical foundation,Goldschmidt (2017) Concurrent Divergent and Convergent Thinking,theoretical_framework,Reference

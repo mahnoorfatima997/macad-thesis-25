@@ -167,11 +167,21 @@ class UserProficiencyClassifier:
             y_pred = self.classifier.predict(X_test)
             
             print("\nClassification Report:")
-            print(classification_report(
-                y_test, y_pred, 
-                target_names=self.label_encoder.classes_,
-                zero_division=0
-            ))
+            # Get unique labels from both y_test and y_pred
+            unique_labels = np.unique(np.concatenate([y_test, y_pred]))
+            # Get corresponding target names
+            target_names = [self.label_encoder.classes_[i] for i in unique_labels if i < len(self.label_encoder.classes_)]
+            
+            try:
+                print(classification_report(
+                    y_test, y_pred, 
+                    labels=unique_labels,
+                    target_names=target_names,
+                    zero_division=0
+                ))
+            except Exception as e:
+                print(f"Could not generate classification report: {e}")
+                print(f"Test accuracy: {np.mean(y_pred == y_test):.2%}")
         else:
             print("\nNote: Test set too small for evaluation")
         
@@ -751,11 +761,13 @@ class CognitiveFeatureExtractor:
         return self.feature_names
 
 
-class VotingClassifierCustom:
+from sklearn.base import BaseEstimator, ClassifierMixin
+
+class VotingClassifierCustom(BaseEstimator, ClassifierMixin):
     """Custom voting classifier for ensemble methods"""
     
-    def __init__(self, estimators):
-        self.estimators = estimators
+    def __init__(self, estimators=None):
+        self.estimators = estimators if estimators is not None else []
         self.fitted_estimators = []
         
     def fit(self, X, y):
@@ -814,6 +826,16 @@ class VotingClassifierCustom:
         """Score method for cross-validation compatibility"""
         predictions = self.predict(X)
         return np.mean(predictions == y)
+    
+    def get_params(self, deep=True):
+        """Get parameters for this estimator (required for sklearn compatibility)"""
+        return {"estimators": self.estimators}
+    
+    def set_params(self, **params):
+        """Set the parameters of this estimator (required for sklearn compatibility)"""
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
 
 
 def generate_training_data_from_sessions(session_files: List[str]) -> List[Tuple[pd.DataFrame, str]]:
