@@ -98,15 +98,15 @@ def convert_agent_response_to_dict(agent_response):
             'journey_alignment': {
                 'current_phase': agent_response.journey_alignment.current_phase,
                 'phase_progress': agent_response.journey_alignment.phase_progress,
-                'milestone_progress': agent_response.journey_alignment.milestone_progress,
-                'next_milestone': agent_response.journey_alignment.next_milestone,
+                'phase_questions_asked': agent_response.journey_alignment.phase_questions_asked if hasattr(agent_response.journey_alignment, 'phase_questions_asked') else 0,
+                'next_phase': agent_response.journey_alignment.next_phase if hasattr(agent_response.journey_alignment, 'next_phase') else None,
                 'journey_progress': agent_response.journey_alignment.journey_progress,
                 'phase_confidence': agent_response.journey_alignment.phase_confidence,
-                'milestone_questions_asked': agent_response.journey_alignment.milestone_questions_asked
+                'phase_questions_asked': agent_response.journey_alignment.phase_questions_asked if hasattr(agent_response.journey_alignment, 'phase_questions_asked') else 0
             },
             'progress_update': {
                 'phase_progress': agent_response.progress_update.phase_progress,
-                'milestone_progress': agent_response.progress_update.milestone_progress,
+                'phase_progress': agent_response.progress_update.phase_progress,
                 'cognitive_state': agent_response.progress_update.cognitive_state,
                 'learning_progression': agent_response.progress_update.learning_progression,
                 'skill_level_update': agent_response.progress_update.skill_level_update,
@@ -891,11 +891,11 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
                     "cop_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "cop_factor") or 0,
                     "dte_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "dte_factor") or 0,
                     "ki_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "ki_factor") or 0,
-                    "milestone_progression": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "milestone_progression") or 0,
+                    "phase_progression": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "phase_progression") or 0,
                     "quality_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "quality_factor") or 0,
                     "engagement_factor": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "engagement_factor") or 0,
-                    "completed_milestones": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "completed_milestones") or 0,
-                    "total_milestones": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "total_milestones") or 0,
+                    "completed_phases": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "completed_phases") or 0,
+                    "total_phases": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "total_phases") or 0,
                     "average_grade": safe_get_nested_dict(st.session_state.analysis_result, "phase_analysis", "average_grade") or 0
                 }
                 # Add assessment profile if available
@@ -904,11 +904,11 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
                     enhanced_metadata["assessment_profile"] = {
                         "student_id": getattr(assessment_profile, 'student_id', 'unknown'),
                         "phases": {phase: {
-                            "milestones": {milestone: {
-                                "completion_percentage": getattr(milestone_data, 'completion_percentage', 0),
-                                "average_grade": getattr(milestone_data, 'average_grade', 0),
-                                "response_count": getattr(milestone_data, 'response_count', 0)
-                            } for milestone, milestone_data in phase_data.milestones.items()}
+                            "steps": {step: {
+                                "completion_percentage": getattr(step_data, 'completion_percentage', 0),
+                                "average_grade": getattr(step_data, 'average_grade', 0),
+                                "response_count": getattr(step_data, 'response_count', 0)
+                            } for step, step_data in phase_data.steps.items() if hasattr(phase_data, 'steps')}
                         } for phase, phase_data in assessment_profile.phases.items()}
                     }
             
@@ -933,7 +933,7 @@ def process_chat_response(user_input: str) -> Dict[str, Any]:
             "routing_path": response_metadata.get("routing_path", "unknown"),
             "classification": result.get("student_classification", {}),
             "conversation_progression": result.get("conversation_progression", {}),
-            "milestone_guidance": result.get("milestone_guidance", {})
+            "phase_guidance": result.get("phase_guidance", {})
         }
         
     except Exception as e:
@@ -1364,25 +1364,16 @@ def main():
                 st.write(f"Confidence: {phase_confidence:.1%}")
                 st.write(f"Progress: {phase_completion:.0f}%")
                 
-                # Show next milestone if available
-                next_milestone = phase_analysis.get('next_milestone')
-                if next_milestone:
-                    milestone_names = {
-                        'site_analysis': 'Site Analysis',
-                        'program_requirements': 'Program Requirements',
-                        'concept_development': 'Concept Development',
-                        'spatial_organization': 'Spatial Organization',
-                        'circulation_design': 'Circulation Design',
-                        'form_development': 'Form Development',
-                        'lighting_strategy': 'Lighting Strategy',
-                        'construction_systems': 'Construction Systems',
-                        'material_selection': 'Material Selection',
-                        'technical_details': 'Technical Details',
-                        'presentation_prep': 'Presentation Preparation',
-                        'documentation': 'Documentation'
+                # Show next phase if available
+                next_phase = phase_analysis.get('next_phase')
+                if next_phase:
+                    phase_names = {
+                        'ideation': 'Ideation',
+                        'visualization': 'Visualization',
+                        'materialization': 'Materialization'
                     }
-                    next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
-                    st.write(f"🎯 **Next:** {next_milestone_name}")
+                    next_phase_name = phase_names.get(next_phase, next_phase.replace('_', ' ').title())
+                    st.write(f"🎯 **Next:** {next_phase_name}")
                 else:
                     st.write("🔍 Phase not detected yet")
                 
@@ -1478,67 +1469,25 @@ def main():
                 
                 # Overall progress summary - show meaningful information
                 if phase_analysis:
-                    completed_milestones = phase_analysis.get('completed_milestones', 0)
-                    total_milestones = phase_analysis.get('total_milestones', 0)
+                    # Show phase-based progress
                     phase_completion = phase_analysis.get('progression_score', 0) * 100
+                    st.markdown("---")
+                    st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
                     
-                    if total_milestones > 0:
-                        if completed_milestones > 0:
-                            st.markdown("---")
-                            st.markdown(f"**📊 Overall Progress: {completed_milestones}/{total_milestones} milestones completed**")
-                            
-                            # Progress visualization
-                            progress_ratio = completed_milestones / total_milestones
-                            st.progress(progress_ratio)
-                            
-                            if progress_ratio < 0.25:
-                                st.write("🔄 **Getting Started** - Building foundational knowledge")
-                            elif progress_ratio < 0.5:
-                                st.write("📝 **In Progress** - Developing design thinking")
-                            elif progress_ratio < 0.75:
-                                st.write("🎯 **Making Good Progress** - Applying concepts effectively")
-                            elif progress_ratio < 1.0:
-                                st.write("✨ **Almost Complete** - Refining and polishing")
-                            else:
-                                st.write("✅ **Project Complete** - Excellent work!")
-                        else:
-                            # Show phase-based progress when no milestones completed
-                            st.markdown("---")
-                            st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
-                            
-                            # Progress visualization
-                            progress_ratio = phase_completion / 100
-                            st.progress(progress_ratio)
-                            
-                            if progress_ratio < 0.25:
-                                st.write("🔄 **Getting Started** - Building foundational knowledge")
-                            elif progress_ratio < 0.5:
-                                st.write("📝 **In Progress** - Developing design thinking")
-                            elif progress_ratio < 0.75:
-                                st.write("🎯 **Making Good Progress** - Applying concepts effectively")
-                            elif progress_ratio < 1.0:
-                                st.write("✨ **Almost Complete** - Refining and polishing")
-                            else:
-                                st.write("✅ **Phase Complete** - Ready for next phase!")
+                    # Progress visualization
+                    progress_ratio = phase_completion / 100
+                    st.progress(progress_ratio)
+                    
+                    if progress_ratio < 0.25:
+                        st.write("🔄 **Getting Started** - Building foundational knowledge")
+                    elif progress_ratio < 0.5:
+                        st.write("📝 **In Progress** - Developing design thinking")
+                    elif progress_ratio < 0.75:
+                        st.write("🎯 **Making Good Progress** - Applying concepts effectively")
+                    elif progress_ratio < 1.0:
+                        st.write("✨ **Almost Complete** - Refining and polishing")
                     else:
-                        # Fallback to phase-based progress
-                        st.markdown("---")
-                        st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
-                        
-                        # Progress visualization
-                        progress_ratio = phase_completion / 100
-                        st.progress(progress_ratio)
-                        
-                        if progress_ratio < 0.25:
-                            st.write("🔄 **Getting Started** - Building foundational knowledge")
-                        elif progress_ratio < 0.5:
-                            st.write("📝 **In Progress** - Developing design thinking")
-                        elif progress_ratio < 0.75:
-                            st.write("🎯 **Making Good Progress** - Applying concepts effectively")
-                        elif progress_ratio < 1.0:
-                            st.write("✨ **Almost Complete** - Refining and polishing")
-                        else:
-                            st.write("✅ **Phase Complete** - Ready for next phase!")
+                        st.write("✅ **Phase Complete** - Ready for next phase!")
                 
                 # Removed static technical details, analysis summary, and suggested questions sections
             
@@ -1600,69 +1549,57 @@ def main():
                         <p style='font-size: 0.8rem; color: gray;'>{phase_completion:.0f}% complete</p>
                     </div>
                 """, unsafe_allow_html=True)
-                #0708-ADDED
-                # Display milestone information if available - integrated with conversation progression
-                milestone_guidance = result.get('milestone_guidance', {})
+                # Display phase information if available - integrated with conversation progression
+                phase_guidance = result.get('phase_guidance', {})
                 conversation_progression = result.get('conversation_progression', {})
                 
-                # Try to get milestone from conversation progression first
-                current_milestone = None
-                milestone_progress = 0.0
+                # Try to get phase from conversation progression first
+                current_phase = None
+                phase_progress = 0.0
                 
                 if conversation_progression:
-                    current_milestone = conversation_progression.get('current_milestone')
-                    milestone_assessment = conversation_progression.get('milestone_assessment', {})
-                    milestone_progress = milestone_assessment.get('completion_percentage', 0.0)
+                    current_phase = conversation_progression.get('current_phase')
+                    phase_assessment = conversation_progression.get('phase_assessment', {})
+                    phase_progress = phase_assessment.get('completion_percentage', 0.0)
                 
-                # Fallback to milestone guidance
-                if not current_milestone:
-                    current_milestone = milestone_guidance.get('current_milestone')
-                    milestone_progress = current_milestone.get('progress_percentage', 0) if current_milestone else 0
+                # Fallback to phase guidance
+                if not current_phase:
+                    current_phase = phase_guidance.get('current_phase')
+                    phase_progress = current_phase.get('progress_percentage', 0) if current_phase else 0
                 
-                if current_milestone:
-                    # Handle both conversation milestones and architectural milestones
-                    if isinstance(current_milestone, dict):
-                        milestone_type = current_milestone.get('milestone_type', 'unknown')
+                if current_phase:
+                    # Handle both conversation phases and design phases
+                    if isinstance(current_phase, dict):
+                        phase_type = current_phase.get('phase_type', 'unknown')
                     else:
-                        milestone_type = str(current_milestone)
+                        phase_type = str(current_phase)
                     
-                    # Conversation milestone display
-                    conversation_milestone_display = {
-                        'phase_entry': '🚀 Phase Entry',
-                        'knowledge_acquisition': '📚 Knowledge Acquisition',
-                        'skill_demonstration': '💪 Skill Demonstration',
-                        'insight_formation': '🧠 Insight Formation',
-                        'problem_solving': '🔧 Problem Solving',
-                        'reflection_point': '🤔 Reflection Point',
-                        'readiness_assessment': '✅ Readiness Assessment'
+                    # Conversation phase display
+                    conversation_phase_display = {
+                        'DISCOVERY': '🔍 Discovery',
+                        'EXPLORATION': '🔬 Exploration',
+                        'SYNTHESIS': '🧠 Synthesis',
+                        'APPLICATION': '💡 Application',
+                        'REFLECTION': '📝 Reflection'
                     }
                     
-                    # Architectural milestone display
-                    architectural_milestone_display = {
-                        'site_analysis': '🏗️ Site Analysis',
-                        'program_requirements': '📋 Program Requirements',
-                        'concept_development': '💭 Concept Development',
-                        'spatial_organization': '🏛️ Spatial Organization',
-                        'circulation_design': '🔄 Circulation Design',
-                        'form_development': '📐 Form Development',
-                        'lighting_strategy': '💡 Lighting Strategy',
-                        'construction_systems': '🏗️ Construction Systems',
-                        'material_selection': '🎨 Material Selection',
-                        'technical_details': '⚙️ Technical Details',
-                        'presentation_prep': '📊 Presentation Prep',
-                        'documentation': '📄 Documentation'
+                    # Design phase display
+                    design_phase_display = {
+                        'ideation': '💡 Ideation',
+                        'visualization': '🎨 Visualization',
+                        'materialization': '🏗️ Materialization'
                     }
                     
-                    # Try conversation milestone first, then architectural
-                    milestone_name = (conversation_milestone_display.get(milestone_type) or 
-                                   architectural_milestone_display.get(milestone_type) or 
-                                   f"🎯 {milestone_type.replace('_', ' ').title()}")
+                    # Try conversation phase first, then design phase
+                    phase_name = (conversation_phase_display.get(phase_type) or 
+                               design_phase_display.get(phase_type) or 
+                               f"🎯 {phase_type.replace('_', ' ').title()}")
                     
                     st.markdown(f"""
                         <div style='text-align: center; margin-top: 0.5rem;'>
-                            <h6 style='margin-bottom: 0.2rem; font-size: 0.9rem;'>Current Milestone</h6>
-                            <p style='font-size: 0.8rem; margin: 0;'>{milestone_name}</p>
-                            <p style='font-size: 0.7rem; color: gray;'>{milestone_progress:.0f}% complete</p>
+                            <h6 style='margin-bottom: 0.2rem; font-size: 0.9rem;'>Current Phase</h6>
+                            <p style='font-size: 0.8rem; margin: 0;'>{phase_name}</p>
+                            <p style='font-size: 0.7rem; color: gray;'>{phase_progress:.0f}% complete</p>
                         </div>
                     """, unsafe_allow_html=True)
             
@@ -1703,63 +1640,54 @@ def main():
                 """, unsafe_allow_html=True)
             
             with col_metric3:
-                # Milestone progress - show meaningful information
+                # Phase progress - show meaningful information
                 conversation_progression = result.get('conversation_progression', {})
                 phase_analysis = safe_get_nested_dict(result, 'phase_analysis') or {}
                 
                 if conversation_progression:
                     conversation_summary = conversation_progression.get('conversation_summary', {})
                     learning_progress = conversation_summary.get('learning_progress', {})
-                    completed_milestones = len(conversation_progression.get('milestones', []))
-                    total_milestones = 5  # Total phases in conversation progression
-                    milestone_progress = (completed_milestones / total_milestones) * 100 if total_milestones > 0 else 0
+                    completed_phases = len(conversation_progression.get('phases', []))
+                    total_phases = 3  # Total design phases: ideation, visualization, materialization
+                    phase_progress = (completed_phases / total_phases) * 100 if total_phases > 0 else 0
                 else:
-                    completed_milestones = phase_analysis.get('completed_milestones', 0)
-                    total_milestones = phase_analysis.get('total_milestones', 0)
-                    milestone_progress = (completed_milestones / total_milestones) * 100 if total_milestones > 0 else 0
+                    completed_phases = phase_analysis.get('completed_phases', 0)
+                    total_phases = phase_analysis.get('total_phases', 0)
+                    phase_progress = (completed_phases / total_phases) * 100 if total_phases > 0 else 0
                 
-                if total_milestones > 0:
-                    if completed_milestones > 0:
+                if total_phases > 0:
+                    if completed_phases > 0:
                         # Custom metric display with smaller text
                         st.markdown(f"""
                             <div style='text-align: center;'>
                                 <h5 style='margin-bottom: 0.2rem;'>Phase Progress</h5>
-                                <p style='font-size: 1rem; margin: 0;'>{completed_milestones}/{total_milestones}</p>
-                                <p style='font-size: 0.8rem; color: gray;'>{milestone_progress:.0f}%</p>
+                                <p style='font-size: 1rem; margin: 0;'>{completed_phases}/{total_phases}</p>
+                                <p style='font-size: 0.8rem; color: gray;'>{phase_progress:.0f}%</p>
                             </div>
                         """, unsafe_allow_html=True)
                     else:
                         # Show next milestone when none completed
-                        next_milestone = phase_analysis.get('next_milestone')
-                        if next_milestone:
-                            milestone_names = {
-                                'site_analysis': 'Site Analysis',
-                                'program_requirements': 'Program Requirements',
-                                'concept_development': 'Concept Development',
-                                'spatial_organization': 'Spatial Organization',
-                                'circulation_design': 'Circulation Design',
-                                'form_development': 'Form Development',
-                                'lighting_strategy': 'Lighting Strategy',
-                                'construction_systems': 'Construction Systems',
-                                'material_selection': 'Material Selection',
-                                'technical_details': 'Technical Details',
-                                'presentation_prep': 'Presentation Preparation',
-                                'documentation': 'Documentation'
+                        next_phase = phase_analysis.get('next_phase')
+                        if next_phase:
+                            phase_names = {
+                                'ideation': 'Ideation',
+                                'visualization': 'Visualization',
+                                'materialization': 'Materialization'
                             }
-                            next_milestone_name = milestone_names.get(next_milestone, next_milestone.replace('_', ' ').title())
+                            next_phase_name = phase_names.get(next_phase, next_phase.replace('_', ' ').title())
                             st.markdown(f"""
                                 <div style='text-align: center;'>
-                                    <h5 style='margin-bottom: 0.2rem;'>Next Milestone</h5>
-                                    <p style='font-size: 1rem; margin: 0;'>{next_milestone_name}</p>
-                                    <p style='font-size: 0.8rem; color: gray;'>0/{total_milestones} completed</p>
+                                    <h5 style='margin-bottom: 0.2rem;'>Next Phase</h5>
+                                    <p style='font-size: 1rem; margin: 0;'>{next_phase_name}</p>
+                                    <p style='font-size: 0.8rem; color: gray;'>Phase progression</p>
                                 </div>
                             """, unsafe_allow_html=True)
                         else:
                             st.markdown(f"""
                                 <div style='text-align: center;'>
-                                    <h5 style='margin-bottom: 0.2rem;'>Milestone Progress</h5>
-                                    <p style='font-size: 1rem; margin: 0;'>0/{total_milestones}</p>
-                                    <p style='font-size: 0.8rem; color: gray;'>Getting started</p>
+                                    <h5 style='margin-bottom: 0.2rem;'>Phase Progress</h5>
+                                    <p style='font-size: 1rem; margin: 0;'>Getting started</p>
+                                    <p style='font-size: 0.8rem; color: gray;'>Phase-based assessment</p>
                                 </div>
                             """, unsafe_allow_html=True)
                 else:

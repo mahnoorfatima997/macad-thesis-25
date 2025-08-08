@@ -170,13 +170,20 @@ class ResponseLengthController:
             style = get_cognitive_style()
             response_text = ResponseLengthController.format_cognitive_intervention(response_text, style)
         
-        # Ensure proper ending
-        if response_text.endswith("..."):
-            # Try to end with a complete sentence
-            sentences = response_text.split('.')
-            if len(sentences) > 1:
-                # Remove the incomplete last sentence
-                response_text = '.'.join(sentences[:-1]) + '.'
+        # Ensure proper ending on a sentence boundary
+        cleaned = response_text.strip()
+        # If truncated with ellipsis, prefer the last completed sentence
+        if cleaned.endswith("..."):
+            # Prefer ending at the last '.', '!' or '?'
+            last_end = max(cleaned.rfind('.'), cleaned.rfind('!'), cleaned.rfind('?'))
+            if last_end != -1:
+                cleaned = cleaned[: last_end + 1]
+        # If still not ending with sentence terminator, trim to last full sentence if possible
+        if len(cleaned) > 0 and cleaned[-1] not in ".!?":
+            last_end = max(cleaned.rfind('.'), cleaned.rfind('!'), cleaned.rfind('?'))
+            if last_end != -1:
+                cleaned = cleaned[: last_end + 1]
+        response_text = cleaned
         
         return response_text.strip()
     

@@ -38,6 +38,7 @@ from utils.routing_decision_tree import (
 
 # Import state validation system
 from utils.state_validator import StateValidator, StateMonitor
+from utils.response_length_controller import ensure_quality
 
 class WorkflowState(TypedDict):
     """LangGraph state that flows between agents"""
@@ -656,10 +657,7 @@ class LangGraphOrchestrator:
             self.logger.info("🎯 Using existing progressive response - skipping synthesis")
             metadata = state.get("response_metadata", {})
             
-            # HYBRID APPROACH: Add milestone question if needed
-            milestone_question = await self._add_milestone_question_if_needed(state, existing_response)
-            if milestone_question:
-                existing_response += f"\n\n🎯 **Milestone Question:** {milestone_question}"
+                    # Phase progression integration can be added here if needed
             
             result_state = {
                 **state,
@@ -680,10 +678,7 @@ class LangGraphOrchestrator:
         self.logger.debug("cognitive_enhancement_result: %s", state.get("cognitive_enhancement_result"))
         final_response, metadata = self.synthesize_responses(state)
         
-        # HYBRID APPROACH: Add milestone question if needed
-        milestone_question = await self._add_milestone_question_if_needed(state, final_response)
-        if milestone_question:
-            final_response += f"\n\n🎯 **Milestone Question:** {milestone_question}"
+        # Phase progression integration can be added here if needed
         
         result_state = {
             **state,
@@ -1523,6 +1518,15 @@ class LangGraphOrchestrator:
         # Print summary if enabled
         self._print_summary_if_enabled(state, response_type, metadata)
         
+        # Apply response length/ending quality control based on response type
+        agent_type_map = {
+            "domain_knowledge": "domain_expert",
+            "socratic_guidance": "socratic_tutor",
+            "cognitive_enhancement": "cognitive_enhancement",
+        }
+        agent_type = agent_type_map.get(response_type, "default")
+        final_response = ensure_quality(final_response, agent_type)
+        
         return final_response, metadata
     
     def _get_agent_results(self, state: WorkflowState) -> Dict[str, Any]:
@@ -1855,46 +1859,7 @@ class LangGraphOrchestrator:
         
         return 'design'
     
-    async def _add_milestone_question_if_needed(self, state: WorkflowState, final_response: str) -> Optional[str]:
-        """Add milestone question if needed based on conversation gaps"""
-        
-        try:
-            # Get current phase from analysis result
-            analysis_result = state.get("analysis_result", {})
-            phase_analysis = analysis_result.get("phase_analysis", {})
-            current_phase = phase_analysis.get("phase", "ideation")
-            
-            # Get student state
-            student_state = state.get("student_state")
-            if not student_state:
-                return None
-            
-            # Get progress manager from analysis agent
-            if hasattr(self.analysis_agent, 'progress_manager'):
-                progress_manager = self.analysis_agent.progress_manager
-            else:
-                # Create progress manager if not exists
-                from phase_management.progress_manager import ProgressManager
-                progress_manager = ProgressManager()
-                self.analysis_agent.progress_manager = progress_manager
-            
-            # Generate student ID
-            student_id = f"student_{hash(str(student_state.messages))}"
-            
-            # Check if milestone question is needed
-            milestone_question = self.analysis_agent._generate_milestone_question_if_needed(
-                student_state, current_phase, progress_manager, student_id
-            )
-            
-            if milestone_question:
-                self.logger.info(f"🎯 Adding milestone question: {milestone_question}")
-                return milestone_question
-            
-            return None
-            
-        except Exception as e:
-            self.logger.warning(f"Could not generate milestone question: {e}")
-            return None
+    # Milestone functionality removed - replaced with phase progression system
 
     def _synthesize_example_response(self, domain_result: Dict, user_input: str, classification: Dict, state: ArchMentorState = None) -> str:
         """Synthesize focused example response with Socratic questions"""
