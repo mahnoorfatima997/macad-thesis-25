@@ -77,12 +77,22 @@ class LinkographySessionAnalyzer:
         patterns = self._detect_all_patterns(overall_linkograph)
         
         # Create session object
+        # Convert timestamp string to datetime if needed
+        from datetime import datetime, timedelta
+        timestamp_str = session_data['session_metrics']['timestamp']
+        if isinstance(timestamp_str, str):
+            start_time = datetime.fromisoformat(timestamp_str)
+        else:
+            start_time = timestamp_str
+        
+        duration_minutes = session_data['session_metrics']['duration_minutes']
+        end_time = start_time + timedelta(minutes=duration_minutes)
+        
         session = LinkographSession(
             session_id=session_id,
             user_id=user_id,
-            start_time=session_data['session_metrics']['timestamp'],
-            end_time=session_data['session_metrics']['timestamp'] + 
-                     session_data['session_metrics']['duration_minutes'] * 60,
+            start_time=start_time.isoformat() if isinstance(start_time, datetime) else start_time,
+            end_time=end_time.isoformat() if isinstance(end_time, datetime) else end_time,
             linkographs=linkographs,
             overall_metrics=overall_linkograph.metrics,
             cognitive_mapping=cognitive_mapping,
@@ -94,6 +104,7 @@ class LinkographySessionAnalyzer:
     
     def _extract_design_moves(self, session_data: Dict) -> List[DesignMove]:
         """Extract design moves from session interactions"""
+        from datetime import datetime
         moves = []
         
         # Get interactions from session data
@@ -106,10 +117,23 @@ class LinkographySessionAnalyzer:
             # Determine move type based on interaction
             move_type = self._determine_move_type(interaction)
             
+            # Convert timestamp to float (seconds since epoch) if it's a string
+            timestamp_value = interaction.get('timestamp', idx)
+            if isinstance(timestamp_value, str):
+                try:
+                    dt = datetime.fromisoformat(timestamp_value)
+                    timestamp_value = dt.timestamp()
+                except:
+                    timestamp_value = float(idx)  # Fallback to index
+            elif timestamp_value is None:
+                timestamp_value = float(idx)
+            else:
+                timestamp_value = float(timestamp_value)
+            
             # Create design move
             move = DesignMove(
                 id=str(uuid.uuid4()),
-                timestamp=interaction.get('timestamp', idx),
+                timestamp=timestamp_value,
                 session_id=session_data['session_metrics']['session_id'],
                 user_id=session_data['session_metrics'].get('user_id', 'unknown'),
                 phase=phase,

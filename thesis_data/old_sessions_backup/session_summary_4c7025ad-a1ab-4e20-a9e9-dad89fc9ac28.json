@@ -1,0 +1,3469 @@
+{
+  "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+  "session_start": "2025-08-03T17:47:28.786981",
+  "session_end": "2025-08-03T17:56:47.761377",
+  "session_duration_seconds": 558.97406,
+  "total_interactions": 7,
+  "interactions_per_minute": 0.7513765486720438,
+  "phase_analysis": {
+    "phase_distribution": {
+      "unknown": 2,
+      "ideation": 4,
+      "materialization": 1
+    },
+    "most_common_phase": "ideation",
+    "average_phase_confidence": 0.17142857142857146,
+    "average_phase_progression": 0.3285714285714286,
+    "phase_progression_trend": "declining"
+  },
+  "design_move_analysis": {
+    "total_moves": 67,
+    "moves_per_interaction": 9.571428571428571,
+    "move_type_distribution": {
+      "general": 37,
+      "analysis": 26,
+      "synthesis": 1,
+      "evaluation": 1,
+      "transformation": 2
+    },
+    "move_modality_distribution": {
+      "text": 67
+    },
+    "most_common_move_type": "general",
+    "most_common_move_modality": "text"
+  },
+  "scientific_metrics_summary": {
+    "average_engagement_score": 0.31485714285714284,
+    "average_complexity_score": 0.3378571428571429,
+    "average_reflection_score": 0.010714285714285714,
+    "average_overall_cognitive_score": 0.31485714285714284,
+    "average_scientific_confidence": 0.3627142857142857,
+    "cognitive_score_trend": "declining",
+    "engagement_trend": "low",
+    "complexity_trend": "low",
+    "reflection_trend": "low"
+  },
+  "cognitive_state_summary": {
+    "engagement_levels": "high",
+    "cognitive_loads": "optimal",
+    "metacognitive_awareness": "low",
+    "passivity_levels": "medium",
+    "overconfidence_levels": "low",
+    "conversation_depths": "medium",
+    "learning_progressions": "declining"
+  },
+  "performance_metrics_summary": {
+    "cognitive_offloading_prevention_rate": 1.0,
+    "deep_thinking_encouragement_rate": 1.0,
+    "scaffolding_effectiveness_rate": 0.0,
+    "engagement_maintenance_rate": 0.2857142857142857,
+    "skill_adaptation_rate": 0.0,
+    "response_complexity_scores": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "agent_selection_appropriateness_rate": 0.0,
+    "response_coherence_rate": 0.8571428571428571,
+    "average_response_complexity": 1.0,
+    "overall_effectiveness_score": 0.4489795918367347
+  },
+  "agent_usage": {
+    "agent_usage": {
+      "socratic_tutor": 6,
+      "domain_expert": 5,
+      "analysis_agent": 5,
+      "cognitive_enhancement": 6
+    },
+    "routing_distribution": {
+      "progressive_opening": 1,
+      "knowledge_only": 4,
+      "knowledge_with_challenge": 1,
+      "socratic_exploration": 1
+    },
+    "multi_agent_usage_rate": 0.8571428571428571,
+    "avg_agents_per_interaction": 3.142857142857143,
+    "most_used_agent": "socratic_tutor",
+    "most_common_route": "knowledge_only"
+  },
+  "input_analysis": {
+    "direct_question": 6,
+    "general_statement": 1
+  },
+  "skill_progression": {
+    "initial_skill": "beginner",
+    "final_skill": "beginner",
+    "skill_changes": 1,
+    "progression_detected": false
+  },
+  "interactions": [
+    {
+      "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+      "timestamp": "2025-08-03T17:49:26.384443",
+      "interaction_number": 1,
+      "student_input": "I have a site in an urban neighborhood. What should I consider for my community center?",
+      "input_length": 16,
+      "input_type": "direct_question",
+      "student_skill_level": "beginner",
+      "understanding_level": "beginner",
+      "confidence_level": "neutral",
+      "engagement_level": "medium",
+      "agent_response": "Hello there,\n\nIt's fabulous that you're diving into creating a community center in an urban neighborhood. This offers such an exciting opportunity to create a space that can truly enhance the community's daily life!\n\nTo start, we might want to consider the specific needs and habits of the community. Understanding who we're designing for can help us tailor the center to their needs. Additionally, the nature of the urban site presents unique challenges and opportunities, like the existing infrastructure and the landscape.\n\nI'm thrilled to accompany you on this journey and see the ideas you'll develop! Could you share a bit more about this community? What are some of the specific challenges you foresee with the urban location? \n\nTo help us explore this together, I'd love to hear your thoughts on: \n1. What is the character of the site and surrounding context? \n2. How does your design respond to its environment? \n3. What aspects of the site or context are most important to you? \n\n**How we'll work together:** I'm here to guide you through a progressive learning journey. We'll start by understanding your interests and then explore the design space together, building your knowledge step by step. \n**Next steps:** \u2022 Share your thoughts on the questions above \u2022 Tell me more about what interests you most \u2022 Ask about any concepts you'd like to explore further \nI'm excited to explore this architectural journey with you! What would you like to start with?",
+      "response_length": 242,
+      "routing_path": "progressive_opening",
+      "agents_used": [],
+      "response_type": "progressive_opening",
+      "primary_agent": "none",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.5,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": null,
+      "current_phase": "unknown",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 20,
+      "design_moves": [
+        {
+          "content": "I have a site in an urban neighborhood.",
+          "timestamp": "2025-08-03T17:49:26.383916",
+          "micro_timestamp": 1754261366.383916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.032,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 39,
+            "has_question": false,
+            "word_count": 8,
+            "complexity_score": 0.4
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "What should I consider for my community center?",
+          "timestamp": "2025-08-03T17:49:26.483916",
+          "micro_timestamp": 1754261366.483916,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.044000000000000004,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 47,
+            "has_question": true,
+            "word_count": 8,
+            "complexity_score": 0.5
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Hello there,",
+          "timestamp": "2025-08-03T17:49:26.583916",
+          "micro_timestamp": 1754261366.583916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.013000000000000001,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 12,
+            "has_question": false,
+            "word_count": 2,
+            "complexity_score": 0.65
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "It's fabulous that you're diving into creating a community center in an urban neighborhood.",
+          "timestamp": "2025-08-03T17:49:26.683916",
+          "micro_timestamp": 1754261366.683916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.07800000000000001,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 91,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.5571428571428572
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "This offers such an exciting opportunity to create a space that can truly enhance the community's daily life!",
+          "timestamp": "2025-08-03T17:49:26.783916",
+          "micro_timestamp": 1754261366.783916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.092,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 109,
+            "has_question": false,
+            "word_count": 18,
+            "complexity_score": 0.5111111111111111
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 4
+        },
+        {
+          "content": "To start, we might want to consider the specific needs and habits of the community.",
+          "timestamp": "2025-08-03T17:49:26.883916",
+          "micro_timestamp": 1754261366.883916,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.0924,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 83,
+            "has_question": false,
+            "word_count": 15,
+            "complexity_score": 0.5599999999999999
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 5
+        },
+        {
+          "content": "Understanding who we're designing for can help us tailor the center to their needs.",
+          "timestamp": "2025-08-03T17:49:26.983916",
+          "micro_timestamp": 1754261366.983916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.07,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 83,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.5
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 6
+        },
+        {
+          "content": "Additionally, the nature of the urban site presents unique challenges and opportunities, like the existing infrastructure and the landscape.",
+          "timestamp": "2025-08-03T17:49:27.083916",
+          "micro_timestamp": 1754261367.083916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 6,
+          "cognitive_load": 0.16,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 140,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.8421052631578947
+          },
+          "previous_move": 5,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 7
+        },
+        {
+          "content": "I'm thrilled to accompany you on this journey and see the ideas you'll develop!",
+          "timestamp": "2025-08-03T17:49:27.183916",
+          "micro_timestamp": 1754261367.183916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 7,
+          "cognitive_load": 0.066,
+          "context": {
+            "sentence_position": 6,
+            "text_length": 79,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.4714285714285714
+          },
+          "previous_move": 6,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 8
+        },
+        {
+          "content": "Could you share a bit more about this community?",
+          "timestamp": "2025-08-03T17:49:27.283916",
+          "micro_timestamp": 1754261367.283916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 8,
+          "cognitive_load": 0.04,
+          "context": {
+            "sentence_position": 7,
+            "text_length": 48,
+            "has_question": true,
+            "word_count": 9,
+            "complexity_score": 0.4444444444444445
+          },
+          "previous_move": 7,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 9
+        },
+        {
+          "content": "What are some of the specific challenges you foresee with the urban location?",
+          "timestamp": "2025-08-03T17:49:27.383916",
+          "micro_timestamp": 1754261367.383916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 9,
+          "cognitive_load": 0.065,
+          "context": {
+            "sentence_position": 8,
+            "text_length": 77,
+            "has_question": true,
+            "word_count": 13,
+            "complexity_score": 0.5
+          },
+          "previous_move": 8,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 10
+        },
+        {
+          "content": "To help us explore this together, I'd love to hear your thoughts on:",
+          "timestamp": "2025-08-03T17:49:27.483916",
+          "micro_timestamp": 1754261367.483916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 10,
+          "cognitive_load": 0.095,
+          "context": {
+            "sentence_position": 9,
+            "text_length": 68,
+            "has_question": false,
+            "word_count": 13,
+            "complexity_score": 0.7307692307692308
+          },
+          "previous_move": 9,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 11
+        },
+        {
+          "content": "What is the character of the site and surrounding context?",
+          "timestamp": "2025-08-03T17:49:27.683916",
+          "micro_timestamp": 1754261367.683916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 11,
+          "cognitive_load": 0.049,
+          "context": {
+            "sentence_position": 11,
+            "text_length": 58,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.49000000000000005
+          },
+          "previous_move": 10,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 12
+        },
+        {
+          "content": "How does your design respond to its environment?",
+          "timestamp": "2025-08-03T17:49:27.883916",
+          "micro_timestamp": 1754261367.883916,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 12,
+          "cognitive_load": 0.0451,
+          "context": {
+            "sentence_position": 13,
+            "text_length": 48,
+            "has_question": true,
+            "word_count": 8,
+            "complexity_score": 0.5125
+          },
+          "previous_move": 11,
+          "temporal_gap": 0.19999980926513672,
+          "next_move": 13
+        },
+        {
+          "content": "What aspects of the site or context are most important to you?",
+          "timestamp": "2025-08-03T17:49:28.083916",
+          "micro_timestamp": 1754261368.083916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 13,
+          "cognitive_load": 0.051,
+          "context": {
+            "sentence_position": 15,
+            "text_length": 62,
+            "has_question": true,
+            "word_count": 12,
+            "complexity_score": 0.425
+          },
+          "previous_move": 12,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 14
+        },
+        {
+          "content": "**How we'll work together:** I'm here to guide you through a progressive learning journey.",
+          "timestamp": "2025-08-03T17:49:28.183916",
+          "micro_timestamp": 1754261368.183916,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 14,
+          "cognitive_load": 0.1155,
+          "context": {
+            "sentence_position": 16,
+            "text_length": 90,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.75
+          },
+          "previous_move": 13,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 15
+        },
+        {
+          "content": "We'll start by understanding your interests and then explore the design space together, building your knowledge step by step.",
+          "timestamp": "2025-08-03T17:49:28.283916",
+          "micro_timestamp": 1754261368.283916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 15,
+          "cognitive_load": 0.126,
+          "context": {
+            "sentence_position": 17,
+            "text_length": 125,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.6631578947368421
+          },
+          "previous_move": 14,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 16
+        },
+        {
+          "content": "**Next steps:** \u2022 Share your thoughts on the questions above \u2022 Tell me more about what interests you most \u2022 Ask about any concepts you'd like to explore further",
+          "timestamp": "2025-08-03T17:49:28.383916",
+          "micro_timestamp": 1754261368.383916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 16,
+          "cognitive_load": 0.19,
+          "context": {
+            "sentence_position": 18,
+            "text_length": 160,
+            "has_question": false,
+            "word_count": 29,
+            "complexity_score": 0.6551724137931034
+          },
+          "previous_move": 15,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 17
+        },
+        {
+          "content": "I'm excited to explore this architectural journey with you!",
+          "timestamp": "2025-08-03T17:49:28.483916",
+          "micro_timestamp": 1754261368.483916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 17,
+          "cognitive_load": 0.051,
+          "context": {
+            "sentence_position": 19,
+            "text_length": 59,
+            "has_question": false,
+            "word_count": 9,
+            "complexity_score": 0.5666666666666667
+          },
+          "previous_move": 16,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 18
+        },
+        {
+          "content": "What would you like to start with?",
+          "timestamp": "2025-08-03T17:49:28.583916",
+          "micro_timestamp": 1754261368.583916,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 18,
+          "cognitive_load": 0.028000000000000004,
+          "context": {
+            "sentence_position": 20,
+            "text_length": 34,
+            "has_question": true,
+            "word_count": 7,
+            "complexity_score": 0.4
+          },
+          "previous_move": 17,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "analysis",
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "interaction_type": "first_message",
+        "understanding_level": "beginner",
+        "confidence_level": "neutral",
+        "engagement_level": "medium",
+        "is_first_message": true
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+      "timestamp": "2025-08-03T17:50:22.164216",
+      "interaction_number": 2,
+      "student_input": "The site is flat with good southern exposure, but it's near a busy intersection. How does this affect my design?",
+      "input_length": 20,
+      "input_type": "direct_question",
+      "student_skill_level": "beginner",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "agent_response": "When designing a community learning center near a busy intersection, the acoustic environment becomes a critical consideration. The flat site and good southern exposure offer excellent opportunities for natural light and solar gain, but the proximity to traffic noise introduces challenges that require thoughtful solutions.\n\nConsider the following perspectives:\n\n1. **Acoustic Insulation vs. Connection to the Outdoors**: You might think about how to balance the need for soundproofing with the desire to create a connection between indoor and outdoor spaces. High-performance glazing can reduce noise but might also limit the natural ventilation opportunities. How might you design openings or use materials that allow for both quiet interiors and a sense of openness?\n\n2. **Zoning and Spatial Layout**: Placing quieter spaces like the library or classrooms away from the intersection could mitigate noise issues. Alternatively, you could use buffer zones, such as storage areas or corridors, to shield these spaces. How might the layout of your building influence both the acoustic environment and the flow of movement within the center?\n\n3\n\nWhat aspects of using buffer zones, like storage areas or corridors, to shield quieter spaces from traffic noise do you find most compelling for your community learning center? Why do you think this strategy might be effective in balancing noise reduction and maintaining a smooth flow of movement within your design?",
+      "response_length": 221,
+      "routing_path": "knowledge_only",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "knowledge_only_with_socratic",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.5,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": null,
+      "current_phase": "ideation",
+      "phase_confidence": 0.046153846153846156,
+      "phase_characteristics": {
+        "focus": "Conceptual exploration and problem framing",
+        "key_activities": [
+          "Site analysis",
+          "Program development",
+          "Concept exploration",
+          "Precedent study"
+        ],
+        "cognitive_demands": "High-level thinking, synthesis, creativity",
+        "typical_duration": "1-3 days",
+        "success_indicators": [
+          "Clear concept statement",
+          "Program definition",
+          "Site understanding"
+        ]
+      },
+      "phase_progression_score": 0.15000000000000002,
+      "phase_duration": 6,
+      "phase_scores": {
+        "ideation": 0.06076923076923077,
+        "visualization": 0.03769230769230769,
+        "materialization": 0.03
+      },
+      "phase_recommendations": [
+        "Phase detection confidence is low - consider explicit phase clarification",
+        "Focus on concept development and program definition",
+        "Explore precedents and site analysis",
+        "Develop clear design philosophy and approach"
+      ],
+      "design_moves_count": 14,
+      "design_moves": [
+        {
+          "content": "The site is flat with good southern exposure, but it's near a busy intersection.",
+          "timestamp": "2025-08-03T17:50:22.163835",
+          "micro_timestamp": 1754261422.163835,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.081,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 80,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.5785714285714285
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "How does this affect my design?",
+          "timestamp": "2025-08-03T17:50:22.263835",
+          "micro_timestamp": 1754261422.263835,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.028599999999999997,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 31,
+            "has_question": true,
+            "word_count": 6,
+            "complexity_score": 0.4333333333333333
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "When designing a community learning center near a busy intersection, the acoustic environment becomes a critical consideration.",
+          "timestamp": "2025-08-03T17:50:22.363835",
+          "micro_timestamp": 1754261422.363835,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.1408,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 127,
+            "has_question": false,
+            "word_count": 17,
+            "complexity_score": 0.7529411764705882
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "The flat site and good southern exposure offer excellent opportunities for natural light and solar gain, but the proximity to traffic noise introduces challenges that require thoughtful solutions.",
+          "timestamp": "2025-08-03T17:50:22.463835",
+          "micro_timestamp": 1754261422.463835,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.19699999999999998,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 196,
+            "has_question": false,
+            "word_count": 28,
+            "complexity_score": 0.7035714285714285
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "Consider the following perspectives:",
+          "timestamp": "2025-08-03T17:50:22.563835",
+          "micro_timestamp": 1754261422.563835,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.044000000000000004,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 36,
+            "has_question": false,
+            "word_count": 4,
+            "complexity_score": 1.0
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 4
+        },
+        {
+          "content": "**Acoustic Insulation vs.",
+          "timestamp": "2025-08-03T17:50:22.763835",
+          "micro_timestamp": 1754261422.763835,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.023000000000000003,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 25,
+            "has_question": false,
+            "word_count": 3,
+            "complexity_score": 0.7666666666666667
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 5
+        },
+        {
+          "content": "Connection to the Outdoors**: You might think about how to balance the need for soundproofing with the desire to create a connection between indoor and outdoor spaces.",
+          "timestamp": "2025-08-03T17:50:22.863835",
+          "micro_timestamp": 1754261422.863835,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.21450000000000005,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 167,
+            "has_question": false,
+            "word_count": 27,
+            "complexity_score": 0.7222222222222223
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 6
+        },
+        {
+          "content": "High-performance glazing can reduce noise but might also limit the natural ventilation opportunities.",
+          "timestamp": "2025-08-03T17:50:22.963835",
+          "micro_timestamp": 1754261422.963835,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 6,
+          "cognitive_load": 0.08900000000000001,
+          "context": {
+            "sentence_position": 6,
+            "text_length": 101,
+            "has_question": false,
+            "word_count": 13,
+            "complexity_score": 0.6846153846153846
+          },
+          "previous_move": 5,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 7
+        },
+        {
+          "content": "How might you design openings or use materials that allow for both quiet interiors and a sense of openness?",
+          "timestamp": "2025-08-03T17:50:23.063835",
+          "micro_timestamp": 1754261423.063835,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 7,
+          "cognitive_load": 0.09790000000000001,
+          "context": {
+            "sentence_position": 7,
+            "text_length": 107,
+            "has_question": true,
+            "word_count": 19,
+            "complexity_score": 0.46842105263157896
+          },
+          "previous_move": 6,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 8
+        },
+        {
+          "content": "**Zoning and Spatial Layout**: Placing quieter spaces like the library or classrooms away from the intersection could mitigate noise issues.",
+          "timestamp": "2025-08-03T17:50:23.263835",
+          "micro_timestamp": 1754261423.263835,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 8,
+          "cognitive_load": 0.16099999999999998,
+          "context": {
+            "sentence_position": 9,
+            "text_length": 140,
+            "has_question": false,
+            "word_count": 20,
+            "complexity_score": 0.8049999999999999
+          },
+          "previous_move": 7,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 9
+        },
+        {
+          "content": "Alternatively, you could use buffer zones, such as storage areas or corridors, to shield these spaces.",
+          "timestamp": "2025-08-03T17:50:23.363835",
+          "micro_timestamp": 1754261423.363835,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 9,
+          "cognitive_load": 0.135,
+          "context": {
+            "sentence_position": 10,
+            "text_length": 102,
+            "has_question": false,
+            "word_count": 16,
+            "complexity_score": 0.84375
+          },
+          "previous_move": 8,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 10
+        },
+        {
+          "content": "How might the layout of your building influence both the acoustic environment and the flow of movement within the center?",
+          "timestamp": "2025-08-03T17:50:23.463835",
+          "micro_timestamp": 1754261423.463835,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 10,
+          "cognitive_load": 0.11220000000000001,
+          "context": {
+            "sentence_position": 11,
+            "text_length": 121,
+            "has_question": true,
+            "word_count": 20,
+            "complexity_score": 0.51
+          },
+          "previous_move": 9,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 11
+        },
+        {
+          "content": "What aspects of using buffer zones, like storage areas or corridors, to shield quieter spaces from traffic noise do you find most compelling for your community learning center?",
+          "timestamp": "2025-08-03T17:50:23.663835",
+          "micro_timestamp": 1754261423.663835,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 11,
+          "cognitive_load": 0.205,
+          "context": {
+            "sentence_position": 13,
+            "text_length": 176,
+            "has_question": true,
+            "word_count": 28,
+            "complexity_score": 0.7321428571428572
+          },
+          "previous_move": 10,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 12
+        },
+        {
+          "content": "Why do you think this strategy might be effective in balancing noise reduction and maintaining a smooth flow of movement within your design?",
+          "timestamp": "2025-08-03T17:50:23.763835",
+          "micro_timestamp": 1754261423.763835,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 12,
+          "cognitive_load": 0.14159999999999998,
+          "context": {
+            "sentence_position": 14,
+            "text_length": 140,
+            "has_question": true,
+            "word_count": 23,
+            "complexity_score": 0.5130434782608695
+          },
+          "previous_move": 11,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "analysis",
+        "analysis",
+        "general",
+        "analysis",
+        "general",
+        "analysis",
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "analysis",
+        "general",
+        "synthesis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "engagement_score": 1.2,
+          "engagement_depth": 1.667,
+          "engagement_persistence": 1.0,
+          "avg_message_length": 31.7,
+          "message_variance": 376.22
+        },
+        "complexity_metrics": {
+          "complexity_score": 0.363,
+          "vocabulary_diversity": 0.737,
+          "conceptual_density": 0.021,
+          "total_words": 95,
+          "unique_words": 70,
+          "concept_matches": 2
+        },
+        "reflection_metrics": {
+          "reflection_score": 0.0,
+          "metacognitive_awareness": 0.0,
+          "self_assessment": 0.0,
+          "metacognitive_count": 0,
+          "self_assessment_count": 0
+        },
+        "progression_metrics": {
+          "progression_score": 0.0,
+          "skill_development": 0,
+          "learning_velocity": 0,
+          "complexity_progression": -0.661,
+          "early_complexity": 59.0,
+          "recent_complexity": 20.0
+        },
+        "improvement_metrics": {
+          "overall_improvement": -21.8,
+          "individual_improvements": {
+            "engagement_improvement": 140.0,
+            "complexity_improvement": -27.4,
+            "reflection_improvement": -100.0,
+            "progression_improvement": -100.0
+          },
+          "baseline_comparison": {
+            "cognitive_offloading_rate": 0.65,
+            "deep_thinking_engagement": 0.35,
+            "knowledge_retention": 0.45,
+            "skill_transfer": 0.3,
+            "metacognitive_awareness": 0.25,
+            "creative_problem_solving": 0.4,
+            "spatial_reasoning_improvement": 0.35,
+            "critical_thinking_development": 0.3
+          },
+          "target_comparison": {
+            "cognitive_offloading_prevention": 0.85,
+            "deep_thinking_engagement": 0.75,
+            "knowledge_integration": 0.7,
+            "scaffolding_effectiveness": 0.8,
+            "learning_progression": 0.65,
+            "metacognitive_awareness": 0.6
+          }
+        },
+        "phase_metrics": {
+          "conceptual_thinking": 0.8,
+          "creative_exploration": 0.8,
+          "problem_framing": 0.8
+        },
+        "overall_cognitive_score": 0.409,
+        "scientific_confidence": 0.313
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "medium",
+        "overconfidence_level": "low",
+        "conversation_depth": "surface",
+        "learning_progression": "declining"
+      },
+      "context_classification": {
+        "interaction_type": "knowledge_seeking",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "high",
+        "overconfidence_score": 0,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "is_example_request": false,
+        "shows_confusion": false,
+        "requests_help": false,
+        "demonstrates_overconfidence": false,
+        "seeks_validation": false,
+        "classification": "question",
+        "ai_reasoning": "The student is asking how the site conditions affect their design, indicating a desire for information and explanation, which classifies it as knowledge seeking. The question shows some uncertainty about how to proceed, but the student is engaged and asking a detailed question, suggesting a medium understanding level.",
+        "manual_override": false,
+        "last_message": "The site is flat with good southern exposure, but it's near a busy intersection. How does this affect my design?"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "agent": "analysis_agent",
+          "domain": "architecture",
+          "visual_analysis": {},
+          "text_analysis": {
+            "building_type": "community center",
+            "program_requirements": [
+              "meeting rooms",
+              "kitchen",
+              "flexible space",
+              "accessibility",
+              "parking"
+            ],
+            "design_considerations": [
+              "public access",
+              "multiple user groups",
+              "community engagement"
+            ],
+            "numbers_mentioned": [],
+            "constraints": [
+              "accessible"
+            ],
+            "word_count": 48,
+            "complexity": "detailed",
+            "detail_level": "basic_details"
+          },
+          "synthesis": {
+            "alignment_assessment": {},
+            "missing_considerations": [],
+            "cognitive_challenges": [
+              "accessibility_awareness",
+              "spatial_relationships",
+              "brief_development",
+              "basic_concept_understanding"
+            ],
+            "learning_opportunities": [
+              "Explore universal design principles",
+              "Consider how spaces connect and flow",
+              "Develop more detailed program requirements"
+            ],
+            "next_focus_areas": [
+              "socratic_questioning"
+            ]
+          },
+          "confidence_score": 0.5,
+          "key_insights": [],
+          "cognitive_flags": [
+            "needs_acoustic_guidance",
+            "needs_design_strategy_guidance",
+            "needs_spatial_thinking_support"
+          ],
+          "phase_analysis": {
+            "phase": "ideation",
+            "confidence": 0.046153846153846156,
+            "phase_scores": {
+              "ideation": 0.06076923076923077,
+              "visualization": 0.03769230769230769,
+              "materialization": 0.03
+            },
+            "indicators": {
+              "conversation": {
+                "ideation": 0.07692307692307693,
+                "visualization": 0.019230769230769232,
+                "materialization": 0.0,
+                "confidence": 0.15384615384615385,
+                "total_indicators": {
+                  "ideation": 26,
+                  "visualization": 52,
+                  "materialization": 26
+                },
+                "text_analysis": {
+                  "message_count": 3,
+                  "avg_message_length": 31.666666666666668,
+                  "indicator_density": 0.032051282051282055
+                }
+              },
+              "visual": {
+                "ideation": 0,
+                "visualization": 0,
+                "materialization": 0,
+                "confidence": 0
+              },
+              "design": {
+                "ideation": 0.0,
+                "visualization": 0.0,
+                "materialization": 0.0,
+                "confidence": 0.3,
+                "progression_analysis": {
+                  "conversation_length": 3,
+                  "early_focus": 0.0,
+                  "recent_focus": 0.0
+                }
+              },
+              "temporal": {
+                "ideation": 0.3,
+                "visualization": 0.3,
+                "materialization": 0.3,
+                "confidence": 0.2
+              }
+            },
+            "confidence_metrics": {
+              "overall_confidence": 0.046153846153846156,
+              "weighted_confidence": 0.12153846153846154,
+              "score_separation": 0.023076923076923078,
+              "conversation_confidence": 0.15384615384615385,
+              "visual_confidence": 0,
+              "design_confidence": 0.3
+            },
+            "progression_score": 0.15000000000000002,
+            "phase_duration": 6,
+            "phase_characteristics": {
+              "focus": "Conceptual exploration and problem framing",
+              "key_activities": [
+                "Site analysis",
+                "Program development",
+                "Concept exploration",
+                "Precedent study"
+              ],
+              "cognitive_demands": "High-level thinking, synthesis, creativity",
+              "typical_duration": "1-3 days",
+              "success_indicators": [
+                "Clear concept statement",
+                "Program definition",
+                "Site understanding"
+              ]
+            },
+            "recommendations": [
+              "Phase detection confidence is low - consider explicit phase clarification",
+              "Focus on concept development and program definition",
+              "Explore precedents and site analysis",
+              "Develop clear design philosophy and approach"
+            ]
+          },
+          "skill_assessment": {
+            "detected_level": "beginner",
+            "previous_level": "beginner",
+            "updated": false,
+            "confidence": 0.7749999999999999
+          },
+          "visual_context": {
+            "has_visual": false
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+      "timestamp": "2025-08-03T17:51:02.423071",
+      "interaction_number": 3,
+      "student_input": "What are the main opportunities and constraints of this urban site?",
+      "input_length": 11,
+      "input_type": "direct_question",
+      "student_skill_level": "beginner",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "agent_response": "It's great that you're considering the opportunities and constraints of your urban site for the school project. Understanding these elements is crucial as they directly influence the design's functionality, sustainability, and connection with the community. By diving deeper into this, you can create a space that truly resonates with its users and enhances the neighborhood's fabric. With this in mind, think about this: How can the site's unique characteristics, such as its natural landscape, existing infrastructure, or community demographics, be leveraged to create a dynamic and inclusive environment that caters to both educational needs and community engagement? Reflecting on this can help you design\n\nWhat aspects of leveraging the site's natural landscape, existing infrastructure, or community demographics do you find most compelling for creating a dynamic and inclusive environment in your community project, and why do you think these elements will effectively enhance both educational needs and community engagement?",
+      "response_length": 149,
+      "routing_path": "knowledge_only",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "knowledge_only_with_socratic",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.5,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": null,
+      "current_phase": "ideation",
+      "phase_confidence": 0.046153846153846156,
+      "phase_characteristics": {
+        "focus": "Conceptual exploration and problem framing",
+        "key_activities": [
+          "Site analysis",
+          "Program development",
+          "Concept exploration",
+          "Precedent study"
+        ],
+        "cognitive_demands": "High-level thinking, synthesis, creativity",
+        "typical_duration": "1-3 days",
+        "success_indicators": [
+          "Clear concept statement",
+          "Program definition",
+          "Site understanding"
+        ]
+      },
+      "phase_progression_score": 0.2,
+      "phase_duration": 8,
+      "phase_scores": {
+        "ideation": 0.06076923076923077,
+        "visualization": 0.03769230769230769,
+        "materialization": 0.03
+      },
+      "phase_recommendations": [
+        "Phase detection confidence is low - consider explicit phase clarification",
+        "Focus on concept development and program definition",
+        "Explore precedents and site analysis",
+        "Develop clear design philosophy and approach"
+      ],
+      "design_moves_count": 7,
+      "design_moves": [
+        {
+          "content": "What are the main opportunities and constraints of this urban site?",
+          "timestamp": "2025-08-03T17:51:02.422809",
+          "micro_timestamp": 1754261462.422809,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.057,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 67,
+            "has_question": true,
+            "word_count": 11,
+            "complexity_score": 0.5181818181818182
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "It's great that you're considering the opportunities and constraints of your urban site for the school project.",
+          "timestamp": "2025-08-03T17:51:02.522809",
+          "micro_timestamp": 1754261462.522809,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.10450000000000001,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 111,
+            "has_question": false,
+            "word_count": 17,
+            "complexity_score": 0.5588235294117647
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "Understanding these elements is crucial as they directly influence the design's functionality, sustainability, and connection with the community.",
+          "timestamp": "2025-08-03T17:51:02.622809",
+          "micro_timestamp": 1754261462.622809,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.16399999999999998,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 145,
+            "has_question": false,
+            "word_count": 18,
+            "complexity_score": 0.911111111111111
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "By diving deeper into this, you can create a space that truly resonates with its users and enhances the neighborhood's fabric.",
+          "timestamp": "2025-08-03T17:51:02.722809",
+          "micro_timestamp": 1754261462.722809,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.127,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 126,
+            "has_question": false,
+            "word_count": 21,
+            "complexity_score": 0.6047619047619047
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 4
+        },
+        {
+          "content": "With this in mind, think about this: How can the site's unique characteristics, such as its natural landscape, existing infrastructure, or community demographics, be leveraged to create a dynamic and inclusive environment that caters to both educational needs and community engagement?",
+          "timestamp": "2025-08-03T17:51:02.822809",
+          "micro_timestamp": 1754261462.822809,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.451,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 285,
+            "has_question": true,
+            "word_count": 41,
+            "complexity_score": 1.0
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 5
+        },
+        {
+          "content": "Reflecting on this can help you design",
+          "timestamp": "2025-08-03T17:51:02.922809",
+          "micro_timestamp": 1754261462.922809,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.032,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 38,
+            "has_question": false,
+            "word_count": 7,
+            "complexity_score": 0.45714285714285713
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 6
+        },
+        {
+          "content": "What aspects of leveraging the site's natural landscape, existing infrastructure, or community demographics do you find most compelling for creating a dynamic and inclusive environment in your community project, and why do you think these elements will effectively enhance both educational needs and community engagement?",
+          "timestamp": "2025-08-03T17:51:03.022809",
+          "micro_timestamp": 1754261463.022809,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 6,
+          "cognitive_load": 0.45320000000000005,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 321,
+            "has_question": true,
+            "word_count": 45,
+            "complexity_score": 0.9155555555555557
+          },
+          "previous_move": 5,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "analysis",
+        "general",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "engagement_score": 1.15,
+          "engagement_depth": 1.5,
+          "engagement_persistence": 1.0,
+          "avg_message_length": 26.5,
+          "message_variance": 362.25
+        },
+        "complexity_metrics": {
+          "complexity_score": 0.374,
+          "vocabulary_diversity": 0.717,
+          "conceptual_density": 0.019,
+          "total_words": 106,
+          "unique_words": 76,
+          "concept_matches": 2
+        },
+        "reflection_metrics": {
+          "reflection_score": 0.0,
+          "metacognitive_awareness": 0.0,
+          "self_assessment": 0.0,
+          "metacognitive_count": 0,
+          "self_assessment_count": 0
+        },
+        "progression_metrics": {
+          "progression_score": 0.0,
+          "skill_development": 0,
+          "learning_velocity": 0,
+          "complexity_progression": -0.737,
+          "early_complexity": 59.0,
+          "recent_complexity": 15.5
+        },
+        "improvement_metrics": {
+          "overall_improvement": -23.8,
+          "individual_improvements": {
+            "engagement_improvement": 130.0,
+            "complexity_improvement": -25.2,
+            "reflection_improvement": -100.0,
+            "progression_improvement": -100.0
+          },
+          "baseline_comparison": {
+            "cognitive_offloading_rate": 0.65,
+            "deep_thinking_engagement": 0.35,
+            "knowledge_retention": 0.45,
+            "skill_transfer": 0.3,
+            "metacognitive_awareness": 0.25,
+            "creative_problem_solving": 0.4,
+            "spatial_reasoning_improvement": 0.35,
+            "critical_thinking_development": 0.3
+          },
+          "target_comparison": {
+            "cognitive_offloading_prevention": 0.85,
+            "deep_thinking_engagement": 0.75,
+            "knowledge_integration": 0.7,
+            "scaffolding_effectiveness": 0.8,
+            "learning_progression": 0.65,
+            "metacognitive_awareness": 0.6
+          }
+        },
+        "phase_metrics": {
+          "conceptual_thinking": 0.8,
+          "creative_exploration": 0.8,
+          "problem_framing": 0.8
+        },
+        "overall_cognitive_score": 0.4,
+        "scientific_confidence": 0.343
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "medium",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "declining"
+      },
+      "context_classification": {
+        "interaction_type": "knowledge_seeking",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "high",
+        "overconfidence_score": 0,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "is_example_request": false,
+        "shows_confusion": false,
+        "requests_help": false,
+        "demonstrates_overconfidence": false,
+        "seeks_validation": false,
+        "classification": "question",
+        "ai_reasoning": "The student is asking for information about the opportunities and constraints of an urban site, indicating a knowledge-seeking interaction. The question shows some uncertainty as they are seeking guidance. The understanding level is medium as they are making connections between site characteristics and design considerations. The engagement level is high due to the detailed nature of the inquiry.",
+        "manual_override": false,
+        "last_message": "What are the main opportunities and constraints of this urban site?"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "agent": "analysis_agent",
+          "domain": "architecture",
+          "visual_analysis": {},
+          "text_analysis": {
+            "building_type": "community center",
+            "program_requirements": [
+              "meeting rooms",
+              "kitchen",
+              "flexible space",
+              "accessibility",
+              "parking"
+            ],
+            "design_considerations": [
+              "public access",
+              "multiple user groups",
+              "community engagement"
+            ],
+            "numbers_mentioned": [],
+            "constraints": [
+              "accessible"
+            ],
+            "word_count": 48,
+            "complexity": "detailed",
+            "detail_level": "basic_details"
+          },
+          "synthesis": {
+            "alignment_assessment": {},
+            "missing_considerations": [],
+            "cognitive_challenges": [
+              "accessibility_awareness",
+              "spatial_relationships",
+              "brief_development",
+              "basic_concept_understanding"
+            ],
+            "learning_opportunities": [
+              "Explore universal design principles",
+              "Consider how spaces connect and flow",
+              "Develop more detailed program requirements"
+            ],
+            "next_focus_areas": [
+              "socratic_questioning"
+            ]
+          },
+          "confidence_score": 0.5,
+          "key_insights": [],
+          "cognitive_flags": [
+            "needs_acoustic_guidance",
+            "needs_design_strategy_guidance",
+            "needs_spatial_thinking_support"
+          ],
+          "phase_analysis": {
+            "phase": "ideation",
+            "confidence": 0.046153846153846156,
+            "phase_scores": {
+              "ideation": 0.06076923076923077,
+              "visualization": 0.03769230769230769,
+              "materialization": 0.03
+            },
+            "indicators": {
+              "conversation": {
+                "ideation": 0.07692307692307693,
+                "visualization": 0.019230769230769232,
+                "materialization": 0.0,
+                "confidence": 0.15384615384615385,
+                "total_indicators": {
+                  "ideation": 26,
+                  "visualization": 52,
+                  "materialization": 26
+                },
+                "text_analysis": {
+                  "message_count": 4,
+                  "avg_message_length": 26.5,
+                  "indicator_density": 0.032051282051282055
+                }
+              },
+              "visual": {
+                "ideation": 0,
+                "visualization": 0,
+                "materialization": 0,
+                "confidence": 0
+              },
+              "design": {
+                "ideation": 0.0,
+                "visualization": 0.0,
+                "materialization": 0.0,
+                "confidence": 0.4,
+                "progression_analysis": {
+                  "conversation_length": 4,
+                  "early_focus": 0.0,
+                  "recent_focus": 0.0
+                }
+              },
+              "temporal": {
+                "ideation": 0.3,
+                "visualization": 0.3,
+                "materialization": 0.3,
+                "confidence": 0.2
+              }
+            },
+            "confidence_metrics": {
+              "overall_confidence": 0.046153846153846156,
+              "weighted_confidence": 0.14153846153846156,
+              "score_separation": 0.023076923076923078,
+              "conversation_confidence": 0.15384615384615385,
+              "visual_confidence": 0,
+              "design_confidence": 0.4
+            },
+            "progression_score": 0.2,
+            "phase_duration": 8,
+            "phase_characteristics": {
+              "focus": "Conceptual exploration and problem framing",
+              "key_activities": [
+                "Site analysis",
+                "Program development",
+                "Concept exploration",
+                "Precedent study"
+              ],
+              "cognitive_demands": "High-level thinking, synthesis, creativity",
+              "typical_duration": "1-3 days",
+              "success_indicators": [
+                "Clear concept statement",
+                "Program definition",
+                "Site understanding"
+              ]
+            },
+            "recommendations": [
+              "Phase detection confidence is low - consider explicit phase clarification",
+              "Focus on concept development and program definition",
+              "Explore precedents and site analysis",
+              "Develop clear design philosophy and approach"
+            ]
+          },
+          "skill_assessment": {
+            "detected_level": "beginner",
+            "previous_level": "beginner",
+            "updated": false,
+            "confidence": 0.9
+          },
+          "visual_context": {
+            "has_visual": false
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+      "timestamp": "2025-08-03T17:53:30.870190",
+      "interaction_number": 4,
+      "student_input": "How do different user groups interact in a community center?",
+      "input_length": 10,
+      "input_type": "direct_question",
+      "student_skill_level": "beginner",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "agent_response": "When considering how different user groups interact in a community center, especially one that serves as a hub for education and community events, it's important to think about the diverse needs and dynamics of these groups. \n\nImagine the various user groups: children, teenagers, adults, and seniors. Each group has unique needs and preferences. For instance, children might require safe, stimulating environments, while teenagers might look for spaces that offer autonomy and social interaction. Adults might prioritize functional spaces for workshops, and seniors might need accessible, quiet areas for reading or socializing.\n\nNow, think about how these groups might interact. Could shared spaces foster intergenerational learning and community bonding? Or might they create conflicts over space usage and noise levels? Consider the trade-offs between designing flexible multipurpose spaces versus dedicated areas for specific activities.\n\nIn your project, how might the layout of classrooms, libraries, and outdoor areas facilitate or hinder these interactions? Could transparent partitions or movable walls offer flexibility while maintaining a sense of openness? How might circulation\n\nWhat aspects of designing flexible multipurpose spaces, as mentioned in the examples, do you find most compelling for your community center project, and how might these spaces address the diverse needs and interactions of different user groups like children, teenagers, adults, and seniors?",
+      "response_length": 211,
+      "routing_path": "knowledge_only",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "knowledge_only_with_socratic",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.5,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": null,
+      "current_phase": "ideation",
+      "phase_confidence": 0.046153846153846156,
+      "phase_characteristics": {
+        "focus": "Conceptual exploration and problem framing",
+        "key_activities": [
+          "Site analysis",
+          "Program development",
+          "Concept exploration",
+          "Precedent study"
+        ],
+        "cognitive_demands": "High-level thinking, synthesis, creativity",
+        "typical_duration": "1-3 days",
+        "success_indicators": [
+          "Clear concept statement",
+          "Program definition",
+          "Site understanding"
+        ]
+      },
+      "phase_progression_score": 0.25,
+      "phase_duration": 10,
+      "phase_scores": {
+        "ideation": 0.06076923076923077,
+        "visualization": 0.03769230769230769,
+        "materialization": 0.03
+      },
+      "phase_recommendations": [
+        "Phase detection confidence is low - consider explicit phase clarification",
+        "Focus on concept development and program definition",
+        "Explore precedents and site analysis",
+        "Develop clear design philosophy and approach"
+      ],
+      "design_moves_count": 14,
+      "design_moves": [
+        {
+          "content": "How do different user groups interact in a community center?",
+          "timestamp": "2025-08-03T17:53:30.869768",
+          "micro_timestamp": 1754261610.869768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.056100000000000004,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 60,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.51
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "When considering how different user groups interact in a community center, especially one that serves as a hub for education and community events, it's important to think about the diverse needs and dynamics of these groups.",
+          "timestamp": "2025-08-03T17:53:30.969768",
+          "micro_timestamp": 1754261610.969768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.2871,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 224,
+            "has_question": false,
+            "word_count": 36,
+            "complexity_score": 0.7250000000000001
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "Imagine the various user groups: children, teenagers, adults, and seniors.",
+          "timestamp": "2025-08-03T17:53:31.069768",
+          "micro_timestamp": 1754261611.069768,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.1,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 74,
+            "has_question": false,
+            "word_count": 10,
+            "complexity_score": 1.0
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "Each group has unique needs and preferences.",
+          "timestamp": "2025-08-03T17:53:31.169768",
+          "micro_timestamp": 1754261611.169768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.04180000000000001,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 44,
+            "has_question": false,
+            "word_count": 7,
+            "complexity_score": 0.5428571428571429
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 4
+        },
+        {
+          "content": "For instance, children might require safe, stimulating environments, while teenagers might look for spaces that offer autonomy and social interaction.",
+          "timestamp": "2025-08-03T17:53:31.269768",
+          "micro_timestamp": 1754261611.269768,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.191,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 150,
+            "has_question": false,
+            "word_count": 20,
+            "complexity_score": 0.9550000000000001
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 5
+        },
+        {
+          "content": "Adults might prioritize functional spaces for workshops, and seniors might need accessible, quiet areas for reading or socializing.",
+          "timestamp": "2025-08-03T17:53:31.369768",
+          "micro_timestamp": 1754261611.369768,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.15,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 131,
+            "has_question": false,
+            "word_count": 18,
+            "complexity_score": 0.8333333333333333
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 6
+        },
+        {
+          "content": "Now, think about how these groups might interact.",
+          "timestamp": "2025-08-03T17:53:31.469768",
+          "micro_timestamp": 1754261611.469768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 6,
+          "cognitive_load": 0.05500000000000001,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 49,
+            "has_question": false,
+            "word_count": 8,
+            "complexity_score": 0.625
+          },
+          "previous_move": 5,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 7
+        },
+        {
+          "content": "Could shared spaces foster intergenerational learning and community bonding?",
+          "timestamp": "2025-08-03T17:53:31.569768",
+          "micro_timestamp": 1754261611.569768,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 7,
+          "cognitive_load": 0.068,
+          "context": {
+            "sentence_position": 6,
+            "text_length": 76,
+            "has_question": true,
+            "word_count": 9,
+            "complexity_score": 0.7555555555555555
+          },
+          "previous_move": 6,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 8
+        },
+        {
+          "content": "Or might they create conflicts over space usage and noise levels?",
+          "timestamp": "2025-08-03T17:53:31.669768",
+          "micro_timestamp": 1754261611.669768,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 8,
+          "cognitive_load": 0.055,
+          "context": {
+            "sentence_position": 7,
+            "text_length": 65,
+            "has_question": true,
+            "word_count": 11,
+            "complexity_score": 0.5
+          },
+          "previous_move": 7,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 9
+        },
+        {
+          "content": "Consider the trade-offs between designing flexible multipurpose spaces versus dedicated areas for specific activities.",
+          "timestamp": "2025-08-03T17:53:31.769768",
+          "micro_timestamp": 1754261611.769768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 9,
+          "cognitive_load": 0.1155,
+          "context": {
+            "sentence_position": 8,
+            "text_length": 118,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.75
+          },
+          "previous_move": 8,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 10
+        },
+        {
+          "content": "In your project, how might the layout of classrooms, libraries, and outdoor areas facilitate or hinder these interactions?",
+          "timestamp": "2025-08-03T17:53:31.869768",
+          "micro_timestamp": 1754261611.869768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 10,
+          "cognitive_load": 0.1749,
+          "context": {
+            "sentence_position": 9,
+            "text_length": 122,
+            "has_question": true,
+            "word_count": 18,
+            "complexity_score": 0.8833333333333333
+          },
+          "previous_move": 9,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 11
+        },
+        {
+          "content": "Could transparent partitions or movable walls offer flexibility while maintaining a sense of openness?",
+          "timestamp": "2025-08-03T17:53:31.969768",
+          "micro_timestamp": 1754261611.969768,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 11,
+          "cognitive_load": 0.08899999999999998,
+          "context": {
+            "sentence_position": 10,
+            "text_length": 102,
+            "has_question": true,
+            "word_count": 14,
+            "complexity_score": 0.6357142857142857
+          },
+          "previous_move": 10,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 12
+        },
+        {
+          "content": "How might circulation",
+          "timestamp": "2025-08-03T17:53:32.069768",
+          "micro_timestamp": 1754261612.069768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 12,
+          "cognitive_load": 0.020900000000000002,
+          "context": {
+            "sentence_position": 11,
+            "text_length": 21,
+            "has_question": false,
+            "word_count": 3,
+            "complexity_score": 0.6333333333333333
+          },
+          "previous_move": 11,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 13
+        },
+        {
+          "content": "What aspects of designing flexible multipurpose spaces, as mentioned in the examples, do you find most compelling for your community center project, and how might these spaces address the diverse needs and interactions of different user groups like children, teenagers, adults, and seniors?",
+          "timestamp": "2025-08-03T17:53:32.169768",
+          "micro_timestamp": 1754261612.169768,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 13,
+          "cognitive_load": 0.47300000000000003,
+          "context": {
+            "sentence_position": 12,
+            "text_length": 290,
+            "has_question": true,
+            "word_count": 43,
+            "complexity_score": 1.0
+          },
+          "previous_move": 12,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "analysis",
+        "analysis",
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "analysis",
+        "analysis",
+        "general",
+        "analysis",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "engagement_score": 1.02,
+          "engagement_depth": 1.4,
+          "engagement_persistence": 0.667,
+          "avg_message_length": 23.2,
+          "message_variance": 333.36
+        },
+        "complexity_metrics": {
+          "complexity_score": 0.386,
+          "vocabulary_diversity": 0.698,
+          "conceptual_density": 0.017,
+          "total_words": 116,
+          "unique_words": 81,
+          "concept_matches": 2
+        },
+        "reflection_metrics": {
+          "reflection_score": 0.0,
+          "metacognitive_awareness": 0.0,
+          "self_assessment": 0.0,
+          "metacognitive_count": 0,
+          "self_assessment_count": 0
+        },
+        "progression_metrics": {
+          "progression_score": 0.0,
+          "skill_development": 0,
+          "learning_velocity": 0,
+          "complexity_progression": -0.768,
+          "early_complexity": 59.0,
+          "recent_complexity": 13.7
+        },
+        "improvement_metrics": {
+          "overall_improvement": -29.7,
+          "individual_improvements": {
+            "engagement_improvement": 104.0,
+            "complexity_improvement": -22.8,
+            "reflection_improvement": -100.0,
+            "progression_improvement": -100.0
+          },
+          "baseline_comparison": {
+            "cognitive_offloading_rate": 0.65,
+            "deep_thinking_engagement": 0.35,
+            "knowledge_retention": 0.45,
+            "skill_transfer": 0.3,
+            "metacognitive_awareness": 0.25,
+            "creative_problem_solving": 0.4,
+            "spatial_reasoning_improvement": 0.35,
+            "critical_thinking_development": 0.3
+          },
+          "target_comparison": {
+            "cognitive_offloading_prevention": 0.85,
+            "deep_thinking_engagement": 0.75,
+            "knowledge_integration": 0.7,
+            "scaffolding_effectiveness": 0.8,
+            "learning_progression": 0.65,
+            "metacognitive_awareness": 0.6
+          }
+        },
+        "phase_metrics": {
+          "conceptual_thinking": 0.8,
+          "creative_exploration": 0.8,
+          "problem_framing": 0.8
+        },
+        "overall_cognitive_score": 0.371,
+        "scientific_confidence": 0.373
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "declining"
+      },
+      "context_classification": {
+        "interaction_type": "knowledge_seeking",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "high",
+        "overconfidence_score": 0,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "is_example_request": false,
+        "shows_confusion": false,
+        "requests_help": false,
+        "demonstrates_overconfidence": false,
+        "seeks_validation": false,
+        "classification": "question",
+        "ai_reasoning": "The student is asking a question about user interaction in a community center, which indicates knowledge seeking. The question shows curiosity and engagement, as it is part of a broader conversation about site opportunities and constraints. The student does not express confusion or overconfidence, but the question suggests a medium level of understanding as it connects user interaction with architectural design.",
+        "manual_override": false,
+        "last_message": "How do different user groups interact in a community center?"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "agent": "analysis_agent",
+          "domain": "architecture",
+          "visual_analysis": {},
+          "text_analysis": {
+            "building_type": "community center",
+            "program_requirements": [
+              "meeting rooms",
+              "kitchen",
+              "flexible space",
+              "accessibility",
+              "parking"
+            ],
+            "design_considerations": [
+              "public access",
+              "multiple user groups",
+              "community engagement"
+            ],
+            "numbers_mentioned": [],
+            "constraints": [
+              "accessible"
+            ],
+            "word_count": 48,
+            "complexity": "detailed",
+            "detail_level": "basic_details"
+          },
+          "synthesis": {
+            "alignment_assessment": {},
+            "missing_considerations": [],
+            "cognitive_challenges": [
+              "accessibility_awareness",
+              "spatial_relationships",
+              "brief_development",
+              "basic_concept_understanding"
+            ],
+            "learning_opportunities": [
+              "Explore universal design principles",
+              "Consider how spaces connect and flow",
+              "Develop more detailed program requirements"
+            ],
+            "next_focus_areas": [
+              "socratic_questioning"
+            ]
+          },
+          "confidence_score": 0.5,
+          "key_insights": [],
+          "cognitive_flags": [
+            "needs_programming_guidance",
+            "needs_design_strategy_guidance",
+            "needs_accessibility_guidance"
+          ],
+          "phase_analysis": {
+            "phase": "ideation",
+            "confidence": 0.046153846153846156,
+            "phase_scores": {
+              "ideation": 0.06076923076923077,
+              "visualization": 0.03769230769230769,
+              "materialization": 0.03
+            },
+            "indicators": {
+              "conversation": {
+                "ideation": 0.07692307692307693,
+                "visualization": 0.019230769230769232,
+                "materialization": 0.0,
+                "confidence": 0.15384615384615385,
+                "total_indicators": {
+                  "ideation": 26,
+                  "visualization": 52,
+                  "materialization": 26
+                },
+                "text_analysis": {
+                  "message_count": 5,
+                  "avg_message_length": 23.2,
+                  "indicator_density": 0.032051282051282055
+                }
+              },
+              "visual": {
+                "ideation": 0,
+                "visualization": 0,
+                "materialization": 0,
+                "confidence": 0
+              },
+              "design": {
+                "ideation": 0.0,
+                "visualization": 0.0,
+                "materialization": 0.0,
+                "confidence": 0.5,
+                "progression_analysis": {
+                  "conversation_length": 5,
+                  "early_focus": 0.0,
+                  "recent_focus": 0.0
+                }
+              },
+              "temporal": {
+                "ideation": 0.3,
+                "visualization": 0.3,
+                "materialization": 0.3,
+                "confidence": 0.2
+              }
+            },
+            "confidence_metrics": {
+              "overall_confidence": 0.046153846153846156,
+              "weighted_confidence": 0.16153846153846155,
+              "score_separation": 0.023076923076923078,
+              "conversation_confidence": 0.15384615384615385,
+              "visual_confidence": 0,
+              "design_confidence": 0.5
+            },
+            "progression_score": 0.25,
+            "phase_duration": 10,
+            "phase_characteristics": {
+              "focus": "Conceptual exploration and problem framing",
+              "key_activities": [
+                "Site analysis",
+                "Program development",
+                "Concept exploration",
+                "Precedent study"
+              ],
+              "cognitive_demands": "High-level thinking, synthesis, creativity",
+              "typical_duration": "1-3 days",
+              "success_indicators": [
+                "Clear concept statement",
+                "Program definition",
+                "Site understanding"
+              ]
+            },
+            "recommendations": [
+              "Phase detection confidence is low - consider explicit phase clarification",
+              "Focus on concept development and program definition",
+              "Explore precedents and site analysis",
+              "Develop clear design philosophy and approach"
+            ]
+          },
+          "skill_assessment": {
+            "detected_level": "beginner",
+            "previous_level": "beginner",
+            "updated": false,
+            "confidence": 1.0
+          },
+          "visual_context": {
+            "has_visual": false
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+      "timestamp": "2025-08-03T17:54:11.027982",
+      "interaction_number": 5,
+      "student_input": "What are the spatial relationships between functions?",
+      "input_length": 7,
+      "input_type": "direct_question",
+      "student_skill_level": "beginner",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "agent_response": "I hear your question about spatial relationships between functions, and it's a pivotal one for your community learning center project. Delving into these relationships is crucial because they determine how effectively your spaces can serve diverse educational and communal needs. Think of it as creating a symphony where each space harmonizes to enhance learning and interaction. With classrooms, a library, multipurpose spaces, and outdoor areas, consider: How can you strategically position each function to facilitate natural flow and interaction, ensuring accessibility and inclusivity for all ages? Visualize how a student or community member moves through the building and how each space supports both\n\nWhat aspects of the spatial relationships in the example of a community learning center, where each space harmonizes like a symphony to enhance learning and interaction, do you find most compelling for your project? Why do you think these elements could be effectively applied to ensure accessibility and inclusivity in your own design?",
+      "response_length": 156,
+      "routing_path": "knowledge_only",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "knowledge_only_with_socratic",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.5,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": null,
+      "current_phase": "ideation",
+      "phase_confidence": 0.03076923076923077,
+      "phase_characteristics": {
+        "focus": "Conceptual exploration and problem framing",
+        "key_activities": [
+          "Site analysis",
+          "Program development",
+          "Concept exploration",
+          "Precedent study"
+        ],
+        "cognitive_demands": "High-level thinking, synthesis, creativity",
+        "typical_duration": "1-3 days",
+        "success_indicators": [
+          "Clear concept statement",
+          "Program definition",
+          "Site understanding"
+        ]
+      },
+      "phase_progression_score": 0.30000000000000004,
+      "phase_duration": 12,
+      "phase_scores": {
+        "ideation": 0.06076923076923077,
+        "visualization": 0.045384615384615384,
+        "materialization": 0.03
+      },
+      "phase_recommendations": [
+        "Phase detection confidence is low - consider explicit phase clarification",
+        "Focus on concept development and program definition",
+        "Explore precedents and site analysis",
+        "Develop clear design philosophy and approach"
+      ],
+      "design_moves_count": 8,
+      "design_moves": [
+        {
+          "content": "What are the spatial relationships between functions?",
+          "timestamp": "2025-08-03T17:54:11.027673",
+          "micro_timestamp": 1754261651.027673,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.047,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 53,
+            "has_question": true,
+            "word_count": 7,
+            "complexity_score": 0.6714285714285715
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "I hear your question about spatial relationships between functions, and it's a pivotal one for your community learning center project.",
+          "timestamp": "2025-08-03T17:54:11.127673",
+          "micro_timestamp": 1754261651.127673,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.13499999999999998,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 134,
+            "has_question": false,
+            "word_count": 20,
+            "complexity_score": 0.6749999999999999
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "Delving into these relationships is crucial because they determine how effectively your spaces can serve diverse educational and communal needs.",
+          "timestamp": "2025-08-03T17:54:11.227673",
+          "micro_timestamp": 1754261651.227673,
+          "phase": "ideation",
+          "move_type": "evaluation",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.1625,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 144,
+            "has_question": false,
+            "word_count": 20,
+            "complexity_score": 0.625
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "Think of it as creating a symphony where each space harmonizes to enhance learning and interaction.",
+          "timestamp": "2025-08-03T17:54:11.327673",
+          "micro_timestamp": 1754261651.327673,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.084,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 99,
+            "has_question": false,
+            "word_count": 16,
+            "complexity_score": 0.525
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 4
+        },
+        {
+          "content": "With classrooms, a library, multipurpose spaces, and outdoor areas, consider: How can you strategically position each function to facilitate natural flow and interaction, ensuring accessibility and inclusivity for all ages?",
+          "timestamp": "2025-08-03T17:54:11.427673",
+          "micro_timestamp": 1754261651.427673,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.33,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 223,
+            "has_question": true,
+            "word_count": 30,
+            "complexity_score": 1.0
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 5
+        },
+        {
+          "content": "Visualize how a student or community member moves through the building and how each space supports both",
+          "timestamp": "2025-08-03T17:54:11.527673",
+          "micro_timestamp": 1754261651.527673,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.09570000000000001,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 103,
+            "has_question": false,
+            "word_count": 17,
+            "complexity_score": 0.5117647058823529
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 6
+        },
+        {
+          "content": "What aspects of the spatial relationships in the example of a community learning center, where each space harmonizes like a symphony to enhance learning and interaction, do you find most compelling for your project?",
+          "timestamp": "2025-08-03T17:54:11.627673",
+          "micro_timestamp": 1754261651.627673,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 6,
+          "cognitive_load": 0.275,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 215,
+            "has_question": true,
+            "word_count": 34,
+            "complexity_score": 0.7352941176470589
+          },
+          "previous_move": 5,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 7
+        },
+        {
+          "content": "Why do you think these elements could be effectively applied to ensure accessibility and inclusivity in your own design?",
+          "timestamp": "2025-08-03T17:54:11.727673",
+          "micro_timestamp": 1754261651.727673,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 7,
+          "cognitive_load": 0.11220000000000001,
+          "context": {
+            "sentence_position": 6,
+            "text_length": 120,
+            "has_question": true,
+            "word_count": 19,
+            "complexity_score": 0.5368421052631579
+          },
+          "previous_move": 6,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "evaluation",
+        "general",
+        "analysis",
+        "analysis",
+        "analysis",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "engagement_score": 0.9,
+          "engagement_depth": 1.333,
+          "engagement_persistence": 0.333,
+          "avg_message_length": 20.5,
+          "message_variance": 314.25
+        },
+        "complexity_metrics": {
+          "complexity_score": 0.403,
+          "vocabulary_diversity": 0.691,
+          "conceptual_density": 0.016,
+          "total_words": 123,
+          "unique_words": 85,
+          "concept_matches": 2
+        },
+        "reflection_metrics": {
+          "reflection_score": 0.0,
+          "metacognitive_awareness": 0.0,
+          "self_assessment": 0.0,
+          "metacognitive_count": 0,
+          "self_assessment_count": 0
+        },
+        "progression_metrics": {
+          "progression_score": 0.0,
+          "skill_development": 0,
+          "learning_velocity": 0,
+          "complexity_progression": -0.773,
+          "early_complexity": 37.5,
+          "recent_complexity": 8.5
+        },
+        "improvement_metrics": {
+          "overall_improvement": -34.8,
+          "individual_improvements": {
+            "engagement_improvement": 80.0,
+            "complexity_improvement": -19.4,
+            "reflection_improvement": -100.0,
+            "progression_improvement": -100.0
+          },
+          "baseline_comparison": {
+            "cognitive_offloading_rate": 0.65,
+            "deep_thinking_engagement": 0.35,
+            "knowledge_retention": 0.45,
+            "skill_transfer": 0.3,
+            "metacognitive_awareness": 0.25,
+            "creative_problem_solving": 0.4,
+            "spatial_reasoning_improvement": 0.35,
+            "critical_thinking_development": 0.3
+          },
+          "target_comparison": {
+            "cognitive_offloading_prevention": 0.85,
+            "deep_thinking_engagement": 0.75,
+            "knowledge_integration": 0.7,
+            "scaffolding_effectiveness": 0.8,
+            "learning_progression": 0.65,
+            "metacognitive_awareness": 0.6
+          }
+        },
+        "phase_metrics": {
+          "conceptual_thinking": 0.8,
+          "creative_exploration": 0.8,
+          "problem_framing": 0.8
+        },
+        "overall_cognitive_score": 0.346,
+        "scientific_confidence": 0.395
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "declining"
+      },
+      "context_classification": {
+        "interaction_type": "knowledge_seeking",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "high",
+        "overconfidence_score": 0,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "is_example_request": false,
+        "shows_confusion": false,
+        "requests_help": false,
+        "demonstrates_overconfidence": false,
+        "seeks_validation": false,
+        "classification": "question",
+        "ai_reasoning": "The student is asking about spatial relationships, which indicates a desire to understand how different functions relate to each other in architectural design. This is a knowledge-seeking question. The student does not express confusion or overconfidence, but the question suggests a medium understanding level as they are trying to make connections between functions. The engagement level is high due to the detailed nature of the question and the context of previous inquiries.",
+        "manual_override": false,
+        "last_message": "What are the spatial relationships between functions?"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "agent": "analysis_agent",
+          "domain": "architecture",
+          "visual_analysis": {},
+          "text_analysis": {
+            "building_type": "community center",
+            "program_requirements": [
+              "meeting rooms",
+              "kitchen",
+              "flexible space",
+              "accessibility",
+              "parking"
+            ],
+            "design_considerations": [
+              "public access",
+              "multiple user groups",
+              "community engagement"
+            ],
+            "numbers_mentioned": [],
+            "constraints": [
+              "accessible"
+            ],
+            "word_count": 48,
+            "complexity": "detailed",
+            "detail_level": "basic_details"
+          },
+          "synthesis": {
+            "alignment_assessment": {},
+            "missing_considerations": [],
+            "cognitive_challenges": [
+              "accessibility_awareness",
+              "spatial_relationships",
+              "brief_development",
+              "basic_concept_understanding"
+            ],
+            "learning_opportunities": [
+              "Explore universal design principles",
+              "Consider how spaces connect and flow",
+              "Develop more detailed program requirements"
+            ],
+            "next_focus_areas": [
+              "socratic_questioning"
+            ]
+          },
+          "confidence_score": 0.5,
+          "key_insights": [],
+          "cognitive_flags": [
+            "needs_programming_guidance",
+            "needs_spatial_thinking_support",
+            "needs_design_strategy_guidance"
+          ],
+          "phase_analysis": {
+            "phase": "ideation",
+            "confidence": 0.03076923076923077,
+            "phase_scores": {
+              "ideation": 0.06076923076923077,
+              "visualization": 0.045384615384615384,
+              "materialization": 0.03
+            },
+            "indicators": {
+              "conversation": {
+                "ideation": 0.07692307692307693,
+                "visualization": 0.038461538461538464,
+                "materialization": 0.0,
+                "confidence": 0.15384615384615385,
+                "total_indicators": {
+                  "ideation": 26,
+                  "visualization": 52,
+                  "materialization": 26
+                },
+                "text_analysis": {
+                  "message_count": 5,
+                  "avg_message_length": 12.8,
+                  "indicator_density": 0.038461538461538464
+                }
+              },
+              "visual": {
+                "ideation": 0,
+                "visualization": 0,
+                "materialization": 0,
+                "confidence": 0
+              },
+              "design": {
+                "ideation": 0.0,
+                "visualization": 0.0,
+                "materialization": 0.0,
+                "confidence": 0.6,
+                "progression_analysis": {
+                  "conversation_length": 6,
+                  "early_focus": 0.0,
+                  "recent_focus": 0.0
+                }
+              },
+              "temporal": {
+                "ideation": 0.3,
+                "visualization": 0.3,
+                "materialization": 0.3,
+                "confidence": 0.2
+              }
+            },
+            "confidence_metrics": {
+              "overall_confidence": 0.03076923076923077,
+              "weighted_confidence": 0.18153846153846154,
+              "score_separation": 0.015384615384615385,
+              "conversation_confidence": 0.15384615384615385,
+              "visual_confidence": 0,
+              "design_confidence": 0.6
+            },
+            "progression_score": 0.30000000000000004,
+            "phase_duration": 12,
+            "phase_characteristics": {
+              "focus": "Conceptual exploration and problem framing",
+              "key_activities": [
+                "Site analysis",
+                "Program development",
+                "Concept exploration",
+                "Precedent study"
+              ],
+              "cognitive_demands": "High-level thinking, synthesis, creativity",
+              "typical_duration": "1-3 days",
+              "success_indicators": [
+                "Clear concept statement",
+                "Program definition",
+                "Site understanding"
+              ]
+            },
+            "recommendations": [
+              "Phase detection confidence is low - consider explicit phase clarification",
+              "Focus on concept development and program definition",
+              "Explore precedents and site analysis",
+              "Develop clear design philosophy and approach"
+            ]
+          },
+          "skill_assessment": {
+            "detected_level": "beginner",
+            "previous_level": "beginner",
+            "updated": false,
+            "confidence": 1.0
+          },
+          "visual_context": {
+            "has_visual": false
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+      "timestamp": "2025-08-03T17:54:43.676221",
+      "interaction_number": 6,
+      "student_input": "What construction system should I use for this community center?",
+      "input_length": 10,
+      "input_type": "direct_question",
+      "student_skill_level": "beginner",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "agent_response": "Considering the unique needs of your community center project, how might the choice of a construction system not only impact the building's functionality and sustainability but also enhance the sense of belonging and interaction among community members?",
+      "response_length": 37,
+      "routing_path": "knowledge_with_challenge",
+      "agents_used": [
+        "socratic_tutor",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic_guidance",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.5,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": null,
+      "current_phase": "unknown",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 2,
+      "design_moves": [
+        {
+          "content": "What construction system should I use for this community center?",
+          "timestamp": "2025-08-03T17:54:43.676104",
+          "micro_timestamp": 1754261683.676104,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.055,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 64,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.55
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Considering the unique needs of your community center project, how might the choice of a construction system not only impact the building's functionality and sustainability but also enhance the sense of belonging and interaction among community members?",
+          "timestamp": "2025-08-03T17:54:43.776104",
+          "micro_timestamp": 1754261683.776104,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.27940000000000004,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 253,
+            "has_question": true,
+            "word_count": 37,
+            "complexity_score": 0.6864864864864865
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "engagement_score": 0.766,
+          "engagement_depth": 1.286,
+          "engagement_persistence": 0.0,
+          "avg_message_length": 19.0,
+          "message_variance": 282.86
+        },
+        "complexity_metrics": {
+          "complexity_score": 0.411,
+          "vocabulary_diversity": 0.662,
+          "conceptual_density": 0.015,
+          "total_words": 133,
+          "unique_words": 88,
+          "concept_matches": 2
+        },
+        "reflection_metrics": {
+          "reflection_score": 0.0,
+          "metacognitive_awareness": 0.0,
+          "self_assessment": 0.0,
+          "metacognitive_count": 0,
+          "self_assessment_count": 0
+        },
+        "progression_metrics": {
+          "progression_score": 0.0,
+          "skill_development": 0,
+          "learning_velocity": 0,
+          "complexity_progression": -0.76,
+          "early_complexity": 37.5,
+          "recent_complexity": 9.0
+        },
+        "improvement_metrics": {
+          "overall_improvement": -41.2,
+          "individual_improvements": {
+            "engagement_improvement": 53.2,
+            "complexity_improvement": -17.8,
+            "reflection_improvement": -100.0,
+            "progression_improvement": -100.0
+          },
+          "baseline_comparison": {
+            "cognitive_offloading_rate": 0.65,
+            "deep_thinking_engagement": 0.35,
+            "knowledge_retention": 0.45,
+            "skill_transfer": 0.3,
+            "metacognitive_awareness": 0.25,
+            "creative_problem_solving": 0.4,
+            "spatial_reasoning_improvement": 0.35,
+            "critical_thinking_development": 0.3
+          },
+          "target_comparison": {
+            "cognitive_offloading_prevention": 0.85,
+            "deep_thinking_engagement": 0.75,
+            "knowledge_integration": 0.7,
+            "scaffolding_effectiveness": 0.8,
+            "learning_progression": 0.65,
+            "metacognitive_awareness": 0.6
+          }
+        },
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.315,
+        "scientific_confidence": 0.66
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "medium",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "declining"
+      },
+      "context_classification": {
+        "interaction_type": "technical_question",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "high",
+        "overconfidence_score": 0,
+        "is_technical_question": true,
+        "is_feedback_request": false,
+        "is_example_request": false,
+        "shows_confusion": false,
+        "requests_help": false,
+        "demonstrates_overconfidence": false,
+        "seeks_validation": false,
+        "classification": "question",
+        "ai_reasoning": "The student is asking a specific question about construction systems, indicating a technical question. The phrasing suggests uncertainty, as they are seeking guidance on what system to use. The student shows medium understanding by connecting construction systems to their project needs and high engagement by actively asking detailed questions related to their project.",
+        "manual_override": false,
+        "last_message": "What construction system should I use for this community center?"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "4c7025ad-a1ab-4e20-a9e9-dad89fc9ac28",
+      "timestamp": "2025-08-03T17:56:05.881366",
+      "interaction_number": 7,
+      "student_input": "i think using steel structures and brick infill would make for a building that fits contextually and harmoniously fits into its surrounding. ",
+      "input_length": 22,
+      "input_type": "general_statement",
+      "student_skill_level": "beginner",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "agent_response": "Looking at the example of using steel structures with brick infill, what underlying principles about structural integrity and thermal efficiency can you identify, and how might these principles specifically inform the design choices for your community learning center in terms of both functionality and aesthetic integration with the local architectural style?",
+      "response_length": 51,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic_exploration",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.5,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": null,
+      "current_phase": "materialization",
+      "phase_confidence": 0.03076923076923077,
+      "phase_characteristics": {
+        "focus": "Technical development and implementation",
+        "key_activities": [
+          "Construction details",
+          "Material specification",
+          "Technical systems",
+          "Cost analysis"
+        ],
+        "cognitive_demands": "Technical knowledge, detail thinking, practical constraints",
+        "typical_duration": "5-10 days",
+        "success_indicators": [
+          "Technical feasibility",
+          "Material specification",
+          "Implementation plan"
+        ]
+      },
+      "phase_progression_score": 0.4,
+      "phase_duration": 16,
+      "phase_scores": {
+        "ideation": 0.06076923076923077,
+        "visualization": 0.03769230769230769,
+        "materialization": 0.07615384615384616
+      },
+      "phase_recommendations": [
+        "Phase detection confidence is low - consider explicit phase clarification",
+        "Develop construction and technical details",
+        "Specify materials and systems",
+        "Consider cost and implementation constraints"
+      ],
+      "design_moves_count": 2,
+      "design_moves": [
+        {
+          "content": "i think using steel structures and brick infill would make for a building that fits contextually and harmoniously fits into its surrounding.",
+          "timestamp": "2025-08-03T17:56:05.881225",
+          "micro_timestamp": 1754261765.881225,
+          "phase": "materialization",
+          "move_type": "transformation",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.21658,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 140,
+            "has_question": false,
+            "word_count": 22,
+            "complexity_score": 0.5409090909090909
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Looking at the example of using steel structures with brick infill, what underlying principles about structural integrity and thermal efficiency can you identify, and how might these principles specifically inform the design choices for your community learning center in terms of both functionality and aesthetic integration with the local architectural style?",
+          "timestamp": "2025-08-03T17:56:05.981225",
+          "micro_timestamp": 1754261765.981225,
+          "phase": "materialization",
+          "move_type": "transformation",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.74984,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 360,
+            "has_question": true,
+            "word_count": 51,
+            "complexity_score": 0.807843137254902
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "transformation",
+        "transformation"
+      ],
+      "move_modalities": [
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "engagement_score": 0.862,
+          "engagement_depth": 1.25,
+          "engagement_persistence": 0.333,
+          "avg_message_length": 19.4,
+          "message_variance": 248.48
+        },
+        "complexity_metrics": {
+          "complexity_score": 0.428,
+          "vocabulary_diversity": 0.658,
+          "conceptual_density": 0.013,
+          "total_words": 155,
+          "unique_words": 102,
+          "concept_matches": 2
+        },
+        "reflection_metrics": {
+          "reflection_score": 0.075,
+          "metacognitive_awareness": 0.125,
+          "self_assessment": 0.0,
+          "metacognitive_count": 1,
+          "self_assessment_count": 0
+        },
+        "progression_metrics": {
+          "progression_score": 0.0,
+          "skill_development": 0,
+          "learning_velocity": 0,
+          "complexity_progression": -0.673,
+          "early_complexity": 37.5,
+          "recent_complexity": 12.2
+        },
+        "improvement_metrics": {
+          "overall_improvement": -31.8,
+          "individual_improvements": {
+            "engagement_improvement": 72.4,
+            "complexity_improvement": -14.4,
+            "reflection_improvement": -85.0,
+            "progression_improvement": -100.0
+          },
+          "baseline_comparison": {
+            "cognitive_offloading_rate": 0.65,
+            "deep_thinking_engagement": 0.35,
+            "knowledge_retention": 0.45,
+            "skill_transfer": 0.3,
+            "metacognitive_awareness": 0.25,
+            "creative_problem_solving": 0.4,
+            "spatial_reasoning_improvement": 0.35,
+            "critical_thinking_development": 0.3
+          },
+          "target_comparison": {
+            "cognitive_offloading_prevention": 0.85,
+            "deep_thinking_engagement": 0.75,
+            "knowledge_integration": 0.7,
+            "scaffolding_effectiveness": 0.8,
+            "learning_progression": 0.65,
+            "metacognitive_awareness": 0.6
+          }
+        },
+        "phase_metrics": {
+          "technical_thinking": 0.8,
+          "detail_resolution": 0.8,
+          "implementation_planning": 0.8
+        },
+        "overall_cognitive_score": 0.363,
+        "scientific_confidence": 0.455
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "medium",
+        "passivity_level": "medium",
+        "overconfidence_level": "low",
+        "conversation_depth": "deep",
+        "learning_progression": "declining"
+      },
+      "context_classification": {
+        "interaction_type": "general_statement",
+        "understanding_level": "medium",
+        "confidence_level": "confident",
+        "engagement_level": "high",
+        "overconfidence_score": 0,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "is_example_request": false,
+        "shows_confusion": false,
+        "requests_help": false,
+        "demonstrates_overconfidence": false,
+        "seeks_validation": false,
+        "classification": "statement",
+        "ai_reasoning": "The student makes a general statement about their choice of construction materials, showing a balanced level of confidence without seeking feedback or examples. The use of architectural terms like 'steel structures' and 'brick infill' indicates a medium understanding, and the detailed response shows high engagement.",
+        "manual_override": false,
+        "last_message": "i think using steel structures and brick infill would make for a building that fits contextually and harmoniously fits into its surrounding. "
+      },
+      "agent_data": {
+        "analysis_result": {
+          "agent": "analysis_agent",
+          "domain": "architecture",
+          "visual_analysis": {},
+          "text_analysis": {
+            "building_type": "community center",
+            "program_requirements": [
+              "meeting rooms",
+              "kitchen",
+              "flexible space",
+              "accessibility",
+              "parking"
+            ],
+            "design_considerations": [
+              "public access",
+              "multiple user groups",
+              "community engagement"
+            ],
+            "numbers_mentioned": [],
+            "constraints": [
+              "accessible"
+            ],
+            "word_count": 48,
+            "complexity": "detailed",
+            "detail_level": "basic_details"
+          },
+          "synthesis": {
+            "alignment_assessment": {},
+            "missing_considerations": [],
+            "cognitive_challenges": [
+              "accessibility_awareness",
+              "spatial_relationships",
+              "brief_development",
+              "basic_concept_understanding"
+            ],
+            "learning_opportunities": [
+              "Explore universal design principles",
+              "Consider how spaces connect and flow",
+              "Develop more detailed program requirements"
+            ],
+            "next_focus_areas": [
+              "socratic_questioning"
+            ]
+          },
+          "confidence_score": 0.5,
+          "key_insights": [],
+          "cognitive_flags": [
+            "needs_material_guidance",
+            "needs_structural_guidance",
+            "needs_design_strategy_guidance"
+          ],
+          "phase_analysis": {
+            "phase": "materialization",
+            "confidence": 0.03076923076923077,
+            "phase_scores": {
+              "ideation": 0.06076923076923077,
+              "visualization": 0.03769230769230769,
+              "materialization": 0.07615384615384616
+            },
+            "indicators": {
+              "conversation": {
+                "ideation": 0.07692307692307693,
+                "visualization": 0.019230769230769232,
+                "materialization": 0.11538461538461539,
+                "confidence": 0.23076923076923078,
+                "total_indicators": {
+                  "ideation": 26,
+                  "visualization": 52,
+                  "materialization": 26
+                },
+                "text_analysis": {
+                  "message_count": 5,
+                  "avg_message_length": 12.0,
+                  "indicator_density": 0.07051282051282053
+                }
+              },
+              "visual": {
+                "ideation": 0,
+                "visualization": 0,
+                "materialization": 0,
+                "confidence": 0
+              },
+              "design": {
+                "ideation": 0.0,
+                "visualization": 0.0,
+                "materialization": 0.0,
+                "confidence": 0.8,
+                "progression_analysis": {
+                  "conversation_length": 8,
+                  "early_focus": 0.0,
+                  "recent_focus": 0.0
+                }
+              },
+              "temporal": {
+                "ideation": 0.3,
+                "visualization": 0.3,
+                "materialization": 0.3,
+                "confidence": 0.2
+              }
+            },
+            "confidence_metrics": {
+              "overall_confidence": 0.03076923076923077,
+              "weighted_confidence": 0.25230769230769234,
+              "score_separation": 0.015384615384615385,
+              "conversation_confidence": 0.23076923076923078,
+              "visual_confidence": 0,
+              "design_confidence": 0.8
+            },
+            "progression_score": 0.4,
+            "phase_duration": 16,
+            "phase_characteristics": {
+              "focus": "Technical development and implementation",
+              "key_activities": [
+                "Construction details",
+                "Material specification",
+                "Technical systems",
+                "Cost analysis"
+              ],
+              "cognitive_demands": "Technical knowledge, detail thinking, practical constraints",
+              "typical_duration": "5-10 days",
+              "success_indicators": [
+                "Technical feasibility",
+                "Material specification",
+                "Implementation plan"
+              ]
+            },
+            "recommendations": [
+              "Phase detection confidence is low - consider explicit phase clarification",
+              "Develop construction and technical details",
+              "Specify materials and systems",
+              "Consider cost and implementation constraints"
+            ]
+          },
+          "skill_assessment": {
+            "detected_level": "beginner",
+            "previous_level": "beginner",
+            "updated": false,
+            "confidence": 1.0
+          },
+          "visual_context": {
+            "has_visual": false
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": false
+      }
+    }
+  ]
+}

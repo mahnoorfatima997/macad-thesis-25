@@ -385,7 +385,17 @@ class TestSessionLogger:
     def get_current_metrics(self) -> Dict[str, float]:
         """Get current cognitive metrics"""
         if self.cognitive_metrics_history:
-            return self.cognitive_metrics_history[-1]
+            latest = self.cognitive_metrics_history[-1]
+            # Extract only the numeric metric values
+            return {
+                "cop": latest.get("cop_score", 0.0),
+                "dte": latest.get("dte_score", 0.0),
+                "se": latest.get("se_score", 0.0),
+                "ki": latest.get("ki_score", 0.0),
+                "lp": latest.get("lp_score", 0.0),
+                "ma": latest.get("ma_score", 0.0),
+                "composite": latest.get("composite_score", 0.0)
+            }
         return {
             "cop": 0.0,
             "dte": 0.0,
