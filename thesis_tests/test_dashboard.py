@@ -160,7 +160,12 @@ class TestDashboard:
                     st.subheader("Real-time Metrics")
                     metrics = st.session_state.session_logger.get_current_metrics()
                     for metric, value in metrics.items():
-                        st.metric(metric, f"{value:.2%}")
+                        # Handle different value types safely
+                        if isinstance(value, (int, float)):
+                            display_value = f"{value:.2%}" if value <= 1.0 else f"{value:.2f}"
+                        else:
+                            display_value = str(value)
+                        st.metric(metric, display_value)
                 
                 # Export controls
                 st.divider()

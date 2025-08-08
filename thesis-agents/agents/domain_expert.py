@@ -25,6 +25,17 @@ except ImportError:
 
 from state_manager import ArchMentorState
 from knowledge_base.knowledge_manager import KnowledgeManager
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
+
+# Enhanced architectural sources for better search results
+ARCHITECTURAL_SOURCES = [
+    "site:dezeen.com", "site:archdaily.com", "site:archello.com", 
+    "site:architectural-review.com", "site:architecturaldigest.com", 
+    "site:architectmagazine.com", "site:architecturalrecord.com",
+    "site:architect.org", "site:aia.org", "site:architecturalleague.org",
+    "site:architecturalfoundation.org", "site:architecturalassociation.org.uk",
+    "site:architecturalrecord.com", "site:architecturaldigest.com"
+]
 
 # Comprehensive architectural keyword configuration for flexible detection
 ARCHITECTURAL_KEYWORDS = {
@@ -130,6 +141,99 @@ def get_search_query_modifiers(text: str) -> Dict[str, str]:
             "exclude": ""
         }
 
+def analyze_conversation_context_for_search(state: ArchMentorState) -> Dict[str, Any]:
+    """
+    Analyze conversation context to extract search-relevant information.
+    Returns context that can be used to generate more targeted search queries.
+    """
+    context = {
+        "building_type": "general",
+        "project_scope": "unknown",
+        "specific_elements": [],
+        "user_needs": [],
+        "technical_requirements": [],
+        "design_phase": "ideation",
+        "conversation_themes": []
+    }
+    
+    # Extract building type from conversation
+    user_messages = [msg.get('content', '') for msg in state.messages if msg.get('role') == 'user']
+    assistant_messages = [msg.get('content', '') for msg in state.messages if msg.get('role') == 'assistant']
+    
+    # Analyze user messages for building type
+    for message in user_messages:
+        message_lower = message.lower()
+        
+        # Detect building types
+        for category, keywords in ARCHITECTURAL_KEYWORDS["building_types"].items():
+            if any(keyword in message_lower for keyword in keywords):
+                context["building_type"] = category
+                break
+        
+        # Detect specific elements
+        for element in ARCHITECTURAL_KEYWORDS["building_elements"]:
+            if element in message_lower:
+                context["specific_elements"].append(element)
+        
+        # Detect user needs (accessibility, sustainability, etc.)
+        if any(word in message_lower for word in ["accessible", "disability", "wheelchair", "elderly", "senior"]):
+            context["user_needs"].append("accessibility")
+        if any(word in message_lower for word in ["sustainable", "green", "eco", "energy", "solar"]):
+            context["user_needs"].append("sustainability")
+        if any(word in message_lower for word in ["budget", "cost", "affordable", "economic"]):
+            context["user_needs"].append("budget_constraints")
+        if any(word in message_lower for word in ["adaptive reuse", "conversion", "renovation", "repurpose"]):
+            context["user_needs"].append("adaptive_reuse")
+    
+    # Extract design phase from state
+    if hasattr(state, 'design_phase') and state.design_phase:
+        context["design_phase"] = state.design_phase.value if hasattr(state.design_phase, 'value') else str(state.design_phase)
+    
+    return context
+
+def generate_context_aware_search_query(topic: str, context: Dict[str, Any]) -> str:
+    """Generate a robust, sanitized search query from topic + context."""
+    import re
+    import unicodedata
+
+    def _norm(s: str) -> str:
+        return unicodedata.normalize('NFKD', s or '').encode('ascii', 'ignore').decode('ascii')
+
+    raw = _norm((topic or '').strip())
+
+    # Remove conversational fillers/questions
+    fillers = [
+        r"\bi don'?t know\b", r"\bcan you\b", r"\bcould you\b", r"\bplease\b",
+        r"\bgive me\b", r"\bsome of them\b", r"\bshow me\b", r"\bprovide\b",
+        r"\bwhat is\b", r"\bwhat are\b", r"\bhow (do|to|can)\b", r"\bhelp\b"
+    ]
+    lowered = raw.lower()
+    for f in fillers:
+        lowered = re.sub(f, " ", lowered)
+
+    # Keep only words, spaces and dashes; collapse spaces
+    cleaned = re.sub(r"[^\w\s-]", " ", lowered)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+    parts = []
+    if cleaned:
+        parts.append(cleaned)
+
+    bt = context.get('building_type')
+    if bt and bt != 'general':
+        parts.append(_norm(bt).replace('_', ' '))
+
+    elems = context.get('specific_elements') or []
+    if elems:
+        parts.extend(_norm(e) for e in elems[:2])
+
+    parts.append('architecture')
+
+    query = " ".join(p for p in parts if p).strip()
+    if len(query) > 150:
+        query = query[:150]
+    return query
+
 class DomainExpertAgent:
     def __init__(self, domain="architecture"):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -139,54 +243,199 @@ class DomainExpertAgent:
         
         print(f"📚 {self.name} initialized with knowledge base for {domain}")
 
-    # Web search for knowledge if database is empty
-    async def search_web_for_knowledge(self, topic: str) -> List[Dict]:
-        """Enhanced web search with better architectural query construction and clickable links"""
+    # Enhanced web search with context awareness
+    async def search_web_for_knowledge(self, topic: str, state: ArchMentorState = None) -> List[Dict]:
+        """Enhanced web search with better search methods and fallback strategies"""
         
         try:
             import requests
             from urllib.parse import quote
             import re
+            import json
             
-            # Enhanced search query construction for architecture using flexible detection
-            if "example" in topic.lower() or "project" in topic.lower():
-                # For example requests, focus on finding real projects
-                modifiers = get_search_query_modifiers(topic)
-                search_query = f"{topic} {modifiers['include']} projects examples case studies built works {modifiers['exclude']}"
-            else:
-                # For general topics, focus on principles and best practices
-                modifiers = get_search_query_modifiers(topic)
-                search_query = f"{topic} {modifiers['include']} design principles best practices examples {modifiers['exclude']}"
+            # Analyze conversation context for better search queries
+            context = {}
+            if state:
+                context = analyze_conversation_context_for_search(state)
+                print(f"🔍 Context analysis: {context}")
             
-            encoded_query = quote(search_query)
+            # Generate context-aware search query
+            search_query = generate_context_aware_search_query(topic, context)
+            print(f"🌐 Enhanced web search: {search_query}")
             
-            # DuckDuckGo HTML search
+            # Try multiple search strategies
+            results = []
+            
+            # Strategy 1: Try Google Custom Search API (if available)
+            google_results = await self._try_google_search(search_query)
+            if google_results:
+                results.extend(google_results)
+                print(f"✅ Google search found {len(google_results)} results")
+            
+            # Strategy 2: Try SerpAPI (if available)
+            if not results:
+                serp_results = await self._try_serp_search(search_query)
+                if serp_results:
+                    results.extend(serp_results)
+                    print(f"✅ SerpAPI search found {len(serp_results)} results")
+            
+            # Strategy 3: Enhanced DuckDuckGo with better parsing
+            if not results:
+                ddg_results = await self._try_enhanced_duckduckgo(search_query)
+                if ddg_results:
+                    results.extend(ddg_results)
+                    print(f"✅ Enhanced DuckDuckGo found {len(ddg_results)} results")
+            
+            # Strategy 4: Fallback to architectural knowledge base
+            if not results:
+                print("⚠️ No web results found, using architectural knowledge base")
+                results = await self._get_architectural_knowledge_fallback(topic, context)
+            
+            return results
+            
+        except Exception as e:
+            print(f"❌ Web search failed: {e}")
+            return await self._get_architectural_knowledge_fallback(topic, context)
+    
+    async def _try_google_search(self, query: str) -> List[Dict]:
+        """Try Google Custom Search API"""
+        try:
+            api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
+            cx = os.getenv("GOOGLE_SEARCH_CX")
+            
+            if not api_key or not cx:
+                return []
+            
+            url = "https://www.googleapis.com/customsearch/v1"
+            params = {
+                'key': api_key,
+                'cx': cx,
+                'q': query,
+                'num': 5
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                results = []
+                
+                for item in data.get('items', []):
+                    results.append({
+                        'title': item.get('title', ''),
+                        'snippet': item.get('snippet', ''),
+                        'url': item.get('link', ''),
+                        'source': 'google',
+                        'is_web_result': True
+                    })
+                
+                return results
+        except Exception as e:
+            print(f"Google search failed: {e}")
+        
+        return []
+    
+    async def _try_serp_search(self, query: str) -> List[Dict]:
+        """Try SerpAPI for web search"""
+        try:
+            api_key = os.getenv("SERPAPI_KEY")
+            if not api_key:
+                return []
+            
+            url = "https://serpapi.com/search"
+            params = {
+                'api_key': api_key,
+                'q': query,
+                'engine': 'google',
+                'num': 5
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                results = []
+                
+                for result in data.get('organic_results', []):
+                    results.append({
+                        'title': result.get('title', ''),
+                        'snippet': result.get('snippet', ''),
+                        'url': result.get('link', ''),
+                        'source': 'serpapi',
+                        'is_web_result': True
+                    })
+                
+                return results
+        except Exception as e:
+            print(f"SerpAPI search failed: {e}")
+        
+        return []
+    
+    async def _try_enhanced_duckduckgo(self, query: str) -> List[Dict]:
+        """Enhanced DuckDuckGo search with better parsing"""
+        try:
+            import requests
+            from urllib.parse import quote
+            
+            encoded_query = quote(query)
             search_url = f"https://duckduckgo.com/html/?q={encoded_query}"
             
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
             }
-            
-            print(f"🌐 Enhanced web search: {search_query}")
             
             response = requests.get(search_url, headers=headers, timeout=15)
             
             if response.status_code == 200:
                 results = []
                 
-                # Pattern to match DuckDuckGo result titles and snippets
-                title_pattern = r'<a[^>]*class="result__a"[^>]*>([^<]+)</a>'
-                snippet_pattern = r'<a[^>]*class="result__snippet"[^>]*>([^<]+)</a>'
-                url_pattern = r'<a[^>]*class="result__a"[^>]*href="([^"]+)"'
+                # Multiple patterns to catch different DuckDuckGo layouts
+                patterns = [
+                    r'<a[^>]*class="result__a"[^>]*>([^<]+)</a>',
+                    r'<a[^>]*class="result__title"[^>]*>([^<]+)</a>',
+                    r'<a[^>]*class="[^"]*result[^"]*"[^>]*>([^<]+)</a>',
+                    r'<h2[^>]*><a[^>]*>([^<]+)</a></h2>',
+                    r'<a[^>]*href="[^"]*"[^>]*>([^<]+)</a>'
+                ]
                 
-                titles = re.findall(title_pattern, response.text)
-                snippets = re.findall(snippet_pattern, response.text)
-                urls = re.findall(url_pattern, response.text)
+                snippet_patterns = [
+                    r'<a[^>]*class="result__snippet"[^>]*>([^<]+)</a>',
+                    r'<span[^>]*class="result__snippet"[^>]*>([^<]+)</span>',
+                    r'<div[^>]*class="[^"]*snippet[^"]*"[^>]*>([^<]+)</div>'
+                ]
                 
-                # Combine results (take up to 4 for better coverage)
-                for i in range(min(4, len(titles))):
+                url_patterns = [
+                    r'<a[^>]*class="result__a"[^>]*href="([^"]+)"',
+                    r'<a[^>]*class="result__title"[^>]*href="([^"]+)"',
+                    r'<a[^>]*href="([^"]+)"[^>]*class="[^"]*result[^"]*"'
+                ]
+                
+                titles = []
+                snippets = []
+                urls = []
+                
+                # Try all patterns
+                for pattern in patterns:
+                    titles.extend(re.findall(pattern, response.text))
+                    if titles:
+                        break
+                
+                for pattern in snippet_patterns:
+                    snippets.extend(re.findall(pattern, response.text))
+                    if snippets:
+                        break
+                
+                for pattern in url_patterns:
+                    urls.extend(re.findall(pattern, response.text))
+                    if urls:
+                        break
+                
+                # Clean and filter results
+                for i in range(min(5, len(titles))):
                     try:
-                        title = titles[i] if i < len(titles) else "Web Resource"
+                        title = titles[i] if i < len(titles) else "Architectural Resource"
                         snippet = snippets[i] if i < len(snippets) else ""
                         url = urls[i] if i < len(urls) else ""
                         
@@ -194,48 +443,95 @@ class DomainExpertAgent:
                         title = re.sub(r'&[a-zA-Z]+;', '', title).strip()
                         snippet = re.sub(r'&[a-zA-Z]+;', '', snippet).strip()
                         
-                        # Create more substantial content for architectural examples
-                        if snippet and len(snippet) > 20:
-                            if "example" in topic.lower() or "project" in topic.lower():
-                                content = f"Architectural project example: {snippet}. This demonstrates practical approaches to {topic} that can inform design strategies and provide concrete inspiration for similar projects."
-                            else:
-                                content = f"Research on {topic} reveals: {snippet}. This architectural knowledge provides insights into design principles, best practices, and professional approaches for implementation."
-                        else:
-                            content = f"Architectural resource about {topic} from {title}. This source provides professional insights into design principles, case studies, and best practices relevant to {topic} in architectural projects."
-                        
-                        # Extract domain for source tracking
-                        domain = "unknown"
-                        if url:
-                            try:
-                                from urllib.parse import urlparse
-                                parsed_url = urlparse(url)
-                                domain = parsed_url.netloc
-                            except:
-                                domain = "web_resource"
-                        
-                        results.append({
-                            "content": content,
-                            "metadata": {
-                                "title": title,
-                                "source": domain,
-                                "url": url,  # Include the actual URL for clickable links
-                                "discovery_method": "web_search"
-                            }
-                        })
-                        
+                        # Filter out non-architectural results
+                        if any(arch_term in title.lower() or arch_term in snippet.lower() 
+                               for arch_term in ['architecture', 'design', 'building', 'construction', 'project']):
+                            results.append({
+                                'title': title,
+                                'snippet': snippet,
+                                'url': url,
+                                'source': 'duckduckgo',
+                                'is_web_result': True
+                            })
+                    
                     except Exception as e:
-                        print(f"⚠️ Error processing web result {i}: {e}")
+                        print(f"Error processing result {i}: {e}")
                         continue
                 
-                print(f"✅ Found {len(results)} web results for {topic}")
                 return results
                 
+        except Exception as e:
+            print(f"Enhanced DuckDuckGo search failed: {e}")
+        
+        return []
+    
+    async def _get_architectural_knowledge_fallback(self, topic: str, context: Dict) -> List[Dict]:
+        """Fallback to architectural knowledge base"""
+        try:
+            # Generate AI-based architectural examples
+            building_type = context.get('building_type', 'general')
+            
+            # Create structured architectural knowledge
+            knowledge_base = {
+                'adaptive_reuse': [
+                    {
+                        'title': 'Tate Modern, London',
+                        'snippet': 'Former power station transformed into world-class art museum, demonstrating successful adaptive reuse of industrial heritage.',
+                        'url': 'https://www.tate.org.uk/visit/tate-modern',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    },
+                    {
+                        'title': 'The High Line, New York',
+                        'snippet': 'Abandoned elevated railway converted into innovative public park, showing creative adaptive reuse of infrastructure.',
+                        'url': 'https://www.thehighline.org/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    }
+                ],
+                'community_center': [
+                    {
+                        'title': 'Kulturhuset Stadsteatern, Stockholm',
+                        'snippet': 'Cultural center utilizing extensive glazing for natural light, creating flexible community spaces.',
+                        'url': 'https://www.stadsteatern.stockholm.se/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    },
+                    {
+                        'title': 'The Factory, Manchester',
+                        'snippet': 'Former industrial building transformed into vibrant community arts and performance space.',
+                        'url': 'https://www.factorymanchester.com/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    }
+                ],
+                'sports_facility': [
+                    {
+                        'title': 'Olympic Park, London',
+                        'snippet': 'Former industrial site transformed into world-class sports facilities and public park.',
+                        'url': 'https://www.queenelizabetholympicpark.co.uk/',
+                        'source': 'architectural_knowledge',
+                        'is_web_result': False
+                    }
+                ]
+            }
+            
+            # Match topic to knowledge base
+            if 'adaptive' in topic.lower() or 'reuse' in topic.lower():
+                return knowledge_base.get('adaptive_reuse', [])
+            elif 'community' in topic.lower() or 'center' in topic.lower():
+                return knowledge_base.get('community_center', [])
+            elif 'sport' in topic.lower():
+                return knowledge_base.get('sports_facility', [])
             else:
-                print(f"⚠️ Web search failed with status {response.status_code}")
-                return []
+                # Return general architectural examples
+                all_examples = []
+                for category in knowledge_base.values():
+                    all_examples.extend(category)
+                return all_examples[:3]
                 
         except Exception as e:
-            print(f"⚠️ Web search error: {e}")
+            print(f"Architectural knowledge fallback failed: {e}")
             return []
 
     def _create_enhanced_fallback_knowledge(self, topic: str) -> List[Dict]:
@@ -817,8 +1113,8 @@ class DomainExpertAgent:
             Keep under 100 words.
             """
     
-    async def provide_knowledge(self, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
-        """Provide knowledge that encourages thinking rather than passive acceptance"""
+    async def provide_knowledge(self, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> AgentResponse:
+        """Provide knowledge that encourages thinking rather than passive acceptance - now returns AgentResponse"""
         
         print(f"\n📚 {self.name} providing knowledge with cognitive protection...")
         
@@ -827,7 +1123,8 @@ class DomainExpertAgent:
         user_input = user_messages[-1] if user_messages else ""
         
         if not user_input:
-            return self._generate_fallback_knowledge()
+            fallback_response = self._generate_fallback_knowledge()
+            return self._convert_to_agent_response(fallback_response, state, analysis_result, gap_type)
         
         building_type = self._extract_building_type_from_context(state)
         project_context = state.current_design_brief
@@ -839,15 +1136,18 @@ class DomainExpertAgent:
         # 3107 ADDED: Handle legitimate example requests properly
         if knowledge_pattern["type"] == "legitimate_example_request":
             print(f"📚 Legitimate example request detected - providing examples")
-            return await self._provide_focused_examples(state, user_input, gap_type)
+            response_result = await self._provide_focused_examples(state, user_input, gap_type)
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
         #0108-added for 5 min message requirement   
         # Handle premature example requests (cognitive offloading protection)
         if knowledge_pattern["type"] == "premature_example_request":
             print(f"🛡️ Cognitive protection: Example request too early")
-            return await self._generate_premature_example_response(user_input, building_type, project_context)
+            response_result = await self._generate_premature_example_response(user_input, building_type, project_context)
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
         
         if knowledge_pattern["type"] == "direct_answer_seeking":
-            return await self._generate_thinking_prompt(user_input, building_type, project_context)
+            response_result = await self._generate_thinking_prompt(user_input, building_type, project_context)
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
         
         # Use AI to generate knowledge that encourages thinking
         prompt = f"""
@@ -887,7 +1187,7 @@ class DomainExpertAgent:
             ai_response = response.choices[0].message.content.strip()
             print(f"📚 AI-generated knowledge response: {ai_response[:100]}...")
             
-            return {
+            response_result = {
                 "agent": self.name,
                 "response_text": ai_response,
                 "response_type": "thinking_prompt_knowledge",
@@ -898,9 +1198,167 @@ class DomainExpertAgent:
                 "sources": []
             }
             
+            # Add cognitive flags to the original response result for backward compatibility
+            cognitive_flags = self._extract_cognitive_flags(response_result, state, gap_type)
+            response_result["cognitive_flags"] = cognitive_flags
+            
+            # Convert to standardized AgentResponse format
+            return self._convert_to_agent_response(response_result, state, analysis_result, gap_type)
+            
         except Exception as e:
             print(f"⚠️ AI response generation failed: {e}")
-            return self._generate_fallback_knowledge(user_input, building_type)
+            fallback_response = self._generate_fallback_knowledge(user_input, building_type)
+            return self._convert_to_agent_response(fallback_response, state, analysis_result, gap_type)
+    
+    def _convert_to_agent_response(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> AgentResponse:
+        """Convert the original response to AgentResponse format while preserving all data"""
+        
+        # Calculate enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(response_result, state, analysis_result, gap_type)
+        
+        # Convert cognitive flags to standardized format
+        cognitive_flags = self._extract_cognitive_flags(response_result, state, gap_type)
+        cognitive_flags_standardized = self._convert_cognitive_flags(cognitive_flags)
+        
+        # Create standardized response while preserving original data
+        response = ResponseBuilder.create_knowledge_response(
+            response_text=response_result.get("response_text", ""),
+            sources_used=response_result.get("sources", []),
+            cognitive_flags=cognitive_flags_standardized,
+            enhancement_metrics=enhancement_metrics,
+            quality_score=response_result.get("quality_score", 0.5),
+            confidence_score=response_result.get("confidence_score", 0.5),
+            metadata={
+                # Preserve all original data for backward compatibility
+                "original_response_result": response_result,
+                "knowledge_gap_addressed": response_result.get("knowledge_gap_addressed", ""),
+                "building_type": response_result.get("building_type", ""),
+                "user_input_addressed": response_result.get("user_input_addressed", ""),
+                "knowledge_pattern": response_result.get("knowledge_pattern", {}),
+                "analysis_result": analysis_result,
+                "gap_type": gap_type,
+                "cognitive_flags": cognitive_flags  # Original format
+            }
+        )
+        
+        return response
+    
+    def _calculate_enhancement_metrics(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> EnhancementMetrics:
+        """Calculate cognitive enhancement metrics for domain expertise"""
+        
+        response_type = response_result.get("response_type", "")
+        knowledge_pattern = response_result.get("knowledge_pattern", {})
+        building_type = response_result.get("building_type", "")
+        
+        # Cognitive offloading prevention score
+        # Higher score if using thinking prompts or cognitive protection
+        cognitive_protection_strategies = ["thinking_prompt_knowledge", "premature_example_response"]
+        cop_score = 0.8 if response_type in cognitive_protection_strategies else 0.4
+        
+        # Deep thinking engagement score
+        # Higher score if response encourages thinking and reasoning
+        thinking_encouragement = "?" in response_result.get("response_text", "")
+        dte_score = 0.9 if thinking_encouragement else 0.5
+        
+        # Knowledge integration score
+        # Higher score if knowledge is contextualized to the project
+        has_project_context = bool(response_result.get("building_type") and response_result.get("user_input_addressed"))
+        ki_score = 0.8 if has_project_context else 0.3
+        
+        # Scaffolding effectiveness score
+        # Higher score if providing structured knowledge with examples
+        has_sources = len(response_result.get("sources", [])) > 0
+        scaffolding_score = 0.9 if has_sources else 0.5
+        
+        # Learning progression score
+        # Based on knowledge gap type and response quality
+        gap_complexity = len(gap_type.split("_"))  # More complex gaps indicate progression
+        learning_progression = min(gap_complexity * 0.2, 1.0)
+        
+        # Metacognitive awareness score
+        # Higher score if response encourages self-reflection
+        metacognitive_indicators = ["consider", "think about", "reflect", "evaluate"]
+        response_text = response_result.get("response_text", "").lower()
+        metacognitive_score = 0.8 if any(indicator in response_text for indicator in metacognitive_indicators) else 0.4
+        
+        # Overall cognitive score
+        overall_score = (cop_score + dte_score + ki_score + scaffolding_score + learning_progression + metacognitive_score) / 6
+        
+        # Scientific confidence
+        # Based on response quality and knowledge pattern analysis
+        response_quality = response_result.get("quality_score", 0.5)
+        pattern_confidence = 0.8 if knowledge_pattern.get("cognitive_risk") == "low" else 0.6
+        scientific_confidence = (response_quality + pattern_confidence) / 2
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cop_score,
+            deep_thinking_engagement_score=dte_score,
+            knowledge_integration_score=ki_score,
+            scaffolding_effectiveness_score=scaffolding_score,
+            learning_progression_score=learning_progression,
+            metacognitive_awareness_score=metacognitive_score,
+            overall_cognitive_score=overall_score,
+            scientific_confidence=scientific_confidence
+        )
+    
+    def _extract_cognitive_flags(self, response_result: Dict, state: ArchMentorState, gap_type: str) -> List[str]:
+        """Extract cognitive flags from the response and knowledge context"""
+        
+        flags = []
+        response_type = response_result.get("response_type", "")
+        knowledge_pattern = response_result.get("knowledge_pattern", {})
+        
+        # Add flags based on response type
+        if response_type == "thinking_prompt_knowledge":
+            flags.append("deep_thinking_encouraged")
+        elif response_type == "premature_example_response":
+            flags.append("cognitive_offloading_detected")
+        elif response_type == "legitimate_example_request":
+            flags.append("knowledge_integration")
+        
+        # Add flags based on knowledge pattern
+        cognitive_risk = knowledge_pattern.get("cognitive_risk", "low")
+        if cognitive_risk == "high":
+            flags.append("cognitive_offloading_detected")
+        elif cognitive_risk == "low":
+            flags.append("scaffolding_provided")
+        
+        # Add flags based on knowledge gap type
+        if "technical" in gap_type:
+            flags.append("knowledge_integration")
+        elif "conceptual" in gap_type:
+            flags.append("deep_thinking_encouraged")
+        
+        # Add engagement flag if user is actively seeking knowledge
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        if len(user_messages) > 0:
+            flags.append("engagement_maintained")
+        
+        return flags
+    
+    def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
+        """Convert cognitive flags to standardized format"""
+        
+        flag_mapping = {
+            "deep_thinking_encouraged": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "scaffolding_provided": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "cognitive_offloading_detected": CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED,
+            "engagement_maintained": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "knowledge_integration": CognitiveFlag.KNOWLEDGE_INTEGRATION,
+            "learning_progression": CognitiveFlag.LEARNING_PROGRESSION,
+            "metacognitive_awareness": CognitiveFlag.METACOGNITIVE_AWARENESS
+        }
+        
+        converted_flags = []
+        for flag in cognitive_flags:
+            if flag in flag_mapping:
+                converted_flags.append(flag_mapping[flag])
+            else:
+                # Default to knowledge integration for unknown flags
+                converted_flags.append(CognitiveFlag.KNOWLEDGE_INTEGRATION)
+        
+        return converted_flags
+    
     #0108 state added for 5 min message requirement
     def _analyze_knowledge_request(self, user_input: str, gap_type: str, state: ArchMentorState = None) -> Dict[str, Any]:
         """Analyze the type of knowledge request to prevent cognitive offloading"""
@@ -1108,7 +1566,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         # If database search is insufficient, use web search
         if not knowledge_results or len(knowledge_results) < 2:
             print(f"   🌐 Database insufficient, searching web for: {user_topic}")
-            web_results = await self.search_web_for_knowledge(user_topic)
+            web_results = await self.search_web_for_knowledge(user_topic, state)
             if web_results:
                 knowledge_results.extend(web_results)
                 print(f"   🌐 Found {len(web_results)} web results")
@@ -1199,6 +1657,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         7. IMPORTANT: The student specifically asked for BUILDING examples. Only provide examples of actual buildings or structures that have been converted/adapted. Do NOT include landscape projects, parks, urban spaces, or outdoor projects.
         """
         
+        # Enhanced prompt for better examples
         prompt = f"""
         Provide specific architectural examples for this student's request:
         
@@ -1213,7 +1672,10 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         3. Each example should demonstrate {dynamic_topic} in a way that connects to the student's context
         4. Include project names, architects, and locations where possible
         5. Explain WHY these examples work for {dynamic_topic} in {building_type} contexts
-        6. Avoid generic examples - be specific to the topic and building type{building_requirement}
+        6. Avoid generic examples - be specific to the topic and building type
+        7. If the topic involves facade design, shading, or Nordic climate considerations, prioritize examples from Nordic countries or similar climates
+        8. For community centers, focus on examples that show how the design serves diverse user groups
+        9. Include specific technical details about how the {dynamic_topic} was implemented{building_requirement}
         
         FORMAT:
         **Example 1: [Project Name]**
@@ -1224,14 +1686,14 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         [Brief description of how this project specifically addresses {dynamic_topic}]
         Why it works: [Specific reason relevant to {building_type} design]
         
-        Keep it under 200 words and focus on practical, actionable examples that directly relate to {dynamic_topic}.
+        Keep it under 250 words and focus on practical, actionable examples that directly relate to {dynamic_topic}.
         """
         
         try:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,
+                max_tokens=500,
                 temperature=0.4
             )
             
@@ -1816,10 +2278,18 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             5. Varies the response style and approach based on the content available
             6. Keeps it informative and factual
             7. If the student asked for buildings, ONLY include building examples (not landscape/urban projects)
+            8. ALWAYS include the web links when available - they are crucial for credibility
             
             AVAILABLE URLS FOR LINKS: {urls}
             
-            Format: Present 2-3 specific examples with brief explanations. If URLs are available, include them in markdown format: [Source Name](URL). Keep it under 200 words. Focus on providing actual information, not questions.
+            CRITICAL INSTRUCTIONS:
+            - ALWAYS include the web links in markdown format: [Source Name](URL)
+            - Keep response under 200 words to avoid cut-off
+            - Focus on providing actual information, not questions
+            - Make sure to vary the examples and not repeat the same projects
+            - If no web results available, clearly state "Based on architectural knowledge" instead of making up links
+            - Present 2-3 specific examples with brief explanations
+            - Address the student's specific question directly
             """
         else:
             synthesis_prompt = f"""
@@ -1841,7 +2311,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": synthesis_prompt}],
-                max_tokens=200,
+                max_tokens=250,
                 temperature=0.4
             )
             
@@ -2108,7 +2578,7 @@ I understand you're looking for examples of {user_input.lower().split('examples'
             print(f"   Reasons: Examples={is_asking_for_examples}, MoreDetail={user_requests_more_detail}, Shallow={db_result_is_shallow}, FewResults={len(all_results) < 2}")
             
             # Use enhanced web search with better topic targeting
-            web_results = await self.search_web_for_knowledge(area_name)
+            web_results = await self.search_web_for_knowledge(area_name, state)
             if web_results:
                 print(f"   Found {len(web_results)} web results")
                 all_results.extend(web_results)
@@ -2352,14 +2822,8 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=800,
-                temperature=0.3
-            )
-            
-            direct_answer = response.choices[0].message.content.strip()
+            response = self.llm.invoke(prompt)
+            direct_answer = response.content.strip()
             print(f"📚 Direct answer generated: {direct_answer[:100]}...")
             
             return {
@@ -2385,16 +2849,16 @@ async def test_creative_domain_expert():
     print("🧪 Testing Creative Domain Expert Agent...")
     
     state = ArchMentorState()
-    state.current_design_brief = "Design a community center for elderly people in a cold climate"
+    state.current_design_brief = "Design a sustainable office building for a tech company"
     state.student_profile.skill_level = "intermediate"
     
     analysis_result = {
-        "text_analysis": {"building_type": "community center"},
-        "cognitive_flags": ["needs_accessibility_guidance"]
+        "text_analysis": {"building_type": "office"},
+        "cognitive_flags": ["needs_sustainability_guidance"]
     }
     
     expert = DomainExpertAgent("architecture")
-    result = await expert.provide_knowledge(state, analysis_result, "accessibility_awareness")
+    result = await expert.provide_knowledge(state, analysis_result, "sustainability_awareness")
     
     print(f"\n📚 Creative Discovery Results:")
     print(f"   Discovery Method: {result.get('discovery_method')}")

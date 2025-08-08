@@ -18,6 +18,7 @@ from state_manager import ArchMentorState
 from agents.analysis_agent import AnalysisAgent
 from agents.socratic_tutor import SocraticTutorAgent
 from agents.domain_expert import DomainExpertAgent
+from agents.context_agent import ContextAgent
 from agents.cognitive_enhancement import CognitiveEnhancementAgent
 from config.orchestrator_config import OrchestratorConfig, DEFAULT_CONFIG
 from state_manager import*
@@ -25,6 +26,19 @@ from state_manager import*
 # Import progressive conversation system
 from conversation_progression import ConversationProgressionManager, ConversationPhase
 from first_response_generator import FirstResponseGenerator
+
+# Import new routing system
+from utils.routing_decision_tree import (
+    AdvancedRoutingDecisionTree, 
+    RoutingContext, 
+    RoutingDecision, 
+    RouteType,
+    make_advanced_routing_decision
+)
+
+# Import state validation system
+from utils.state_validator import StateValidator, StateMonitor
+from utils.response_length_controller import ensure_quality
 
 class WorkflowState(TypedDict):
     """LangGraph state that flows between agents"""
@@ -34,7 +48,6 @@ class WorkflowState(TypedDict):
     
     # Context analysis
     student_classification: Dict[str, Any]
-    #3107 ADDED BELOW LINE
     context_analysis: Dict[str, Any]
     routing_decision: Dict[str, Any]
     
@@ -43,6 +56,11 @@ class WorkflowState(TypedDict):
     domain_expert_result: Dict[str, Any]
     socratic_result: Dict[str, Any]
     cognitive_enhancement_result: Dict[str, Any] 
+    
+    # Conversation progression
+    conversation_progression: Dict[str, Any]
+    #0708-ADDED
+    milestone_guidance: Dict[str, Any]  # Milestone-driven guidance for agents
     
     # Final output
     final_response: str
@@ -59,10 +77,18 @@ class LangGraphOrchestrator:
         self.socratic_agent = SocraticTutorAgent(domain)
         self.domain_expert = DomainExpertAgent(domain)
         self.cognitive_enhancement_agent = CognitiveEnhancementAgent(domain)
+        self.context_agent = ContextAgent(domain)   
         
         # Initialize progressive conversation system
         self.progression_manager = ConversationProgressionManager(domain)
         self.first_response_generator = FirstResponseGenerator(domain)
+        
+        # Initialize new routing system
+        self.routing_decision_tree = AdvancedRoutingDecisionTree()
+        
+        # Initialize state validation system
+        self.state_validator = StateValidator()
+        self.state_monitor = StateMonitor()
         
         # Build the workflow graph
         self.workflow = self.build_workflow()
@@ -158,10 +184,14 @@ class LangGraphOrchestrator:
     async def context_agent_node(self, state: WorkflowState) -> WorkflowState:
         """Enhanced context agent with progressive conversation support"""
         
-        from agents.context_agent import ContextAgent  # Import new agent
+        # Validate input state
+        validation_result = self.state_validator.validate_state(state["student_state"])
+        if not validation_result.is_valid:
+            self.logger.warning(f"⚠️ State validation failed in context_agent_node: {validation_result.errors}")
+            # Continue with invalid state but log the issues
         
-        if not hasattr(self, 'context_agent'):
-            self.context_agent = ContextAgent(self.domain)
+        # Monitor state changes
+        self.state_monitor.record_state_change(state["student_state"], "context_agent_node_input")
         
         student_state = state["student_state"]
         last_message = state["last_message"]
@@ -169,6 +199,15 @@ class LangGraphOrchestrator:
         self.logger.debug("Context Agent: Processing state with %d messages", len(student_state.messages))
         self.logger.debug("Context Agent: Messages: %s", [msg.get('role', 'unknown') for msg in student_state.messages])
         self.logger.debug("Context Agent: Last user message: %s...", last_message[:50])
+        
+        # 0708-MILESTONE-DRIVEN CONTEXT ANALYSIS
+        # Get milestone guidance for context analysis
+        milestone_guidance = state.get("milestone_guidance", {})
+        current_milestone = milestone_guidance.get("current_milestone")
+        agent_focus = milestone_guidance.get("agent_focus", "context_agent")
+        
+        self.logger.info(f"🎯 Context Agent - Current milestone: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+        self.logger.info(f"🎯 Context Agent - Agent focus: {agent_focus}")
         
         # Check if this is a first message or early conversation
         user_messages = [msg['content'] for msg in student_state.messages if msg.get('role') == 'user']
@@ -234,6 +273,39 @@ class LangGraphOrchestrator:
                 "response_metadata": first_response_result.get("metadata", {}),
                 "progression_data": progression_analysis
             }
+            
+            # Validate and monitor output state
+            result_state = {
+                **state,
+                "last_message": last_message,
+                "student_classification": {
+                    "interaction_type": "first_message",
+                    "understanding_level": progression_analysis.get("user_profile", {}).get("knowledge_level", "unknown"),
+                    "confidence_level": "neutral",
+                    "engagement_level": "medium",
+                    "is_first_message": True
+                },
+                "context_analysis": {
+                    "progression_analysis": progression_analysis,
+                    "opening_strategy": first_response_result.get("opening_strategy", {}),
+                    "conversation_phase": ConversationPhase.DISCOVERY.value
+                },
+                "routing_decision": {
+                    "path": "progressive_opening",
+                    "reasoning": "First message - using progressive conversation system"
+                },
+                "final_response": first_response_result.get("response_text", ""),
+                "response_metadata": first_response_result.get("metadata", {}),
+                "progression_data": progression_analysis
+            }
+            
+            output_validation = self.state_validator.validate_state(result_state["student_state"])
+            if not output_validation.is_valid:
+                self.logger.warning(f"⚠️ Output state validation failed in context_agent_node: {output_validation.errors}")
+            
+            self.state_monitor.record_state_change(result_state["student_state"], "context_agent_node_output")
+            
+            return result_state
         else:
             # Use existing context agent for ongoing conversation
             self.logger.info("🔄 Ongoing conversation - using standard context analysis")
@@ -241,20 +313,67 @@ class LangGraphOrchestrator:
             # Use new context agent for comprehensive analysis
             context_package = await self.context_agent.analyze_student_input(student_state, last_message)
             
-            return {
+            # Convert AgentResponse to dictionary if needed
+            if hasattr(context_package, 'response_text'):
+                context_package = context_package.to_dict()
+            
+            # Extract classification data from the correct location
+            # The context agent stores its data in the metadata field of AgentResponse
+            if isinstance(context_package, dict) and "metadata" in context_package:
+                # Dictionary format with metadata (converted AgentResponse) - extract from metadata
+                original_data = context_package["metadata"]
+                core_classification = original_data.get("core_classification", {})
+                contextual_metadata = original_data.get("contextual_metadata", {})
+                conversation_patterns = original_data.get("conversation_patterns", {})
+                routing_suggestions = original_data.get("routing_suggestions", {})
+                agent_contexts = original_data.get("agent_contexts", {})
+            elif hasattr(context_package, 'metadata'):
+                # AgentResponse object - extract from metadata
+                original_data = context_package.metadata
+                core_classification = original_data.get("core_classification", {})
+                contextual_metadata = original_data.get("contextual_metadata", {})
+                conversation_patterns = original_data.get("conversation_patterns", {})
+                routing_suggestions = original_data.get("routing_suggestions", {})
+                agent_contexts = original_data.get("agent_contexts", {})
+            else:
+                # Dictionary format - access directly (fallback)
+                core_classification = context_package.get("core_classification", {})
+                contextual_metadata = context_package.get("contextual_metadata", {})
+                conversation_patterns = context_package.get("conversation_patterns", {})
+                routing_suggestions = context_package.get("routing_suggestions", {})
+                agent_contexts = context_package.get("agent_contexts", {})
+            
+            result_state = {
                 **state,
                 "last_message": last_message,
-                "student_classification": {**context_package["core_classification"], "last_message": last_message},
+                "student_classification": {**core_classification, "last_message": last_message},
                 "context_analysis": context_package,  # Store full context analysis
-                "context_metadata": context_package["contextual_metadata"],
-                "conversation_patterns": context_package["conversation_patterns"],
-                "routing_suggestions": context_package["routing_suggestions"],
-                "agent_contexts": context_package["agent_contexts"],
+                "context_metadata": contextual_metadata,
+                "conversation_patterns": conversation_patterns,
+                "routing_suggestions": routing_suggestions,
+                "agent_contexts": agent_contexts,
                 "context_package": context_package  # Store full package for agents
             }
+            
+            # Validate and monitor output state
+            output_validation = self.state_validator.validate_state(result_state["student_state"])
+            if not output_validation.is_valid:
+                self.logger.warning(f"⚠️ Output state validation failed in context_agent_node: {output_validation.errors}")
+            
+            self.state_monitor.record_state_change(result_state["student_state"], "context_agent_node_output")
+            
+            return result_state
     
     async def router_node(self, state: WorkflowState) -> WorkflowState:
         """ROUTER: Integrated routing using context agent suggestions and orchestrator logic"""
+        
+        # Validate input state
+        validation_result = self.state_validator.validate_state(state["student_state"])
+        if not validation_result.is_valid:
+            self.logger.warning(f"⚠️ State validation failed in router_node: {validation_result.errors}")
+        
+        # Monitor state changes
+        self.state_monitor.record_state_change(state["student_state"], "router_node_input")
         
         self.logger.info("Router: Determining agent path...")
         
@@ -279,29 +398,83 @@ class LangGraphOrchestrator:
         self.logger.debug("Interaction type: %s", classification.get('interaction_type', 'unknown'))
         self.logger.info("🎯 Routing decision: %s", routing_path)
         
-        return {
+        result_state = {
             **state,
             "routing_decision": routing_decision
         }
-    
-    async def analysis_agent_node(self, state: WorkflowState) -> WorkflowState:
-        """Analysis Agent: Always runs for multi-agent paths"""
         
-        self.logger.info("Analysis Agent: Processing...")
+        # Validate and monitor output state
+        output_validation = self.state_validator.validate_state(result_state["student_state"])
+        if not output_validation.is_valid:
+            self.logger.warning(f"⚠️ Output state validation failed in router_node: {output_validation.errors}")
+        
+        self.state_monitor.record_state_change(result_state["student_state"], "router_node_output")
+        
+        return result_state
+    #0708-UPDATED
+    async def analysis_agent_node(self, state: WorkflowState) -> WorkflowState:
+        """Analysis Agent: Always runs for multi-agent paths with conversation progression integration"""
+        
+        # Validate input state
+        validation_result = self.state_validator.validate_state(state["student_state"])
+        if not validation_result.is_valid:
+            self.logger.warning(f"⚠️ State validation failed in analysis_agent_node: {validation_result.errors}")
+        
+        # Monitor state changes
+        self.state_monitor.record_state_change(state["student_state"], "analysis_agent_node_input")
+        
+        self.logger.info("Analysis Agent: Processing with conversation progression...")
         
         student_state = state["student_state"]
         context_package = state.get("context_package", {})
+        last_message = state.get("last_message", "")
+        
+        # Get conversation progression integration
+        progression_integration = self.analysis_agent.integrate_conversation_progression(
+            student_state, last_message, ""
+        )
         
         # Pass context package to analysis agent for better continuity
         analysis_result = await self.analysis_agent.process(student_state, context_package)
         
-        return {
+        # Convert AgentResponse to dictionary if needed
+        if hasattr(analysis_result, 'response_text'):
+            analysis_result = analysis_result.to_dict()
+        
+        # Integrate conversation progression data into analysis result
+        analysis_result.update({
+            "conversation_progression": progression_integration.get("conversation_progression", {}),
+            "current_milestone": progression_integration.get("current_milestone"),
+            "milestone_assessment": progression_integration.get("milestone_assessment", {}),
+            "agent_guidance": progression_integration.get("agent_guidance", {})
+        })
+        
+        result_state = {
             **state,
-            "analysis_result": analysis_result
+            "analysis_result": analysis_result,
+            "conversation_progression": progression_integration.get("conversation_progression", {}),
+            "milestone_guidance": progression_integration.get("agent_guidance", {})
         }
+        
+        # Validate and monitor output state
+        output_validation = self.state_validator.validate_state(result_state["student_state"])
+        if not output_validation.is_valid:
+            self.logger.warning(f"⚠️ Output state validation failed in analysis_agent_node: {output_validation.errors}")
+        
+        self.state_monitor.record_state_change(result_state["student_state"], "analysis_agent_node_output")
+        
+        return result_state
     
     async def domain_expert_node(self, state: WorkflowState) -> WorkflowState:
         """Domain Expert: Knowledge synthesis with visual awareness"""
+        
+        # Validate input state
+        validation_result = self.state_validator.validate_state(state["student_state"])
+        if not validation_result.is_valid:
+            self.logger.warning(f"⚠️ State validation failed in domain_expert_node: {validation_result.errors}")
+        
+        # Monitor state changes
+        self.state_monitor.record_state_change(state["student_state"], "domain_expert_node_input")
         
         self.logger.info("Domain Expert: Providing knowledge...")
         
@@ -346,35 +519,93 @@ class LangGraphOrchestrator:
             student_state, analysis_result, primary_gap
         )
         
-        return {
+        # Convert AgentResponse to dictionary if needed
+        if hasattr(domain_result, 'response_text'):
+            domain_result = domain_result.to_dict()
+        
+        result_state = {
             **state,
             "domain_expert_result": domain_result
         }
-    
-    async def socratic_tutor_node(self, state: WorkflowState) -> WorkflowState:
-        """Socratic Tutor: AI-powered question generation for ANY topic"""
         
-        self.logger.info("Socratic Tutor: Generating questions...")
+        # Validate and monitor output state
+        output_validation = self.state_validator.validate_state(result_state["student_state"])
+        if not output_validation.is_valid:
+            self.logger.warning(f"⚠️ Output state validation failed in domain_expert_node: {output_validation.errors}")
+        
+        self.state_monitor.record_state_change(result_state["student_state"], "domain_expert_node_output")
+        
+        return result_state
+    #0708-UPDATED
+    async def socratic_tutor_node(self, state: WorkflowState) -> WorkflowState:
+        """Socratic Tutor: AI-powered question generation for ANY topic with milestone-driven guidance"""
+        
+        # Validate input state
+        validation_result = self.state_validator.validate_state(state["student_state"])
+        if not validation_result.is_valid:
+            self.logger.warning(f"⚠️ State validation failed in socratic_tutor_node: {validation_result.errors}")
+        
+        # Monitor state changes
+        self.state_monitor.record_state_change(state["student_state"], "socratic_tutor_node_input")
+        
+        # 0708-MILESTONE-DRIVEN SOCRATIC GUIDANCE
+        milestone_guidance = state.get("milestone_guidance", {})
+        current_milestone = milestone_guidance.get("current_milestone")
+        agent_guidance = milestone_guidance.get("agent_guidance", {})
+        
+        self.logger.info(f"🎯 Socratic Tutor - Current milestone: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+        self.logger.info(f"🎯 Socratic Tutor - Guidance: {agent_guidance.get('guidance', 'No specific guidance')}")
         
         student_state = state["student_state"]
         analysis_result = state.get("analysis_result", {})
         context_classification = state.get("student_classification", {})
-        #3107-BELOW LINE: ADDED DOMAIN EXPERT RESULT
+        # ENHANCED: Pass domain expert results to Socratic tutor so it can ask questions about examples
         domain_expert_result = state.get("domain_expert_result", {})
         
-        # ENHANCED ONLY domain expert result: Pass domain expert results to Socratic tutor so it can ask questions about examples
+        # 0708-Add milestone context to the analysis result for the Socratic agent
+        if current_milestone:
+            analysis_result["milestone_context"] = {
+                "milestone_type": current_milestone.milestone_type.value,
+                "phase": current_milestone.phase.value,
+                "required_actions": current_milestone.required_actions,
+                "success_criteria": current_milestone.success_criteria,
+                "agent_guidance": agent_guidance
+            }
+        
         socratic_result = await self.socratic_agent.generate_response(
             student_state, analysis_result, context_classification, domain_expert_result
         )
         
-        return {
+        # Convert AgentResponse to dictionary if needed
+        if hasattr(socratic_result, 'response_text'):
+            socratic_result = socratic_result.to_dict()
+        
+        result_state = {
             **state,
             "socratic_result": socratic_result
         }
+        
+        # Validate and monitor output state
+        output_validation = self.state_validator.validate_state(result_state["student_state"])
+        if not output_validation.is_valid:
+            self.logger.warning(f"⚠️ Output state validation failed in socratic_tutor_node: {output_validation.errors}")
+        
+        self.state_monitor.record_state_change(result_state["student_state"], "socratic_tutor_node_output")
+        
+        return result_state
 
     
     async def cognitive_enhancement_node(self, state: WorkflowState) -> WorkflowState:
-        """Cognitive Enhancement Agent node - FIXED"""
+        """Cognitive Enhancement Agent node"""
+        
+        # Validate input state
+        validation_result = self.state_validator.validate_state(state["student_state"])
+        if not validation_result.is_valid:
+            self.logger.warning(f"⚠️ State validation failed in cognitive_enhancement_node: {validation_result.errors}")
+        
+        # Monitor state changes
+        self.state_monitor.record_state_change(state["student_state"], "cognitive_enhancement_node_input")
+        
         self.logger.info("Cognitive Enhancement Agent: Enhancing cognition...")
         
         student_state = state["student_state"]
@@ -387,15 +618,37 @@ class LangGraphOrchestrator:
             student_state, context_classification, analysis_result, routing_decision
         )
         
+        # Convert AgentResponse to dictionary if needed
+        if hasattr(enhancement_result, 'response_text'):
+            enhancement_result = enhancement_result.to_dict()
+        
         self.logger.debug("Generated enhancement result: %s", enhancement_result)
         
-        return {
+        result_state = {
             **state,
             "cognitive_enhancement_result": enhancement_result
         }
+        
+        # Validate and monitor output state
+        output_validation = self.state_validator.validate_state(result_state["student_state"])
+        if not output_validation.is_valid:
+            self.logger.warning(f"⚠️ Output state validation failed in cognitive_enhancement_node: {output_validation.errors}")
+        
+        self.state_monitor.record_state_change(result_state["student_state"], "cognitive_enhancement_node_output")
+        
+        return result_state
     
     async def synthesizer_node(self, state: WorkflowState) -> WorkflowState:
         """Synthesizer: Combines all agent outputs (Section 7)"""
+        
+        # Validate input state
+        validation_result = self.state_validator.validate_state(state["student_state"])
+        if not validation_result.is_valid:
+            self.logger.warning(f"⚠️ State validation failed in synthesizer_node: {validation_result.errors}")
+        
+        # Monitor state changes
+        self.state_monitor.record_state_change(state["student_state"], "synthesizer_node_input")
+        
         self.logger.info("Synthesizer: Combining agent responses...")
         
         # Check if we already have a final_response (progressive conversation paths)
@@ -404,157 +657,107 @@ class LangGraphOrchestrator:
             self.logger.info("🎯 Using existing progressive response - skipping synthesis")
             metadata = state.get("response_metadata", {})
             
-            # HYBRID APPROACH: Add milestone question if needed
-            milestone_question = await self._add_milestone_question_if_needed(state, existing_response)
-            if milestone_question:
-                existing_response += f"\n\n🎯 **Milestone Question:** {milestone_question}"
+                    # Phase progression integration can be added here if needed
             
-            return {
+            result_state = {
                 **state,
                 "final_response": existing_response,
                 "response_metadata": metadata
             }
+            
+            # Validate and monitor output state
+            output_validation = self.state_validator.validate_state(result_state["student_state"])
+            if not output_validation.is_valid:
+                self.logger.warning(f"⚠️ Output state validation failed in synthesizer_node: {output_validation.errors}")
+            
+            self.state_monitor.record_state_change(result_state["student_state"], "synthesizer_node_output")
+            
+            return result_state
         
         # Standard synthesis for multi-agent paths
         self.logger.debug("cognitive_enhancement_result: %s", state.get("cognitive_enhancement_result"))
         final_response, metadata = self.synthesize_responses(state)
         
-        # HYBRID APPROACH: Add milestone question if needed
-        milestone_question = await self._add_milestone_question_if_needed(state, final_response)
-        if milestone_question:
-            final_response += f"\n\n🎯 **Milestone Question:** {milestone_question}"
+        # Phase progression integration can be added here if needed
         
-        return {
+        result_state = {
             **state,
             "final_response": final_response,
             "response_metadata": metadata
         }
+        
+        # Validate and monitor output state
+        output_validation = self.state_validator.validate_state(result_state["student_state"])
+        if not output_validation.is_valid:
+            self.logger.warning(f"⚠️ Output state validation failed in synthesizer_node: {output_validation.errors}")
+        
+        self.state_monitor.record_state_change(result_state["student_state"], "synthesizer_node_output")
+        
+        return result_state
     
-    # ROUTING LOGIC(3107-PRIORITY ENHANCEMENT-OLD VERSION BELOW)
+    # ROUTING LOGIC
     def route_decision(self, state: WorkflowState) -> str:
-        """Enhanced routing that properly integrates context agent suggestions and progressive conversation"""
+        """Enhanced routing using AdvancedRoutingDecisionTree"""
         
         classification = state.get("student_classification", {})
         context_analysis = state.get("context_analysis", {})
         routing_suggestions = state.get("routing_suggestions", {})
         routing_decision = state.get("routing_decision", {})
+        student_state = state.get("student_state", None)
         
-        # RE-ENABLED: Progressive conversation paths
-        # PRIORITY 1: Progressive conversation paths (highest priority)
-        if routing_decision and routing_decision.get("path") in ["progressive_opening", "topic_transition"]:
-            path = routing_decision.get("path")
-            self.logger.info(f"🎯 Progressive conversation path: {path}")
-            return path
+        # Provide the actual user input to the routing tree for intent/keyword extraction
+        try:
+            classification["user_input"] = state.get("last_message", "")
+        except Exception:
+            pass
+
+        # Create routing context
+        routing_context = RoutingContext(
+            classification=classification,
+            context_analysis=context_analysis,
+            routing_suggestions=routing_suggestions,
+            student_state=student_state.__dict__ if student_state else None,
+            conversation_history=student_state.messages if student_state else [],
+            current_phase=student_state.design_phase.value if student_state else "ideation",
+            phase_progress=0.0  # Default value since ArchMentorState doesn't have phase_progress
+        )
         
-        # RE-ENABLED: First message detection
-        # PRIORITY 2: First message detection
-        if classification.get("is_first_message", False):
-            self.logger.info("🎯 First message detected - using progressive opening")
-            return "progressive_opening"
+        # Use the advanced routing decision tree
+        decision = self.routing_decision_tree.decide_route(routing_context)
         
-        # PRIORITY 3: Use context agent's routing suggestions if available and confident
-        if routing_suggestions and routing_suggestions.get("confidence", 0) > 0.6:
-            primary_route = routing_suggestions.get("primary_route", "default")
-            
-            # Map context agent routes to our workflow paths
-            route_mapping = {
-                # Context agent route names → Orchestrator route names
-                "knowledge_only": "knowledge_only",
-                "socratic_exploration": "socratic_exploration",
-                "cognitive_challenge": "cognitive_challenge",
-                "multi_agent": "multi_agent_comprehensive",
-                "socratic_clarification": "socratic_clarification",
-                "supportive_scaffolding": "supportive_scaffolding",
-                "foundational_building": "foundational_building",
-                "knowledge_with_challenge": "knowledge_with_challenge",
-                "balanced_guidance": "balanced_guidance",
-                "design_guidance": "design_guidance",  # NEW: Context agent uses this for design guidance requests
-                "knowledge_exploration": "knowledge_only",  # Context agent uses this for example requests
-                "analysis_guidance": "multi_agent_comprehensive",  # Context agent uses this for feedback requests
-                "technical_guidance": "knowledge_with_challenge",  # Context agent uses this for technical questions
-                "clarification_support": "socratic_clarification",  # Context agent uses this for confusion
-                "improvement_guidance": "socratic_exploration",  # Context agent uses this for improvement seeking
-                "knowledge_provision": "knowledge_only",  # Context agent uses this for knowledge seeking
-                "exploratory_guidance": "socratic_exploration",  # Context agent uses this for general questions
-                "confidence_building": "supportive_scaffolding",  # Context agent uses this for uncertain statements
-                "general_guidance": "balanced_guidance",  # Context agent uses this for default
-                "default": "balanced_guidance"
-            }
-            
-            mapped_route = route_mapping.get(primary_route, "balanced_guidance")
-            self.logger.info(f"🎯 Using context agent route: {primary_route} → {mapped_route}")
-            return mapped_route
+        # Store the decision for reasoning method
+        self.last_routing_decision = decision
         
-        # PRIORITY 2: COGNITIVE PROTECTION (Fallback to orchestrator logic)
-        # ENHANCED: Only override context agent if cognitive offloading is detected AND context agent confidence is low
-        context_confidence = routing_suggestions.get("confidence", 0) if routing_suggestions else 0
-        cognitive_offloading_indicators = self._detect_cognitive_offloading(classification, context_analysis)
+        # Log the routing decision
+        self.logger.info(f"🎯 Advanced Routing Decision: {decision.route.value}")
+        self.logger.info(f"   Reason: {decision.reason}")
+        self.logger.info(f"   Confidence: {decision.confidence:.2f}")
+        self.logger.info(f"   Rule Applied: {decision.rule_applied}")
         
-        if cognitive_offloading_indicators["detected"]:
-            # Only override if context agent is not confident OR if cognitive offloading is very strong
-            if context_confidence < 0.7 or cognitive_offloading_indicators["confidence"] > 0.8:
-                self.logger.warning(f"🚨 COGNITIVE OFFLOADING DETECTED: {cognitive_offloading_indicators['type']} (overriding context agent)")
-                return "cognitive_intervention"
-            else:
-                self.logger.info(f"✅ Context agent confident ({context_confidence:.2f}) - ignoring cognitive offloading detection")
+        # Store the detailed decision in state for later use
+        state["detailed_routing_decision"] = {
+            "route": decision.route.value,
+            "reason": decision.reason,
+            "confidence": decision.confidence,
+            "rule_applied": decision.rule_applied,
+            "context_agent_override": decision.context_agent_override,
+            "cognitive_offloading_detected": decision.cognitive_offloading_detected,
+            "cognitive_offloading_type": decision.cognitive_offloading_type.value if decision.cognitive_offloading_type else None,
+            "context_agent_confidence": decision.context_agent_confidence,
+            "classification": decision.classification,
+            "metadata": decision.metadata
+        }
         
-        # PRIORITY 3: EDUCATIONAL STRATEGY (Fallback logic)
-        interaction_type = classification.get("interaction_type", "general_statement")
-        
-        # Handle example requests
-        if interaction_type == "example_request":
-            user_input = state.get("last_message", "").lower()
-            if not user_input:
-                context_analysis = state.get("context_analysis", {})
-                core_classification = context_analysis.get("core_classification", {})
-                user_input = core_classification.get("last_message", "").lower()
-            
-            pure_example_keywords = [
-                "example", "examples", "project", "projects", "precedent", "precedents",
-                "case study", "case studies", "show me", "can you give", "can you provide",
-                "can you show", "real project", "built project", "actual project"
-            ]
-            
-            is_pure_example_request = (
-                any(keyword in user_input for keyword in pure_example_keywords) and
-                not any(word in user_input for word in ["how can i", "how do i", "how to", "how might", "incorporate", "integrate", "implement", "apply"])
-            )
-            
-            if is_pure_example_request:
-                self.logger.info(f"✅ PURE EXAMPLE REQUEST: '{user_input}' → knowledge_only")
-                return "knowledge_only"
-            else:
-                self.logger.info(f"⚠️ EXAMPLE REQUEST WITH DESIGN GUIDANCE: '{user_input}' → socratic_exploration")
-                return "socratic_exploration"
-        
-        elif interaction_type == "feedback_request":
-            return "multi_agent_comprehensive"
-        
-        # PRIORITY 4: STUDENT STATE (Fallback logic)
-        confidence_level = classification.get("confidence_level", "confident")
-        understanding_level = classification.get("understanding_level", "medium")
-        
-        if confidence_level == "overconfident":
-            return "cognitive_challenge"
-        elif understanding_level == "low":
-            return "foundational_building"
-        elif interaction_type == "confusion_expression":
-            return "supportive_scaffolding"
-        
-        # PRIORITY 5: TECHNICAL NEEDS (Fallback logic)
-        elif interaction_type == "technical_question":
-            if understanding_level == "high":
-                return "knowledge_with_challenge"
-            else:
-                return "socratic_clarification"
-        
-        # PRIORITY 6: DEFAULT (Fallback logic)
-        else:
-            return "balanced_guidance"
+        return decision.route.value
     
     def _generate_routing_reasoning(self, routing_path: str, routing_suggestions: Dict[str, Any], classification: Dict[str, Any]) -> str:
-        """Generate human-readable reasoning for the routing decision"""
+        """Generate human-readable reasoning for the routing decision using advanced routing system"""
         
+        # Check if we have a detailed routing decision from the advanced system
+        if hasattr(self, 'last_routing_decision') and self.last_routing_decision:
+            return self.last_routing_decision.reason
+        
+        # Fallback to original reasoning logic
         # If we have context agent suggestions with high confidence, use them
         if routing_suggestions and routing_suggestions.get("confidence", 0) > 0.6:
             primary_route = routing_suggestions.get("primary_route", "default")
@@ -599,6 +802,22 @@ class LangGraphOrchestrator:
             reasoning_parts.append("Exploration/guidance needed")
         elif routing_path == "multi_agent_comprehensive":
             reasoning_parts.append("Complex request requiring multiple agents")
+        elif routing_path == "socratic_clarification":
+            reasoning_parts.append("Clarification needed")
+        elif routing_path == "supportive_scaffolding":
+            reasoning_parts.append("Supportive scaffolding needed")
+        elif routing_path == "foundational_building":
+            reasoning_parts.append("Foundational knowledge needed")
+        elif routing_path == "knowledge_with_challenge":
+            reasoning_parts.append("Knowledge with challenge needed")
+        elif routing_path == "balanced_guidance":
+            reasoning_parts.append("Balanced guidance approach")
+        elif routing_path == "design_guidance":
+            reasoning_parts.append("Design guidance requested")
+        elif routing_path == "progressive_opening":
+            reasoning_parts.append("Progressive conversation opening")
+        elif routing_path == "topic_transition":
+            reasoning_parts.append("Topic transition detected")
         
         if reasoning_parts:
             return f"Route '{routing_path}' selected based on: {', '.join(reasoning_parts)}"
@@ -659,7 +878,7 @@ class LangGraphOrchestrator:
         
         return offloading_indicators
     
-    # In orchestration/langgraph_orchestrator.py - Fix after_analysis_routing method
+    # Fix after_analysis_routing method
 
     def after_analysis_routing(self, state: WorkflowState) -> str:
         """Simplified routing after analysis that ensures comprehensive responses"""
@@ -673,14 +892,12 @@ class LangGraphOrchestrator:
         return "to_domain_expert"
     
     def after_domain_expert(self, state: WorkflowState) -> Literal["to_socratic", "to_synthesizer"]:
-        #3107-BEFORE IT WAS: """Always go to Socratic tutor after domain expert for comprehensive responses""" and only last return
         """Route after domain expert based on the original request type"""
         
         # Check if this was a knowledge_only request
         routing_decision = state.get("routing_decision", {})
         original_path = routing_decision.get("path", "default")
         
-        # FIXED: Always go to Socratic tutor after domain expert so it can ask questions about examples
         # The Socratic Tutor should ask questions about the examples that were just provided
         self.logger.info("🎯 After domain expert: Going to Socratic tutor to ask questions about provided examples")
         return "to_socratic"
@@ -722,7 +939,7 @@ class LangGraphOrchestrator:
         
         return routing_decision
         
-    # In orchestration/langgraph_orchestrator.py - Fix classify_student_input method
+    #Fix classify_student_input method
 
     def classify_student_input(self, message: str, student_state: ArchMentorState) -> Dict[str, Any]:
         """IMPROVED classification with better keyword detection"""
@@ -784,7 +1001,7 @@ class LangGraphOrchestrator:
         else:
             understanding = "low"
 
-        # 2. Confidence Level - FIXED
+        # 2. Confidence Level
         if overconfidence_score >= 1:  # Lower threshold
             confidence = "overconfident"
         elif any(word in message_lower for word in ["think", "maybe", "might"]):
@@ -801,7 +1018,7 @@ class LangGraphOrchestrator:
         else:
             engagement = "low"
 
-        # 4. Interaction Type - PATCHED
+        # 4. Interaction Type
         if is_feedback_request:
             interaction_type = "design_feedback_request"
         elif is_example_request:
@@ -836,14 +1053,8 @@ class LangGraphOrchestrator:
             "is_example_request": is_example_request
         }
 
-    #  determine_routing method
 
-    # Fix for langgraph_orchestrator.py - Enhanced Routing  
-
-    # REPLACE the determine_routing method (around line 600) with this enhanced version:
-    # COMPLETE FIX for langgraph_orchestrator.py - determine_routing method
-    # REPLACE the entire determine_routing method with this complete version:
-
+    # COMPLETE FIX for determine_routing method
     async def determine_routing(self, routing_suggestions: Dict[str, Any], classification: Dict[str, Any], state: ArchMentorState = None) -> Dict[str, Any]:
         """Enhanced routing with better Socratic integration for design guidance"""
 
@@ -1313,6 +1524,15 @@ class LangGraphOrchestrator:
         # Print summary if enabled
         self._print_summary_if_enabled(state, response_type, metadata)
         
+        # Apply response length/ending quality control based on response type
+        agent_type_map = {
+            "domain_knowledge": "domain_expert",
+            "socratic_guidance": "socratic_tutor",
+            "cognitive_enhancement": "cognitive_enhancement",
+        }
+        agent_type = agent_type_map.get(response_type, "default")
+        final_response = ensure_quality(final_response, agent_type)
+        
         return final_response, metadata
     
     def _get_agent_results(self, state: WorkflowState) -> Dict[str, Any]:
@@ -1354,6 +1574,13 @@ class LangGraphOrchestrator:
             return self._synthesize_feedback_response(socratic_result, domain_result, user_input, classification)
         elif routing_path == "design_guidance":
             return self._synthesize_design_guidance_response(agent_results, user_input, classification)
+        elif routing_path == "supportive_scaffolding":
+            # Provide concise clarification/scaffolding
+            socratic_result = agent_results.get("socratic", {})
+            domain_result = agent_results.get("domain", {})
+            return self._synthesize_clarification_response(
+                socratic_result, domain_result, user_input, classification
+            )
         else:
             return self._synthesize_default_response(agent_results)
     
@@ -1645,46 +1872,7 @@ class LangGraphOrchestrator:
         
         return 'design'
     
-    async def _add_milestone_question_if_needed(self, state: WorkflowState, final_response: str) -> Optional[str]:
-        """Add milestone question if needed based on conversation gaps"""
-        
-        try:
-            # Get current phase from analysis result
-            analysis_result = state.get("analysis_result", {})
-            phase_analysis = analysis_result.get("phase_analysis", {})
-            current_phase = phase_analysis.get("phase", "ideation")
-            
-            # Get student state
-            student_state = state.get("student_state")
-            if not student_state:
-                return None
-            
-            # Get progress manager from analysis agent
-            if hasattr(self.analysis_agent, 'progress_manager'):
-                progress_manager = self.analysis_agent.progress_manager
-            else:
-                # Create progress manager if not exists
-                from phase_management.progress_manager import ProgressManager
-                progress_manager = ProgressManager()
-                self.analysis_agent.progress_manager = progress_manager
-            
-            # Generate student ID
-            student_id = f"student_{hash(str(student_state.messages))}"
-            
-            # Check if milestone question is needed
-            milestone_question = self.analysis_agent._generate_milestone_question_if_needed(
-                student_state, current_phase, progress_manager, student_id
-            )
-            
-            if milestone_question:
-                self.logger.info(f"🎯 Adding milestone question: {milestone_question}")
-                return milestone_question
-            
-            return None
-            
-        except Exception as e:
-            self.logger.warning(f"Could not generate milestone question: {e}")
-            return None
+    # Milestone functionality removed - replaced with phase progression system
 
     def _synthesize_example_response(self, domain_result: Dict, user_input: str, classification: Dict, state: ArchMentorState = None) -> str:
         """Synthesize focused example response with Socratic questions"""
@@ -1818,21 +2006,64 @@ class LangGraphOrchestrator:
         
         self.logger.info(f"📝 Processing user input: {current_user_input[:100]}...")
 
-        # Initialize workflow state
+        # MILESTONE-DRIVEN CONVERSATION PROGRESSION
+        # Update conversation progression manager with current state
+        self.progression_manager.update_state(student_state)
+        
+        # Get milestone guidance for current conversation state
+        milestone_guidance = self.progression_manager.get_milestone_driven_agent_guidance(current_user_input, student_state)
+        current_milestone = milestone_guidance.get("current_milestone")
+        agent_focus = milestone_guidance.get("agent_focus", "context_agent")
+        agent_guidance = milestone_guidance.get("agent_guidance", {})
+        
+        self.logger.info(f"🎯 Current milestone: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+        self.logger.info(f"🎯 Agent focus: {agent_focus}")
+        self.logger.info(f"🎯 Milestone progress: {milestone_guidance.get('milestone_progress', 0)}%")
+
+        # Check if this is the first message (new conversation)
+        if len(user_messages) == 1:
+            # Analyze first message for conversation progression
+            progression_analysis = self.progression_manager.analyze_first_message(current_user_input, student_state)
+            self.logger.info(f"🎯 First message analysis: {progression_analysis.get('conversation_phase', 'unknown')}")
+        else:
+            # Progress the conversation and assess milestone completion
+            last_assistant_message = ""
+            for msg in reversed(student_state.messages):
+                if msg.get('role') == 'assistant':
+                    last_assistant_message = msg.get('content', '')
+                    break
+            
+            # 0708-Assess milestone completion
+            milestone_assessment = self.progression_manager.assess_milestone_completion(
+                current_user_input, last_assistant_message, student_state
+            )
+            
+            if milestone_assessment.get("milestone_complete", False):
+                self.logger.info(f"✅ Milestone completed: {current_milestone.milestone_type.value if current_milestone else 'None'}")
+                if milestone_assessment.get("phase_transition", False):
+                    self.logger.info(f"🔄 Phase transition to: {milestone_assessment.get('next_phase', 'unknown')}")
+            
+            progression_analysis = self.progression_manager.progress_conversation(
+                current_user_input, last_assistant_message, student_state
+            )
+            self.logger.info(f"🔄 Conversation progression: {progression_analysis.get('conversation_phase', 'unknown')}")
+
+        # Initialize workflow state with milestone guidance
         initial_state = WorkflowState(
             student_state=student_state,
             last_message=current_user_input,
             student_classification={},
-            #3107 ADDED BELOW LINE
             context_analysis={},
             routing_decision={},
             analysis_result={},
             domain_expert_result={},
             socratic_result={},
-            #3107 ADDED BELOW LINE
             cognitive_enhancement_result={},
             final_response="",
-            response_metadata={}
+            response_metadata={},
+            # Add conversation progression and milestone data
+            conversation_progression=progression_analysis,
+            milestone_guidance=milestone_guidance
         )
 
         # Execute the workflow
@@ -1844,6 +2075,9 @@ class LangGraphOrchestrator:
         # Add processing time to metadata
         if "response_metadata" in final_state:
             final_state["response_metadata"]["processing_time"] = f"{processing_time:.2f}s"
+            # Add conversation progression and milestone data to metadata
+            final_state["response_metadata"]["conversation_progression"] = progression_analysis
+            final_state["response_metadata"]["milestone_guidance"] = milestone_guidance
 
         self.logger.info("✅ LangGraph workflow completed!")
         
@@ -1854,7 +2088,9 @@ class LangGraphOrchestrator:
             "response": final_state["final_response"],
             "metadata": final_state["response_metadata"],
             "routing_path": final_state["routing_decision"].get("path", "unknown"),
-            "classification": final_state["student_classification"]
+            "classification": final_state["student_classification"],
+            "conversation_progression": progression_analysis,
+            "milestone_guidance": milestone_guidance
         }
     
     def _detect_topic_transition(self, student_state: ArchMentorState, current_message: str) -> Optional[str]:

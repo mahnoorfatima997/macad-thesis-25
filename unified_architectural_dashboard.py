@@ -2,19 +2,40 @@ import streamlit as st
 import os
 import asyncio
 import json
+import tempfile
+from PIL import Image
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from string import Template
 
 # Fix Python path for thesis_tests imports
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import mega mentor components
-from mega_architectural_mentor import MegaArchitecturalMentor
+from mega_architectural_mentor import MegaArchitecturalMentor, get_raw_gpt_response
+
+from benchmarking.thesis_colors import THESIS_COLORS
+
+from phase_progression_system import PhaseProgressionSystem
+# Cached resources (after imports)
+@st.cache_resource
+def get_cached_orchestrator():
+    # Correctly initialize with domain (not API key)
+    return LangGraphOrchestrator(domain="architecture")
+
+@st.cache_resource
+def get_cached_mentor(api_key: str):
+    return MegaArchitecturalMentor(api_key)
+
+@st.cache_resource
+def get_cached_phase_system():
+    return PhaseProgressionSystem()
+
 
 # Fix thesis-agents import path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'thesis-agents'))
@@ -27,15 +48,15 @@ except ImportError:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'thesis-agents'))
     from orchestration.langgraph_orchestrator import LangGraphOrchestrator
 
-# Import benchmarking components (for launch functionality)
-from benchmarking.benchmark_dashboard import BenchmarkDashboard
 
 # Import test dashboard components
 from thesis_tests.test_dashboard import TestDashboard
 
 # Import data collection components                                    
-from thesis_tests.logging_system import TestSessionLogger
 from thesis_tests.data_models import TestGroup, TestPhase
+import sys
+sys.path.append('./thesis-agents')
+from data_collection.interaction_logger import InteractionLogger
 import uuid
 
 # Configure Streamlit for clean interface
@@ -46,143 +67,239 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for modern interface (matching mega_architectural_mentor)
-st.markdown("""
+# Build CSS with thesis palette
+_palette_css = Template(
+    """
 <style>
-    /* Dark theme styling */
+    :root {
+        --primary-dark: $primary_dark;
+        --primary-purple: $primary_purple;
+        --primary-violet: $primary_violet;
+        --primary-rose: $primary_rose;
+        --primary-pink: $primary_pink;
+        --neutral-light: $neutral_light;
+        --neutral-warm: $neutral_warm;
+        --neutral-orange: $neutral_orange;
+        --accent-coral: $accent_coral;
+        --accent-magenta: $accent_magenta;
+    }
+
+    /* App background and text */
     .stApp {
-        background: #1a1a1a !important;
-        color: white !important;
+        background: #ffffff !important;
+        color: var(--primary-dark) !important;
     }
-    
+
     /* Sidebar styling */
-    .css-1d391kg {
-        background: #2a2a2a !important;
-        border-right: 1px solid #404040 !important;
-        display: block !important;
-        visibility: visible !important;
-    }
-    
-    /* Ensure sidebar is visible */
     section[data-testid="stSidebar"] {
         display: block !important;
         visibility: visible !important;
+        background: #ffffff !important;
+        border-right: 1px solid var(--primary-dark) !important;
     }
-    
-    /* Ensure main content doesn't overlap with sidebar */
+
+    /* Main container card feel */
     .main .block-container {
-        background: #1a1a1a !important;
+        background: #ffffff !important;
         max-width: 1200px;
         padding-top: 1rem;
         padding-bottom: 2rem;
         margin-left: 0 !important;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        border: 1px solid rgba(0,0,0,0.05);
     }
-    
-    /* Hide Streamlit elements */
-    .stDeployButton {
-        display: none;
-    }
-    
-    #MainMenu {
-        visibility: hidden;
-    }
-    
-    footer {
-        visibility: hidden;
-    }
-    
-    /* Top section styling */
-    .top-section {
-        text-align: center;
-        margin-bottom: 3rem;
-        padding-top: 2rem;
-    }
-    
+
+    /* Hide Streamlit misc */
+    .stDeployButton{ display: none; }
+    #MainMenu{ visibility: hidden; }
+    footer{ visibility: hidden; }
+
+    /* Headings + badges */
+    .top-section { text-align: center; margin-bottom: 2rem; padding-top: 1rem; }
     .plan-badge {
-        display: inline-block;
-        background: #2a2a2a;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        margin-bottom: 1rem;
+        display: inline-block; background: #fff; color: var(--primary-dark);
+        padding: 4px 12px; border-radius: 16px; font-size: 0.8rem;
+        border: 1px solid var(--neutral-orange);
     }
-    
-    .greeting {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: white;
-        margin-bottom: 1rem;
+    .greeting { font-size: 2.3rem; font-weight: 800; color: var(--primary-purple); margin-bottom: .25rem; }
+    .compact-text { font-size: 14px; line-height: 1.5; color: var(--primary-dark); }
+
+    /* Buttons */
+    .stButton button {
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-violet)) !important;
+        color: #fff !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform .05s ease, box-shadow .2s ease, filter .2s ease;
     }
-    
-    .compact-text {
-        font-size: 14px;
-        line-height: 1.4;
-        color: #f0f0f0;
+    .stButton button:hover { filter: brightness(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+    .stButton button:active { transform: translateY(1px); }
+    /* Make Start button (form submit) larger and full-width */
+    .stFormSubmitButton button {
+        width: 100% !important;
+        min-height: 46px !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.2px !important;
+        border-radius: 12px !important;
     }
-    
-    /* Chat message styling */
+    /* Make Start button inside forms larger and full-width */
+    .stForm .stButton button {
+        width: 100% !important;
+        min-height: 46px !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.2px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Inputs (scoped to main container to avoid global side effects) */
+    .main .block-container textarea,
+    .main .block-container input:not([type="checkbox"]),
+    .main .block-container select {
+        border-radius: 10px !important;
+        border: 1px solid var(--neutral-orange) !important;
+        box-shadow: none !important;
+    }
+    .main .block-container textarea:focus,
+    .main .block-container input:not([type="checkbox"]):focus,
+    .main .block-container select:focus {
+        outline: 2px solid var(--accent-magenta) !important;
+        border-color: var(--accent-magenta) !important;
+        box-shadow: 0 0 0 3px rgba(207, 67, 111, 0.15) !important;
+    }
+
+    /* Streamlit selectbox/combobox (BaseWeb) */
+    div[data-baseweb="select"] > div {
+        border-radius: 10px !important;
+        border: 1px solid var(--neutral-orange) !important;
+        background: #fff !important;
+        box-shadow: none !important;
+        min-height: 40px;
+    }
+    div[data-baseweb="select"] > div:hover {
+        border-color: var(--neutral-orange) !important;
+        background: #fff !important;
+    }
+    div[data-baseweb="select"] > div:focus-within {
+        outline: 2px solid var(--accent-magenta) !important;
+        border-color: var(--accent-magenta) !important;
+        box-shadow: 0 0 0 3px rgba(207, 67, 111, 0.15) !important;
+    }
+    /* Dropdown menu panel */
+    div[data-baseweb="popover"] div[data-baseweb="menu"] {
+        background: #fff !important;
+        border: 1px solid var(--neutral-orange) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+        overflow: hidden;
+    }
+    /* Ensure popover/layer doesn't dim the page */
+    div[data-baseweb="layer"],
+    div[data-baseweb="layer-container"],
+    div[data-baseweb="portal"] { background: transparent !important; }
+    div[data-baseweb="menu"] ul { background: #fff !important; }
+    div[data-baseweb="menu"] li[role="option"] {
+        background: #fff !important;
+        color: var(--primary-dark) !important;
+        padding: 10px 12px !important;
+    }
+    div[data-baseweb="menu"] li[role="option"][aria-selected="true"],
+    div[data-baseweb="menu"] li[role="option"][data-focus="true"],
+    div[data-baseweb="menu"] li[role="option"]:hover {
+        background: rgba(92,79,115,0.10) !important; /* primary-purple tint */
+        color: var(--primary-purple) !important;
+    }
+    /* Fallback for environments using role=listbox */
+    ul[role="listbox"] {
+        background: #fff !important;
+        border: 1px solid var(--neutral-orange) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+    }
+    ul[role="listbox"] > li[role="option"] { color: var(--primary-dark) !important; }
+    ul[role="listbox"] > li[role="option"][aria-selected="true"],
+    ul[role="listbox"] > li[role="option"][data-focus="true"],
+    ul[role="listbox"] > li[role="option"]:hover {
+        background: rgba(92,79,115,0.10) !important;
+        color: var(--primary-purple) !important;
+    }
+    /* Fallback for environments using role="combobox" */
+    div[role="combobox"] {
+        border-radius: 10px !important;
+        border: 1px solid var(--neutral-orange) !important;
+        background: #fff !important;
+        min-height: 40px;
+    }
+
+    /* Chat input */
+    div[data-testid="stChatInput"] textarea {
+        background: #fff;
+        border: 1px solid var(--neutral-orange);
+        border-radius: 12px;
+    }
+    div[data-testid="stChatInput"] button {
+        background: var(--accent-magenta) !important;
+        color: #fff !important;
+        border-radius: 10px !important;
+    }
+
+    /* Chat messages */
     .chat-message {
-        background: #2a2a2a;
-        padding: 15px;
-        border-radius: 10px;
-        margin: 10px 0;
-        border-left: 4px solid #4CAF50;
+        background: #fff;
+        padding: 16px;
+        border-radius: 12px;
+        margin: 12px 0;
+        border: 1px solid rgba(0,0,0,0.06);
+        word-wrap: break-word;
+        white-space: pre-wrap;
     }
-    
+    .chat-message.user {
+        border-left: 5px solid var(--accent-coral);
+        background: linear-gradient(0deg, rgba(205,118,109,0.06), rgba(205,118,109,0.06)), #fff;
+    }
     .chat-message.assistant {
-        background: #1e1e1e;
-        border-left: 4px solid #2196F3;
+        border-left: 5px solid var(--primary-purple);
+        background: linear-gradient(0deg, rgba(92,79,115,0.06), rgba(92,79,115,0.06)), #fff;
     }
-    
-    /* Metric cards */
-    .metric-card {
-        background: #2a2a2a;
+
+    /* Cards */
+    .metric-card, .mode-selector, .chat-container {
+        background: #fff;
         padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid #404040;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 1px 8px rgba(0,0,0,0.05);
         margin: 0.5rem 0;
     }
-    
-    /* Status indicators */
-    .status-indicator {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-right: 8px;
+
+    /* Status chips */
+    .status-indicator { display:inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+    .status-ready { background: var(--accent-coral); }
+    .status-warning { background: var(--neutral-orange); }
+    .status-error { background: var(--accent-magenta); }
+
+    /* Tabs (if present) */
+    div[role="tablist"] { gap: .5rem; border-bottom: 1px solid var(--neutral-orange); }
+    div[role="tab"] {
+        padding: .5rem 1rem; border-radius: 10px 10px 0 0; color: var(--primary-dark);
     }
-    
-    .status-ready {
-        background: #00ff00;
+    div[role="tab"][aria-selected="true"] {
+        background: #fff; color: var(--primary-purple); border: 1px solid var(--neutral-orange); border-bottom-color: #fff;
     }
-    
-    .status-warning {
-        background: #ffaa00;
-    }
-    
-    .status-error {
-        background: #ff0000;
-    }
-    
-    /* Mode selector styling */
-    .mode-selector {
-        background: #2a2a2a;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid #404040;
-        margin-bottom: 1rem;
-    }
-    
-    /* Chat container */
-    .chat-container {
-        background: #2a2a2a;
-        border-radius: 8px;
-        padding: 1rem;
-        border: 1px solid #404040;
+
+    /* Info blocks: Socratic/Agentic boxes */
+    .info-tile {
+        background: #fff; border: 1px solid var(--neutral-orange); border-left: 5px solid var(--primary-purple);
+        border-radius: 12px; padding: 16px;
     }
 </style>
-""", unsafe_allow_html=True)
+"""
+).substitute(**THESIS_COLORS)
+
+st.markdown(_palette_css, unsafe_allow_html=True)
 
 def initialize_session_state():
     """Initialize Streamlit session state"""
@@ -194,9 +311,7 @@ def initialize_session_state():
     
     if 'analysis_results' not in st.session_state:
         st.session_state.analysis_results = None
-    
-    if 'benchmark_data' not in st.session_state:
-        st.session_state.benchmark_data = {}
+
     
     if 'test_results' not in st.session_state:
         st.session_state.test_results = {}
@@ -215,6 +330,29 @@ def initialize_session_state():
     
     if 'test_config' not in st.session_state:
         st.session_state.test_config = None
+    
+    if 'phase_system' not in st.session_state:
+        st.session_state.phase_system = None
+    
+    if 'phase_session_id' not in st.session_state:
+        st.session_state.phase_session_id = None
+    
+    # Participant/session meta for sidebar
+    if 'participant_id' not in st.session_state:
+        st.session_state.participant_id = "unified_user"
+    if 'participant_name' not in st.session_state:
+        st.session_state.participant_name = ""
+    if 'session_start_time' not in st.session_state:
+        st.session_state.session_start_time = None
+    # UI preferences
+    if 'show_routing_meta' not in st.session_state:
+        st.session_state.show_routing_meta = False
+    
+    # Socratic dialogue control flags
+    if 'awaiting_socratic_response' not in st.session_state:
+        st.session_state.awaiting_socratic_response = False
+    if 'current_question_id' not in st.session_state:
+        st.session_state.current_question_id = None
 
 class UnifiedArchitecturalDashboard:
     def __init__(self):
@@ -222,29 +360,24 @@ class UnifiedArchitecturalDashboard:
         if not self.api_key:
             st.error("❌ OPENAI_API_KEY not found. Please set it as an environment variable or in Streamlit secrets.")
             st.stop()
-        
-        # Initialize components
-        self.mentor = MegaArchitecturalMentor(self.api_key)
-        self.orchestrator = LangGraphOrchestrator(self.api_key)
-        
-        # Initialize benchmarking components
-        self.benchmark_dashboard = BenchmarkDashboard()
-        
-        # Initialize test dashboard
-        self.test_dashboard = TestDashboard()
-        
-        # Initialize data collection
-        self.data_collector = TestSessionLogger(
-            session_id="unified_dashboard_session",
-            participant_id="unified_user",
-            test_group=TestGroup.MENTOR  # Use proper enum
-        )
-        
-        # Initialize cognitive analyzer using the actual multi-agent system
-        self.cognitive_analyzer = self.orchestrator
-        
-        # Initialize session state
+
+        # Initialize session state once
         initialize_session_state()
+
+        # Lazy + cached heavy objects
+        self.mentor = get_cached_mentor(self.api_key)
+        self.orchestrator = get_cached_orchestrator()
+        self.phase_system = get_cached_phase_system()
+
+        # Data collector: store once in session
+        if 'data_collector' not in st.session_state or not isinstance(st.session_state.data_collector, InteractionLogger):
+            st.session_state.data_collector = InteractionLogger(session_id="unified_dashboard_session")
+        self.data_collector = st.session_state.data_collector
+
+        # Test dashboard lazy load (spacy heavy)
+        if 'test_dashboard' not in st.session_state:
+            st.session_state.test_dashboard = None
+        self.test_dashboard = st.session_state.test_dashboard
     
     def _get_api_key(self) -> str:
         """Get API key from environment or Streamlit secrets"""
@@ -260,12 +393,15 @@ class UnifiedArchitecturalDashboard:
         """Render a chat message with appropriate styling (matching mega_architectural_mentor)"""
         
         if message["role"] == "user":
-            st.markdown(f"""
-            <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #4CAF50;">
+            st.markdown(
+                f"""
+            <div class="chat-message user">
                 <strong>👤 You:</strong><br>
                 {message["content"]}
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
         else:
             # Get mentor type for display
             mentor_type = message.get("mentor_type", "Multi-Agent System")
@@ -282,15 +418,18 @@ class UnifiedArchitecturalDashboard:
                 mentor_icon = "🏗️"
                 mentor_label = mentor_type
             
-            st.markdown(f"""
-            <div style="background: #1e1e1e; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
+            st.markdown(
+                f"""
+            <div class="chat-message assistant">
                 <strong>{mentor_icon} {mentor_label}:</strong><br>
                 {message["content"]}
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
     
     def render_sidebar(self):
-        """Render the sidebar with configuration options (matching mega_architectural_mentor style)"""
+        """Render sidebar with single-flow controls"""
         with st.sidebar:
             st.header("⚙️ Configuration")
             
@@ -300,11 +439,47 @@ class UnifiedArchitecturalDashboard:
             else:
                 st.error("❌ API Key: Missing")
             
+            # Pre-Test placed near top
+            self._render_inline_pretest()
+
+            # Participant info
+            st.markdown("### 👤 Participant")
+            pid = st.text_input("Participant ID", value=st.session_state.participant_id)
+            pname = st.text_input("Name (optional)", value=st.session_state.participant_name)
+            st.session_state.participant_id = pid or "unified_user"
+            st.session_state.participant_name = pname or ""
+            # keep logger in sync
+            try:
+                # InteractionLogger doesn't have participant_id, but we can store it in metadata
+                pass
+            except Exception:
+                pass
+            
+            # Reset data collector if needed
+            if st.button("🔄 Reset Data Collector"):
+                st.session_state.data_collector = InteractionLogger(session_id="unified_dashboard_session")
+                st.success("Data collector reset!")
+                st.rerun()
+
+            # Session meta
+            st.markdown("### 🕒 Session")
+            # set start time when a session id is first created
+            if st.session_state.session_id and not st.session_state.session_start_time:
+                st.session_state.session_start_time = datetime.now()
+            st.caption(f"ID: {st.session_state.session_id or '—'}")
+            if st.session_state.session_start_time:
+                st.caption(f"Started: {st.session_state.session_start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+                try:
+                    elapsed_min = (datetime.now() - st.session_state.session_start_time).total_seconds() / 60.0
+                    st.caption(f"Elapsed: {elapsed_min:.1f} min")
+                except Exception:
+                    pass
+
             # System status
             st.markdown("### 🔧 System Status")
             st.info("**Vision**: GPT Vision Available")
             st.info("**Agents**: Multi-Agent System Ready")
-            st.info("**Benchmarking**: Data Collection Active")
+            st.checkbox("Show route/agents meta in replies", key="show_routing_meta")
             
             # Current session info
             if st.session_state.analysis_complete:
@@ -327,24 +502,20 @@ class UnifiedArchitecturalDashboard:
             if st.button("💾 Export Data"):
                 self._export_session_data()
             
-            # Navigation
-            st.markdown("### 🧭 Navigation")
-            
-            # Main navigation
-            page = st.selectbox(
-                "Select Page",
-                ["Main Chat", "Test Dashboard", "Benchmarking Dashboard", "Test Results", "Settings"]
-            )
-            
-            # Navigation handled by dropdown menu above
-            
-            return page
+            # Single-flow: no page selector
+            return "Main"
+
+    def _response_contains_questions(self, text: str) -> bool:
+        """Light heuristic: treat response as already inquisitive if it contains a question."""
+        if not text:
+            return False
+        return text.count('?') >= 1
     
     def _reset_session(self):
         """Reset the current session"""
         st.session_state.messages = []
         st.session_state.analysis_results = None
-        st.session_state.benchmark_data = {}
+        # Remove any leftover benchmarking state
         st.session_state.test_results = {}
         st.session_state.session_id = None
         st.session_state.analysis_complete = False
@@ -352,9 +523,17 @@ class UnifiedArchitecturalDashboard:
     
     def _export_session_data(self):
         """Export session data"""
-        if not st.session_state.messages and not st.session_state.benchmark_data:
+        if not st.session_state.messages:
             st.warning("No data to export")
             return
+        
+        # Export comprehensive data using InteractionLogger
+        try:
+            summary = self.data_collector.export_for_thesis_analysis()
+            st.success("✅ Session data exported to thesis_data/")
+            st.info(f"Files created: interactions_{self.data_collector.session_id}.csv, design_moves_{self.data_collector.session_id}.csv, session_summary_{self.data_collector.session_id}.json, full_log_{self.data_collector.session_id}.json")
+        except Exception as e:
+            st.warning(f"Data export warning: {e}")
         
         # Prepare data for export
         export_data = {
@@ -362,7 +541,6 @@ class UnifiedArchitecturalDashboard:
             "mode": st.session_state.current_mode,
             "messages": st.session_state.messages,
             "analysis_results": st.session_state.analysis_results,
-            "benchmark_data": st.session_state.benchmark_data,
             "test_results": st.session_state.test_results
         }
         
@@ -383,6 +561,8 @@ class UnifiedArchitecturalDashboard:
             if mode == "MENTOR":
                 # Use the full multi-agent mentor system
                 response = await self._process_mentor_mode(user_input)
+            elif mode == "RAW_GPT":
+                response = await self._process_raw_gpt_mode(user_input)
             elif mode == "GENERIC_AI":
                 # Use generic AI response
                 response = await self._process_generic_ai_mode(user_input)
@@ -426,17 +606,25 @@ class UnifiedArchitecturalDashboard:
             domain="architecture"
         )
         
-        # Add the current user input to the state
-        state.messages.append({
-            "role": "user",
-            "content": user_input
-        })
+        # Ensure we don't duplicate the same user message (we already appended to session history)
+        if not state.messages or state.messages[-1].get("role") != "user" or state.messages[-1].get("content") != user_input:
+            state.messages.append({
+                "role": "user",
+                "content": user_input
+            })
         
         # Process with orchestrator
         result = await self.orchestrator.process_student_input(state)
         response = result.get("response", "I apologize, but I couldn't generate a response.")
+        # Orchestrator returns metadata under key "metadata"
+        response_metadata = result.get("metadata", {})
+        # Store latest metadata for use when rendering chat
+        try:
+            st.session_state.last_response_metadata = response_metadata
+        except Exception:
+            pass
         
-        # Collect data for benchmarking (simplified for now)
+        # Collect data for analysis (simplified for now)
         try:
             # Log the interaction using the TestSessionLogger's actual methods
             from thesis_tests.data_models import InteractionData, MoveType, TestPhase, Modality, DesignFocus, MoveSource
@@ -456,13 +644,62 @@ class UnifiedArchitecturalDashboard:
                      "engagement_level": 0.8,
                      "confidence_score": 0.8
                  },
-                 metadata={"mode": "MENTOR", "routing_path": "mentor_mode", "agents_used": ["orchestrator"]}
+                  metadata={
+                      **{"mode": "MENTOR"},
+                      **(response_metadata if isinstance(response_metadata, dict) else {})
+                  }
              )
             
             self.data_collector.log_interaction(interaction)
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
         
+        return response
+
+    async def _process_raw_gpt_mode(self, user_input: str) -> str:
+        """Process using direct Raw GPT (no multi-agent)"""
+        # Initialize session if needed
+        if not st.session_state.session_id:
+            st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        # Build project context from analysis if available
+        project_context = ""
+        if st.session_state.analysis_results:
+            ta = st.session_state.analysis_results.get('text_analysis', {})
+            bt = ta.get('building_type')
+            if bt:
+                project_context = f"Building type: {bt}"
+        # Call Raw GPT helper
+        try:
+            result = get_raw_gpt_response(user_input, project_context)
+        except Exception as e:
+            return f"I apologize, but I encountered an error calling Raw GPT: {e}"
+        response = result.get("response", "I couldn't generate a response.")
+        response_metadata = result.get("metadata", {})
+        # Store metadata for suffix display
+        st.session_state.last_response_metadata = response_metadata
+        # Log interaction
+        try:
+            from thesis_tests.data_models import InteractionData, TestPhase
+            interaction = InteractionData(
+                id=str(uuid.uuid4()),
+                session_id=st.session_state.session_id,
+                timestamp=datetime.now(),
+                phase=TestPhase.IDEATION,
+                interaction_type="raw_gpt_response",
+                user_input=user_input,
+                system_response=response,
+                response_time=1.0,
+                cognitive_metrics={
+                    "understanding_level": 0.7,
+                    "confidence_level": 0.6,
+                    "engagement_level": 0.8,
+                    "confidence_score": 0.7
+                },
+                metadata={**{"mode": "RAW_GPT"}, **response_metadata}
+            )
+            self.data_collector.log_interaction(interaction)
+        except Exception as e:
+            print(f"Warning: Could not log Raw GPT interaction: {e}")
         return response
     
     async def _process_generic_ai_mode(self, user_input: str) -> str:
@@ -474,7 +711,7 @@ class UnifiedArchitecturalDashboard:
         # Use test dashboard's generic AI mode
         response = self.test_dashboard.generic_ai_env.process_input(user_input)
         
-        # Collect data for benchmarking (simplified for now)
+        # Collect data for analysis (simplified for now)
         try:
             from thesis_tests.data_models import InteractionData
             
@@ -511,7 +748,7 @@ class UnifiedArchitecturalDashboard:
         # Use test dashboard's control mode
         response = self.test_dashboard.control_env.process_input(user_input)
         
-        # Collect data for benchmarking (simplified for now)
+        # Collect data for analysis (simplified for now)
         try:
             from thesis_tests.data_models import InteractionData
             
@@ -540,7 +777,7 @@ class UnifiedArchitecturalDashboard:
         return response
     
     def render_main_chat(self):
-        """Render the main chat interface (matching mega_architectural_mentor style)"""
+        """Render the combined pre-test + agentic chat structured by phase progression"""
         
         # Top section with greeting
         st.markdown("""
@@ -550,12 +787,12 @@ class UnifiedArchitecturalDashboard:
         </div>
         <p style="text-align: center; color: #888; margin-top: 1rem;">
             Choose your testing mode and start a conversation. This unified dashboard combines 
-            multi-agent mentoring, benchmarking analysis, and research testing capabilities.
+            multi-agent mentoring and research testing capabilities.
         </p>
         </div>
         """, unsafe_allow_html=True)
         
-        # Mode selection in center column (matching mega_architectural_mentor style)
+        # Mode selection in center column (kept minimal)
         with st.columns([1, 2, 1])[1]:  # Center column
             st.markdown("""
             <div class="compact-text" style="font-size: 14px; font-weight: bold; margin-bottom: 10px; text-align: center;">
@@ -566,7 +803,7 @@ class UnifiedArchitecturalDashboard:
             # Mode selection dropdown (matching mega_architectural_mentor style)
             current_mode = st.selectbox(
                 "🤖 Select Testing Mode:",
-                ["MENTOR", "GENERIC_AI", "CONTROL"],
+                ["MENTOR", "RAW_GPT", "GENERIC_AI", "CONTROL"],
                 index=0,
                 help="MENTOR: Full multi-agent system with cognitive enhancement\nGENERIC_AI: Basic AI responses for comparison\nCONTROL: No AI assistance for baseline testing"
             )
@@ -604,9 +841,18 @@ class UnifiedArchitecturalDashboard:
                 height=120,
                 help="Provide details about your architectural project, design goals, constraints, or specific questions"
             )
+            # Optional image upload (to match Mega Mentor capabilities)
+            uploaded_file = st.file_uploader(
+                "📁 Upload your architectural drawing (optional)",
+                type=['png', 'jpg', 'jpeg'],
+                help="Upload a clear image of your architectural design, plan, or sketch"
+            )
             
             # Start analysis button
-            if st.button("🚀 Start Analysis", type="primary", use_container_width=True):
+            # Form to avoid reruns while typing
+            with st.form(key="start_form"):
+                start_clicked = st.form_submit_button("🚀 Start")
+            if start_clicked:
                 if not project_description.strip():
                     st.error("📝 Please describe your project to start analysis")
                 else:
@@ -625,9 +871,16 @@ class UnifiedArchitecturalDashboard:
                                 loop = asyncio.new_event_loop()
                                 asyncio.set_event_loop(loop)
                                 try:
+                                    temp_image_path = None
+                                    if uploaded_file is not None:
+                                        image = Image.open(uploaded_file)
+                                        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                                            image.save(tmp_file.name)
+                                            temp_image_path = tmp_file.name
                                     results = loop.run_until_complete(
                                         self.mentor.analyze_design(
                                             design_brief=project_description,
+                                            image_path=temp_image_path,
                                             skill_level=skill_level,
                                             domain="architecture"
                                         )
@@ -663,34 +916,63 @@ class UnifiedArchitecturalDashboard:
                             st.session_state.analysis_results = results
                             st.session_state.analysis_complete = True
                             
-                            st.success("✅ Analysis complete! Let's continue our conversation.")
+                            # Ensure phase session initialized for immediate first response
+                            if st.session_state.phase_system is None:
+                                st.session_state.phase_system = self.phase_system
+                            if st.session_state.phase_session_id is None:
+                                st.session_state.phase_session_id = f"phase_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                                self.phase_system.start_session(st.session_state.phase_session_id)
+                            
+                            # Immediately treat the provided project description as the first user prompt
+                            initial_user_input = project_description
+                            if initial_user_input and initial_user_input.strip():
+                                # Add user message to chat history (for UI continuity)
+                                st.session_state.messages.append({
+                                    "role": "user",
+                                    "content": initial_user_input,
+                                    "timestamp": datetime.now().isoformat()
+                                })
+                                
+                                # Process response based on current mode
+                                response = asyncio.run(self.process_chat_response(initial_user_input, current_mode))
+                                
+                                # Optionally include the next Socratic question in the SAME assistant message
+                                combined_response = response
+                                if not st.session_state.awaiting_socratic_response:
+                                    next_question = self.phase_system.get_next_question(st.session_state.phase_session_id)
+                                    if next_question and not self._response_contains_questions(response):
+                                        combined_response = f"{response}\n\n{next_question.question_text}"
+                                        st.session_state.awaiting_socratic_response = True
+                                        st.session_state.current_question_id = next_question.question_id
+                                
+                                # Include routing/agents metadata if available
+                                response_metadata = st.session_state.get("last_response_metadata", {})
+                                routing_path = response_metadata.get("routing_path") or response_metadata.get("route")
+                                agents_used = response_metadata.get("agents_used") or []
+                                meta_suffix = ""
+                                if routing_path or agents_used:
+                                    used = ", ".join(agents_used) if agents_used else ""
+                                    meta_suffix = f"\n\n— Route: {routing_path or 'unknown'}{f' | Agents: {used}' if used else ''}"
+                                final_message = combined_response + (meta_suffix if st.session_state.get('show_routing_meta', False) else "")
+                                
+                                # Append assistant message
+                                st.session_state.messages.append({
+                                    "role": "assistant",
+                                    "content": final_message,
+                                    "timestamp": datetime.now().isoformat(),
+                                    "mentor_type": current_mode
+                                })
+                            
+                            st.success("✅ Analysis complete. Multi-agent mentor has responded to your initial prompt.")
                             st.rerun()
                             
                         except Exception as e:
                             st.error(f"❌ Analysis failed: {str(e)}")
         
-        # Chat interface (if analysis is complete)
+        # Pre-Test is rendered in the sidebar now
+
+        # Chat interface (after or during pre-test)
         if st.session_state.analysis_complete:
-            # Mentor acknowledgment
-            if len(st.session_state.messages) == 0:
-                with st.columns([1, 2, 1])[1]:  # Center column
-                    st.markdown("---")
-                    st.markdown("""
-                    <div style="background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px 0; 
-                                border-left: 5px solid #4CAF50;">
-                        <div style="color: white; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-                            🎓 Mentor Ready
-                        </div>
-                        <div style="color: #f0f0f0; font-size: 14px; line-height: 1.5;">
-                            I've analyzed your <strong>{building_type}</strong> project and identified key areas for exploration. 
-                            I'm ready to help you with specific questions about design improvements, technical requirements, 
-                            precedents, or any aspect you'd like to explore further. What would you like to focus on?
-                        </div>
-                    </div>
-                    """.format(
-                        building_type=st.session_state.analysis_results.get('text_analysis', {}).get('building_type', 'architectural').title()
-                    ), unsafe_allow_html=True)
-            
             # Chat interface - confined to center column
             with st.columns([1, 2, 1])[1]:  # Center column
                 # Display chat messages
@@ -708,22 +990,50 @@ class UnifiedArchitecturalDashboard:
                         "timestamp": datetime.now().isoformat()
                     })
                     
-                    # Log to data collector - create InteractionData object
+                    # Log to data collector using InteractionLogger
                     try:
-                        from thesis_tests.data_models import InteractionData, TestPhase
+                        # Get metadata from orchestrator response
+                        response_metadata = st.session_state.get("last_response_metadata", {})
+                        routing_path = response_metadata.get("routing_path") or response_metadata.get("route") or "mentor_mode"
+                        agents_used = response_metadata.get("agents_used") or ["orchestrator"]
+                        cognitive_flags = response_metadata.get("cognitive_flags") or []
                         
-                        interaction_data = InteractionData(
-                            id=str(uuid.uuid4()),
-                            session_id=st.session_state.session_id,
-                            timestamp=datetime.now(),
-                            phase=TestPhase.IDEATION,  # Default phase
-                            interaction_type="chat",
-                            user_input=user_input,
-                            system_response="Processing...",
-                            response_time=0.0,
-                            metadata={"mode": st.session_state.current_mode, "type": "user_input"}
+                        # Log the interaction with comprehensive metadata
+                        self.data_collector.log_interaction(
+                            student_input=user_input,
+                            agent_response="Processing...",  # Will be updated after response
+                            routing_path=routing_path,
+                            agents_used=agents_used,
+                            response_type="mentor_response",
+                            cognitive_flags=cognitive_flags,
+                            student_skill_level="intermediate",
+                            confidence_score=0.8,
+                            sources_used=response_metadata.get("sources", []),
+                            response_time=1.0,
+                            context_classification={
+                                "understanding_level": "medium",
+                                "confidence_level": "medium", 
+                                "engagement_level": "high"
+                            },
+                            metadata={
+                                "mode": st.session_state.current_mode,
+                                "phase_analysis": {
+                                    "phase": "ideation",
+                                    "confidence": 0.8
+                                },
+                                "scientific_metrics": {
+                                    "cognitive_offloading_prevention": 0.8,
+                                    "deep_thinking_encouragement": 0.9,
+                                    "knowledge_integration": 0.7,
+                                    "scaffolding_effectiveness": 0.8
+                                },
+                                "cognitive_state": {
+                                    "engagement": "high",
+                                    "confidence": "medium",
+                                    "understanding": "medium"
+                                }
+                            }
                         )
-                        self.data_collector.log_interaction(interaction_data)
                     except Exception as e:
                         st.warning(f"Data logging error: {e}")
                     
@@ -733,27 +1043,76 @@ class UnifiedArchitecturalDashboard:
                         "content": user_input
                     })
                     
-                    # Generate response
+                    # Ensure phase session initialized
+                    if st.session_state.phase_system is None:
+                        st.session_state.phase_system = self.phase_system
+                    if st.session_state.phase_session_id is None:
+                        st.session_state.phase_session_id = f"phase_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                        self.phase_system.start_session(st.session_state.phase_session_id)
+
+                    # If we are awaiting a Socratic response, grade first, then generate agentic reply
+                    if st.session_state.awaiting_socratic_response:
+                        phase_result = self.phase_system.process_response(st.session_state.phase_session_id, user_input)
+                        st.session_state.awaiting_socratic_response = False
+                        st.session_state.current_question_id = None
+                        if "error" not in phase_result:
+                            grade = phase_result["grade"]
+                            st.caption(f"Phase {phase_result['current_phase'].title()} | Score {grade['overall_score']:.1f}/5")
+
+                    # Generate response (always)
                     with st.spinner("🧠 Thinking..."):
                         try:
                             # Process response based on current mode
                             response = asyncio.run(self.process_chat_response(user_input, st.session_state.current_mode))
-                            
-                            # Add assistant message to chat history
+
+                            # Optionally include the next Socratic question in the SAME assistant message
+                            combined_response = response
+                            if not st.session_state.awaiting_socratic_response:
+                                next_question = self.phase_system.get_next_question(st.session_state.phase_session_id)
+                                # Only append Socratic question if the agentic response didn't already ask questions
+                                if next_question and not self._response_contains_questions(response):
+                                    combined_response = f"{response}\n\n{next_question.question_text}"
+                                    st.session_state.awaiting_socratic_response = True
+                                    st.session_state.current_question_id = next_question.question_id
+
+                            # Add a single assistant message (agentic + optional Socratic prompt)
+                            # Include routing/agents metadata if available
+                            response_metadata = st.session_state.get("last_response_metadata", {})
+                            routing_path = response_metadata.get("routing_path") or response_metadata.get("route")
+                            agents_used = response_metadata.get("agents_used") or []
+                            meta_suffix = ""
+                            if routing_path or agents_used:
+                                used = ", ".join(agents_used) if agents_used else ""
+                                meta_suffix = f"\n\n— Route: {routing_path or 'unknown'}{f' | Agents: {used}' if used else ''}"
+                            final_message = combined_response + (meta_suffix if st.session_state.get('show_routing_meta', False) else "")
+
                             st.session_state.messages.append({
                                 "role": "assistant",
-                                "content": response,
+                                "content": final_message,
                                 "timestamp": datetime.now().isoformat(),
                                 "mentor_type": st.session_state.current_mode
                             })
                             
-                            # Update data collector with response - update the last interaction
+                            # Update data collector with response
                             try:
                                 if self.data_collector.interactions:
-                                    # Update the last interaction's system_response
-                                    self.data_collector.interactions[-1].system_response = response
-                                    # Re-log the updated interaction
-                                    self.data_collector.log_interaction(self.data_collector.interactions[-1])
+                                    # Update the last interaction's agent_response
+                                    self.data_collector.interactions[-1]["agent_response"] = response
+                                    
+                                    # Also update checklist via phase system using user+assistant contents
+                                    try:
+                                        delta = self.phase_system.update_checklist_from_interaction(
+                                            st.session_state.phase_session_id,
+                                            user_input,
+                                            response
+                                        )
+                                        # Merge delta into metadata for this turn
+                                        if isinstance(delta, dict):
+                                            response_metadata = st.session_state.get("last_response_metadata", {}) or {}
+                                            response_metadata["checklist_delta"] = delta.get("checklist_delta", [])
+                                            st.session_state.last_response_metadata = response_metadata
+                                    except Exception as _e:
+                                        pass
                             except Exception as e:
                                 st.warning(f"Response logging error: {e}")
                             
@@ -769,11 +1128,11 @@ class UnifiedArchitecturalDashboard:
                     st.rerun()
         
         # Phase Progression and Learning Insights Section - show underneath chat
-        if len(st.session_state.messages) > 0:
+        if len(st.session_state.messages) > 0 and st.session_state.phase_session_id:
             with st.columns([1, 2, 1])[1]:  # Center column
                 st.markdown("---")
                 st.markdown("""
-                <div class="compact-text" style="font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: center; color: #1f77b4;">
+                <div class="compact-text" style="font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: center; color: var(--primary-purple);">
                     🎯 Phase Progression & Learning Insights
                 </div>
                 """, unsafe_allow_html=True)
@@ -801,17 +1160,14 @@ class UnifiedArchitecturalDashboard:
                         "duration": 0
                     }
                     
-                    # Analyze phase progression
-                    phase_analysis = self._analyze_phase_progression(chat_interactions)
+                    # Analyze phase progression from conversation content and interaction patterns
+                    current_phase, phase_progress = self._calculate_conversation_progress(chat_interactions)
                     
                     # Display phase progression
                     col1, col2 = st.columns(2)
                     
                     with col1:
                         st.markdown("**📋 Current Design Phase**")
-                        current_phase = phase_analysis.get('current_phase', 'Exploration')
-                        phase_progress = phase_analysis.get('phase_progress', 0)
-                        
                         st.info(f"**{current_phase}** - {phase_progress:.0f}% Complete")
                         
                         # Phase indicators
@@ -826,21 +1182,21 @@ class UnifiedArchitecturalDashboard:
                     
                     with col2:
                         st.markdown("**🎯 Key Challenges Identified**")
-                        challenges = phase_analysis.get('challenges', [
+                        challenges = [
                             "Understanding project requirements",
                             "Balancing functionality and aesthetics",
                             "Integrating sustainable design principles"
-                        ])
+                        ]
                         
                         for challenge in challenges[:3]:  # Show top 3 challenges
                             st.markdown(f"• {challenge}")
                         
                         st.markdown("**💡 Learning Points**")
-                        learning_points = phase_analysis.get('learning_points', [
+                        learning_points = [
                             "Developing systematic approach to design",
                             "Enhancing spatial reasoning skills",
                             "Improving design communication"
-                        ])
+                        ]
                         
                         for point in learning_points[:3]:  # Show top 3 learning points
                             st.markdown(f"• {point}")
@@ -849,7 +1205,7 @@ class UnifiedArchitecturalDashboard:
                     st.markdown("---")
                     st.markdown("**📊 Session Summary**")
                     total_interactions = len(chat_interactions)
-                    session_duration = phase_analysis.get('session_duration', 'Ongoing')
+                    session_duration = 'Ongoing'
                     
                     summary_col1, summary_col2, summary_col3 = st.columns(3)
                     with summary_col1:
@@ -866,97 +1222,97 @@ class UnifiedArchitecturalDashboard:
                     total_interactions = len(chat_interactions)
                     st.markdown(f"**📊 Session: {total_interactions} interactions**")
      
-    def render_benchmarking_dashboard(self):
-        """Render the benchmarking dashboard directly integrated"""
-        st.markdown("## 📊 Cognitive Benchmarking Dashboard")
-        st.markdown("Comprehensive analysis of cognitive patterns, learning progression, and performance metrics")
-        
-        # Option selection
-        st.markdown("### 🚀 Launch Options")
-        launch_option = st.radio(
-            "Choose how to launch the benchmarking dashboard:",
-            ["Integrated (Recommended)", "Separate Process"],
-            help="Integrated: Runs within this dashboard | Separate Process: Opens in new browser tab"
-        )
-        
-        if launch_option == "Integrated (Recommended)":
-            # Run the benchmarking dashboard directly
-            try:
-                # Run the full benchmarking dashboard
-                self.benchmark_dashboard.run()
-            except Exception as e:
-                st.error(f"❌ Error loading benchmarking dashboard: {str(e)}")
-                st.info("Please check that all benchmarking dependencies are properly installed.")
-                
-                # Fallback information
-                st.markdown("### 🔧 Manual Access")
-                st.markdown("""
-                If the integrated dashboard fails to load, you can access it manually:
-                
-                1. **Terminal Command:**
-                ```bash
-                cd benchmarking
-                python launch_dashboard.py
-                ```
-                
-                2. **Or run the dashboard directly:**
-                ```bash
-                cd benchmarking
-                streamlit run benchmark_dashboard.py
-                ```
-                """)
-        
-        else:  # Separate Process
-            st.markdown("### 🔗 Launch Separate Process")
-            st.markdown("""
-            This will launch the benchmarking dashboard in a separate browser tab.
-            The dashboard will run independently from this unified dashboard.
-            """)
-            
-            if st.button("🚀 Launch Benchmarking Dashboard", type="primary", use_container_width=True):
-                try:
-                    import subprocess
-                    import sys
-                    from pathlib import Path
-                    import webbrowser
-                    import time
-                    
-                    # Get the path to the benchmarking launch script
-                    benchmark_script = Path(__file__).parent / "benchmarking" / "launch_dashboard.py"
-                    
-                    if benchmark_script.exists():
-                        st.info("🔄 Launching benchmarking dashboard in separate process...")
-                        
-                        # Launch the script in a separate process
-                        process = subprocess.Popen([
-                            sys.executable, str(benchmark_script)
-                        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        
-                        # Wait a moment for the server to start
-                        time.sleep(3)
-                        
-                        # Try to open the browser
-                        try:
-                            webbrowser.open("http://localhost:8501")
-                            st.success("✅ Benchmarking dashboard launched successfully!")
-                            st.info("📱 The dashboard should open in a new browser tab")
-                            st.info("🔗 If it doesn't open automatically, go to: http://localhost:8501")
-                        except Exception as browser_error:
-                            st.warning(f"Could not automatically open browser: {browser_error}")
-                            st.info("🔗 Please manually navigate to: http://localhost:8501")
-                        
-                        # Show process info
-                        st.info(f"Process ID: {process.pid}")
-                        st.info("To stop the dashboard, close the browser tab or terminate the process")
-                        
-                    else:
-                        st.error("❌ Benchmarking dashboard script not found")
-                        st.info(f"Expected location: {benchmark_script}")
-                        
-                except Exception as e:
-                    st.error(f"❌ Error launching dashboard: {e}")
-                    st.info("Please try the integrated option or manual launch instead.")
+    # Benchmarking UI removed entirely
     
+    def _calculate_conversation_progress(self, chat_interactions: List[Dict]) -> tuple[str, float]:
+        """Calculate current phase and progress based on conversation content"""
+        if not chat_interactions:
+            return "ideation", 0.0
+        
+        # Combine all conversation text for analysis
+        all_text = ""
+        for interaction in chat_interactions:
+            user_input = interaction.get("data", {}).get("input", "")
+            response = interaction.get("data", {}).get("response", "")
+            all_text += f" {user_input} {response}"
+        
+        all_text = all_text.lower()
+        
+        # Phase detection based on keywords and conversation patterns
+        phase_scores = {
+            "ideation": 0,
+            "visualization": 0, 
+            "materialization": 0
+        }
+        
+        # Ideation keywords (concept, requirements, goals, etc.)
+        ideation_keywords = [
+            "concept", "idea", "approach", "strategy", "vision", "goal", "objective", 
+            "purpose", "intention", "brainstorm", "explore", "consider", "think about", 
+            "what if", "imagine", "envision", "precedent", "example", "reference", 
+            "inspiration", "influence", "site", "context", "requirements", "program",
+            "need", "want", "should", "could", "might", "maybe", "perhaps"
+        ]
+        
+        # Visualization keywords (form, space, layout, etc.)
+        visualization_keywords = [
+            "form", "shape", "massing", "volume", "proportion", "scale", "circulation", 
+            "flow", "layout", "plan", "section", "elevation", "sketch", "drawing", 
+            "model", "3d", "render", "visualize", "spatial", "arrangement", 
+            "composition", "geometry", "structure", "lighting", "spatial organization",
+            "room", "space", "area", "zone", "floor", "level", "height", "width",
+            "dimension", "size", "placement", "position", "orientation"
+        ]
+        
+        # Materialization keywords (construction, details, etc.)
+        materialization_keywords = [
+            "construction", "structure", "system", "detail", "material", "technical", 
+            "engineering", "performance", "cost", "budget", "timeline", "schedule", 
+            "specification", "implementation", "fabrication", "assembly", "installation", 
+            "maintenance", "durability", "sustainability", "efficiency", "code", "standard",
+            "wall", "floor", "ceiling", "door", "window", "roof", "foundation"
+        ]
+        
+        # Score each phase based on keyword frequency
+        for keyword in ideation_keywords:
+            if keyword in all_text:
+                phase_scores["ideation"] += 1
+        
+        for keyword in visualization_keywords:
+            if keyword in all_text:
+                phase_scores["visualization"] += 1
+                
+        for keyword in materialization_keywords:
+            if keyword in all_text:
+                phase_scores["materialization"] += 1
+        
+        # Determine current phase based on highest score
+        current_phase = max(phase_scores, key=phase_scores.get)
+        max_score = phase_scores[current_phase]
+        
+        # Calculate progress based on interaction depth and phase completion
+        # Base progress on number of interactions and keyword density
+        interaction_count = len(chat_interactions)
+        keyword_density = max_score / len(all_text.split()) * 1000  # normalize per 1000 words
+        
+        # Progress calculation: combine interaction count and keyword density
+        # Each interaction contributes ~15-25% progress, keyword density adds 0-20%
+        base_progress = min(interaction_count * 20, 80)  # cap at 80% from interactions
+        keyword_bonus = min(keyword_density * 2, 20)  # up to 20% from keywords
+        total_progress = min(base_progress + keyword_bonus, 100)
+        
+        # Phase transitions based on conversation depth
+        if current_phase == "ideation" and total_progress > 60:
+            # Move to visualization if ideation is well explored
+            current_phase = "visualization"
+            total_progress = max(0, total_progress - 40)  # reset progress for new phase
+        elif current_phase == "visualization" and total_progress > 70:
+            # Move to materialization if visualization is well explored
+            current_phase = "materialization"
+            total_progress = max(0, total_progress - 50)  # reset progress for new phase
+        
+        return current_phase, total_progress
+
     def _analyze_phase_progression(self, interactions: List[Dict]) -> Dict[str, Any]:
         """Analyze design phase progression from interactions"""
         if not interactions:
@@ -1058,6 +1414,264 @@ class UnifiedArchitecturalDashboard:
             "learning_points": learning_points
         }
     
+    def render_phase_progression(self):
+        """Render the phase progression dashboard with both phase and agentic methods"""
+        st.markdown("## 🎯 Phase Progression Dashboard")
+        st.markdown("Structured Socratic assessment with integrated multi-agent mentoring")
+        
+        # Mode selection
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 🎯 Assessment Mode")
+            assessment_mode = st.radio(
+                "Choose your assessment approach:",
+                ["Phase-Based Socratic", "Agentic Mentor", "Combined Mode"],
+                help="Phase-Based: Structured 4-step Socratic dialogue\nAgentic: Multi-agent system with cognitive enhancement\nCombined: Both approaches integrated"
+            )
+        
+        with col2:
+            st.markdown("### 📊 Session Status")
+            if st.session_state.phase_session_id:
+                st.success(f"✅ Active Session: {st.session_state.phase_session_id}")
+                if st.button("🔄 Reset Session"):
+                    st.session_state.phase_session_id = None
+                    st.session_state.phase_system = None
+                    st.rerun()
+            else:
+                st.info("⏳ No active session")
+        
+        # Initialize phase system if needed
+        if st.session_state.phase_system is None:
+            st.session_state.phase_system = PhaseProgressionSystem()
+        
+        # Project setup section
+        st.markdown("---")
+        st.markdown("### 🏗️ Project Setup")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            project_type = st.selectbox(
+                "🏢 Project Type:",
+                ["Community Center", "Office Building", "Residential Complex", "Cultural Center", "Educational Facility", "Custom Project"],
+                help="Select the type of architectural project you're working on"
+            )
+            
+            skill_level = st.selectbox(
+                "🎯 Your Skill Level:",
+                ["beginner", "intermediate", "advanced"],
+                index=1,
+                help="This helps tailor the assessment to your experience level"
+            )
+        
+        with col2:
+            project_description = st.text_area(
+                "📝 Project Description:",
+                placeholder="Describe your architectural project, site context, requirements, and goals...",
+                height=100,
+                help="Provide details about your project to enable personalized assessment"
+            )
+            
+            if st.button("🚀 Start Phase Assessment", type="primary", use_container_width=True):
+                if project_description.strip():
+                    # Initialize phase session
+                    session_id = f"phase_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                    st.session_state.phase_session_id = session_id
+                    st.session_state.phase_system.start_session(session_id)
+                    st.success("✅ Phase assessment session started!")
+                    st.rerun()
+                else:
+                    st.error("📝 Please provide a project description to start assessment")
+        
+        # Phase progression interface
+        if st.session_state.phase_session_id:
+            st.markdown("---")
+            st.markdown("### 🎯 Phase Assessment")
+            
+            # Get current session state
+            session = st.session_state.phase_system.sessions.get(st.session_state.phase_session_id)
+            
+            if session:
+                # Display current phase and progress
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.markdown(f"**📍 Current Phase:** {session.current_phase.value.title()}")
+                    phase_progress = session.phase_progress.get(session.current_phase)
+                    if phase_progress:
+                        completed_steps = len(phase_progress.completed_steps)
+                        total_steps = 4
+                        progress_percent = (completed_steps / total_steps) * 100
+                        st.progress(progress_percent / 100)
+                        st.caption(f"Step {completed_steps + 1} of {total_steps}")
+                
+                with col2:
+                    st.markdown(f"**📊 Overall Score:** {session.overall_score:.2f}/5.0")
+                    if session.overall_score > 0:
+                        st.metric("Average Score", f"{session.overall_score:.2f}")
+                
+                with col3:
+                    # Phase weights display
+                    weights = {"Ideation": "25%", "Visualization": "35%", "Materialization": "40%"}
+                    st.markdown("**⚖️ Phase Weights:**")
+                    for phase, weight in weights.items():
+                        st.caption(f"{phase}: {weight}")
+                
+                # Get next question
+                next_question = st.session_state.phase_system.get_next_question(st.session_state.phase_session_id)
+                
+                if next_question:
+                    st.markdown("---")
+                    st.markdown("### 🤔 Socratic Question")
+                    
+                    # Display question with context
+                    st.markdown(
+                        f"""
+                    <div class="info-tile">
+                        <h4 style="color: var(--primary-purple); margin-bottom: 10px;">{next_question.step.value.replace('_', ' ').title()}</h4>
+                        <p style="color: var(--primary-dark); font-size: 16px; line-height: 1.6;">{next_question.question_text}</p>
+                        <p style="color: #6b6b6b; font-size: 12px; margin-top: 10px;">
+                            <strong>Phase:</strong> {next_question.phase.value.title()} |
+                            <strong>Keywords:</strong> {', '.join(next_question.keywords[:3])}...
+                        </p>
+                    </div>
+                    """,
+                        unsafe_allow_html=True,
+                    )
+                    
+                    # Response input
+                    user_response = st.text_area(
+                        "📝 Your Response:",
+                        placeholder="Provide your detailed response to the Socratic question...",
+                        height=150,
+                        help="Be thorough and thoughtful in your response. Consider multiple perspectives and provide specific examples."
+                    )
+                    
+                    col1, col2 = st.columns([3, 1])
+                    
+                    with col1:
+                        if st.button("📤 Submit Response", type="primary", use_container_width=True):
+                            if user_response.strip():
+                                # Process response
+                                result = st.session_state.phase_system.process_response(st.session_state.phase_session_id, user_response)
+                                
+                                if "error" not in result:
+                                    # Display grading results
+                                    st.success("✅ Response submitted and graded!")
+                                    
+                                    # Show grading breakdown
+                                    grade = result['grade']
+                                    col1, col2, col3, col4, col5 = st.columns(5)
+                                    
+                                    with col1:
+                                        st.metric("Completeness", f"{grade['completeness']:.1f}/5.0")
+                                    with col2:
+                                        st.metric("Depth", f"{grade['depth']:.1f}/5.0")
+                                    with col3:
+                                        st.metric("Relevance", f"{grade['relevance']:.1f}/5.0")
+                                    with col4:
+                                        st.metric("Innovation", f"{grade['innovation']:.1f}/5.0")
+                                    with col5:
+                                        st.metric("Technical", f"{grade['technical_understanding']:.1f}/5.0")
+                                    
+                                    # Show feedback
+                                    if grade['strengths']:
+                                        st.markdown("**✅ Strengths:**")
+                                        for strength in grade['strengths'][:3]:
+                                            st.markdown(f"• {strength}")
+                                    
+                                    if grade['weaknesses']:
+                                        st.markdown("**⚠️ Areas for Improvement:**")
+                                        for weakness in grade['weaknesses'][:3]:
+                                            st.markdown(f"• {weakness}")
+                                    
+                                    if grade['recommendations']:
+                                        st.markdown("**💡 Recommendations:**")
+                                        for rec in grade['recommendations'][:3]:
+                                            st.markdown(f"• {rec}")
+                                    
+                                    st.rerun()
+                                else:
+                                    st.error(f"❌ Error: {result['error']}")
+                            else:
+                                st.error("📝 Please provide a response before submitting")
+                    
+                    with col2:
+                        if st.button("🔄 Skip Question", use_container_width=True):
+                            st.info("Question skipped. Moving to next step...")
+                            st.rerun()
+                
+                else:
+                    # Session complete or phase complete
+                    if st.session_state.phase_system._is_session_complete(session):
+                        st.success("🎉 Congratulations! You've completed all phases!")
+                        
+                        # Show final summary
+                        summary = st.session_state.phase_system.get_session_summary(st.session_state.phase_session_id)
+                        
+                        st.markdown("### 📊 Final Assessment Summary")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.metric("Overall Score", f"{summary['overall_score']:.2f}/5.0")
+                            st.metric("Session Duration", f"{summary['session_duration']:.1f} minutes")
+                            st.metric("Total Responses", summary['total_responses'])
+                        
+                        with col2:
+                            st.markdown("**📈 Phase Breakdown:**")
+                            for phase, phase_summary in summary['phase_summaries'].items():
+                                status = "✅" if phase_summary['completed'] else "⏳"
+                                st.markdown(f"{status} {phase.title()}: {phase_summary['average_score']:.2f}/5.0")
+                        
+                        # Export results
+                        if st.button("💾 Export Results", type="primary"):
+                            save_result = st.session_state.phase_system.save_session(st.session_state.phase_session_id)
+                            if "success" in save_result:
+                                st.success(f"✅ Results saved to: {save_result['filename']}")
+                    else:
+                        st.info("🎯 Phase complete! Moving to next phase...")
+                        st.rerun()
+        
+        # Agentic mentor integration
+        if assessment_mode in ["Agentic Mentor", "Combined Mode"]:
+            st.markdown("---")
+            st.markdown("### 🤖 Agentic Mentor Integration")
+            
+            if st.session_state.phase_session_id:
+                st.info("🤖 Agentic mentor is available for additional guidance and cognitive enhancement.")
+                
+                # Agentic mentor chat interface
+                agentic_input = st.text_area(
+                    "🤖 Ask the Agentic Mentor:",
+                    placeholder="Ask for additional guidance, clarification, or cognitive enhancement...",
+                    height=100
+                )
+                
+                if st.button("🤖 Get Agentic Response", use_container_width=True):
+                    if agentic_input.strip():
+                        with st.spinner("🤖 Processing with multi-agent system..."):
+                            try:
+                                # Use the orchestrator for agentic response
+                                response = asyncio.run(self._process_mentor_mode(agentic_input))
+                                
+                                st.markdown("**🤖 Agentic Mentor Response:**")
+                                st.markdown(
+                                    f"""
+                                <div class="info-tile" style="border-left: 5px solid var(--accent-magenta);">
+                                    {response}
+                                </div>
+                                """,
+                                    unsafe_allow_html=True,
+                                )
+                            except Exception as e:
+                                st.error(f"❌ Error: {str(e)}")
+                    else:
+                        st.error("📝 Please provide a question for the agentic mentor")
+            else:
+                st.warning("⏳ Start a phase assessment session to enable agentic mentor integration")
+    
     def render_test_dashboard(self):
         """Render the test dashboard using the full TestDashboard functionality"""
         st.markdown("## 🧪 Test Dashboard")
@@ -1091,7 +1705,6 @@ class UnifiedArchitecturalDashboard:
         
         # Data collection settings
         st.checkbox("Enable Data Collection", value=True, key="enable_data_collection")
-        st.checkbox("Enable Benchmarking", value=True, key="enable_benchmarking")
         st.checkbox("Enable Test Mode", value=True, key="enable_test_mode")
         
         # Export settings
@@ -1101,20 +1714,29 @@ class UnifiedArchitecturalDashboard:
     
     def run(self):
         """Main run method"""
-        # Render sidebar and get current page
-        current_page = self.render_sidebar()
-        
-        # Render main content based on page
-        if current_page == "Main Chat":
-            self.render_main_chat()
-        elif current_page == "Test Dashboard":
-            self.render_test_dashboard()
-        elif current_page == "Benchmarking Dashboard":
-            self.render_benchmarking_dashboard()
-        elif current_page == "Test Results":
-            self.render_test_results()
-        elif current_page == "Settings":
-            self.render_settings()
+        # Single combined flow
+        self.render_sidebar()
+        self.render_main_chat()
+
+    def _render_inline_pretest(self):
+        """Inline pre-test section from test dashboard to keep one-tab flow."""
+        try:
+            from thesis_tests.assessment_tools import PreTestAssessment
+            if 'pre_test_component' not in st.session_state:
+                st.session_state.pre_test_component = PreTestAssessment()
+
+            # Render Pre-Test controls in the sidebar instead of main chat
+            with st.sidebar:
+                st.markdown("### 🧪 Pre-Test (optional)")
+                with st.expander("Show/Hide Pre-Test", expanded=False):
+                    comp = st.session_state.pre_test_component
+                    comp.render_critical_thinking_questions()
+                    comp.render_architectural_knowledge_questions()
+                    comp.render_spatial_reasoning_questions()
+                    if st.button("Save Pre-Test Responses", key="save_pretest_sidebar"):
+                        st.success("Pre-test responses saved for this session.")
+        except Exception as e:
+            st.info("Pre-test tools unavailable. Skipping pre-test section.")
 
 def main():
     """Main function"""

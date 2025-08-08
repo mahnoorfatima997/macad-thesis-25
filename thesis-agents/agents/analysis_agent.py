@@ -15,7 +15,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from vision.sketch_analyzer import SketchAnalyzer
 from state_manager import ArchMentorState, StudentProfile, VisualArtifact
 from knowledge_base.knowledge_manager import KnowledgeManager
-from phase_management.milestone_questions import MilestoneType
+from conversation_progression import ConversationProgressionManager
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 class AnalysisAgent:
     def __init__(self, domain="architecture"):
@@ -28,6 +29,9 @@ class AnalysisAgent:
         # Initialize phase detection parameters
         self.phase_indicators = self._initialize_phase_indicators()
         self.phase_weights = self._initialize_phase_weights()
+        
+        # 0708-Initialize conversation progression manager
+        self.conversation_progression = ConversationProgressionManager(domain)
         
         print(f"🔍 {self.name} initialized for domain: {domain}")
     
@@ -228,8 +232,8 @@ class AnalysisAgent:
             return analysis_result
 
 
-    async def process(self, state: ArchMentorState, context_package: Dict = None) -> Dict[str, Any]:
-        """Main analysis processing with dynamic skill assessment and phase detection"""
+    async def process(self, state: ArchMentorState, context_package: Dict = None) -> AgentResponse:
+        """Main analysis processing with dynamic skill assessment and phase detection - now returns AgentResponse"""
         
         print(f"\n🚀 {self.name} starting analysis...")
         
@@ -249,7 +253,7 @@ class AnalysisAgent:
         phase_analysis = self.detect_design_phase(state)
         print(f"🎯 Phase detection complete: {phase_analysis['phase']} (confidence: {phase_analysis['confidence']:.2f})")
         
-        # INITIALIZE ANALYSIS RESULT
+        # INITIALIZE ANALYSIS RESULT (preserve original structure for backward compatibility)
         analysis_result = {
             "agent": self.name,
             "domain": self.domain,
@@ -326,7 +330,38 @@ class AnalysisAgent:
             analysis_result = self.incorporate_context_insights(analysis_result, context_package)
             print("🔗 Incorporated context insights for continuity")
         
-        return analysis_result
+        # CONVERT TO STANDARDIZED RESPONSE FORMAT
+        # Create cognitive enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(analysis_result, state)
+        
+        # Convert cognitive flags to standardized format
+        cognitive_flags_standardized = self._convert_cognitive_flags(cognitive_flags)
+        
+        # Create response text from analysis
+        response_text = self._generate_response_text(analysis_result)
+        
+        # Create standardized response while preserving original data
+        response = ResponseBuilder.create_analysis_response(
+            response_text=response_text,
+            cognitive_flags=cognitive_flags_standardized,
+            enhancement_metrics=enhancement_metrics,
+            quality_score=analysis_result["confidence_score"],
+            confidence_score=phase_analysis.get("confidence", 0.5),
+            metadata={
+                # Preserve all original data for backward compatibility
+                "original_analysis_result": analysis_result,
+                "phase_analysis": phase_analysis,
+                "skill_assessment": analysis_result["skill_assessment"],
+                "visual_analysis": analysis_result["visual_analysis"],
+                "text_analysis": analysis_result["text_analysis"],
+                "synthesis": analysis_result["synthesis"],
+                "cognitive_flags": cognitive_flags,  # Original format
+                "knowledge_enhanced": analysis_result.get("knowledge_enhanced", {}),
+                "context_package": context_package
+            }
+        )
+        
+        return response
     
     async def enhance_with_knowledge(self, visual_analysis: Dict, design_brief: str) -> Dict:
         """Enhance visual analysis with relevant knowledge"""
@@ -1003,7 +1038,7 @@ class AnalysisAgent:
         }
     
     def _analyze_phase_progression(self, state: ArchMentorState, current_phase: str) -> Dict[str, Any]:
-        """Analyze progression within the current phase using the new milestone-based system"""
+        """Analyze progression within the current phase (milestones removed)"""
         
         try:
             # Import the new progress management system
@@ -1011,196 +1046,34 @@ class AnalysisAgent:
             import os
             sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
             
-            from phase_management.progress_manager import ProgressManager
-            from phase_management.milestone_questions import MilestoneType
+            # Milestone-based system removed; fall back to conversation-based progression
             
             # Get or create progress manager
-            progress_manager = getattr(state, 'progress_manager', None)
-            if not progress_manager:
-                progress_manager = ProgressManager()
-                state.progress_manager = progress_manager
+            # Removed progress manager usage
             
             # Get or create student profile
             student_id = getattr(state, 'student_id', 'default_student')
             project_name = getattr(state, 'project_name', 'Architectural Project')
             
-            profile = progress_manager.get_assessment_profile(student_id)
-            if not profile:
-                profile = progress_manager.create_assessment_profile(student_id, project_name)
+            # Removed profile handling
             
             # Get current phase progress
-            current_phase_progress = profile.phases.get(current_phase)
-            if not current_phase_progress:
-                # Fallback to old method if phase not found
-                return self._fallback_phase_progression(state, current_phase)
+            # Always use fallback progression without milestones
+            return self._fallback_phase_progression(state, current_phase)
             
             # HYBRID APPROACH: Analyze conversation for milestone content + detect completions
             user_messages = [msg for msg in state.messages if msg.get('role') == 'user']
             
             # Analyze recent messages for milestone content
-            milestone_detection = self._detect_milestone_content(user_messages, current_phase, progress_manager, student_id)
-            
-            # Update progress manager with detected milestone completions
-            self._update_milestone_progress_from_conversation(milestone_detection, progress_manager, student_id, current_phase)
+            # Milestone detection removed
             
             # Get student assessment profile for detailed grading metrics
-            try:
-                # Import progress manager for detailed assessment
-                import sys
-                import os
-                sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-                
-                from phase_management.progress_manager import ProgressManager
-                
-                # Get or create progress manager
-                progress_manager = ProgressManager()
-                student_id = f"student_{hash(str(state.messages))}"  # Simple ID generation
-                
-                # Get assessment profile
-                assessment_profile = progress_manager.load_assessment_profile(student_id)
-                if not assessment_profile:
-                    assessment_profile = progress_manager.create_assessment_profile(student_id)
-                
-                                    # Calculate progression based on actual milestone completion and grades
-                    current_phase_assessment = assessment_profile.phases.get(current_phase)
-                    if current_phase_assessment:
-                        # Use actual milestone completion and grades
-                        completed_milestones = sum(1 for milestone in current_phase_assessment.milestones.values() 
-                                                 if milestone.completion_percentage > 0.7)  # 70% threshold
-                        total_milestones = len(current_phase_assessment.milestones)
-                        
-                        # Calculate average grade for completed milestones
-                        completed_grades = [milestone.average_grade for milestone in current_phase_assessment.milestones.values() 
-                                          if milestone.completion_percentage > 0.7]
-                        average_grade = sum(completed_grades) / len(completed_grades) if completed_grades else 0
-                        
-                        # Apply benchmarking formulas for comprehensive assessment
-                        
-                        # 1. Cognitive Offloading Prevention (COP) - 15%
-                        non_direct_queries = sum(1 for msg in user_messages 
-                                               if any(word in msg.get('content', '').lower() 
-                                                     for word in ['how', 'why', 'what if', 'explain', 'analyze']))
-                        total_queries = len(user_messages)
-                        cop_score = (non_direct_queries / total_queries) if total_queries > 0 else 0
-                        cop_factor = cop_score * 0.15
-                        
-                        # 2. Deep Thinking Engagement (DTE) - 15%
-                        response_complexity = np.mean([len(msg.get('content', '').split()) for msg in user_messages])
-                        reflection_indicators = sum(1 for msg in user_messages 
-                                                  if any(word in msg.get('content', '').lower() 
-                                                        for word in ['think', 'consider', 'maybe', 'perhaps', 'could']))
-                        dte_score = min((response_complexity * reflection_indicators) / max(total_queries, 1), 1.0)
-                        dte_factor = dte_score * 0.15
-                        
-                        # 3. Knowledge Integration (KI) - 15%
-                        architectural_terms = sum(1 for msg in user_messages 
-                                                if any(term in msg.get('content', '').lower() 
-                                                      for term in ['circulation', 'lighting', 'spatial', 'form', 'function', 'context']))
-                        ki_score = min(architectural_terms / max(total_queries, 1), 1.0)
-                        ki_factor = ki_score * 0.15
-                        
-                        # 4. Learning Progression (LP) - 20%
-                        # Base progression from milestone completion
-                        milestone_progression = (completed_milestones / total_milestones) if total_milestones > 0 else 0
-                        lp_factor = milestone_progression * 0.20
-                        
-                        # 5. Quality factor from grades (15%)
-                        quality_factor = (average_grade / 100.0) * 0.15
-                        
-                        # 6. Engagement factor (20%)
-                        engagement_factor = min(len(user_messages) * 0.02, 0.20)  # 2% per question, max 20%
-                        
-                        # Combine all factors for comprehensive progression
-                        progression_score = min(cop_factor + dte_factor + ki_factor + lp_factor + quality_factor + engagement_factor, 1.0)
-                    
-                    # Store detailed metrics for UI display
-                    detailed_metrics = {
-                        'completed_milestones': completed_milestones,
-                        'total_milestones': total_milestones,
-                        'average_grade': average_grade,
-                        'milestone_progression': lp_factor * 100,
-                        'quality_factor': quality_factor * 100,
-                        'engagement_factor': engagement_factor * 100,
-                        # Benchmarking metrics
-                        'cop_score': cop_score * 100,
-                        'dte_score': dte_score * 100,
-                        'ki_score': ki_score * 100,
-                        'cop_factor': cop_factor * 100,
-                        'dte_factor': dte_factor * 100,
-                        'ki_factor': ki_factor * 100,
-                        'assessment_profile': assessment_profile
-                    }
-                    
-                else:
-                    # Fallback to conversation-based progression
-                    progression_score = min(len(user_messages) * 0.05, 1.0)  # 5% per question
-                    detailed_metrics = {
-                        'completed_milestones': 0,
-                        'total_milestones': 0,
-                        'average_grade': 0,
-                        'milestone_progression': 0,
-                        'quality_factor': 0,
-                        'engagement_factor': progression_score * 100,
-                        # Benchmarking metrics (fallback)
-                        'cop_score': 0,
-                        'dte_score': 0,
-                        'ki_score': 0,
-                        'cop_factor': 0,
-                        'dte_factor': 0,
-                        'ki_factor': 0,
-                        'assessment_profile': None
-                    }
-                    
-            except Exception as e:
-                # Fallback to simple conversation-based progression
-                progression_score = min(len(user_messages) * 0.05, 1.0)  # 5% per question
-                detailed_metrics = {
-                    'completed_milestones': 0,
-                    'total_milestones': 0,
-                    'average_grade': 0,
-                    'milestone_progression': 0,
-                    'quality_factor': 0,
-                    'engagement_factor': progression_score * 100,
-                    # Benchmarking metrics (fallback)
-                    'cop_score': 0,
-                    'dte_score': 0,
-                    'ki_score': 0,
-                    'cop_factor': 0,
-                    'dte_factor': 0,
-                    'ki_factor': 0,
-                    'assessment_profile': None
-                }
-            
-            # Estimate phase duration based on milestone completion
-            completed_milestones = sum(1 for assessment in current_phase_progress.milestones.values() 
-                                     if assessment.is_complete)
-            total_milestones = len(current_phase_progress.milestones)
-            phase_completion_ratio = completed_milestones / total_milestones if total_milestones > 0 else 0
-            
-            # Estimate duration (simplified - could be enhanced with actual time tracking)
+            # Fallback to simple conversation-based progression
+            progression_score = min(len(user_messages) * 0.05, 1.0)  # 5% per question
             estimated_duration = len(user_messages) * 2
-            
             return {
                 "progression_score": progression_score,
-                "phase_duration": estimated_duration,
-                "milestone_completion": phase_completion_ratio,
-                "completed_milestones": detailed_metrics['completed_milestones'],
-                "total_milestones": detailed_metrics['total_milestones'],
-                "next_milestone": current_phase_progress.next_milestone.value if current_phase_progress.next_milestone else None,
-                "phase_recommendations": current_phase_progress.phase_recommendations,
-                # Detailed grading metrics
-                "average_grade": detailed_metrics['average_grade'],
-                "milestone_progression": detailed_metrics['milestone_progression'],
-                "quality_factor": detailed_metrics['quality_factor'],
-                "engagement_factor": detailed_metrics['engagement_factor'],
-                # Benchmarking metrics
-                "cop_score": detailed_metrics['cop_score'],
-                "dte_score": detailed_metrics['dte_score'],
-                "ki_score": detailed_metrics['ki_score'],
-                "cop_factor": detailed_metrics['cop_factor'],
-                "dte_factor": detailed_metrics['dte_factor'],
-                "ki_factor": detailed_metrics['ki_factor'],
-                "assessment_profile": detailed_metrics['assessment_profile']
+                "phase_duration": estimated_duration
             }
             
         except ImportError as e:
@@ -1309,234 +1182,159 @@ class AnalysisAgent:
         all_text = ' '.join(messages).lower()
         matches = sum(1 for indicator in indicators if indicator in all_text)
         return matches / len(indicators)
+    #0708-UPDATED
+    # Milestone detection removed
     
-    def _detect_milestone_content(self, user_messages: List[Dict], current_phase: str, progress_manager, student_id: str) -> Dict[str, Any]:
-        """Detect milestone content in user messages and assess completion"""
+    # Milestone update removed
+    
+    # Milestone question generation removed
+    
+    # Milestone question templates removed
+#0708-ADDED
+    def integrate_conversation_progression(self, state: ArchMentorState, user_input: str, current_response: str) -> Dict[str, Any]:
+        """Integrate conversation progression analysis with architectural milestone analysis"""
         
-        from phase_management.milestone_questions import MilestoneType
+        # Get conversation progression analysis
+        progression_analysis = self.conversation_progression.progress_conversation(user_input, current_response, state)
         
-        # Define milestone keywords and content indicators for each milestone
-        milestone_indicators = {
-            MilestoneType.SITE_ANALYSIS: {
-                'keywords': ['site', 'location', 'context', 'surroundings', 'environment', 'climate', 'orientation', 'views', 'access'],
-                'concepts': ['site analysis', 'contextual understanding', 'environmental factors', 'site constraints', 'opportunities'],
-                'threshold': 3  # Need 3+ indicators to consider milestone addressed
-            },
-            MilestoneType.PROGRAM_REQUIREMENTS: {
-                'keywords': ['program', 'requirements', 'needs', 'functions', 'spaces', 'rooms', 'activities', 'users', 'occupants'],
-                'concepts': ['program development', 'functional requirements', 'user needs', 'space requirements', 'activity analysis'],
-                'threshold': 3
-            },
-            MilestoneType.CONCEPT_DEVELOPMENT: {
-                'keywords': ['concept', 'idea', 'approach', 'strategy', 'vision', 'philosophy', 'concept development', 'design approach'],
-                'concepts': ['conceptual thinking', 'design strategy', 'approach development', 'philosophical framework'],
-                'threshold': 2
-            },
-            MilestoneType.SPATIAL_ORGANIZATION: {
-                'keywords': ['spatial', 'organization', 'layout', 'arrangement', 'planning', 'zoning', 'relationships', 'adjacencies'],
-                'concepts': ['spatial organization', 'layout planning', 'functional zoning', 'spatial relationships'],
-                'threshold': 3
-            },
-            MilestoneType.CIRCULATION_DESIGN: {
-                'keywords': ['circulation', 'movement', 'flow', 'paths', 'corridors', 'stairs', 'elevators', 'accessibility'],
-                'concepts': ['circulation design', 'movement patterns', 'accessibility', 'flow planning'],
-                'threshold': 3
-            },
-            MilestoneType.FORM_DEVELOPMENT: {
-                'keywords': ['form', 'shape', 'massing', 'volume', 'geometry', 'aesthetics', 'appearance', 'expression'],
-                'concepts': ['form development', 'massing studies', 'geometric exploration', 'aesthetic expression'],
-                'threshold': 2
-            },
-            MilestoneType.LIGHTING_STRATEGY: {
-                'keywords': ['lighting', 'light', 'natural light', 'artificial light', 'illumination', 'daylight', 'shadows'],
-                'concepts': ['lighting strategy', 'natural lighting', 'artificial lighting', 'lighting design'],
-                'threshold': 2
-            },
-            MilestoneType.CONSTRUCTION_SYSTEMS: {
-                'keywords': ['construction', 'structure', 'materials', 'building systems', 'structural', 'assembly'],
-                'concepts': ['construction systems', 'structural design', 'material selection', 'building assembly'],
-                'threshold': 3
-            },
-            MilestoneType.MATERIAL_SELECTION: {
-                'keywords': ['materials', 'material', 'finishes', 'texture', 'color', 'durability', 'sustainability'],
-                'concepts': ['material selection', 'finish specification', 'material properties', 'sustainability'],
-                'threshold': 2
-            },
-            MilestoneType.TECHNICAL_DETAILS: {
-                'keywords': ['details', 'technical', 'specifications', 'construction details', 'junctions', 'connections'],
-                'concepts': ['technical detailing', 'construction details', 'specification', 'detail design'],
-                'threshold': 2
-            },
-            MilestoneType.PRESENTATION_PREP: {
-                'keywords': ['presentation', 'communication', 'drawings', 'renderings', 'documentation', 'visualization'],
-                'concepts': ['presentation preparation', 'communication strategy', 'visual documentation'],
-                'threshold': 2
-            },
-            MilestoneType.DOCUMENTATION: {
-                'keywords': ['documentation', 'drawings', 'plans', 'sections', 'elevations', 'specifications', 'contract documents'],
-                'concepts': ['documentation', 'drawing preparation', 'contract documents', 'specifications'],
-                'threshold': 3
-            }
+        # Get current conversation milestone
+        current_milestone = self.conversation_progression.get_current_milestone()
+        
+        # Assess milestone completion
+        milestone_assessment = self.conversation_progression.assess_milestone_completion(user_input, current_response, state)
+        
+        # Get milestone-driven agent guidance
+        agent_guidance = self.conversation_progression.get_milestone_driven_agent_guidance(user_input, state)
+        
+        return {
+            "conversation_progression": progression_analysis,
+            "current_milestone": current_milestone,
+            "milestone_assessment": milestone_assessment,
+            "agent_guidance": agent_guidance,
+            "progression_manager": self.conversation_progression
+        }
+
+    def _calculate_enhancement_metrics(self, analysis_result: Dict, state: ArchMentorState) -> EnhancementMetrics:
+        """Calculate cognitive enhancement metrics for the analysis"""
+        
+        # Calculate metrics based on analysis quality and cognitive flags
+        cognitive_flags = analysis_result.get("cognitive_flags", [])
+        phase_analysis = analysis_result.get("phase_analysis", {})
+        skill_assessment = analysis_result.get("skill_assessment", {})
+        
+        # Cognitive offloading prevention score
+        # Higher score if analysis identifies specific cognitive challenges
+        cognitive_challenges = analysis_result.get("synthesis", {}).get("cognitive_challenges", [])
+        cop_score = min(len(cognitive_challenges) * 0.2, 1.0)
+        
+        # Deep thinking engagement score
+        # Higher score if analysis provides detailed insights
+        synthesis_quality = len(analysis_result.get("synthesis", {}).get("learning_opportunities", []))
+        dte_score = min(synthesis_quality * 0.15, 1.0)
+        
+        # Knowledge integration score
+        # Higher score if knowledge base was used
+        knowledge_enhanced = analysis_result.get("knowledge_enhanced", {}).get("knowledge_enhanced", False)
+        ki_score = 0.8 if knowledge_enhanced else 0.3
+        
+        # Scaffolding effectiveness score
+        # Higher score if analysis identifies specific learning opportunities
+        learning_opportunities = analysis_result.get("synthesis", {}).get("learning_opportunities", [])
+        scaffolding_score = min(len(learning_opportunities) * 0.2, 1.0)
+        
+        # Learning progression score
+        # Based on phase progression and skill assessment
+        phase_progression = phase_analysis.get("progression_score", 0.5)
+        skill_confidence = skill_assessment.get("confidence", 0.5)
+        learning_progression = (phase_progression + skill_confidence) / 2
+        
+        # Metacognitive awareness score
+        # Based on cognitive flags that indicate self-reflection
+        metacognitive_flags = [flag for flag in cognitive_flags if "reflection" in flag or "awareness" in flag]
+        metacognitive_score = min(len(metacognitive_flags) * 0.3, 1.0)
+        
+        # Overall cognitive score
+        overall_score = (cop_score + dte_score + ki_score + scaffolding_score + learning_progression + metacognitive_score) / 6
+        
+        # Scientific confidence
+        # Based on analysis confidence and phase detection confidence
+        analysis_confidence = analysis_result.get("confidence_score", 0.5)
+        phase_confidence = phase_analysis.get("confidence", 0.5)
+        scientific_confidence = (analysis_confidence + phase_confidence) / 2
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cop_score,
+            deep_thinking_engagement_score=dte_score,
+            knowledge_integration_score=ki_score,
+            scaffolding_effectiveness_score=scaffolding_score,
+            learning_progression_score=learning_progression,
+            metacognitive_awareness_score=metacognitive_score,
+            overall_cognitive_score=overall_score,
+            scientific_confidence=scientific_confidence
+        )
+    
+    def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
+        """Convert cognitive flags to standardized format"""
+        
+        flag_mapping = {
+            "needs_circulation_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_lighting_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_material_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_acoustic_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_accessibility_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_sustainability_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_structural_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_programming_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_spatial_thinking_support": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "needs_brief_clarification": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_technical_guidance": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_design_strategy_guidance": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "stuck_on_topic": CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED,
+            "showing_growth": CognitiveFlag.LEARNING_PROGRESSION,
+            "engagement_declining": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "engagement_improving": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "responding_to_question": CognitiveFlag.ENGAGEMENT_MAINTAINED
         }
         
-        # Get current phase milestones
-        phase_milestones = progress_manager.phase_structure.get(current_phase, {}).get('milestones', [])
+        converted_flags = []
+        for flag in cognitive_flags:
+            if flag in flag_mapping:
+                converted_flags.append(flag_mapping[flag])
+            else:
+                # Default to scaffolding for unknown flags
+                converted_flags.append(CognitiveFlag.SCAFFOLDING_PROVIDED)
         
-        detection_results = {}
-        
-        for milestone in phase_milestones:
-            if milestone not in milestone_indicators:
-                continue
-                
-            indicators = milestone_indicators[milestone]
-            threshold = indicators['threshold']
-            
-            # Analyze user messages for milestone content
-            keyword_count = 0
-            concept_count = 0
-            detailed_responses = 0
-            
-            for msg in user_messages:
-                content = msg.get('content', '').lower()
-                
-                # Count keyword matches
-                for keyword in indicators['keywords']:
-                    if keyword in content:
-                        keyword_count += 1
-                
-                # Count concept matches
-                for concept in indicators['concepts']:
-                    if concept in content:
-                        concept_count += 1
-                
-                # Check for detailed responses (longer, more thoughtful)
-                if len(content.split()) > 20:  # Detailed response threshold
-                    detailed_responses += 1
-            
-            # Calculate completion score
-            total_indicators = keyword_count + concept_count + detailed_responses
-            completion_score = min(total_indicators / threshold, 1.0)
-            
-            # Determine if milestone is sufficiently addressed
-            is_addressed = completion_score >= 0.7  # 70% threshold
-            
-            detection_results[milestone] = {
-                'completion_score': completion_score,
-                'is_addressed': is_addressed,
-                'keyword_count': keyword_count,
-                'concept_count': concept_count,
-                'detailed_responses': detailed_responses,
-                'total_indicators': total_indicators,
-                'threshold': threshold
-            }
-        
-        return detection_results
+        return converted_flags
     
-    def _update_milestone_progress_from_conversation(self, milestone_detection: Dict, progress_manager, student_id: str, current_phase: str):
-        """Update progress manager with detected milestone completions"""
+    def _generate_response_text(self, analysis_result: Dict) -> str:
+        """Generate response text from analysis results"""
         
-        from phase_management.milestone_questions import MilestoneType
-        from phase_management.progress_manager import GradingResult
+        phase_analysis = analysis_result.get("phase_analysis", {})
+        skill_assessment = analysis_result.get("skill_assessment", {})
+        synthesis = analysis_result.get("synthesis", {})
         
-        # Get current phase milestones
-        phase_milestones = progress_manager.phase_structure.get(current_phase, {}).get('milestones', [])
+        response_parts = []
         
-        for milestone in phase_milestones:
-            if milestone not in milestone_detection:
-                continue
-                
-            detection = milestone_detection[milestone]
-            
-            if detection['is_addressed']:
-                # Create a grading result based on detection quality
-                completion_score = detection['completion_score']
-                
-                # Convert completion score to grade (0-100)
-                grade = int(completion_score * 100)
-                
-                # Create grading result
-                grading_result = GradingResult(
-                    completeness=completion_score * 5,  # Convert to 0-5 scale
-                    depth=completion_score * 5,
-                    relevance=completion_score * 5,
-                    innovation=completion_score * 5,
-                    technical_understanding=completion_score * 5,
-                    overall_score=completion_score * 5,
-                    strengths=[f"Demonstrated understanding of {milestone.value.replace('_', ' ')}"],
-                    weaknesses=[],
-                    recommendations=[]
-                )
-                
-                # Record the response in progress manager
-                question_id = f"auto_detected_{milestone.value}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                response_text = f"Automatically detected milestone completion through conversation analysis. Score: {grade}/100"
-                
-                try:
-                    progress_manager.record_response(
-                        student_id=student_id,
-                        milestone=milestone,
-                        question_id=question_id,
-                        response=response_text,
-                        grade=grading_result
-                    )
-                except Exception as e:
-                    print(f"Warning: Could not record milestone response: {e}")
-    
-    def _generate_milestone_question_if_needed(self, state: ArchMentorState, current_phase: str, progress_manager, student_id: str) -> Optional[str]:
-        """Generate a milestone question if needed based on conversation gaps"""
+        # Phase information
+        current_phase = phase_analysis.get("phase", "unknown")
+        phase_confidence = phase_analysis.get("confidence", 0.5)
+        response_parts.append(f"Analysis indicates you're in the {current_phase} phase (confidence: {phase_confidence:.1%})")
         
-        from phase_management.milestone_questions import MilestoneType
+        # Skill assessment
+        detected_level = skill_assessment.get("detected_level", "intermediate")
+        response_parts.append(f"Your current skill level appears to be {detected_level}")
         
-        # Get current phase milestones
-        phase_milestones = progress_manager.phase_structure.get(current_phase, {}).get('milestones', [])
+        # Cognitive challenges
+        cognitive_challenges = synthesis.get("cognitive_challenges", [])
+        if cognitive_challenges:
+            response_parts.append(f"Key areas for focus: {', '.join(cognitive_challenges)}")
         
-        # Check which milestones need attention
-        profile = progress_manager.get_assessment_profile(student_id)
-        if not profile:
-            return None
-            
-        current_phase_progress = profile.phases.get(current_phase)
-        if not current_phase_progress:
-            return None
+        # Learning opportunities
+        learning_opportunities = synthesis.get("learning_opportunities", [])
+        if learning_opportunities:
+            response_parts.append(f"Learning opportunities: {learning_opportunities[0] if learning_opportunities else 'Continue exploring your design'}")
         
-        # Find milestones with low completion
-        low_completion_milestones = []
-        for milestone in phase_milestones:
-            milestone_assessment = current_phase_progress.milestones.get(milestone)
-            if not milestone_assessment or milestone_assessment.completion_percentage < 0.5:
-                low_completion_milestones.append(milestone)
-        
-        if not low_completion_milestones:
-            return None
-        
-        # Select the milestone with lowest completion
-        target_milestone = min(low_completion_milestones, 
-                             key=lambda m: current_phase_progress.milestones.get(m, {}).completion_percentage if current_phase_progress.milestones.get(m) else 0)
-        
-        # Generate a question for this milestone
-        question = self._generate_milestone_question(target_milestone)
-        
-        return question
-    
-    def _generate_milestone_question(self, milestone: MilestoneType) -> str:
-        """Generate a specific question for a milestone"""
-        
-        question_templates = {
-            MilestoneType.SITE_ANALYSIS: "How have you analyzed the site context and environmental factors for your project?",
-            MilestoneType.PROGRAM_REQUIREMENTS: "What are the key functional requirements and user needs for your building?",
-            MilestoneType.CONCEPT_DEVELOPMENT: "What is your main design concept or approach for this project?",
-            MilestoneType.SPATIAL_ORGANIZATION: "How are you organizing the spaces and functional relationships in your design?",
-            MilestoneType.CIRCULATION_DESIGN: "How are you designing the movement and circulation patterns?",
-            MilestoneType.FORM_DEVELOPMENT: "How are you developing the form and massing of your building?",
-            MilestoneType.LIGHTING_STRATEGY: "What is your approach to natural and artificial lighting?",
-            MilestoneType.CONSTRUCTION_SYSTEMS: "What construction systems and structural approach are you considering?",
-            MilestoneType.MATERIAL_SELECTION: "What materials and finishes are you planning to use?",
-            MilestoneType.TECHNICAL_DETAILS: "How are you addressing technical details and construction junctions?",
-            MilestoneType.PRESENTATION_PREP: "How are you preparing to communicate your design?",
-            MilestoneType.DOCUMENTATION: "What documentation and drawings are you developing?"
-        }
-        
-        return question_templates.get(milestone, f"Tell me about your approach to {milestone.value.replace('_', ' ')}")
+        return " | ".join(response_parts)
 
 # Test function
 async def test_analysis_agent():

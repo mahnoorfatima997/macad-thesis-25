@@ -10,19 +10,21 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from state_manager import ArchMentorState
+from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 load_dotenv()
 
 class SocraticTutorAgent:
     def __init__(self, domain="architecture"):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.llm = self.client.chat.completions  # Fix LLM reference
         self.domain = domain
         self.name = "socratic_tutor"
         print(f"🤔 {self.name} initialized for domain: {domain}")
     
     #3107 ADDED DOMAIN EXPERT RESULT ONLY
-    async def generate_response(self, state: ArchMentorState, analysis_result: Dict[str, Any], context_classification: Optional[Dict] = None, domain_expert_result: Optional[Dict] = None) -> Dict[str, Any]:
-        """Generate sophisticated Socratic responses with advanced analysis"""
+    async def generate_response(self, state: ArchMentorState, analysis_result: Dict[str, Any], context_classification: Optional[Dict] = None, domain_expert_result: Optional[Dict] = None) -> AgentResponse:
+        """Generate sophisticated Socratic responses with advanced analysis - now returns AgentResponse"""
         
         print(f"\n🤔 {self.name} generating sophisticated Socratic response...")
         
@@ -34,7 +36,8 @@ class SocraticTutorAgent:
                 break
         
         if not last_message:
-            return self._generate_fallback_response()
+            fallback_response = self._generate_fallback_response()
+            return self._convert_to_agent_response(fallback_response, state, analysis_result, context_classification, domain_expert_result)
         
         # 0208 UPDATED: Check if this is a first-time interaction or early in conversation
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
@@ -45,23 +48,56 @@ class SocraticTutorAgent:
         conversation_progression = self._analyze_conversation_progression(state, last_message)
         student_insights = self._extract_student_insights(state, last_message)
         
+        # 0708-MILESTONE-DRIVEN ANALYSIS
+        # Check if we have milestone context from the orchestrator
+        milestone_context = analysis_result.get("milestone_context", {})
+        if milestone_context:
+            print(f"🎯 Milestone Context: {milestone_context.get('milestone_type', 'None')} in {milestone_context.get('phase', 'None')} phase")
+            print(f"🎯 Required Actions: {milestone_context.get('required_actions', [])}")
+            print(f"🎯 Success Criteria: {milestone_context.get('success_criteria', [])}")
+            
+            # Add milestone information to student analysis
+            student_analysis["milestone_context"] = milestone_context
+            student_analysis["milestone_guidance"] = milestone_context.get("agent_guidance", {})
+        
+        # Merge student insights into student analysis for context-aware responses
+        student_analysis.update(student_insights)
+        
         # 3107-BELOW LINE: Check if we have domain expert results (examples) to ask questions about
         # 0108 added before: has_examples = domain_expert_result and domain_expert_result.get("response_text", "")Only consider it has examples if it's not a cognitive protection response
         has_examples = (domain_expert_result and 
                        domain_expert_result.get("response_text", "") and 
                        domain_expert_result.get("response_type") != "cognitive_protection_response")
         
-        # Determine response strategy based on analysis
+        # Determine response strategy based on analysis and milestone context
         response_strategy = self._determine_response_strategy(student_analysis, conversation_progression)
+        
+        # 0708-MILESTONE-AWARE STRATEGY ADJUSTMENT
+        if milestone_context:
+            milestone_type = milestone_context.get("milestone_type", "")
+            if milestone_type == "knowledge_acquisition":
+                response_strategy = "supportive_guidance"  # Focus on knowledge building
+            elif milestone_type == "skill_demonstration":
+                response_strategy = "challenging_question"  # Focus on application
+            elif milestone_type == "insight_formation":
+                response_strategy = "exploratory_question"  # Focus on connections
+            elif milestone_type == "problem_solving":
+                response_strategy = "assumption_challenge"  # Focus on critical thinking
+            elif milestone_type == "reflection_point":
+                response_strategy = "depth_promotion"  # Focus on evaluation
+            elif milestone_type == "readiness_assessment":
+                response_strategy = "clarifying_guidance"  # Focus on assessment
         
         print(f"📊 Student Analysis: {student_analysis}")
         print(f"🔄 Conversation Stage: {conversation_progression['stage']}")
         print(f"💡 Student Insights: {student_insights['key_insights']}")
         print(f"🎯 Response Strategy: {response_strategy}")
+        if milestone_context:
+            print(f"🎯 Milestone Strategy: {milestone_context.get('milestone_type', 'None')} -> {response_strategy}")
         
-        # 0208 UPDATED: For early conversations, prioritize clarification over detailed examples
+        # 0208 UPDATED: For early conversations, use enhanced clarifying guidance
         if is_early_conversation and not has_examples:
-            print("🆕 Early conversation detected - providing clarifying guidance")
+            print("🆕 Early conversation detected - providing enhanced clarifying guidance")
             response_result = await self._generate_clarifying_guidance(state, student_analysis, conversation_progression)
         # 3107-BEFORE IT WAS if response_strategy == "clarifying_guidance": Generate response based on strategy, with special handling for examples
         elif has_examples:
@@ -93,7 +129,168 @@ class SocraticTutorAgent:
             "educational_intent": self._get_educational_intent(response_strategy, student_analysis)
         })
         
-        return response_result
+        # Add cognitive flags to the original response result for backward compatibility
+        cognitive_flags = self._extract_cognitive_flags(response_result, state)
+        response_result["cognitive_flags"] = cognitive_flags
+        
+        # Convert to standardized AgentResponse format
+        return self._convert_to_agent_response(response_result, state, analysis_result, context_classification, domain_expert_result)
+    
+    def _convert_to_agent_response(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict, context_classification: Optional[Dict], domain_expert_result: Optional[Dict]) -> AgentResponse:
+        """Convert the original response to AgentResponse format while preserving all data"""
+        
+        # Calculate enhancement metrics
+        enhancement_metrics = self._calculate_enhancement_metrics(response_result, state, analysis_result)
+        
+        # Convert cognitive flags to standardized format
+        cognitive_flags = self._extract_cognitive_flags(response_result, state)
+        cognitive_flags_standardized = self._convert_cognitive_flags(cognitive_flags)
+        
+        # Create standardized response while preserving original data
+        response = ResponseBuilder.create_socratic_response(
+            response_text=response_result.get("response_text", ""),
+            cognitive_flags=cognitive_flags_standardized,
+            enhancement_metrics=enhancement_metrics,
+            quality_score=response_result.get("quality_score", 0.5),
+            confidence_score=response_result.get("confidence_score", 0.5),
+            metadata={
+                # Preserve all original data for backward compatibility
+                "original_response_result": response_result,
+                "student_analysis": response_result.get("student_analysis", {}),
+                "conversation_progression": response_result.get("conversation_progression", {}),
+                "student_insights": response_result.get("student_insights", {}),
+                "response_strategy": response_result.get("response_strategy", ""),
+                "educational_intent": response_result.get("educational_intent", ""),
+                "analysis_result": analysis_result,
+                "context_classification": context_classification,
+                "domain_expert_result": domain_expert_result,
+                "cognitive_flags": cognitive_flags  # Original format
+            }
+        )
+        
+        return response
+    
+    def _calculate_enhancement_metrics(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict) -> EnhancementMetrics:
+        """Calculate cognitive enhancement metrics for Socratic tutoring"""
+        
+        response_strategy = response_result.get("response_strategy", "")
+        student_analysis = response_result.get("student_analysis", {})
+        conversation_progression = response_result.get("conversation_progression", {})
+        
+        # Cognitive offloading prevention score
+        # Higher score if using challenging questions or assumption challenges
+        challenging_strategies = ["challenging_question", "assumption_challenge", "depth_promotion"]
+        cop_score = 0.8 if response_strategy in challenging_strategies else 0.4
+        
+        # Deep thinking engagement score
+        # Higher score if using exploratory or clarifying questions
+        deep_thinking_strategies = ["exploratory_question", "clarifying_guidance", "adaptive_question"]
+        dte_score = 0.9 if response_strategy in deep_thinking_strategies else 0.6
+        
+        # Knowledge integration score
+        # Based on whether domain expert results were used
+        has_domain_expert = bool(response_result.get("domain_expert_result"))
+        ki_score = 0.8 if has_domain_expert else 0.3
+        
+        # Scaffolding effectiveness score
+        # Higher score for supportive guidance or clarifying guidance
+        scaffolding_strategies = ["supportive_guidance", "clarifying_guidance"]
+        scaffolding_score = 0.9 if response_strategy in scaffolding_strategies else 0.5
+        
+        # Learning progression score
+        # Based on conversation progression and student analysis
+        progression_stage = conversation_progression.get("stage", "early")
+        student_confidence = student_analysis.get("confidence_level", "medium")
+        
+        if progression_stage == "advanced" and student_confidence == "high":
+            learning_progression = 0.9
+        elif progression_stage == "intermediate":
+            learning_progression = 0.7
+        else:
+            learning_progression = 0.5
+        
+        # Metacognitive awareness score
+        # Higher score if using assumption challenges or depth promotion
+        metacognitive_strategies = ["assumption_challenge", "depth_promotion"]
+        metacognitive_score = 0.8 if response_strategy in metacognitive_strategies else 0.4
+        
+        # Overall cognitive score
+        overall_score = (cop_score + dte_score + ki_score + scaffolding_score + learning_progression + metacognitive_score) / 6
+        
+        # Scientific confidence
+        # Based on response quality and strategy effectiveness
+        response_quality = response_result.get("quality_score", 0.5)
+        strategy_confidence = 0.8 if response_strategy in ["challenging_question", "exploratory_question"] else 0.6
+        scientific_confidence = (response_quality + strategy_confidence) / 2
+        
+        return EnhancementMetrics(
+            cognitive_offloading_prevention_score=cop_score,
+            deep_thinking_engagement_score=dte_score,
+            knowledge_integration_score=ki_score,
+            scaffolding_effectiveness_score=scaffolding_score,
+            learning_progression_score=learning_progression,
+            metacognitive_awareness_score=metacognitive_score,
+            overall_cognitive_score=overall_score,
+            scientific_confidence=scientific_confidence
+        )
+    
+    def _extract_cognitive_flags(self, response_result: Dict, state: ArchMentorState) -> List[str]:
+        """Extract cognitive flags from the response and student state"""
+        
+        flags = []
+        response_strategy = response_result.get("response_strategy", "")
+        student_analysis = response_result.get("student_analysis", {})
+        
+        # Add flags based on response strategy
+        if response_strategy == "challenging_question":
+            flags.append("deep_thinking_encouraged")
+        elif response_strategy == "supportive_guidance":
+            flags.append("scaffolding_provided")
+        elif response_strategy == "clarifying_guidance":
+            flags.append("scaffolding_provided")
+        elif response_strategy == "assumption_challenge":
+            flags.append("cognitive_offloading_detected")
+            flags.append("deep_thinking_encouraged")
+        elif response_strategy == "depth_promotion":
+            flags.append("deep_thinking_encouraged")
+        elif response_strategy == "exploratory_question":
+            flags.append("engagement_maintained")
+        
+        # Add flags based on student analysis
+        confidence_level = student_analysis.get("confidence_level", "medium")
+        if confidence_level == "low":
+            flags.append("scaffolding_provided")
+        elif confidence_level == "high":
+            flags.append("deep_thinking_encouraged")
+        
+        # Add engagement flag if student is responding
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        if len(user_messages) > 1:
+            flags.append("engagement_maintained")
+        
+        return flags
+    
+    def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
+        """Convert cognitive flags to standardized format"""
+        
+        flag_mapping = {
+            "deep_thinking_encouraged": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
+            "scaffolding_provided": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "cognitive_offloading_detected": CognitiveFlag.COGNITIVE_OFFLOADING_DETECTED,
+            "engagement_maintained": CognitiveFlag.ENGAGEMENT_MAINTAINED,
+            "learning_progression": CognitiveFlag.LEARNING_PROGRESSION,
+            "metacognitive_awareness": CognitiveFlag.METACOGNITIVE_AWARENESS
+        }
+        
+        converted_flags = []
+        for flag in cognitive_flags:
+            if flag in flag_mapping:
+                converted_flags.append(flag_mapping[flag])
+            else:
+                # Default to scaffolding for unknown flags
+                converted_flags.append(CognitiveFlag.SCAFFOLDING_PROVIDED)
+        
+        return converted_flags
     
     def _analyze_student_state(self, state: ArchMentorState, analysis_result: Dict, context_classification: Optional[Dict]) -> Dict[str, Any]:
         """Analyze student's current learning state and confidence"""
@@ -168,23 +365,34 @@ class SocraticTutorAgent:
         }
     
     def _extract_student_insights(self, state: ArchMentorState, current_message: str) -> Dict[str, Any]:
-        """Extract key insights from student's responses"""
+        """Extract key insights from student's responses with better conversation context understanding"""
         
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
         
-        # Use AI to extract insights
+        # Get the last few messages for context
+        recent_messages = user_messages[-3:] if len(user_messages) >= 3 else user_messages
+        
+        # Use AI to extract insights with conversation context awareness
         prompt = f"""
         Analyze these architecture student messages and extract key insights about their understanding and approach:
         
-        MESSAGES: {user_messages}
+        RECENT MESSAGES: {recent_messages}
         CURRENT MESSAGE: "{current_message}"
         
+        CRITICAL CONTEXT: This is a conversation - the student is responding to previous questions/guidance. Do not treat their message as a new topic. Build on what they've already shared.
+        
         Extract:
-        1. Key insights about their design thinking
-        2. Areas where they show understanding
-        3. Potential misconceptions or gaps
+        1. Key insights about their design thinking and understanding
+        2. Areas where they show understanding or progress
+        3. Potential misconceptions or gaps in understanding
         4. Their design priorities and values
         5. Learning style indicators
+        6. Whether they're responding to previous guidance or asking something new
+        7. Specific details they've shared about their project (user groups, activities, challenges, etc.)
+        8. What specific question or guidance they're responding to
+        9. How their current message builds on previous conversation
+        
+        Focus on understanding their current level of understanding and what they need next, not repeating what they said.
         
         Return as a structured analysis.
         """
@@ -202,7 +410,9 @@ class SocraticTutorAgent:
             return {
                 "key_insights": insights_analysis,
                 "message_count": len(user_messages),
-                "current_focus": self._identify_current_focus(current_message)
+                "current_focus": self._identify_current_focus(current_message),
+                "last_message": current_message,  # Add this for context in other methods
+                "is_conversation_response": len(user_messages) > 1  # Flag if this is a response to previous guidance
             }
             
         except Exception as e:
@@ -210,11 +420,21 @@ class SocraticTutorAgent:
             return {
                 "key_insights": "Unable to extract insights",
                 "message_count": len(user_messages),
-                "current_focus": "general inquiry"
+                "current_focus": "general inquiry",
+                "last_message": current_message,
+                "is_conversation_response": len(user_messages) > 1
             }
     
     def _determine_response_strategy(self, student_analysis: Dict, conversation_progression: Dict) -> str:
-        """Enhanced response strategy determination with cognitive protection focus"""
+        """Enhanced response strategy determination with better handling of detailed project briefs"""
+        
+        # Check if this is a detailed project brief (long message with comprehensive information)
+        last_message = student_analysis.get("last_message", "")
+        message_length = len(last_message.split())
+        
+        # If it's a detailed project brief (long message), use supportive guidance with focused questions
+        if message_length > 100:  # Comprehensive project brief
+            return "supportive_guidance"  # Acknowledge the detailed information and ask focused follow-ups
         
         # COGNITIVE OFFLOADING PROTECTION
         if student_analysis.get("shows_overconfidence") and student_analysis.get("engagement_level") == "low":
@@ -239,7 +459,7 @@ class SocraticTutorAgent:
         return "adaptive_question"  # Default adaptive approach
     
     async def _generate_clarifying_guidance(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
-        """Generate clarifying guidance that builds understanding without giving answers"""
+        """Generate specific clarifying guidance that provides concrete architectural direction"""
         
         building_type = self._extract_building_type_from_context(state)
         
@@ -250,18 +470,25 @@ class SocraticTutorAgent:
                 last_message = msg['content']
                 break
         
-        # Extract the main topic the user is asking about
-        main_topic = self._extract_main_topic(last_message)
+        # Check if this is a detailed project brief
+        message_length = len(last_message.split())
+        is_detailed_brief = message_length > 100
         
-        # Check if user has already specified a focus area within that topic
-        user_specified_focus = self._extract_user_specified_focus(last_message)
-        
-        # If user has already specified a focus, move to the next level of exploration
-        if user_specified_focus:
-            response_text = self._generate_focused_exploration_question(user_specified_focus, building_type, main_topic)
+        if is_detailed_brief:
+            # For detailed project briefs, provide concise acknowledgment and focused follow-up
+            response_text = self._get_supportive_architectural_guidance("project_brief", building_type, student_analysis)
         else:
-            # Generate dynamic topic-specific guidance
-            response_text = await self._generate_dynamic_topic_guidance(main_topic, building_type, last_message)
+            # Extract the main topic the user is asking about
+            main_topic = self._extract_main_topic(last_message)
+            
+            # Check if user has already specified a focus area within that topic
+            user_specified_focus = self._extract_user_specified_focus(last_message)
+            
+            # Generate specific architectural guidance based on the topic
+            if user_specified_focus:
+                response_text = self._generate_specific_architectural_guidance(user_specified_focus, building_type, main_topic, student_analysis, last_message)
+            else:
+                response_text = await self._generate_topic_specific_guidance(main_topic, building_type, last_message, student_analysis)
         
         return {
             "agent": self.name,
@@ -272,100 +499,321 @@ class SocraticTutorAgent:
             "conversation_progression": conversation_progression
         }
     
-    async def _generate_supportive_guidance(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
-        """Generate supportive guidance for students with low understanding"""
+    def _generate_specific_architectural_guidance(self, focus_area: str, building_type: str, main_topic: str, student_analysis: Dict = None, last_message: str = "") -> str:
+        """Generate specific architectural guidance using LLM for any building type"""
         
-        building_type = self._extract_building_type_from_context(state)
+        # Extract key context from student analysis and last message
+        context_info = ""
+        if student_analysis and last_message:
+            context_info = f"""
+            STUDENT CONTEXT: {last_message}
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            """
         
+        # Use LLM to generate context-aware guidance instead of hardcoded templates
         prompt = f"""
-        The student has low understanding and needs supportive guidance. Provide encouraging, educational guidance.
+        You are an expert architectural mentor helping a student design a {building_type}.
+        The student is asking about {focus_area} in the context of {main_topic}.
         
-        STUDENT STATE: {student_analysis}
-        CONVERSATION STAGE: {conversation_progression['stage']}
-        BUILDING TYPE: {building_type}
+        {context_info}
         
-        Provide supportive guidance that:
-        1. Encourages their learning journey
-        2. Provides foundational knowledge
-        3. Builds their confidence
-        4. Guides them to the next step
-        5. Is encouraging and educational
+        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
         
-        Give supportive guidance:
+        Generate a CONCISE, helpful guidance response that:
+        1. Directly addresses {focus_area} for {building_type} projects
+        2. INCORPORATES AND REFERENCES ALL the specific details the student has shared (user groups, activities, motivations, challenges, etc.)
+        3. Asks 1-2 specific probing questions about {focus_area} that build on the student's specific context
+        4. Mentions specific architectural considerations related to {focus_area} that are relevant to the student's specific project
+        5. Encourages the student to think about how {focus_area} affects other design elements they've mentioned
+        6. Uses architectural terminology and concepts specific to {focus_area}
+        7. Keeps the response conversational but educationally focused
+        8. EXPLICITLY REFERENCES the specific details the student mentioned (user groups, activities, motivations, etc.)
+        
+        IMPORTANT INSTRUCTIONS:
+        - Reference the student's specific user groups, activities, and requirements
+        - Address the specific challenges or opportunities they've mentioned
+        - Build upon their existing understanding and insights
+        - Make connections to their specific project context
+        - Do not provide generic advice - make it specific to their situation
+        - KEEP RESPONSE SHORT AND FOCUSED (2-3 sentences + 1-2 questions)
+        - Do not repeat what the student said - build on it
+        
+        Response should be 2-3 sentences with 1-2 specific questions that build on what the student has shared.
         """
         
         try:
-            response = self.client.chat.completions.create(
+            response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
-                temperature=0.4
+                max_tokens=200,  # Reduced from 400
+                temperature=0.7
             )
-            
-            supportive_response = response.choices[0].message.content.strip()
-            
-            return {
-                "response_text": supportive_response,
-                "response_type": "supportive_guidance",
-                "user_input_addressed": "learning_support"
-            }
-            
+            return response.choices[0].message.content
         except Exception as e:
-            print(f"⚠️ Supportive guidance generation failed: {e}")
-            return {
-                "response_text": "Great question! Let's build on this step by step. What aspect would you like to explore first?",
-                "response_type": "supportive_guidance",
-                "user_input_addressed": "learning_support"
-            }
+            # Enhanced fallback with specific guidance
+            if focus_area == "circulation":
+                return f"Let's focus on circulation for your {building_type}. What user groups will be moving through the space, and what are their primary destinations? How can you create clear pathways that serve different user needs while maintaining visual connections between spaces?"
+            elif focus_area == "materials":
+                return f"Let's explore material choices for your {building_type}. What are the key performance requirements - durability, aesthetics, sustainability, or cost? How will your material selections reflect the building's purpose and create the desired user experience?"
+            elif focus_area == "layout":
+                return f"Let's examine the layout for your {building_type}. What are the primary functional zones and how should they relate to each other? How can you balance open, flexible spaces with areas that need acoustic or visual separation?"
+            else:
+                return f"Let's focus on {focus_area} for your {building_type}. What specific challenges or opportunities do you see in this area? How does it relate to your overall design goals?"
+    
+    async def _generate_topic_specific_guidance(self, main_topic: str, building_type: str, last_message: str, student_analysis: Dict = None) -> str:
+        """Generate topic-specific architectural guidance using LLM"""
+        
+        # Extract key context from student analysis and last message
+        context_info = ""
+        if student_analysis and last_message:
+            context_info = f"""
+            STUDENT CONTEXT: {last_message}
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            """
+        
+        # Use LLM to generate context-aware guidance
+        prompt = f"""
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {main_topic}.
+        
+        {context_info}
+        
+        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
+        
+        Generate a CONCISE, helpful guidance response that:
+        1. Addresses {main_topic} in the context of {building_type}
+        2. INCORPORATES AND REFERENCES ALL the specific details and context the student has shared
+        3. Asks 1-2 probing questions to guide discovery that build on their specific context
+        4. Encourages deep thinking about {main_topic} in relation to their specific project
+        5. Is specific to {building_type} but not overly prescriptive
+        6. Helps the student think through the design challenges they've mentioned
+        7. EXPLICITLY REFERENCES the specific details the student mentioned (user groups, activities, motivations, etc.)
+        
+        IMPORTANT INSTRUCTIONS:
+        - Reference the student's specific user groups, activities, and requirements
+        - Address the specific challenges or opportunities they've mentioned
+        - Build upon their existing understanding and insights
+        - Make connections to their specific project context
+        - Do not provide generic advice - make it specific to their situation
+        - KEEP RESPONSE SHORT AND FOCUSED (2-3 sentences + 1-2 questions)
+        - Do not repeat what the student said - build on it
+        - Understand this is a conversation - respond to their specific question/comment
+        
+        Keep the response conversational and educational. Focus on guiding the student's thinking rather than providing direct answers, but make sure to acknowledge and build upon the specific context the student has provided.
+        """
+        
+        try:
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=200,  # Reduced from 400
+                temperature=0.7
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            # Fallback to generic guidance if LLM fails
+            return f"Let's explore {main_topic} for your {building_type}. What specific aspects of {main_topic} are most important for your project? How does it relate to your overall design goals?"
+
+    async def _generate_supportive_guidance(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
+        """Generate supportive guidance with specific architectural knowledge"""
+        
+        building_type = self._extract_building_type_from_context(state)
+        
+        # Get the user's last message
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+        
+        main_topic = self._extract_main_topic(last_message)
+        
+        # Provide specific, encouraging guidance based on the topic
+        supportive_guidance = self._get_supportive_architectural_guidance(main_topic, building_type, student_analysis)
+        
+        return {
+            "response_text": supportive_guidance,
+            "response_type": "supportive_guidance",
+            "user_input_addressed": "learning_support"
+        }
+    
+    def _get_supportive_architectural_guidance(self, topic: str, building_type: str, student_analysis: Dict) -> str:
+        """Generate supportive architectural guidance using LLM with milestone awareness"""
+        
+        # Extract key context from student analysis
+        context_info = ""
+        if student_analysis:
+            context_info = f"""
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            STUDENT CONTEXT: {student_analysis.get('last_message', 'No specific context available')}
+            """
+        
+        # 0708-Get milestone context if available
+        milestone_context = student_analysis.get("milestone_context", {})
+        milestone_type = milestone_context.get("milestone_type", "")
+        required_actions = milestone_context.get("required_actions", [])
+        
+        milestone_info = ""
+        if milestone_context:
+            milestone_info = f"""
+            MILESTONE CONTEXT:
+            Current Milestone: {milestone_type}
+            Required Actions: {required_actions}
+            """
+        
+        # Check if this is a detailed project brief
+        last_message = student_analysis.get("last_message", "")
+        message_length = len(last_message.split())
+        is_detailed_brief = message_length > 100
+        
+        if is_detailed_brief:
+            # For detailed project briefs, provide concise acknowledgment and focused follow-up
+            prompt = f"""
+            You are an architectural mentor. The student has provided a comprehensive project brief for a {building_type}.
+            
+            STUDENT'S DETAILED PROJECT BRIEF: {last_message}
+            
+            Generate a CONCISE response (2-3 sentences maximum) that:
+            1. Briefly acknowledges their detailed planning and understanding
+            2. Asks ONE specific, focused question that builds on their specific project details
+            3. References their specific user groups, site conditions, or design goals
+            4. Does NOT repeat what they said - build on it
+            5. Is relevant to their specific project context
+            
+            Keep it short, focused, and relevant to their specific project.
+            """
+        else:
+            # Use LLM to generate context-aware supportive guidance
+            prompt = f"""
+            You are an architectural mentor helping a student design a {building_type}.
+            The student is asking about {topic} and needs supportive guidance.
+            
+            {context_info}
+            {milestone_info}
+            
+            CRITICAL CONTEXT UNDERSTANDING: 
+            - You MUST incorporate and reference the specific details the student has shared in their message
+            - Do not ignore any part of their context
+            - This is a conversation - they are responding to previous guidance or asking follow-up questions
+            - Build on what they've already shared, don't treat it as a new topic
+            
+            Generate a CONCISE, supportive, encouraging guidance that:
+            1. Acknowledges the student's understanding and progress
+            2. INCORPORATES AND REFERENCES ALL the specific details the student has shared
+            3. Provides gentle guidance on {topic} that builds on their existing knowledge
+            4. Encourages them to explore {topic} further in relation to their specific project
+            5. Offers specific suggestions that are relevant to their context
+            6. Maintains a supportive, encouraging tone
+            7. EXPLICITLY REFERENCES the specific details the student mentioned
+            8. Aligns with the current milestone objectives: {milestone_type}
+            9. Helps the student achieve the required actions: {required_actions}
+            
+            CRITICAL INSTRUCTIONS:
+            - Reference the student's specific user groups, activities, and requirements
+            - Address the specific challenges or opportunities they've mentioned
+            - Build upon their existing understanding and insights
+            - Make connections to their specific project context
+            - Do not provide generic advice - make it specific to their situation
+            - Support milestone progress and learning objectives
+            - KEEP RESPONSE SHORT AND FOCUSED (2-3 sentences + 1-2 questions)
+            - Do not repeat what the student said - build on it
+            - Understand this is a conversation - respond to their specific question/comment
+            - If they mentioned specific details (warehouse, user groups, activities), reference them directly
+            
+            Keep the response encouraging and supportive while being educationally valuable and milestone-aware.
+            """
+        
+        try:
+            response = self.llm.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=150,  # Reduced from 200 for even more conciseness
+                temperature=0.7
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            # Enhanced fallback with specific guidance
+            if is_detailed_brief:
+                return f"Excellent comprehensive planning for your {building_type}! Your attention to user diversity and site constraints shows strong design thinking. What's your biggest concern about balancing the open warehouse space with the need for intimate, quiet areas?"
+            else:
+                return f"Great question about {topic} for your {building_type}! You're thinking about this in the right way. What specific aspects of {topic} are most important for your project's goals? How might {topic} interact with other design elements you're considering?"
     
     async def _generate_challenging_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
-        """Generate challenging questions for confident students"""
+        """Generate challenging questions that push architectural thinking deeper"""
         
         building_type = self._extract_building_type_from_context(state)
         
+        # Get the user's last message
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+        
+        main_topic = self._extract_main_topic(last_message)
+        
+        # Generate specific challenging questions based on the topic
+        challenging_question = self._get_challenging_architectural_question(main_topic, building_type, student_analysis)
+        
+        return {
+            "response_text": challenging_question,
+            "response_type": "challenging_question",
+            "user_input_addressed": "deep_thinking"
+        }
+    
+    def _get_challenging_architectural_question(self, topic: str, building_type: str, student_analysis: Dict) -> str:
+        """Generate challenging architectural question using LLM"""
+        
+        # Extract key context from student analysis
+        context_info = ""
+        if student_analysis:
+            context_info = f"""
+            STUDENT INSIGHTS: {student_analysis.get('key_insights', 'No specific insights available')}
+            STUDENT CONTEXT: {student_analysis.get('last_message', 'No specific context available')}
+            """
+        
+        # Use LLM to generate context-aware challenging questions
         prompt = f"""
-        The student shows confidence and understanding. Generate a challenging question that pushes their thinking deeper.
+        You are an architectural mentor helping a student design a {building_type}.
+        The student is asking about {topic} and needs a challenging question to deepen their thinking.
         
-        STUDENT STATE: {student_analysis}
-        CONVERSATION STAGE: {conversation_progression['stage']}
-        BUILDING TYPE: {building_type}
+        {context_info}
         
-        Generate a challenging question that:
-        1. Challenges their assumptions
-        2. Forces them to consider trade-offs
-        3. Pushes them to justify their choices
-        4. Makes them think about implications
-        5. Is direct and thought-provoking
+        CRITICAL: You MUST incorporate and reference the specific details the student has shared in their message. Do not ignore any part of their context.
         
-        Ask ONE challenging question:
+        Generate a CONCISE, challenging, thought-provoking question that:
+        1. Pushes the student to think deeper about {topic}
+        2. INCORPORATES AND REFERENCES ALL the specific details the student has shared
+        3. Challenges their assumptions or current understanding
+        4. Encourages them to consider {topic} from a new perspective
+        5. Is specific to their project context and challenges
+        6. Promotes critical thinking and analysis
+        7. EXPLICITLY REFERENCES the specific details the student mentioned
+        
+        IMPORTANT INSTRUCTIONS:
+        - Reference the student's specific user groups, activities, and requirements
+        - Address the specific challenges or opportunities they've mentioned
+        - Build upon their existing understanding and insights
+        - Make connections to their specific project context
+        - Do not provide generic questions - make them specific to their situation
+        - KEEP RESPONSE SHORT AND FOCUSED (1-2 sentences maximum)
+        - Do not repeat what the student said - challenge it
+        - Understand this is a conversation - respond to their specific question/comment
+        
+        The question should be challenging but not overwhelming, and should help the student think more critically about {topic} in relation to their specific project.
         """
         
         try:
-            response = self.client.chat.completions.create(
+            response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=60,
-                temperature=0.3
+                max_tokens=150,  # Reduced from 300
+                temperature=0.7
             )
-            
-            challenging_question = response.choices[0].message.content.strip()
-            
-            if not challenging_question.endswith('?'):
-                challenging_question += '?'
-            
-            return {
-                "response_text": challenging_question,
-                "response_type": "challenging_question",
-                "user_input_addressed": "critical_thinking"
-            }
-            
+            return response.choices[0].message.content
         except Exception as e:
-            print(f"⚠️ Challenging question generation failed: {e}")
-            return {
-                "response_text": "What assumptions are you making about this design decision that might need to be questioned?",
-                "response_type": "challenging_question",
-                "user_input_addressed": "critical_thinking"
-            }
+            # Enhanced fallback with specific challenging question
+            return f"Here's a challenging question about {topic} for your {building_type}: How might {topic} create conflicts or trade-offs with other design priorities you've mentioned? What would you prioritize if you had to make difficult choices about {topic}?"
     
     async def _generate_exploratory_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
         """Generate exploratory questions for students in exploration stage"""
@@ -390,14 +838,13 @@ class SocraticTutorAgent:
         """
         
         try:
-            response = self.client.chat.completions.create(
+            response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=60,
-                temperature=0.4
+                max_tokens=300,
+                temperature=0.7
             )
-            
-            exploratory_question = response.choices[0].message.content.strip()
+            exploratory_question = response.content.strip()
             
             if not exploratory_question.endswith('?'):
                 exploratory_question += '?'
@@ -433,14 +880,13 @@ class SocraticTutorAgent:
         """
         
         try:
-            response = self.client.chat.completions.create(
+            response = self.llm.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=60,
-                temperature=0.3
+                max_tokens=300,
+                temperature=0.7
             )
-            
-            adaptive_question = response.choices[0].message.content.strip()
+            adaptive_question = response.content.strip()
             
             if not adaptive_question.endswith('?'):
                 adaptive_question += '?'
@@ -713,27 +1159,79 @@ I sense you might be scratching the surface of this problem. Let's explore the l
         return "project"
     
     def _extract_main_topic(self, last_message: str) -> str:
-        """Extract the main architectural topic the user is asking about"""
+        """Extract the main architectural topic the user is asking about with enhanced pattern matching"""
         message_lower = last_message.lower()
         
-        # Common architectural topics - this is just for context, not hardcoding responses
-        architectural_topics = [
-            "adaptive reuse", "sustainability", "lighting", "acoustics", "circulation", 
-            "materials", "structure", "accessibility", "energy efficiency", "ventilation",
-            "thermal comfort", "daylighting", "spatial organization", "programming",
-            "site planning", "landscape", "interior design", "facade design", "construction",
-            "building codes", "fire safety", "mechanical systems", "electrical systems",
-            "plumbing", "roofing", "foundations", "seismic design", "wind loads",
-            "architectural history", "urban design", "placemaking", "community engagement"
-        ]
+        # Enhanced architectural topics with variations and related terms
+        topic_patterns = {
+            "circulation": ["circulation", "flow", "movement", "pathways", "routes", "wayfinding"],
+            "materials": ["materials", "material", "material choices", "material selection", "building materials"],
+            "layout": ["layout", "planning", "spatial arrangement", "floor plan", "space planning"],
+            "design": ["design", "design approach", "design process", "design strategy"],
+            "lighting": ["lighting", "light", "illumination", "daylighting", "natural light"],
+            "acoustics": ["acoustics", "acoustic", "sound", "noise", "audio"],
+            "structure": ["structure", "structural", "framing", "support", "load bearing"],
+            "accessibility": ["accessibility", "accessible", "universal design", "ada", "inclusive"],
+            "sustainability": ["sustainability", "sustainable", "green", "environmental", "eco-friendly"],
+            "energy efficiency": ["energy efficiency", "energy", "efficiency", "thermal", "heating", "cooling"],
+            "ventilation": ["ventilation", "air", "airflow", "fresh air", "mechanical ventilation"],
+            "thermal comfort": ["thermal comfort", "comfort", "temperature", "climate control"],
+            "spatial organization": ["spatial organization", "spatial", "organization", "arrangement"],
+            "programming": ["programming", "program", "function", "use", "activities"],
+            "site planning": ["site planning", "site", "landscape", "exterior", "outdoor"],
+            "interior design": ["interior design", "interior", "furnishings", "furniture"],
+            "facade design": ["facade design", "facade", "exterior", "envelope", "cladding"],
+            "construction": ["construction", "building", "assembly", "installation"],
+            "building codes": ["building codes", "codes", "regulations", "compliance", "standards"],
+            "fire safety": ["fire safety", "fire", "safety", "emergency", "egress"],
+            "mechanical systems": ["mechanical systems", "mechanical", "hvac", "plumbing"],
+            "electrical systems": ["electrical systems", "electrical", "power", "lighting systems"],
+            "plumbing": ["plumbing", "water", "sanitary", "bathrooms", "kitchens"],
+            "roofing": ["roofing", "roof", "waterproofing", "drainage"],
+            "foundations": ["foundations", "foundation", "footings", "substructure"],
+            "adaptive reuse": ["adaptive reuse", "reuse", "renovation", "conversion", "existing building"],
+            "architectural history": ["architectural history", "history", "heritage", "preservation"],
+            "urban design": ["urban design", "urban", "city", "public space", "street"],
+            "placemaking": ["placemaking", "place", "community", "public realm"],
+            "community engagement": ["community engagement", "community", "public", "stakeholders"]
+        }
         
-        # Find the most relevant topic mentioned
-        for topic in architectural_topics:
-            if topic in message_lower:
-                return topic
+        # Find the most relevant topic mentioned using pattern matching
+        for topic, patterns in topic_patterns.items():
+            for pattern in patterns:
+                if pattern in message_lower:
+                    return topic
+        
+        # Enhanced context extraction for common architectural terms
+        words = message_lower.split()
+        
+        # Look for architectural terms that might not be in the main list
+        architectural_terms = {
+            "approach": "design",
+            "choices": "materials", 
+            "flow": "circulation",
+            "plan": "layout",
+            "arrangement": "spatial organization",
+            "function": "programming",
+            "use": "programming",
+            "activities": "programming",
+            "comfort": "thermal comfort",
+            "efficiency": "energy efficiency",
+            "safety": "fire safety",
+            "systems": "mechanical systems",
+            "structure": "structure",
+            "materials": "materials",
+            "lighting": "lighting",
+            "acoustics": "acoustics",
+            "accessibility": "accessibility",
+            "sustainability": "sustainability"
+        }
+        
+        for word in words:
+            if word in architectural_terms:
+                return architectural_terms[word]
         
         # If no specific topic found, extract from context
-        words = message_lower.split()
         if "principles" in words:
             # Look for the word before "principles"
             for i, word in enumerate(words):
@@ -775,106 +1273,38 @@ I sense you might be scratching the surface of this problem. Let's explore the l
     
     def _generate_focused_exploration_question(self, focus_area: str, building_type: str, main_topic: str) -> str:
         """Generate a focused exploration question based on user's specified focus and topic"""
+
+
+
+
+
+
+
+
+        # Generate contextual questions based on the specific focus area and topic
+        if focus_area == "examples":
+            return f"Great! You're looking for {main_topic} examples. What specific type of {main_topic} examples would be most helpful for your {building_type} project? Are you interested in seeing how other projects have successfully implemented {main_topic}, or are you looking for examples that solved particular challenges similar to yours?"
         
-        # Dynamic focus questions that work for any architectural topic
-        focus_questions = {
-            "principles": f"""
-**🏗️ {main_topic.title()} Principles - Deep Dive**
-
-Excellent choice! Understanding the principles of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
-
-**What specific aspect of {main_topic} principles would you like to explore first?**
-
-1. **Core concepts** - The fundamental ideas that guide {main_topic} decisions
-2. **Application strategies** - How to apply {main_topic} principles in practice
-3. **Design integration** - How {main_topic} principles relate to overall design
-4. **Performance considerations** - How {main_topic} principles affect building performance
-5. **User experience impact** - How {main_topic} principles influence occupant experience
-
-**Or is there a particular challenge you're facing with {main_topic} in your {building_type} project?**
-
-*What aspect of {main_topic} principles feels most relevant to your current design stage?*
-""",
-            "examples": f"""
-**🏗️ {main_topic.title()} Examples - Deep Dive**
-
-Great focus! Learning from real examples of {main_topic} can provide valuable insights for your {building_type} project. Let's explore this systematically:
-
-**What type of {main_topic} examples would be most helpful?**
-
-1. **Successful case studies** - Projects that demonstrate excellent {main_topic} implementation
-2. **Innovative approaches** - Creative and unique {main_topic} solutions
-3. **Problem-solving examples** - How {main_topic} challenges were overcome
-4. **Similar project types** - {main_topic} examples from {building_type} projects
-5. **Contemporary applications** - Modern approaches to {main_topic}
-
-**Or is there a specific {main_topic} challenge you're trying to solve in your project?**
-
-*What type of {main_topic} examples would be most relevant to your current design stage?*
-""",
-            "process": f"""
-**🏗️ {main_topic.title()} Process - Deep Dive**
-
-Excellent choice! Understanding the process of implementing {main_topic} is essential for your {building_type} project. Let's explore this systematically:
-
-**What aspect of the {main_topic} process would you like to explore first?**
-
-1. **Planning phase** - How to approach {main_topic} from the beginning
-2. **Design integration** - How to incorporate {main_topic} into your design process
-3. **Implementation steps** - The practical steps for {main_topic} execution
-4. **Evaluation methods** - How to assess {main_topic} effectiveness
-5. **Iteration and refinement** - How to improve {main_topic} solutions over time
-
-**Or is there a particular stage in the {main_topic} process where you need guidance?**
-
-*What aspect of the {main_topic} process feels most relevant to your current design stage?*
-""",
-            "technical_details": f"""
-**🏗️ {main_topic.title()} Technical Details - Deep Dive**
-
-Great focus! Technical understanding of {main_topic} is crucial for successful {building_type} projects. Let's explore this systematically:
-
-**What specific technical aspect of {main_topic} would you like to explore first?**
-
-1. **Specifications and standards** - Technical requirements for {main_topic}
-2. **Material and system selection** - Choosing appropriate {main_topic} solutions
-3. **Integration with other systems** - How {main_topic} works with building systems
-4. **Performance metrics** - How to measure {main_topic} effectiveness
-5. **Code compliance** - Regulatory requirements for {main_topic}
-
-**Or is there a particular technical challenge you're facing with {main_topic} in your project?**
-
-*What technical aspect of {main_topic} feels most relevant to your current design stage?*
-""",
-            "challenges": f"""
-**🏗️ {main_topic.title()} Challenges - Deep Dive**
-
-Excellent choice! Understanding the challenges of {main_topic} will help you prepare for your {building_type} project. Let's explore this systematically:
-
-**What type of {main_topic} challenges would you like to explore first?**
-
-1. **Common obstacles** - Typical challenges encountered in {main_topic} implementation
-2. **Site-specific challenges** - How {main_topic} challenges vary by context
-3. **Budget and resource constraints** - Financial and practical limitations
-4. **Integration challenges** - How {main_topic} conflicts with other design goals
-5. **Maintenance and long-term issues** - Ongoing challenges with {main_topic}
-
-**Or is there a specific {main_topic} challenge you're currently facing in your project?**
-
-*What type of {main_topic} challenge feels most relevant to your current design stage?*
-"""
-        }
+        elif focus_area == "principles":
+            return f"Excellent! Understanding {main_topic} principles is key. What aspect of {main_topic} principles feels most relevant to your {building_type} project right now? Are you looking for the fundamental concepts, or do you need help understanding how to apply these principles in practice?"
         
-        return focus_questions.get(focus_area, f"""
-**🏗️ {main_topic.title()} - Let's Explore Your Focus**
+        elif focus_area == "process":
+            return f"Perfect! The {main_topic} process is crucial. What stage of the {main_topic} process are you currently working through in your {building_type} project? Are you in the planning phase, or do you need guidance on implementation steps?"
+        
+        elif focus_area == "technical_details":
+            return f"Good focus! Technical details of {main_topic} are important. What specific technical aspect of {main_topic} are you wrestling with in your {building_type} project? Are you looking at materials, systems integration, or compliance requirements?"
+        
+        elif focus_area == "challenges":
+            return f"Smart thinking! Understanding {main_topic} challenges will help you prepare. What type of {main_topic} challenges are you most concerned about for your {building_type} project? Are you thinking about site-specific issues, budget constraints, or integration with other design elements?"
+        
+        else:
+            return f"Great! You've identified {main_topic} as important for your {building_type} project. What specific question or challenge about {main_topic} are you working through right now? This will help me provide the most relevant guidance for where you are in your design process."
 
-Great! You've identified an important aspect of {main_topic} for your {building_type} project. Let's dive deeper:
 
-**What specific {main_topic} question or challenge are you wrestling with right now?**
 
-*This will help me provide the most relevant guidance for your current design stage.*
-""")
-    
+
+
+
     async def _generate_dynamic_topic_guidance(self, main_topic: str, building_type: str, last_message: str) -> str:
         """Generate dynamic topic-specific guidance using AI for truly contextual responses"""
         
