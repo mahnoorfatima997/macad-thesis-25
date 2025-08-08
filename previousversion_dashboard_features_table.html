@@ -79,7 +79,6 @@
             .section-linkography { background-color: #d99c66; }
             .section-proficiency { background-color: #dcc188; }
             .section-graphml { background-color: #4f3a3e; color: white; }
-            .section-scientific { background-color: #8b7355; color: white; }
             .type-metric { font-weight: bold; color: #784c80; }
             .type-visualization { font-weight: bold; color: #cd766d; }
             .type-analysis { font-weight: bold; color: #5c4f73; }
@@ -146,7 +145,6 @@
                     <option value="Linkography">Linkography</option>
                     <option value="Proficiency Analysis">Proficiency Analysis</option>
                     <option value="Graph ML">Graph ML</option>
-                    <option value="Scientific Baselines">Scientific Baselines</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -513,67 +511,6 @@
                     <td><code>graph_ml_benchmarking.py:359-395</code></td>
                     <td class="type-algorithm tooltip-cell" data-tooltip="A computational procedure for analysis">Algorithm</td>
                 </tr>
-                
-                <tr>
-                    <td class="section-scientific">Scientific Baselines</td>
-                    <td>cognitive_offloading_baseline</td>
-                    <td>Research-based baseline for cognitive offloading prevention</td>
-                    <td>48%</td>
-                    <td>Baseline effectiveness rate</td>
-                    <td class="tooltip-cell" data-tooltip="UPenn metacognitive research on direct answer seeking behavior"><a href="https://journals.sagepub.com/doi/10.3102/0034654316670999" target="_blank" class="reference-link" title="Click to view source">UPenn Research (2023)</a></td>
-                    <td><code>scientific_baselines.md:15-18</code></td>
-                    <td class="type-reference tooltip-cell" data-tooltip="Research-validated baseline">Reference</td>
-                </tr>
-                <tr>
-                    <td class="section-scientific">Scientific Baselines</td>
-                    <td>deep_thinking_baseline</td>
-                    <td>Research-based baseline for deep thinking engagement</td>
-                    <td>42%</td>
-                    <td>Baseline engagement rate</td>
-                    <td class="tooltip-cell" data-tooltip="Meta-analysis of scaffolding in STEM education"><a href="https://www.tandfonline.com/doi/full/10.1080/00461520.2015.1038911" target="_blank" class="reference-link" title="Click to view source">Belland et al. (2017)</a></td>
-                    <td><code>scientific_baselines.md:20-23</code></td>
-                    <td class="type-reference tooltip-cell" data-tooltip="Research-validated baseline">Reference</td>
-                </tr>
-                <tr>
-                    <td class="section-scientific">Scientific Baselines</td>
-                    <td>scaffolding_baseline</td>
-                    <td>Research-based baseline for scaffolding effectiveness</td>
-                    <td>61%</td>
-                    <td>Baseline effectiveness rate</td>
-                    <td class="tooltip-cell" data-tooltip="Meta-analysis of intelligent tutoring systems"><a href="https://doi.org/10.3102/0034654315581420" target="_blank" class="reference-link" title="Click to view source">Kulik & Fletcher (2016)</a></td>
-                    <td><code>scientific_baselines.md:25-28</code></td>
-                    <td class="type-reference tooltip-cell" data-tooltip="Research-validated baseline">Reference</td>
-                </tr>
-                <tr>
-                    <td class="section-scientific">Scientific Baselines</td>
-                    <td>knowledge_integration_baseline</td>
-                    <td>Research-based baseline for knowledge integration</td>
-                    <td>29%</td>
-                    <td>Baseline integration rate</td>
-                    <td class="tooltip-cell" data-tooltip="Cross-domain learning transfer studies">Cross-domain Studies</td>
-                    <td><code>scientific_baselines.md:30-33</code></td>
-                    <td class="type-reference tooltip-cell" data-tooltip="Research-validated baseline">Reference</td>
-                </tr>
-                <tr>
-                    <td class="section-scientific">Scientific Baselines</td>
-                    <td>learning_progression_baseline</td>
-                    <td>Research-based baseline for learning progression</td>
-                    <td>35%</td>
-                    <td>Baseline progression rate</td>
-                    <td class="tooltip-cell" data-tooltip="Meta-analysis of ITS effectiveness"><a href="https://doi.org/10.3102/0034654313518989" target="_blank" class="reference-link" title="Click to view source">Ma et al. (2014)</a></td>
-                    <td><code>scientific_baselines.md:35-38</code></td>
-                    <td class="type-reference tooltip-cell" data-tooltip="Research-validated baseline">Reference</td>
-                </tr>
-                <tr>
-                    <td class="section-scientific">Scientific Baselines</td>
-                    <td>metacognitive_awareness_baseline</td>
-                    <td>Research-based baseline for metacognitive awareness</td>
-                    <td>31%</td>
-                    <td>Baseline awareness rate</td>
-                    <td class="tooltip-cell" data-tooltip="STEM metacognitive interventions research">STEM Interventions</td>
-                    <td><code>scientific_baselines.md:40-43</code></td>
-                    <td class="type-reference tooltip-cell" data-tooltip="Research-validated baseline">Reference</td>
-                </tr>
         
             </tbody>
         </table>
@@ -635,41 +572,6 @@
                     <p style="margin: 15px 0;">
                         <strong style="color: #d99c66; display: block; margin-bottom: 8px;">Neural Engagement Score (NES):</strong>
                         <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">NES = (unique_concepts_count / total_interactions) + technical_vocabulary_ratio</code>
-                    </p>
-                </div>
-            </details>
-            
-            <details style="background-color: #e0ceb5; border-radius: 5px; padding: 10px; margin-top: 15px; box-shadow: 0 2px 4px rgba(79, 58, 62, 0.1);">
-                <summary style="cursor: pointer; padding: 10px; font-size: 16px; font-weight: bold; color: #4f3a3e;">Scientific Baseline Metrics (Click to expand)</summary>
-                <div style="margin-top: 15px; background-color: white; padding: 15px; border-radius: 3px; font-family: monospace; font-size: 14px;">
-                    <p style="margin: 15px 0;">
-                        <strong style="color: #784c80; display: block; margin-bottom: 8px;">Cognitive Offloading Prevention Baseline (48%):</strong>
-                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">Based on UPenn metacognitive research (2023) - Students seek direct answers 52% of the time</code>
-                    </p>
-                    
-                    <p style="margin: 15px 0;">
-                        <strong style="color: #cd766d; display: block; margin-bottom: 8px;">Deep Thinking Engagement Baseline (42%):</strong>
-                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">Belland et al. (2017) meta-analysis - 42% sustained engagement in STEM scaffolding</code>
-                    </p>
-                    
-                    <p style="margin: 15px 0;">
-                        <strong style="color: #5c4f73; display: block; margin-bottom: 8px;">Scaffolding Effectiveness Baseline (61%):</strong>
-                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">Kulik & Fletcher (2016) - ITS systems achieve 0.66 effect size</code>
-                    </p>
-                    
-                    <p style="margin: 15px 0;">
-                        <strong style="color: #d99c66; display: block; margin-bottom: 8px;">Knowledge Integration Baseline (29%):</strong>
-                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">Cross-domain transfer studies - 29% successful integration rate</code>
-                    </p>
-                    
-                    <p style="margin: 15px 0;">
-                        <strong style="color: #b87189; display: block; margin-bottom: 8px;">Learning Progression Baseline (35%):</strong>
-                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">Ma et al. (2014) - 35% improvement in learning outcomes with ITS</code>
-                    </p>
-                    
-                    <p style="margin: 15px 0;">
-                        <strong style="color: #4f3a3e; display: block; margin-bottom: 8px;">Metacognitive Awareness Baseline (31%):</strong>
-                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">STEM intervention studies - 31% improvement in metacognitive awareness</code>
                     </p>
                 </div>
             </details>
