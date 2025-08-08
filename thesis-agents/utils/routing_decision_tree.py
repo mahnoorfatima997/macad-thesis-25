@@ -292,6 +292,21 @@ class AdvancedRoutingDecisionTree:
                 "description": "Knowledge request with guidance needed",
                 "context_agent_override": False
             },
+            # Example requests routing
+            "example_pure_knowledge": {
+                "priority": 16.5,
+                "route": RouteType.KNOWLEDGE_ONLY,
+                "conditions": ["user_intent == 'example_request'", "is_pure_knowledge_request == True"],
+                "description": "Pure example/precedent request - knowledge only",
+                "context_agent_override": False
+            },
+            "example_with_guidance": {
+                "priority": 16.6,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'example_request'", "is_pure_knowledge_request == False"],
+                "description": "Example request with integration guidance - Socratic exploration",
+                "context_agent_override": False
+            },
             "evaluation_request": {
                 "priority": 17,
                 "route": RouteType.MULTI_AGENT_COMPREHENSIVE,
@@ -568,61 +583,88 @@ class AdvancedRoutingDecisionTree:
             # Handle special conditions
             if condition == "default":
                 return True
-            
-            # Simple condition evaluation
+
+            result: bool = False
+
+            # Equality check
             if "==" in condition:
                 field, value = condition.split("==")
                 field = field.strip()
                 value = value.strip().strip("'").strip('"')
-                
+
                 # Handle boolean values
-                if value.lower() == "true":
-                    value = True
-                elif value.lower() == "false":
-                    value = False
-                
-                # Get the actual value from classification
+                if isinstance(value, str):
+                    if value.lower() == "true":
+                        value = True
+                    elif value.lower() == "false":
+                        value = False
+
+                # Resolve actual value
                 actual_value = classification.get(field)
-                
-                # Handle user_intent field specifically
                 if field == "user_intent":
                     actual_value = classification.get("user_intent") or classification.get("interaction_type", "")
-                
-                # Handle understanding_level field
                 if field == "understanding_level":
                     actual_value = classification.get("understanding_level", "medium")
-                
-                # Handle engagement_level field
                 if field == "engagement_level":
                     actual_value = classification.get("engagement_level", "medium")
-                
-                # Handle confidence_level field
                 if field == "confidence_level":
                     actual_value = classification.get("confidence_level", "uncertain")
-                
-                # Handle is_pure_knowledge_request field
                 if field == "is_pure_knowledge_request":
                     actual_value = classification.get("is_pure_knowledge_request", False)
-                
-                # Handle cognitive_offloading_detected field
                 if field == "cognitive_offloading_detected":
                     actual_value = classification.get("cognitive_offloading_detected", False)
-                
-                # Handle is_first_message field
                 if field == "is_first_message":
                     actual_value = classification.get("is_first_message", False)
-                
-                # Handle context_agent_confidence field
                 if field == "context_agent_confidence":
                     actual_value = classification.get("context_agent_confidence", 0.0)
-                
-                # Debug logging for condition evaluation
+
                 logger.debug(f"Condition evaluation: {field} == {value} (actual: {actual_value})")
-                
-                return actual_value == value
-            
-            return False
-            
+                result = (actual_value == value)
+
+            # Greater-than numeric comparison, e.g., context_agent_confidence > 0.7
+            elif ">" in condition:
+                field, value = condition.split(">")
+                field = field.strip()
+                value = value.strip()
+                if field == "user_intent":
+                    actual_value = classification.get("user_intent") or classification.get("interaction_type", "")
+                elif field == "understanding_level":
+                    actual_value = classification.get("understanding_level", "medium")
+                elif field == "engagement_level":
+                    actual_value = classification.get("engagement_level", "medium")
+                elif field == "confidence_level":
+                    actual_value = classification.get("confidence_level", "uncertain")
+                elif field == "is_pure_knowledge_request":
+                    actual_value = classification.get("is_pure_knowledge_request", False)
+                elif field == "cognitive_offloading_detected":
+                    actual_value = classification.get("cognitive_offloading_detected", False)
+                elif field == "is_first_message":
+                    actual_value = classification.get("is_first_message", False)
+                elif field == "context_agent_confidence":
+                    actual_value = classification.get("context_agent_confidence", 0.0)
+                else:
+                    actual_value = classification.get(field)
+                try:
+                    result = float(actual_value) > float(value)
+                except Exception:
+                    result = False
+
+            # Less-than numeric comparison
+            elif "<" in condition:
+                field, value = condition.split("<")
+                field = field.strip()
+                value = value.strip()
+                if field == "context_agent_confidence":
+                    actual_value = classification.get("context_agent_confidence", 0.0)
+                else:
+                    actual_value = classification.get(field)
+                try:
+                    result = float(actual_value) < float(value)
+                except Exception:
+                    result = False
+
+            return result
+
         except Exception as e:
             logger.error(f"Error evaluating condition '{condition}': {e}")
             return False
