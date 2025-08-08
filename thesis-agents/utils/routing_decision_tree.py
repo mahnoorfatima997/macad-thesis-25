@@ -190,7 +190,7 @@ class AdvancedRoutingDecisionTree:
             "topic_transition": {
                 "priority": 2,
                 "route": RouteType.TOPIC_TRANSITION,
-                "conditions": ["routing_decision.path == 'topic_transition'"],
+                "conditions": ["user_intent == 'topic_transition'"],
                 "description": "Topic transition detected",
                 "context_agent_override": True
             },
@@ -468,6 +468,19 @@ class AdvancedRoutingDecisionTree:
                 # Fallback to pattern-based classification
                 user_intent = self.classify_user_intent(user_input, context)
             
+            # Treat 'question_response' as thread context; map to concrete intent
+            if user_intent == "question_response":
+                if classification.get("shows_confusion") or classification.get("understanding_level") == "low" or classification.get("confidence_level") == "uncertain":
+                    user_intent = "confusion_expression"
+                elif classification.get("is_feedback_request"):
+                    user_intent = "feedback_request"
+                elif classification.get("is_example_request"):
+                    user_intent = "example_request"
+                elif classification.get("is_technical_question"):
+                    user_intent = "technical_question"
+                else:
+                    user_intent = "general_question"
+            
             # Update context with user intent
             context.user_intent = user_intent
             
@@ -627,7 +640,7 @@ class AdvancedRoutingDecisionTree:
         return route or RouteType.BALANCED_GUIDANCE
     
     def _detect_cognitive_offloading(self, classification: Dict[str, Any], context_analysis: Dict[str, Any]) -> Dict[str, Any]:
-        """Detect cognitive offloading patterns"""
+        """Detect cognitive offloading patterns with improved specificity"""
         message = classification.get("last_message", "").lower()
         interaction_type = classification.get("interaction_type", "")
         
@@ -636,30 +649,60 @@ class AdvancedRoutingDecisionTree:
         confidence = 0.0
         indicators = []
         
-        # Check for cognitive offloading patterns
-        for pattern_type, patterns in self.cognitive_offloading_patterns.items():
-            for pattern in patterns:
-                if pattern in message:
-                    detected = True
-                    offloading_type = CognitiveOffloadingType(pattern_type)
-                    confidence = 0.8
-                    indicators.append(f"{pattern_type}: '{pattern}'")
-                    break
+        # Only check for cognitive offloading if the interaction type is already flagged as such
+        # or if we detect specific cognitive offloading patterns that are NOT legitimate requests
         
-        # Check interaction type for cognitive offloading
+        # Check interaction type for cognitive offloading (highest priority)
         if interaction_type in ["direct_answer_request", "solution_request"]:
             detected = True
             offloading_type = CognitiveOffloadingType(interaction_type)
-            confidence = max(confidence, 0.7)
+            confidence = 0.8
             indicators.append(f"interaction_type: {interaction_type}")
         
-        # Check confidence level
-        confidence_level = classification.get("confidence_level", "confident")
-        if confidence_level == "uncertain" and "i don't know" in message:
-            detected = True
-            offloading_type = CognitiveOffloadingType.AVOIDANCE_PATTERN
-            confidence = max(confidence, 0.6)
-            indicators.append("avoidance_pattern: low confidence")
+        # Check for specific cognitive offloading patterns (more restrictive)
+        # Only apply these if the interaction type is NOT a legitimate request type
+        legitimate_requests = ["knowledge_request", "example_request", "technical_question", "feedback_request", "question_response"]
+        
+        if interaction_type not in legitimate_requests:
+            # Check for solution request patterns
+            solution_patterns = [
+                "give me the answer", "tell me what to do", "what should i do",
+                "show me the solution", "give me the design", "solve this for me",
+                "do it for me", "make it for me", "complete design", "full design"
+            ]
+            for pattern in solution_patterns:
+                if pattern in message:
+                    detected = True
+                    offloading_type = CognitiveOffloadingType.SOLUTION_REQUEST
+                    confidence = 0.8
+                    indicators.append(f"solution_request: '{pattern}'")
+                    break
+            
+            # Check for overreliance patterns
+            overreliance_patterns = [
+                "you decide", "you choose", "whatever you think",
+                "you know better", "i trust you", "do it for me"
+            ]
+            for pattern in overreliance_patterns:
+                if pattern in message:
+                    detected = True
+                    offloading_type = CognitiveOffloadingType.OVERRELIANCE
+                    confidence = 0.7
+                    indicators.append(f"overreliance: '{pattern}'")
+                    break
+        
+        # Check for avoidance patterns (regardless of interaction type)
+        avoidance_patterns = [
+            "i don't know", "i'm not sure", "i can't figure out",
+            "this is too hard", "i give up", "i'm stuck"
+        ]
+        for pattern in avoidance_patterns:
+            if pattern in message:
+                detected = True
+                offloading_type = CognitiveOffloadingType.AVOIDANCE_PATTERN
+                confidence = max(confidence, 0.6)
+                indicators.append(f"avoidance_pattern: '{pattern}'")
+                break
         
         return {
             "detected": detected,

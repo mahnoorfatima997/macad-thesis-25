@@ -705,6 +705,12 @@ class LangGraphOrchestrator:
         routing_decision = state.get("routing_decision", {})
         student_state = state.get("student_state", None)
         
+        # Provide the actual user input to the routing tree for intent/keyword extraction
+        try:
+            classification["user_input"] = state.get("last_message", "")
+        except Exception:
+            pass
+
         # Create routing context
         routing_context = RoutingContext(
             classification=classification,
@@ -1568,6 +1574,13 @@ class LangGraphOrchestrator:
             return self._synthesize_feedback_response(socratic_result, domain_result, user_input, classification)
         elif routing_path == "design_guidance":
             return self._synthesize_design_guidance_response(agent_results, user_input, classification)
+        elif routing_path == "supportive_scaffolding":
+            # Provide concise clarification/scaffolding
+            socratic_result = agent_results.get("socratic", {})
+            domain_result = agent_results.get("domain", {})
+            return self._synthesize_clarification_response(
+                socratic_result, domain_result, user_input, classification
+            )
         else:
             return self._synthesize_default_response(agent_results)
     

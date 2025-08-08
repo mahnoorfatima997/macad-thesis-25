@@ -184,6 +184,16 @@ class ResponseLengthController:
             if last_end != -1:
                 cleaned = cleaned[: last_end + 1]
         response_text = cleaned
+
+        # Readability polish: add gentle paragraph breaks between sentences
+        import re as _re
+        response_text = _re.sub(r'([.!?])\s+', r'\1\n\n', response_text).strip()
+
+        # Normalize simple list markers into bullets
+        response_text = _re.sub(r'(?m)^\s*(•|\-)\s*', '- ', response_text)
+
+        # Bold short heading-like lines that end with a colon
+        response_text = _re.sub(r'(?m)^([A-Z][A-Za-z ]{2,40}):\s*$', r'**\1:**', response_text)
         
         return response_text.strip()
     

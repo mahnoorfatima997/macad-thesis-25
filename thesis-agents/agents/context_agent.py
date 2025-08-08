@@ -185,7 +185,7 @@ class ContextAgent:
         
         # Define interaction types that should use manual override (priority over AI)
         manual_override_types = [
-            "question_response", "confusion_expression", "direct_answer_request", 
+            "confusion_expression", "direct_answer_request", 
             "knowledge_request", "implementation_request", "example_request",
             "feedback_request", "technical_question", "improvement_seeking",
             "general_question", "general_statement"
@@ -198,22 +198,36 @@ class ContextAgent:
             # Use manual classification for interaction type, but get other metrics from AI
             ai_classification = await self._get_ai_classification_for_other_metrics(input_text, state)
             
+            # Preserve question-response as thread context flag, not main type
+            is_q_response = self._is_response_to_previous_question(input_text, state)
+
+            # Ensure confusion takes precedence if present
+            input_lower = input_text.lower()
+            confusion_patterns = [
+                "confused", "don't understand", "unclear", "not sure", "help", "lost", "stuck",
+                "struggling", "difficult", "what does this mean", "i don't get it"
+            ]
+            shows_confusion = any(p in input_lower for p in confusion_patterns)
+            final_interaction_type = "confusion_expression" if shows_confusion else manual_interaction_type
+
             return {
-                "interaction_type": manual_interaction_type,  # Manual override
+                "interaction_type": final_interaction_type,  # Manual override with confusion priority
                 "understanding_level": ai_classification.get("understanding_level", "medium"),
                 "confidence_level": ai_classification.get("confidence_level", "confident"),
                 "engagement_level": ai_classification.get("engagement_level", "medium"),
                 "overconfidence_score": 2 if ai_classification.get("confidence_level") == "overconfident" else 0,
-                "is_technical_question": manual_interaction_type == "technical_question",
-                "is_feedback_request": manual_interaction_type == "feedback_request",
-                "is_example_request": manual_interaction_type == "example_request",
-                "shows_confusion": manual_interaction_type == "confusion_expression",
-                "requests_help": manual_interaction_type in ["confusion_expression", "direct_answer_request"],
+                "is_technical_question": final_interaction_type == "technical_question",
+                "is_feedback_request": final_interaction_type == "feedback_request",
+                "is_example_request": final_interaction_type == "example_request",
+                "shows_confusion": shows_confusion or final_interaction_type == "confusion_expression",
+                "requests_help": final_interaction_type in ["confusion_expression", "direct_answer_request"],
                 "demonstrates_overconfidence": ai_classification.get("demonstrates_overconfidence", False),
                 "seeks_validation": False,
                 "classification": "question" if "?" in input_text else "statement",
-                "ai_reasoning": f"Manual override for {manual_interaction_type}",
-                "manual_override": True
+                "ai_reasoning": f"Manual override for {final_interaction_type}",
+                "manual_override": True,
+                "is_question_response": is_q_response,
+                "thread_context": "answering_previous_question" if is_q_response else "normal_turn"
             }
         
         # OTHERWISE: Use AI classification as before
@@ -495,9 +509,7 @@ class ContextAgent:
         
         input_lower = input_text.lower()
         
-        # FIRST: Check if this is a response to a previous question (context-aware)
-        if state and self._is_response_to_previous_question(input_text, state):
-            return "question_response"
+        # Note: Do not return 'question_response' as primary type; this is handled as thread context flag elsewhere
         
         # ENHANCED PATTERN SYSTEM - Level 1: High-Confidence Patterns
         

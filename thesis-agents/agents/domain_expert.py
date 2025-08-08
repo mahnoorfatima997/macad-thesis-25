@@ -192,25 +192,47 @@ def analyze_conversation_context_for_search(state: ArchMentorState) -> Dict[str,
     return context
 
 def generate_context_aware_search_query(topic: str, context: Dict[str, Any]) -> str:
-    """
-    Generate a simplified, effective context-aware search query.
-    """
-    # Start with the main topic
-    base_query = topic.strip()
-    
-    # Simplify the query - just use the main topic with architecture
-    search_query = f"{base_query} architecture"
-    
-    # Add building type if available
-    if context.get("building_type") and context["building_type"] != "general":
-        building_type = context["building_type"].replace("_", " ")
-        search_query += f" {building_type}"
-    
-    # Limit query length
-    if len(search_query) > 150:
-        search_query = search_query[:150]
-    
-    return search_query
+    """Generate a robust, sanitized search query from topic + context."""
+    import re
+    import unicodedata
+
+    def _norm(s: str) -> str:
+        return unicodedata.normalize('NFKD', s or '').encode('ascii', 'ignore').decode('ascii')
+
+    raw = _norm((topic or '').strip())
+
+    # Remove conversational fillers/questions
+    fillers = [
+        r"\bi don'?t know\b", r"\bcan you\b", r"\bcould you\b", r"\bplease\b",
+        r"\bgive me\b", r"\bsome of them\b", r"\bshow me\b", r"\bprovide\b",
+        r"\bwhat is\b", r"\bwhat are\b", r"\bhow (do|to|can)\b", r"\bhelp\b"
+    ]
+    lowered = raw.lower()
+    for f in fillers:
+        lowered = re.sub(f, " ", lowered)
+
+    # Keep only words, spaces and dashes; collapse spaces
+    cleaned = re.sub(r"[^\w\s-]", " ", lowered)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+    parts = []
+    if cleaned:
+        parts.append(cleaned)
+
+    bt = context.get('building_type')
+    if bt and bt != 'general':
+        parts.append(_norm(bt).replace('_', ' '))
+
+    elems = context.get('specific_elements') or []
+    if elems:
+        parts.extend(_norm(e) for e in elems[:2])
+
+    parts.append('architecture')
+
+    query = " ".join(p for p in parts if p).strip()
+    if len(query) > 150:
+        query = query[:150]
+    return query
 
 class DomainExpertAgent:
     def __init__(self, domain="architecture"):
