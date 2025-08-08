@@ -126,10 +126,11 @@ st.markdown(f"""
 class BenchmarkDashboard:
     def __init__(self):
         # Fix path to work from both root and benchmarking directory
-        if Path("results").exists():
-            self.results_path = Path("results")
-        elif Path("benchmarking/results").exists():
+        # Check benchmarking/results first (the actual location)
+        if Path("benchmarking/results").exists():
             self.results_path = Path("benchmarking/results")
+        elif Path("results").exists():
+            self.results_path = Path("results")
         else:
             # Try absolute path as fallback
             self.results_path = Path(__file__).parent / "results"

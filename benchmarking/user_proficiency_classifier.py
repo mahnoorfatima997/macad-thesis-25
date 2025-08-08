@@ -761,11 +761,13 @@ class CognitiveFeatureExtractor:
         return self.feature_names
 
 
-class VotingClassifierCustom:
+from sklearn.base import BaseEstimator, ClassifierMixin
+
+class VotingClassifierCustom(BaseEstimator, ClassifierMixin):
     """Custom voting classifier for ensemble methods"""
     
-    def __init__(self, estimators):
-        self.estimators = estimators
+    def __init__(self, estimators=None):
+        self.estimators = estimators if estimators is not None else []
         self.fitted_estimators = []
         
     def fit(self, X, y):
@@ -824,6 +826,16 @@ class VotingClassifierCustom:
         """Score method for cross-validation compatibility"""
         predictions = self.predict(X)
         return np.mean(predictions == y)
+    
+    def get_params(self, deep=True):
+        """Get parameters for this estimator (required for sklearn compatibility)"""
+        return {"estimators": self.estimators}
+    
+    def set_params(self, **params):
+        """Set the parameters of this estimator (required for sklearn compatibility)"""
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
 
 
 def generate_training_data_from_sessions(session_files: List[str]) -> List[Tuple[pd.DataFrame, str]]:

@@ -205,21 +205,25 @@ class BenchmarkingPipeline:
             print(f"  Analyzing linkography for session {i+1}/{len(session_files)}...", end='\r')
             
             try:
-                # Load session data
-                session_data = self._load_session_data_for_linkography(session_file)
+                # Load evaluation report for this session
+                session_id = session_file.stem.replace('interactions_', '')
+                eval_report_path = self.output_dir / "evaluation_reports" / f"session_{session_id}_evaluation.json"
                 
-                if session_data and session_data.get('design_moves'):
+                if eval_report_path.exists():
+                    with open(eval_report_path, 'r') as f:
+                        session_data = json.load(f)
+                    
+                    # Load interaction data and add to session_data
+                    interactions_df = pd.read_csv(session_file)
+                    session_data['interaction_analysis'] = {
+                        'interactions': interactions_df.to_dict('records')
+                    }
+                    
                     # Perform linkography analysis
                     linkography_report = self.linkography_analyzer.analyze_session(session_data)
                     
                     if linkography_report:
-                        session_id = session_file.stem.replace('interactions_', '')
                         linkography_results[session_id] = linkography_report
-                        
-                        # Export individual session linkography data
-                        # Note: LinkographySessionAnalyzer handles export differently
-                        # output_path = self.output_dir / f"linkography_{session_id}.json"
-                        # self.linkography_analyzer.export_linkograph_data(str(output_path))
                 
             except Exception as e:
                 print(f"\n  [!]  Error in linkography analysis for {session_file.name}: {str(e)}")
@@ -282,33 +286,49 @@ class BenchmarkingPipeline:
             return {}
         
         # Aggregate metrics across sessions
-        total_moves = sum(r.get('moves_summary', {}).get('total_moves', 0) for r in linkography_results.values())
-        total_links = sum(r.get('links_summary', {}).get('total_links', 0) for r in linkography_results.values())
-        
-        # Calculate average similarity
+        # Handle LinkographSession objects
+        total_moves = 0
+        total_links = 0
         similarities = []
-        for result in linkography_results.values():
-            avg_sim = result.get('links_summary', {}).get('average_similarity', 0)
-            if avg_sim > 0:
-                similarities.append(avg_sim)
+        total_overload_sessions = 0
+        total_fixation_sessions = 0
+        total_breakthroughs = 0
+        
+        for session in linkography_results.values():
+            # Check if it's a LinkographSession object
+            if hasattr(session, 'overall_metrics'):
+                # Extract metrics from LinkographSession object
+                if session.linkographs:
+                    for linkograph in session.linkographs:
+                        total_moves += len(linkograph.moves)
+                        total_links += len(linkograph.links)
+                
+                if session.overall_metrics:
+                    if session.overall_metrics.avg_link_strength > 0:
+                        similarities.append(session.overall_metrics.avg_link_strength)
+                
+                # Check patterns
+                for pattern in session.patterns_detected:
+                    if pattern.pattern_type == 'cognitive_overload':
+                        total_overload_sessions += 1
+                        break
+                
+                for pattern in session.patterns_detected:
+                    if pattern.pattern_type == 'design_fixation':
+                        total_fixation_sessions += 1
+                        break
+                
+                total_breakthroughs += len([p for p in session.patterns_detected 
+                                          if p.pattern_type == 'creative_breakthrough'])
+            else:
+                # Fallback for dictionary format (if any)
+                total_moves += session.get('moves_summary', {}).get('total_moves', 0)
+                total_links += session.get('links_summary', {}).get('total_links', 0)
+                avg_sim = session.get('links_summary', {}).get('average_similarity', 0)
+                if avg_sim > 0:
+                    similarities.append(avg_sim)
         
         avg_similarity = np.mean(similarities) if similarities else 0
-        
-        # Aggregate cognitive patterns
-        total_overload_sessions = sum(
-            1 for r in linkography_results.values() 
-            if r.get('cognitive_patterns', {}).get('cognitive_overload', {}).get('overload_detected', False)
-        )
-        
-        total_fixation_sessions = sum(
-            1 for r in linkography_results.values() 
-            if r.get('cognitive_patterns', {}).get('design_fixation', {}).get('fixation_detected', False)
-        )
-        
-        total_breakthroughs = sum(
-            len(r.get('cognitive_patterns', {}).get('creative_breakthroughs', []))
-            for r in linkography_results.values()
-        )
         
         return {
             "metadata": {
@@ -330,8 +350,47 @@ class BenchmarkingPipeline:
                 "overload_percentage": (total_overload_sessions / len(linkography_results)) * 100 if linkography_results else 0,
                 "fixation_percentage": (total_fixation_sessions / len(linkography_results)) * 100 if linkography_results else 0
             },
-            "session_details": linkography_results
+            "session_details": self._convert_linkography_sessions_to_dict(linkography_results)
         }
+    
+    def _convert_linkography_sessions_to_dict(self, linkography_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert LinkographSession objects to dictionaries for serialization"""
+        converted = {}
+        for session_id, session in linkography_results.items():
+            if hasattr(session, 'overall_metrics'):
+                # Convert LinkographSession to dictionary
+                # Calculate totals from linkographs
+                total_moves_session = sum(len(lg.moves) for lg in session.linkographs) if session.linkographs else 0
+                total_links_session = sum(len(lg.links) for lg in session.linkographs) if session.linkographs else 0
+                
+                converted[session_id] = {
+                    'session_id': session.session_id,
+                    'user_id': session.user_id,
+                    'start_time': session.start_time,
+                    'end_time': session.end_time,
+                    'num_linkographs': len(session.linkographs),
+                    'total_moves': total_moves_session,
+                    'total_links': total_links_session,
+                    'overall_metrics': {
+                        'link_density': session.overall_metrics.link_density if session.overall_metrics else 0,
+                        'avg_link_strength': session.overall_metrics.avg_link_strength if session.overall_metrics else 0,
+                        'critical_move_ratio': session.overall_metrics.critical_move_ratio if session.overall_metrics else 0,
+                        'entropy': session.overall_metrics.entropy if session.overall_metrics else 0
+                    },
+                    'patterns_detected': [p.pattern_type for p in session.patterns_detected],
+                    'cognitive_mapping': {
+                        'cognitive_offloading_prevention': session.cognitive_mapping.cognitive_offloading_prevention,
+                        'deep_thinking_engagement': session.cognitive_mapping.deep_thinking_engagement,
+                        'knowledge_integration': session.cognitive_mapping.knowledge_integration,
+                        'scaffolding_effectiveness': session.cognitive_mapping.scaffolding_effectiveness,
+                        'learning_progression': session.cognitive_mapping.learning_progression,
+                        'metacognitive_awareness': session.cognitive_mapping.metacognitive_awareness
+                    } if session.cognitive_mapping else {}
+                }
+            else:
+                # Already a dictionary
+                converted[session_id] = session
+        return converted
     
     def _evaluate_sessions(self, session_files: List[Path]) -> Dict[str, Any]:
         """Evaluate cognitive metrics for all sessions"""

@@ -233,6 +233,7 @@ class CognitiveBenchmarkGenerator:
         self.scaler = StandardScaler()
         self.proficiency_clusters = None
         self.benchmark_profiles = {}
+        self.n_clusters = 3  # Default value, will be updated during clustering
         
         if model_path and Path(model_path).exists():
             self.load_model(model_path)
@@ -376,6 +377,7 @@ class CognitiveBenchmarkGenerator:
             
             cluster_labels = np.array(cluster_labels)
             optimal_clusters = len(np.unique(cluster_labels))
+            self.n_clusters = optimal_clusters  # Store for visualization
             
             # Create mock clustering for consistency
             self.proficiency_clusters = KMeans(n_clusters=optimal_clusters, random_state=42)
@@ -392,6 +394,7 @@ class CognitiveBenchmarkGenerator:
             
             # Use best number of clusters
             optimal_clusters = silhouette_scores.index(max(silhouette_scores)) + 2
+            self.n_clusters = optimal_clusters  # Store for visualization
             self.proficiency_clusters = KMeans(n_clusters=optimal_clusters, random_state=42)
             cluster_labels = self.proficiency_clusters.fit_predict(graph_features_scaled)
         
@@ -625,12 +628,12 @@ class CognitiveBenchmarkGenerator:
                         labels = self.proficiency_clusters.predict(graph_features_scaled)
                     
                     # Create custom colormap from thesis colors
-                    from matplotlib.colors import LinearSegmentedColormap
+                    from matplotlib.colors import LinearSegmentedColormap, hex2color
                     thesis_colors_rgb = [
-                        plt.colors.hex2color(get_proficiency_color('beginner')),
-                        plt.colors.hex2color(get_proficiency_color('intermediate')),
-                        plt.colors.hex2color(get_proficiency_color('advanced')),
-                        plt.colors.hex2color(get_proficiency_color('expert'))
+                        hex2color(get_proficiency_color('beginner')),
+                        hex2color(get_proficiency_color('intermediate')),
+                        hex2color(get_proficiency_color('advanced')),
+                        hex2color(get_proficiency_color('expert'))
                     ]
                     thesis_cmap = LinearSegmentedColormap.from_list('thesis_prof', thesis_colors_rgb[:self.n_clusters])
                     
