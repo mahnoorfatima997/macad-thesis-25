@@ -1,8 +1,8 @@
 {
-  "evaluation_timestamp": "2025-08-08T09:57:48.283683",
+  "evaluation_timestamp": "2025-08-08T14:32:02.590380",
   "session_metrics": {
     "session_id": "833c4065-db34-4198-a3f7-310dee537175",
-    "timestamp": "2025-08-08T09:57:48.274070",
+    "timestamp": "2025-08-08T14:32:02.579105",
     "duration_minutes": 0.0,
     "total_interactions": 1,
     "cognitive_offloading_prevention": {
@@ -80,24 +80,24 @@
       }
     },
     "improvement_over_baseline": {
-      "cognitive_offloading_rate_improvement": -7.7,
-      "deep_thinking_engagement_improvement": 42.9,
-      "knowledge_retention_improvement": 122.2,
-      "metacognitive_awareness_improvement": 60.0,
-      "creative_problem_solving_improvement": 75.0,
-      "critical_thinking_development_improvement": -16.7,
-      "overall_improvement": 45.9
+      "cognitive_offloading_rate_improvement": -34.6,
+      "deep_thinking_engagement_improvement": 19.0,
+      "knowledge_retention_improvement": 163.2,
+      "metacognitive_awareness_improvement": 29.0,
+      "creative_problem_solving_improvement": 89.2,
+      "critical_thinking_development_improvement": -30.6,
+      "overall_improvement": 39.2
     }
   },
   "comparative_analysis": {
     "vs_baseline": {
-      "cognitive_offloading_rate_improvement": -7.7,
-      "deep_thinking_engagement_improvement": 42.9,
-      "knowledge_retention_improvement": 122.2,
-      "metacognitive_awareness_improvement": 60.0,
-      "creative_problem_solving_improvement": 75.0,
-      "critical_thinking_development_improvement": -16.7,
-      "overall_improvement": 45.9
+      "cognitive_offloading_rate_improvement": -34.6,
+      "deep_thinking_engagement_improvement": 19.0,
+      "knowledge_retention_improvement": 163.2,
+      "metacognitive_awareness_improvement": 29.0,
+      "creative_problem_solving_improvement": 89.2,
+      "critical_thinking_development_improvement": -30.6,
+      "overall_improvement": 39.2
     },
     "effectiveness_summary": {
       "cognitive_offloading_prevention": "Needs Improvement",

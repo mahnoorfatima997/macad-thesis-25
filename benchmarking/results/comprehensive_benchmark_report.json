@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-08-08T09:58:11.287354",
+    "generated_at": "2025-08-08T14:32:25.934103",
     "system_version": "1.0.0",
     "sessions_analyzed": 5
   },
@@ -9,7 +9,7 @@
       "Analyzed 5 tutoring sessions",
       "Cognitive offloading prevention rate: 41.5%",
       "Deep thinking engagement: 55.5%",
-      "Average improvement over baseline: 26.5%"
+      "Average improvement over baseline: 20.1%"
     ],
     "system_effectiveness": "Moderately Effective - Room for improvement",
     "primary_strengths": [],
@@ -107,7 +107,7 @@
     "avg_deep_thinking_engagement": 0.555,
     "avg_scaffolding_effectiveness": 0.4206,
     "avg_knowledge_integration": 0.9334,
-    "avg_improvement_over_baseline": 26.5,
+    "avg_improvement_over_baseline": 20.14,
     "sessions_with_progression": 0,
     "avg_agent_coordination": 0.3466
   },

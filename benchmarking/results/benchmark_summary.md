@@ -1,13 +1,13 @@
 # Mega Architectural Mentor - Benchmarking Report
 
-Generated: 2025-08-08T09:58:11.287354
+Generated: 2025-08-08T14:32:25.934103
 
 ## Executive Summary
 
 - Analyzed 5 tutoring sessions
 - Cognitive offloading prevention rate: 41.5%
 - Deep thinking engagement: 55.5%
-- Average improvement over baseline: 26.5%
+- Average improvement over baseline: 20.1%
 
 **Overall Effectiveness:** Moderately Effective - Room for improvement
 

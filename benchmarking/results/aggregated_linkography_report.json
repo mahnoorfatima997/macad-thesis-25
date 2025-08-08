@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2025-08-08T09:57:48.717417",
+    "timestamp": "2025-08-08T14:32:03.018866",
     "total_sessions": 5,
     "analysis_type": "aggregated_linkography"
   },
@@ -22,8 +22,8 @@
     "0bb1d410-484f-4f9d-bd16-851fa8ef9306": {
       "session_id": "0bb1d410-484f-4f9d-bd16-851fa8ef9306",
       "user_id": "unknown",
-      "start_time": "2025-08-08T09:57:48.233165",
-      "end_time": "2025-08-08T09:58:56.633165",
+      "start_time": "2025-08-08T14:32:02.535136",
+      "end_time": "2025-08-08T14:33:10.935136",
       "num_linkographs": 3,
       "total_moves": 3,
       "total_links": 0,
@@ -46,8 +46,8 @@
     "2f042b32-2ff5-449b-a7be-b3d2993cd27b": {
       "session_id": "2f042b32-2ff5-449b-a7be-b3d2993cd27b",
       "user_id": "unknown",
-      "start_time": "2025-08-08T09:57:48.245963",
-      "end_time": "2025-08-08T10:01:14.645963",
+      "start_time": "2025-08-08T14:32:02.547135",
+      "end_time": "2025-08-08T14:35:28.947135",
       "num_linkographs": 3,
       "total_moves": 5,
       "total_links": 4,
@@ -77,8 +77,8 @@
     "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954": {
       "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
       "user_id": "unknown",
-      "start_time": "2025-08-08T09:57:48.255583",
-      "end_time": "2025-08-08T10:03:37.455583",
+      "start_time": "2025-08-08T14:32:02.556131",
+      "end_time": "2025-08-08T14:37:51.756131",
       "num_linkographs": 3,
       "total_moves": 8,
       "total_links": 14,
@@ -114,8 +114,8 @@
     "66c03479-fbc3-4ef8-98ee-d1a36936d997": {
       "session_id": "66c03479-fbc3-4ef8-98ee-d1a36936d997",
       "user_id": "unknown",
-      "start_time": "2025-08-08T09:57:48.263905",
-      "end_time": "2025-08-08T11:07:48.263905",
+      "start_time": "2025-08-08T14:32:02.565192",
+      "end_time": "2025-08-08T15:42:02.565192",
       "num_linkographs": 3,
       "total_moves": 15,
       "total_links": 60,
@@ -165,8 +165,8 @@
     "833c4065-db34-4198-a3f7-310dee537175": {
       "session_id": "833c4065-db34-4198-a3f7-310dee537175",
       "user_id": "unknown",
-      "start_time": "2025-08-08T09:57:48.274070",
-      "end_time": "2025-08-08T09:57:48.274070",
+      "start_time": "2025-08-08T14:32:02.579105",
+      "end_time": "2025-08-08T14:32:02.579105",
       "num_linkographs": 1,
       "total_moves": 1,
       "total_links": 0,

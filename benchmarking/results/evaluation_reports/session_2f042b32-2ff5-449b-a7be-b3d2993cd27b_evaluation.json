@@ -1,8 +1,8 @@
 {
-  "evaluation_timestamp": "2025-08-08T09:57:48.281683",
+  "evaluation_timestamp": "2025-08-08T14:32:02.587890",
   "session_metrics": {
     "session_id": "2f042b32-2ff5-449b-a7be-b3d2993cd27b",
-    "timestamp": "2025-08-08T09:57:48.245963",
+    "timestamp": "2025-08-08T14:32:02.547135",
     "duration_minutes": 3.44,
     "total_interactions": 5,
     "cognitive_offloading_prevention": {
@@ -80,24 +80,24 @@
       }
     },
     "improvement_over_baseline": {
-      "cognitive_offloading_rate_improvement": -16.9,
-      "deep_thinking_engagement_improvement": 14.3,
-      "knowledge_retention_improvement": 122.2,
-      "metacognitive_awareness_improvement": 28.0,
-      "creative_problem_solving_improvement": -32.5,
-      "critical_thinking_development_improvement": -25.0,
-      "overall_improvement": 15.0
+      "cognitive_offloading_rate_improvement": -46.2,
+      "deep_thinking_engagement_improvement": -4.8,
+      "knowledge_retention_improvement": 163.2,
+      "metacognitive_awareness_improvement": 3.2,
+      "creative_problem_solving_improvement": -27.0,
+      "critical_thinking_development_improvement": -37.5,
+      "overall_improvement": 8.5
     }
   },
   "comparative_analysis": {
     "vs_baseline": {
-      "cognitive_offloading_rate_improvement": -16.9,
-      "deep_thinking_engagement_improvement": 14.3,
-      "knowledge_retention_improvement": 122.2,
-      "metacognitive_awareness_improvement": 28.0,
-      "creative_problem_solving_improvement": -32.5,
-      "critical_thinking_development_improvement": -25.0,
-      "overall_improvement": 15.0
+      "cognitive_offloading_rate_improvement": -46.2,
+      "deep_thinking_engagement_improvement": -4.8,
+      "knowledge_retention_improvement": 163.2,
+      "metacognitive_awareness_improvement": 3.2,
+      "creative_problem_solving_improvement": -27.0,
+      "critical_thinking_development_improvement": -37.5,
+      "overall_improvement": 8.5
     },
     "effectiveness_summary": {
       "cognitive_offloading_prevention": "Needs Improvement",

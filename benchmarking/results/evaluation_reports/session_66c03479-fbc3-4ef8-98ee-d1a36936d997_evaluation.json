@@ -1,8 +1,8 @@
 {
-  "evaluation_timestamp": "2025-08-08T09:57:48.282682",
+  "evaluation_timestamp": "2025-08-08T14:32:02.587890",
   "session_metrics": {
     "session_id": "66c03479-fbc3-4ef8-98ee-d1a36936d997",
-    "timestamp": "2025-08-08T09:57:48.263905",
+    "timestamp": "2025-08-08T14:32:02.565192",
     "duration_minutes": 70.0,
     "total_interactions": 15,
     "cognitive_offloading_prevention": {
@@ -85,24 +85,24 @@
       }
     },
     "improvement_over_baseline": {
-      "cognitive_offloading_rate_improvement": -2.6,
-      "deep_thinking_engagement_improvement": 90.5,
-      "knowledge_retention_improvement": 48.1,
-      "metacognitive_awareness_improvement": -97.7,
-      "creative_problem_solving_improvement": -54.2,
-      "critical_thinking_development_improvement": 73.9,
-      "overall_improvement": 9.7
+      "cognitive_offloading_rate_improvement": -28.2,
+      "deep_thinking_engagement_improvement": 58.7,
+      "knowledge_retention_improvement": 75.4,
+      "metacognitive_awareness_improvement": -98.2,
+      "creative_problem_solving_improvement": -50.5,
+      "critical_thinking_development_improvement": 44.9,
+      "overall_improvement": 0.4
     }
   },
   "comparative_analysis": {
     "vs_baseline": {
-      "cognitive_offloading_rate_improvement": -2.6,
-      "deep_thinking_engagement_improvement": 90.5,
-      "knowledge_retention_improvement": 48.1,
-      "metacognitive_awareness_improvement": -97.7,
-      "creative_problem_solving_improvement": -54.2,
-      "critical_thinking_development_improvement": 73.9,
-      "overall_improvement": 9.7
+      "cognitive_offloading_rate_improvement": -28.2,
+      "deep_thinking_engagement_improvement": 58.7,
+      "knowledge_retention_improvement": 75.4,
+      "metacognitive_awareness_improvement": -98.2,
+      "creative_problem_solving_improvement": -50.5,
+      "critical_thinking_development_improvement": 44.9,
+      "overall_improvement": 0.4
     },
     "effectiveness_summary": {
       "cognitive_offloading_prevention": "Needs Improvement",
