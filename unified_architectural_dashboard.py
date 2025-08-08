@@ -2,6 +2,8 @@ import streamlit as st
 import os
 import asyncio
 import json
+import tempfile
+from PIL import Image
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 import pandas as pd
@@ -14,13 +16,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import mega mentor components
-from mega_architectural_mentor import MegaArchitecturalMentor
+from mega_architectural_mentor import MegaArchitecturalMentor, get_raw_gpt_response
 
-"""
-Unified dashboard update:
-- Remove multiple-page navigation; use single combined flow
-- Integrate PhaseProgressionSystem directly in the chat workflow
-"""
 
 from phase_progression_system import PhaseProgressionSystem
 # Cached resources (after imports)
@@ -54,8 +51,10 @@ except ImportError:
 from thesis_tests.test_dashboard import TestDashboard
 
 # Import data collection components                                    
-from thesis_tests.logging_system import TestSessionLogger
 from thesis_tests.data_models import TestGroup, TestPhase
+import sys
+sys.path.append('./thesis-agents')
+from data_collection.interaction_logger import InteractionLogger
 import uuid
 
 # Configure Streamlit for clean interface
@@ -240,6 +239,17 @@ def initialize_session_state():
     if 'phase_session_id' not in st.session_state:
         st.session_state.phase_session_id = None
     
+    # Participant/session meta for sidebar
+    if 'participant_id' not in st.session_state:
+        st.session_state.participant_id = "unified_user"
+    if 'participant_name' not in st.session_state:
+        st.session_state.participant_name = ""
+    if 'session_start_time' not in st.session_state:
+        st.session_state.session_start_time = None
+    # UI preferences
+    if 'show_routing_meta' not in st.session_state:
+        st.session_state.show_routing_meta = False
+    
     # Socratic dialogue control flags
     if 'awaiting_socratic_response' not in st.session_state:
         st.session_state.awaiting_socratic_response = False
@@ -262,12 +272,8 @@ class UnifiedArchitecturalDashboard:
         self.phase_system = get_cached_phase_system()
 
         # Data collector: store once in session
-        if 'data_collector' not in st.session_state:
-            st.session_state.data_collector = TestSessionLogger(
-                session_id="unified_dashboard_session",
-                participant_id="unified_user",
-                test_group=TestGroup.MENTOR
-            )
+        if 'data_collector' not in st.session_state or not isinstance(st.session_state.data_collector, InteractionLogger):
+            st.session_state.data_collector = InteractionLogger(session_id="unified_dashboard_session")
         self.data_collector = st.session_state.data_collector
 
         # Test dashboard lazy load (spacy heavy)
@@ -329,10 +335,47 @@ class UnifiedArchitecturalDashboard:
             else:
                 st.error("❌ API Key: Missing")
             
+            # Pre-Test placed near top
+            self._render_inline_pretest()
+
+            # Participant info
+            st.markdown("### 👤 Participant")
+            pid = st.text_input("Participant ID", value=st.session_state.participant_id)
+            pname = st.text_input("Name (optional)", value=st.session_state.participant_name)
+            st.session_state.participant_id = pid or "unified_user"
+            st.session_state.participant_name = pname or ""
+            # keep logger in sync
+            try:
+                # InteractionLogger doesn't have participant_id, but we can store it in metadata
+                pass
+            except Exception:
+                pass
+            
+            # Reset data collector if needed
+            if st.button("🔄 Reset Data Collector"):
+                st.session_state.data_collector = InteractionLogger(session_id="unified_dashboard_session")
+                st.success("Data collector reset!")
+                st.rerun()
+
+            # Session meta
+            st.markdown("### 🕒 Session")
+            # set start time when a session id is first created
+            if st.session_state.session_id and not st.session_state.session_start_time:
+                st.session_state.session_start_time = datetime.now()
+            st.caption(f"ID: {st.session_state.session_id or '—'}")
+            if st.session_state.session_start_time:
+                st.caption(f"Started: {st.session_state.session_start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+                try:
+                    elapsed_min = (datetime.now() - st.session_state.session_start_time).total_seconds() / 60.0
+                    st.caption(f"Elapsed: {elapsed_min:.1f} min")
+                except Exception:
+                    pass
+
             # System status
             st.markdown("### 🔧 System Status")
             st.info("**Vision**: GPT Vision Available")
             st.info("**Agents**: Multi-Agent System Ready")
+            st.checkbox("Show route/agents meta in replies", key="show_routing_meta")
             
             # Current session info
             if st.session_state.analysis_complete:
@@ -380,6 +423,14 @@ class UnifiedArchitecturalDashboard:
             st.warning("No data to export")
             return
         
+        # Export comprehensive data using InteractionLogger
+        try:
+            summary = self.data_collector.export_for_thesis_analysis()
+            st.success("✅ Session data exported to thesis_data/")
+            st.info(f"Files created: interactions_{self.data_collector.session_id}.csv, design_moves_{self.data_collector.session_id}.csv, session_summary_{self.data_collector.session_id}.json, full_log_{self.data_collector.session_id}.json")
+        except Exception as e:
+            st.warning(f"Data export warning: {e}")
+        
         # Prepare data for export
         export_data = {
             "timestamp": datetime.now().isoformat(),
@@ -406,6 +457,8 @@ class UnifiedArchitecturalDashboard:
             if mode == "MENTOR":
                 # Use the full multi-agent mentor system
                 response = await self._process_mentor_mode(user_input)
+            elif mode == "RAW_GPT":
+                response = await self._process_raw_gpt_mode(user_input)
             elif mode == "GENERIC_AI":
                 # Use generic AI response
                 response = await self._process_generic_ai_mode(user_input)
@@ -449,11 +502,12 @@ class UnifiedArchitecturalDashboard:
             domain="architecture"
         )
         
-        # Add the current user input to the state
-        state.messages.append({
-            "role": "user",
-            "content": user_input
-        })
+        # Ensure we don't duplicate the same user message (we already appended to session history)
+        if not state.messages or state.messages[-1].get("role") != "user" or state.messages[-1].get("content") != user_input:
+            state.messages.append({
+                "role": "user",
+                "content": user_input
+            })
         
         # Process with orchestrator
         result = await self.orchestrator.process_student_input(state)
@@ -486,13 +540,62 @@ class UnifiedArchitecturalDashboard:
                      "engagement_level": 0.8,
                      "confidence_score": 0.8
                  },
-                 metadata={"mode": "MENTOR", "routing_path": "mentor_mode", "agents_used": ["orchestrator"]}
+                  metadata={
+                      **{"mode": "MENTOR"},
+                      **(response_metadata if isinstance(response_metadata, dict) else {})
+                  }
              )
             
             self.data_collector.log_interaction(interaction)
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
         
+        return response
+
+    async def _process_raw_gpt_mode(self, user_input: str) -> str:
+        """Process using direct Raw GPT (no multi-agent)"""
+        # Initialize session if needed
+        if not st.session_state.session_id:
+            st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        # Build project context from analysis if available
+        project_context = ""
+        if st.session_state.analysis_results:
+            ta = st.session_state.analysis_results.get('text_analysis', {})
+            bt = ta.get('building_type')
+            if bt:
+                project_context = f"Building type: {bt}"
+        # Call Raw GPT helper
+        try:
+            result = get_raw_gpt_response(user_input, project_context)
+        except Exception as e:
+            return f"I apologize, but I encountered an error calling Raw GPT: {e}"
+        response = result.get("response", "I couldn't generate a response.")
+        response_metadata = result.get("metadata", {})
+        # Store metadata for suffix display
+        st.session_state.last_response_metadata = response_metadata
+        # Log interaction
+        try:
+            from thesis_tests.data_models import InteractionData, TestPhase
+            interaction = InteractionData(
+                id=str(uuid.uuid4()),
+                session_id=st.session_state.session_id,
+                timestamp=datetime.now(),
+                phase=TestPhase.IDEATION,
+                interaction_type="raw_gpt_response",
+                user_input=user_input,
+                system_response=response,
+                response_time=1.0,
+                cognitive_metrics={
+                    "understanding_level": 0.7,
+                    "confidence_level": 0.6,
+                    "engagement_level": 0.8,
+                    "confidence_score": 0.7
+                },
+                metadata={**{"mode": "RAW_GPT"}, **response_metadata}
+            )
+            self.data_collector.log_interaction(interaction)
+        except Exception as e:
+            print(f"Warning: Could not log Raw GPT interaction: {e}")
         return response
     
     async def _process_generic_ai_mode(self, user_input: str) -> str:
@@ -596,7 +699,7 @@ class UnifiedArchitecturalDashboard:
             # Mode selection dropdown (matching mega_architectural_mentor style)
             current_mode = st.selectbox(
                 "🤖 Select Testing Mode:",
-                ["MENTOR", "GENERIC_AI", "CONTROL"],
+                ["MENTOR", "RAW_GPT", "GENERIC_AI", "CONTROL"],
                 index=0,
                 help="MENTOR: Full multi-agent system with cognitive enhancement\nGENERIC_AI: Basic AI responses for comparison\nCONTROL: No AI assistance for baseline testing"
             )
@@ -634,6 +737,12 @@ class UnifiedArchitecturalDashboard:
                 height=120,
                 help="Provide details about your architectural project, design goals, constraints, or specific questions"
             )
+            # Optional image upload (to match Mega Mentor capabilities)
+            uploaded_file = st.file_uploader(
+                "📁 Upload your architectural drawing (optional)",
+                type=['png', 'jpg', 'jpeg'],
+                help="Upload a clear image of your architectural design, plan, or sketch"
+            )
             
             # Start analysis button
             # Form to avoid reruns while typing
@@ -658,9 +767,16 @@ class UnifiedArchitecturalDashboard:
                                 loop = asyncio.new_event_loop()
                                 asyncio.set_event_loop(loop)
                                 try:
+                                    temp_image_path = None
+                                    if uploaded_file is not None:
+                                        image = Image.open(uploaded_file)
+                                        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                                            image.save(tmp_file.name)
+                                            temp_image_path = tmp_file.name
                                     results = loop.run_until_complete(
                                         self.mentor.analyze_design(
                                             design_brief=project_description,
+                                            image_path=temp_image_path,
                                             skill_level=skill_level,
                                             domain="architecture"
                                         )
@@ -696,37 +812,63 @@ class UnifiedArchitecturalDashboard:
                             st.session_state.analysis_results = results
                             st.session_state.analysis_complete = True
                             
-                            st.success("✅ Ready! Proceed to Pre-Test below or start chatting.")
+                            # Ensure phase session initialized for immediate first response
+                            if st.session_state.phase_system is None:
+                                st.session_state.phase_system = self.phase_system
+                            if st.session_state.phase_session_id is None:
+                                st.session_state.phase_session_id = f"phase_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                                self.phase_system.start_session(st.session_state.phase_session_id)
+                            
+                            # Immediately treat the provided project description as the first user prompt
+                            initial_user_input = project_description
+                            if initial_user_input and initial_user_input.strip():
+                                # Add user message to chat history (for UI continuity)
+                                st.session_state.messages.append({
+                                    "role": "user",
+                                    "content": initial_user_input,
+                                    "timestamp": datetime.now().isoformat()
+                                })
+                                
+                                # Process response based on current mode
+                                response = asyncio.run(self.process_chat_response(initial_user_input, current_mode))
+                                
+                                # Optionally include the next Socratic question in the SAME assistant message
+                                combined_response = response
+                                if not st.session_state.awaiting_socratic_response:
+                                    next_question = self.phase_system.get_next_question(st.session_state.phase_session_id)
+                                    if next_question and not self._response_contains_questions(response):
+                                        combined_response = f"{response}\n\n{next_question.question_text}"
+                                        st.session_state.awaiting_socratic_response = True
+                                        st.session_state.current_question_id = next_question.question_id
+                                
+                                # Include routing/agents metadata if available
+                                response_metadata = st.session_state.get("last_response_metadata", {})
+                                routing_path = response_metadata.get("routing_path") or response_metadata.get("route")
+                                agents_used = response_metadata.get("agents_used") or []
+                                meta_suffix = ""
+                                if routing_path or agents_used:
+                                    used = ", ".join(agents_used) if agents_used else ""
+                                    meta_suffix = f"\n\n— Route: {routing_path or 'unknown'}{f' | Agents: {used}' if used else ''}"
+                                final_message = combined_response + (meta_suffix if st.session_state.get('show_routing_meta', False) else "")
+                                
+                                # Append assistant message
+                                st.session_state.messages.append({
+                                    "role": "assistant",
+                                    "content": final_message,
+                                    "timestamp": datetime.now().isoformat(),
+                                    "mentor_type": current_mode
+                                })
+                            
+                            st.success("✅ Analysis complete. Multi-agent mentor has responded to your initial prompt.")
                             st.rerun()
                             
                         except Exception as e:
                             st.error(f"❌ Analysis failed: {str(e)}")
         
-        # Render Pre-Test inline (single flow)
-        self._render_inline_pretest()
+        # Pre-Test is rendered in the sidebar now
 
         # Chat interface (after or during pre-test)
         if st.session_state.analysis_complete:
-            # Mentor acknowledgment
-            if len(st.session_state.messages) == 0:
-                with st.columns([1, 2, 1])[1]:  # Center column
-                    st.markdown("---")
-                    st.markdown("""
-                    <div style="background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px 0; 
-                                border-left: 5px solid #4CAF50;">
-                        <div style="color: white; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-                            🎓 Mentor Ready
-                        </div>
-                        <div style="color: #f0f0f0; font-size: 14px; line-height: 1.5;">
-                            I've analyzed your <strong>{building_type}</strong> project and identified key areas for exploration. 
-                            I'm ready to help you with specific questions about design improvements, technical requirements, 
-                            precedents, or any aspect you'd like to explore further. What would you like to focus on?
-                        </div>
-                    </div>
-                    """.format(
-                        building_type=st.session_state.analysis_results.get('text_analysis', {}).get('building_type', 'architectural').title()
-                    ), unsafe_allow_html=True)
-            
             # Chat interface - confined to center column
             with st.columns([1, 2, 1])[1]:  # Center column
                 # Display chat messages
@@ -744,22 +886,50 @@ class UnifiedArchitecturalDashboard:
                         "timestamp": datetime.now().isoformat()
                     })
                     
-                    # Log to data collector - create InteractionData object
+                    # Log to data collector using InteractionLogger
                     try:
-                        from thesis_tests.data_models import InteractionData, TestPhase
+                        # Get metadata from orchestrator response
+                        response_metadata = st.session_state.get("last_response_metadata", {})
+                        routing_path = response_metadata.get("routing_path") or response_metadata.get("route") or "mentor_mode"
+                        agents_used = response_metadata.get("agents_used") or ["orchestrator"]
+                        cognitive_flags = response_metadata.get("cognitive_flags") or []
                         
-                        interaction_data = InteractionData(
-                            id=str(uuid.uuid4()),
-                            session_id=st.session_state.session_id,
-                            timestamp=datetime.now(),
-                            phase=TestPhase.IDEATION,  # Default phase
-                            interaction_type="chat",
-                            user_input=user_input,
-                            system_response="Processing...",
-                            response_time=0.0,
-                            metadata={"mode": st.session_state.current_mode, "type": "user_input"}
+                        # Log the interaction with comprehensive metadata
+                        self.data_collector.log_interaction(
+                            student_input=user_input,
+                            agent_response="Processing...",  # Will be updated after response
+                            routing_path=routing_path,
+                            agents_used=agents_used,
+                            response_type="mentor_response",
+                            cognitive_flags=cognitive_flags,
+                            student_skill_level="intermediate",
+                            confidence_score=0.8,
+                            sources_used=response_metadata.get("sources", []),
+                            response_time=1.0,
+                            context_classification={
+                                "understanding_level": "medium",
+                                "confidence_level": "medium", 
+                                "engagement_level": "high"
+                            },
+                            metadata={
+                                "mode": st.session_state.current_mode,
+                                "phase_analysis": {
+                                    "phase": "ideation",
+                                    "confidence": 0.8
+                                },
+                                "scientific_metrics": {
+                                    "cognitive_offloading_prevention": 0.8,
+                                    "deep_thinking_encouragement": 0.9,
+                                    "knowledge_integration": 0.7,
+                                    "scaffolding_effectiveness": 0.8
+                                },
+                                "cognitive_state": {
+                                    "engagement": "high",
+                                    "confidence": "medium",
+                                    "understanding": "medium"
+                                }
+                            }
                         )
-                        self.data_collector.log_interaction(interaction_data)
                     except Exception as e:
                         st.warning(f"Data logging error: {e}")
                     
@@ -810,7 +980,7 @@ class UnifiedArchitecturalDashboard:
                             if routing_path or agents_used:
                                 used = ", ".join(agents_used) if agents_used else ""
                                 meta_suffix = f"\n\n— Route: {routing_path or 'unknown'}{f' | Agents: {used}' if used else ''}"
-                            final_message = combined_response + meta_suffix
+                            final_message = combined_response + (meta_suffix if st.session_state.get('show_routing_meta', False) else "")
 
                             st.session_state.messages.append({
                                 "role": "assistant",
@@ -819,13 +989,26 @@ class UnifiedArchitecturalDashboard:
                                 "mentor_type": st.session_state.current_mode
                             })
                             
-                            # Update data collector with response - update the last interaction
+                            # Update data collector with response
                             try:
                                 if self.data_collector.interactions:
-                                    # Update the last interaction's system_response
-                                    self.data_collector.interactions[-1].system_response = response
-                                    # Re-log the updated interaction
-                                    self.data_collector.log_interaction(self.data_collector.interactions[-1])
+                                    # Update the last interaction's agent_response
+                                    self.data_collector.interactions[-1]["agent_response"] = response
+                                    
+                                    # Also update checklist via phase system using user+assistant contents
+                                    try:
+                                        delta = self.phase_system.update_checklist_from_interaction(
+                                            st.session_state.phase_session_id,
+                                            user_input,
+                                            response
+                                        )
+                                        # Merge delta into metadata for this turn
+                                        if isinstance(delta, dict):
+                                            response_metadata = st.session_state.get("last_response_metadata", {}) or {}
+                                            response_metadata["checklist_delta"] = delta.get("checklist_delta", [])
+                                            st.session_state.last_response_metadata = response_metadata
+                                    except Exception as _e:
+                                        pass
                             except Exception as e:
                                 st.warning(f"Response logging error: {e}")
                             
@@ -873,28 +1056,15 @@ class UnifiedArchitecturalDashboard:
                         "duration": 0
                     }
                     
-                    # Analyze phase progression from phase system summary when available
-                    summary = self.phase_system.get_session_summary(st.session_state.phase_session_id)
-                    current_phase = summary.get('current_phase', 'ideation')
-                    phase_progress = summary.get('overall_score', 0) * 20  # map 0-5 to 0-100 for bar feel
+                    # Analyze phase progression from conversation content and interaction patterns
+                    current_phase, phase_progress = self._calculate_conversation_progress(chat_interactions)
                     
                     # Display phase progression
                     col1, col2 = st.columns(2)
                     
                     with col1:
                         st.markdown("**📋 Current Design Phase**")
-                        # If no graded steps yet, derive a lightweight progress proxy
-                        proxy_progress = phase_progress
-                        try:
-                            # derive from current step completion if available
-                            session = self.phase_system.sessions.get(st.session_state.phase_session_id)
-                            if session:
-                                pp = session.phase_progress.get(session.current_phase)
-                                if pp:
-                                    proxy_progress = max(proxy_progress, (len(pp.completed_steps) / 4) * 100)
-                        except Exception:
-                            pass
-                        st.info(f"**{current_phase}** - {proxy_progress:.0f}% Complete")
+                        st.info(f"**{current_phase}** - {phase_progress:.0f}% Complete")
                         
                         # Phase indicators
                         phases = ['ideation', 'visualization', 'materialization']
@@ -950,6 +1120,95 @@ class UnifiedArchitecturalDashboard:
      
     # Benchmarking UI removed entirely
     
+    def _calculate_conversation_progress(self, chat_interactions: List[Dict]) -> tuple[str, float]:
+        """Calculate current phase and progress based on conversation content"""
+        if not chat_interactions:
+            return "ideation", 0.0
+        
+        # Combine all conversation text for analysis
+        all_text = ""
+        for interaction in chat_interactions:
+            user_input = interaction.get("data", {}).get("input", "")
+            response = interaction.get("data", {}).get("response", "")
+            all_text += f" {user_input} {response}"
+        
+        all_text = all_text.lower()
+        
+        # Phase detection based on keywords and conversation patterns
+        phase_scores = {
+            "ideation": 0,
+            "visualization": 0, 
+            "materialization": 0
+        }
+        
+        # Ideation keywords (concept, requirements, goals, etc.)
+        ideation_keywords = [
+            "concept", "idea", "approach", "strategy", "vision", "goal", "objective", 
+            "purpose", "intention", "brainstorm", "explore", "consider", "think about", 
+            "what if", "imagine", "envision", "precedent", "example", "reference", 
+            "inspiration", "influence", "site", "context", "requirements", "program",
+            "need", "want", "should", "could", "might", "maybe", "perhaps"
+        ]
+        
+        # Visualization keywords (form, space, layout, etc.)
+        visualization_keywords = [
+            "form", "shape", "massing", "volume", "proportion", "scale", "circulation", 
+            "flow", "layout", "plan", "section", "elevation", "sketch", "drawing", 
+            "model", "3d", "render", "visualize", "spatial", "arrangement", 
+            "composition", "geometry", "structure", "lighting", "spatial organization",
+            "room", "space", "area", "zone", "floor", "level", "height", "width",
+            "dimension", "size", "placement", "position", "orientation"
+        ]
+        
+        # Materialization keywords (construction, details, etc.)
+        materialization_keywords = [
+            "construction", "structure", "system", "detail", "material", "technical", 
+            "engineering", "performance", "cost", "budget", "timeline", "schedule", 
+            "specification", "implementation", "fabrication", "assembly", "installation", 
+            "maintenance", "durability", "sustainability", "efficiency", "code", "standard",
+            "wall", "floor", "ceiling", "door", "window", "roof", "foundation"
+        ]
+        
+        # Score each phase based on keyword frequency
+        for keyword in ideation_keywords:
+            if keyword in all_text:
+                phase_scores["ideation"] += 1
+        
+        for keyword in visualization_keywords:
+            if keyword in all_text:
+                phase_scores["visualization"] += 1
+                
+        for keyword in materialization_keywords:
+            if keyword in all_text:
+                phase_scores["materialization"] += 1
+        
+        # Determine current phase based on highest score
+        current_phase = max(phase_scores, key=phase_scores.get)
+        max_score = phase_scores[current_phase]
+        
+        # Calculate progress based on interaction depth and phase completion
+        # Base progress on number of interactions and keyword density
+        interaction_count = len(chat_interactions)
+        keyword_density = max_score / len(all_text.split()) * 1000  # normalize per 1000 words
+        
+        # Progress calculation: combine interaction count and keyword density
+        # Each interaction contributes ~15-25% progress, keyword density adds 0-20%
+        base_progress = min(interaction_count * 20, 80)  # cap at 80% from interactions
+        keyword_bonus = min(keyword_density * 2, 20)  # up to 20% from keywords
+        total_progress = min(base_progress + keyword_bonus, 100)
+        
+        # Phase transitions based on conversation depth
+        if current_phase == "ideation" and total_progress > 60:
+            # Move to visualization if ideation is well explored
+            current_phase = "visualization"
+            total_progress = max(0, total_progress - 40)  # reset progress for new phase
+        elif current_phase == "visualization" and total_progress > 70:
+            # Move to materialization if visualization is well explored
+            current_phase = "materialization"
+            total_progress = max(0, total_progress - 50)  # reset progress for new phase
+        
+        return current_phase, total_progress
+
     def _analyze_phase_progression(self, interactions: List[Dict]) -> Dict[str, Any]:
         """Analyze design phase progression from interactions"""
         if not interactions:
@@ -1356,15 +1615,16 @@ class UnifiedArchitecturalDashboard:
             if 'pre_test_component' not in st.session_state:
                 st.session_state.pre_test_component = PreTestAssessment()
 
-            st.markdown("---")
-            st.subheader("Pre-Test (optional)")
-            with st.expander("Show/Hide Pre-Test", expanded=False):
-                comp = st.session_state.pre_test_component
-                comp.render_critical_thinking_questions()
-                comp.render_architectural_knowledge_questions()
-                comp.render_spatial_reasoning_questions()
-                if st.button("Save Pre-Test Responses"):
-                    st.success("Pre-test responses saved for this session.")
+            # Render Pre-Test controls in the sidebar instead of main chat
+            with st.sidebar:
+                st.markdown("### 🧪 Pre-Test (optional)")
+                with st.expander("Show/Hide Pre-Test", expanded=False):
+                    comp = st.session_state.pre_test_component
+                    comp.render_critical_thinking_questions()
+                    comp.render_architectural_knowledge_questions()
+                    comp.render_spatial_reasoning_questions()
+                    if st.button("Save Pre-Test Responses", key="save_pretest_sidebar"):
+                        st.success("Pre-test responses saved for this session.")
         except Exception as e:
             st.info("Pre-test tools unavailable. Skipping pre-test section.")
 

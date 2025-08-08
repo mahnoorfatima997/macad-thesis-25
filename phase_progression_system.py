@@ -80,6 +80,9 @@ class SessionState:
     overall_score: float = 0.0
     session_start: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
+    # Added rubric/checklist tracking and timeline
+    checklist_state: Dict[str, Dict[str, Any]] = field(default_factory=dict)  # phase -> item_id -> state
+    timeline: List[Dict[str, Any]] = field(default_factory=list)
 
 class SocraticQuestionBank:
     """Manages the Socratic question bank for all phases"""
@@ -463,6 +466,21 @@ class PhaseProgressionSystem:
             DesignPhase.VISUALIZATION: 3.5,
             DesignPhase.MATERIALIZATION: 4.0
         }
+        # Minimal rubric items (extensible via loader)
+        self.phase_checklist_items: Dict[DesignPhase, List[Dict[str, Any]]] = {
+            DesignPhase.IDEATION: [
+                {"id": "site_context_understood", "keywords": ["site", "context"], "required": True},
+                {"id": "program_defined", "keywords": ["program", "requirements"], "required": True}
+            ],
+            DesignPhase.VISUALIZATION: [
+                {"id": "circulation_defined", "keywords": ["circulation", "flow"], "required": True},
+                {"id": "form_strategy", "keywords": ["form", "massing"], "required": False}
+            ],
+            DesignPhase.MATERIALIZATION: [
+                {"id": "materials_selected", "keywords": ["material", "materials"], "required": True},
+                {"id": "constructability_considered", "keywords": ["construct", "cost"], "required": False}
+            ]
+        }
     
     def start_session(self, session_id: str) -> SessionState:
         """Start a new session"""
@@ -472,6 +490,8 @@ class PhaseProgressionSystem:
             phase=DesignPhase.IDEATION,
             current_step=SocraticStep.INITIAL_CONTEXT_REASONING
         )
+        # Initialize checklist state containers
+        session.checklist_state = {p.value: {} for p in DesignPhase}
         self.sessions[session_id] = session
         logger.info(f"Started new session: {session_id}")
         return session
@@ -629,8 +649,75 @@ class PhaseProgressionSystem:
             "current_phase": session.current_phase.value,
             "phase_summaries": phase_summaries,
             "session_duration": (datetime.now() - session.session_start).total_seconds() / 60,  # minutes
-            "total_responses": len(session.conversation_history)
+            "total_responses": len(session.conversation_history),
+            # Newly added summary fields
+            "final_checklist_state": session.checklist_state,
+            "phase_progression_timeline": session.timeline
         }
+
+    # New: Update checklist from a raw interaction (user+assistant texts) and return delta
+    def update_checklist_from_interaction(self, session_id: str, user_text: str, assistant_text: str) -> Dict[str, Any]:
+        session = self.sessions.get(session_id)
+        if not session:
+            return {"checklist_delta": []}
+        current_phase = session.current_phase
+        items = self.phase_checklist_items.get(current_phase, [])
+        text = f"{user_text}\n{assistant_text}".lower()
+        phase_key = current_phase.value
+        if phase_key not in session.checklist_state:
+            session.checklist_state[phase_key] = {}
+        delta = []
+        for item in items:
+            item_id = item.get("id")
+            if not item_id:
+                continue
+            already = session.checklist_state[phase_key].get(item_id, {}).get('status') == 'completed'
+            if already:
+                continue
+            kws = [kw.lower() for kw in item.get("keywords", [])]
+            if any(kw in text for kw in kws):
+                state = {
+                    'status': 'completed',
+                    'first_met_ts': datetime.now().isoformat(),
+                    'evidence_interaction_ids': []
+                }
+                session.checklist_state[phase_key][item_id] = state
+                delta.append({'item_id': item_id, 'status': 'completed', 'evidence_interaction_ids': []})
+        return {"checklist_delta": delta}
+
+    # New: Compute a periodic snapshot for timeline and export
+    def get_snapshot(self, session_id: str) -> Dict[str, Any]:
+        session = self.sessions.get(session_id)
+        if not session:
+            return {}
+        # Completion per phase (required items)
+        timeline_entry = {
+            'ts': datetime.now().isoformat(),
+            'current_phase': session.current_phase.value,
+        }
+        completed_items = []
+        pending_required = []
+        for phase, items in self.phase_checklist_items.items():
+            phase_key = phase.value
+            for item in items:
+                item_id = item['id']
+                is_completed = session.checklist_state.get(phase_key, {}).get(item_id, {}).get('status') == 'completed'
+                if item.get('required', False):
+                    if is_completed:
+                        completed_items.append(item_id)
+                    else:
+                        pending_required.append(item_id)
+        total_required = len([i for items in self.phase_checklist_items.values() for i in items if i.get('required')])
+        completion_pct = int((len(completed_items) / total_required) * 100) if total_required > 0 else 0
+        timeline_entry.update({
+            'completion_pct': completion_pct,
+            'completed_items': completed_items,
+            'pending_required': pending_required,
+            'evidence_ids': []
+        })
+        # Append to session timeline
+        session.timeline.append(timeline_entry)
+        return timeline_entry
     
     def save_session(self, session_id: str, filename: str = None):
         """Save session data to file"""

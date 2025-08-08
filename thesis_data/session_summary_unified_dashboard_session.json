@@ -1,0 +1,32 @@
+{
+  "session_id": "unified_session_20250807_232635",
+  "summary": {
+    "session_id": "unified_session_20250807_232635",
+    "participant_id": "unified_user",
+    "test_group": "MENTOR",
+    "duration_minutes": 5.8485394500000005,
+    "total_interactions": 7,
+    "total_moves": 0,
+    "phase_transitions": 0,
+    "avg_cognitive_score": 0.0,
+    "cognitive_scores": {
+      "cop": 0.0,
+      "dte": 0.0,
+      "se": 0.0,
+      "ki": 0.0,
+      "lp": 0.0,
+      "ma": 0.0,
+      "composite": 0.0
+    },
+    "cognitive_metrics": {
+      "cop": 0.0,
+      "dte": 0.0,
+      "se": 0.0,
+      "ki": 0.0,
+      "lp": 0.0,
+      "ma": 0.0,
+      "composite": 0.0
+    },
+    "phases_completed": []
+  }
+}
