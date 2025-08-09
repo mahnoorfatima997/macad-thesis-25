@@ -4,6 +4,7 @@ import os
 import random
 import numpy as np
 from openai import OpenAI
+import logging
 from dotenv import load_dotenv
 import sys
 import math
@@ -12,13 +13,14 @@ import math
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from state_manager import ArchMentorState
+from utils.client_manager import get_shared_client
 from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 load_dotenv()
 
 class CognitiveEnhancementAgent:
     def __init__(self, domain="architecture"):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = get_shared_client()
         self.domain = domain
         self.name = "cognitive_enhancement"
         
@@ -143,31 +145,31 @@ class CognitiveEnhancementAgent:
     async def provide_challenge(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
         """Enhanced cognitive challenge with MIT research-based protection strategies - now returns AgentResponse"""
         
-        print(f"\n🧠 {self.name} providing enhanced cognitive challenge...")
+        logging.getLogger(__name__).debug(f"{self.name} providing enhanced cognitive challenge...")
         
         # DETECT COGNITIVE OFFLOADING PATTERNS
         offloading_detection = self._detect_cognitive_offloading_patterns(context_classification, state)
         
         if offloading_detection["detected"]:
-            print(f"🚨 COGNITIVE OFFLOADING DETECTED: {offloading_detection['type']}")
+            logging.getLogger(__name__).debug("Cognitive offloading detected: %s", offloading_detection['type'])
             intervention_result = await self._generate_cognitive_intervention(offloading_detection, state, analysis_result)
             return self._convert_to_agent_response(intervention_result, state, context_classification, analysis_result, routing_decision)
         
         # COMPLETE COGNITIVE STATE ASSESSMENT
         cognitive_state = self.assess_cognitive_state(state, context_classification, analysis_result)
-        print(f"🧠 Cognitive state assessment: {cognitive_state}")
+        logging.getLogger(__name__).debug("Cognitive state: %s", cognitive_state)
         
-        # SCIENTIFIC METRICS CALCULATION
+        # SCIENTIFIC METRICS CALCULATION (no LLM calls)
         scientific_metrics = self.calculate_scientific_metrics(cognitive_state, state, analysis_result)
-        print(f"📊 Scientific metrics calculated: {scientific_metrics}")
+        logging.getLogger(__name__).debug("Scientific metrics: %s", scientific_metrics)
         
         #3107-VALIDATE THESIS METRICS ADDED
         validation_result = self.validate_thesis_metrics(scientific_metrics)
         if not validation_result["all_metrics_present"]:
-            print(f"⚠️ Missing thesis metrics: {validation_result['missing_metrics']}")
+            logging.getLogger(__name__).debug("Missing thesis metrics: %s", validation_result['missing_metrics'])
         # ENHANCED STRATEGY SELECTION
         enhancement_strategy = self.select_enhancement_strategy(cognitive_state, analysis_result, state)
-        print(f"🎯 Enhancement strategy: {enhancement_strategy}")
+        logging.getLogger(__name__).debug("Enhancement strategy: %s", enhancement_strategy)
         
         # GENERATE APPROPRIATE CHALLENGE
         challenge_result = await self.generate_cognitive_challenge(

@@ -837,27 +837,23 @@ class UnifiedArchitecturalDashboard:
         response_metadata = result.get("metadata", {})
         # Store metadata for suffix display
         st.session_state.last_response_metadata = response_metadata
-        # Log interaction
+        # Log interaction (normalized schema)
         try:
-            from thesis_tests.data_models import InteractionData, TestPhase
-            interaction = InteractionData(
-                id=str(uuid.uuid4()),
-                session_id=st.session_state.session_id,
-                timestamp=datetime.now(),
-                phase=TestPhase.IDEATION,
-                interaction_type="raw_gpt_response",
-                user_input=user_input,
-                system_response=response,
+            phase_analysis = response_metadata.get("phase_analysis", {}) if isinstance(response_metadata, dict) else {}
+            self.data_collector.log_interaction(
+                student_input=user_input,
+                agent_response=response,
+                routing_path="raw_gpt",
+                agents_used=["raw_gpt"],
+                response_type="raw_response",
+                cognitive_flags=[],
+                student_skill_level="unknown",
+                confidence_score=0.5,
+                sources_used=[],
                 response_time=1.0,
-                cognitive_metrics={
-                    "understanding_level": 0.7,
-                    "confidence_level": 0.6,
-                    "engagement_level": 0.8,
-                    "confidence_score": 0.7
-                },
-                metadata={**{"mode": "RAW_GPT"}, **response_metadata}
+                context_classification={},
+                metadata={"mode": "RAW_GPT", "phase_analysis": phase_analysis}
             )
-            self.data_collector.log_interaction(interaction)
         except Exception as e:
             print(f"Warning: Could not log Raw GPT interaction: {e}")
         return response
@@ -1112,7 +1108,37 @@ class UnifiedArchitecturalDashboard:
                                 meta_suffix = ""
                                 if routing_path or agents_used:
                                     used = ", ".join(agents_used) if agents_used else ""
-                                    meta_suffix = f"\n\n— Route: {routing_path or 'unknown'}{f' | Agents: {used}' if used else ''}"
+                                    # #0908-ADDED:Enrich meta display with response_type, phase and next step when available
+                                    response_type = response_metadata.get("response_type")
+                                    phase_meta = response_metadata.get("phase_analysis", {}) if isinstance(response_metadata, dict) else {}
+                                    phase = phase_meta.get("phase")
+                                    next_step = phase_meta.get("next_socratic_step")
+                                    #0908-ADDED:quality below line (compact)
+                                    quality = response_metadata.get("quality", {}) if isinstance(response_metadata, dict) else {}
+                                    parts = [f"Route: {routing_path or 'unknown'}"]
+                                    if used:
+                                        parts.append(f"Agents: {used}")
+                                    if response_type:
+                                        parts.append(f"Type: {response_type}")
+                                    if phase:
+                                        parts.append(f"Phase: {phase}")
+                                    if next_step:
+                                        parts.append(f"Next: {next_step}")
+                                    # 0908-ADDED: Quality flags (compact)
+                                    if quality:
+                                        qbits = []
+                                        if quality.get("ends_with_question"):
+                                            qbits.append("Q?")
+                                        if quality.get("has_bullets"):
+                                            qbits.append("Bullets")
+                                        if quality.get("has_synthesis_header"):
+                                            qbits.append("Synth")
+                                        length = quality.get("char_length")
+                                        if isinstance(length, int):
+                                            qbits.append(f"Len:{length}")
+                                        if qbits:
+                                            parts.append("Quality: " + ", ".join(qbits))
+                                    meta_suffix = "\n\n— " + " | ".join(parts)
                                 final_message = combined_response + (meta_suffix if st.session_state.get('show_routing_meta', False) else "")
                                 
                                 # Append assistant message
@@ -1243,7 +1269,39 @@ class UnifiedArchitecturalDashboard:
                             meta_suffix = ""
                             if routing_path or agents_used:
                                 used = ", ".join(agents_used) if agents_used else ""
-                                meta_suffix = f"\n\n— Route: {routing_path or 'unknown'}{f' | Agents: {used}' if used else ''}"
+                                #0908-ADDED-PHASE-PROGRESSION-METADATA
+                                response_type = response_metadata.get("response_type")
+                                phase_meta = response_metadata.get("phase_analysis", {}) if isinstance(response_metadata, dict) else {}
+                                phase = phase_meta.get("phase")
+                                next_step = phase_meta.get("next_socratic_step")
+                                #0908-ADDED:quality below line
+                                quality = response_metadata.get("quality", {}) if isinstance(response_metadata, dict) else {}
+                                parts = [f"Route: {routing_path or 'unknown'}"]
+                                if used:
+                                    parts.append(f"Agents: {used}")
+                                if response_type:
+                                    parts.append(f"Type: {response_type}")
+                                if phase:
+                                    parts.append(f"Phase: {phase}")
+                                if next_step:
+                                    parts.append(f"Next: {next_step}")
+                                # 0908-ADDED: Quality flags (compact)
+                                if quality:
+                                    qbits = []
+                                    if quality.get("ends_with_question"):
+                                        qbits.append("Q?")
+                                    if quality.get("has_bullets"):
+                                        qbits.append("Bullets")
+                                    if quality.get("has_synthesis_header"):
+                                        qbits.append("Synth")
+                                    length = quality.get("char_length")
+                                    if isinstance(length, int):
+                                        qbits.append(f"Len:{length}")
+                                    if qbits:
+                                        parts.append("Quality: " + ", ".join(qbits))
+
+                                        
+                                meta_suffix = "\n\n— " + " | ".join(parts)
                             final_message = combined_response + (meta_suffix if st.session_state.get('show_routing_meta', False) else "")
 
                             st.session_state.messages.append({

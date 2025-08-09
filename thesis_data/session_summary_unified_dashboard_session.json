@@ -1,3 +1,566 @@
 {
-  "error": "No interactions logged"
+  "session_id": "unified_dashboard_session",
+  "session_start": "2025-08-10T00:53:16.813652",
+  "session_end": "2025-08-10T01:09:36.503122",
+  "session_duration_seconds": 979.689191,
+  "total_interactions": 2,
+  "interactions_per_minute": 0.1224878268560993,
+  "phase_analysis": {
+    "phase_distribution": {
+      "ideation": 2
+    },
+    "most_common_phase": "ideation",
+    "average_phase_confidence": 0.65,
+    "average_phase_progression": 0.5,
+    "phase_progression_trend": "declining"
+  },
+  "design_move_analysis": {
+    "total_moves": 12,
+    "moves_per_interaction": 6.0,
+    "move_type_distribution": {
+      "analysis": 5,
+      "general": 5,
+      "synthesis": 2
+    },
+    "move_modality_distribution": {
+      "text": 12
+    },
+    "most_common_move_type": "analysis",
+    "most_common_move_modality": "text"
+  },
+  "scientific_metrics_summary": {
+    "average_engagement_score": 0.0,
+    "average_complexity_score": 0.0,
+    "average_reflection_score": 0.0,
+    "average_overall_cognitive_score": 0.0,
+    "average_scientific_confidence": 0.0,
+    "cognitive_score_trend": "declining",
+    "engagement_trend": "low",
+    "complexity_trend": "low",
+    "reflection_trend": "low"
+  },
+  "cognitive_state_summary": {
+    "engagement_levels": "unknown",
+    "cognitive_loads": "unknown",
+    "metacognitive_awareness": "unknown",
+    "passivity_levels": "unknown",
+    "overconfidence_levels": "unknown",
+    "conversation_depths": "unknown",
+    "learning_progressions": "unknown"
+  },
+  "performance_metrics_summary": {
+    "cognitive_offloading_prevention_rate": 0.5,
+    "deep_thinking_encouragement_rate": 0.5,
+    "scaffolding_effectiveness_rate": 0.0,
+    "engagement_maintenance_rate": 0.0,
+    "skill_adaptation_rate": 0.0,
+    "response_complexity_scores": [
+      1.0,
+      1.0
+    ],
+    "agent_selection_appropriateness_rate": 0.0,
+    "response_coherence_rate": 1.0,
+    "average_response_complexity": 1.0,
+    "overall_effectiveness_score": 0.2857142857142857
+  },
+  "agent_usage": {
+    "agent_usage": {
+      "domain_expert": 2,
+      "socratic_tutor": 2
+    },
+    "routing_distribution": {
+      "knowledge_only": 2
+    },
+    "multi_agent_usage_rate": 1.0,
+    "avg_agents_per_interaction": 2.0,
+    "most_used_agent": "domain_expert",
+    "most_common_route": "knowledge_only"
+  },
+  "input_analysis": {
+    "direct_question": 2
+  },
+  "skill_progression": {
+    "initial_skill": "intermediate",
+    "final_skill": "intermediate",
+    "skill_changes": 1,
+    "progression_detected": false
+  },
+  "internal_grading_metrics": {
+    "average_cop_score": 0,
+    "average_dte_score": 0,
+    "average_ki_score": 0,
+    "average_cop_factor": 0,
+    "average_dte_factor": 0,
+    "average_ki_factor": 0,
+    "average_milestone_progression": 0,
+    "average_quality_factor": 0,
+    "average_engagement_factor": 0,
+    "average_completed_milestones": 0,
+    "average_total_milestones": 0,
+    "average_grade": 0,
+    "benchmarking_summary": {
+      "cognitive_offloading_prevention": "weak",
+      "deep_thinking_engagement": "weak",
+      "knowledge_integration": "weak",
+      "overall_learning_progression": "poor"
+    }
+  },
+  "interactions": [
+    {
+      "session_id": "unified_dashboard_session",
+      "timestamp": "2025-08-10T00:53:16.915252",
+      "interaction_number": 1,
+      "student_input": "I don`t know what to consider first when designing a museum layout? what is the most important thing?",
+      "input_length": 18,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "knowledge_only",
+      "agents_used": [
+        "domain_expert",
+        "socratic_tutor"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "domain_expert",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 3,
+      "design_moves": [
+        {
+          "content": "I don`t know what to consider first when designing a museum layout?",
+          "timestamp": "2025-08-10T00:53:16.915138",
+          "micro_timestamp": 1754779996.915138,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.0616,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 67,
+            "has_question": true,
+            "word_count": 12,
+            "complexity_score": 0.4666666666666667
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "what is the most important thing?",
+          "timestamp": "2025-08-10T00:53:17.015138",
+          "micro_timestamp": 1754779997.015138,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.027999999999999997,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 33,
+            "has_question": true,
+            "word_count": 6,
+            "complexity_score": 0.4666666666666667
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-08-10T00:53:17.115138",
+          "micro_timestamp": 1754779997.115138,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "analysis",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_dashboard_session",
+      "timestamp": "2025-08-10T00:53:30.066527",
+      "interaction_number": 2,
+      "student_input": "I don`t know what to consider first when designing a museum layout? what is the most important thing?",
+      "input_length": 18,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "low",
+      "confidence_level": "uncertain",
+      "engagement_level": "medium",
+      "agent_response": "**Key points:**\n- It's great that you're eager to prioritize elements in your museum design.\n- Understanding what to consider first can truly shape the visitor experience and the success of your project.\n- Before diving into specifics, think about this: How can the layout convey the story or theme of the museum's collection?\n- By considering the narrative you want to tell, you'll ensure that every design decision\u2014from spatial flow to exhibit placement\u2014enhances the visitor journey.\n- This approach not only aligns with the museum's purpose but also enriches the cultural and educational impact on its visitors.\n\nApply: Where in your current scheme would this change your approach, and why?",
+      "response_length": 111,
+      "routing_path": "knowledge_only",
+      "agents_used": [
+        "domain_expert",
+        "socratic_tutor"
+      ],
+      "response_type": "multi_agent_synthesis",
+      "primary_agent": "domain_expert",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.4,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 9,
+      "design_moves": [
+        {
+          "content": "I don`t know what to consider first when designing a museum layout?",
+          "timestamp": "2025-08-10T00:53:30.066313",
+          "micro_timestamp": 1754780010.066313,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.0616,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 67,
+            "has_question": true,
+            "word_count": 12,
+            "complexity_score": 0.4666666666666667
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "what is the most important thing?",
+          "timestamp": "2025-08-10T00:53:30.166313",
+          "micro_timestamp": 1754780010.166313,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.027999999999999997,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 33,
+            "has_question": true,
+            "word_count": 6,
+            "complexity_score": 0.4666666666666667
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "**Key points:**",
+          "timestamp": "2025-08-10T00:53:30.266313",
+          "micro_timestamp": 1754780010.266313,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.018,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 15,
+            "has_question": false,
+            "word_count": 2,
+            "complexity_score": 0.8999999999999999
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "- It's great that you're eager to prioritize elements in your museum design.",
+          "timestamp": "2025-08-10T00:53:30.366313",
+          "micro_timestamp": 1754780010.366313,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.064,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 76,
+            "has_question": false,
+            "word_count": 13,
+            "complexity_score": 0.49230769230769234
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "- Understanding what to consider first can truly shape the visitor experience and the success of your project.",
+          "timestamp": "2025-08-10T00:53:30.466313",
+          "micro_timestamp": 1754780010.466313,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.10230000000000002,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 110,
+            "has_question": false,
+            "word_count": 18,
+            "complexity_score": 0.5166666666666667
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 4
+        },
+        {
+          "content": "- Before diving into specifics, think about this: How can the layout convey the story or theme of the museum's collection?",
+          "timestamp": "2025-08-10T00:53:30.566313",
+          "micro_timestamp": 1754780010.566313,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.18149999999999997,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 122,
+            "has_question": true,
+            "word_count": 21,
+            "complexity_score": 0.7857142857142856
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 5
+        },
+        {
+          "content": "- By considering the narrative you want to tell, you'll ensure that every design decision\u2014from spatial flow to exhibit placement\u2014enhances the visitor journey.",
+          "timestamp": "2025-08-10T00:53:30.666313",
+          "micro_timestamp": 1754780010.666313,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.1749,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 158,
+            "has_question": false,
+            "word_count": 23,
+            "complexity_score": 0.6913043478260869
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 6
+        },
+        {
+          "content": "- This approach not only aligns with the museum's purpose but also enriches the cultural and educational impact on its visitors.",
+          "timestamp": "2025-08-10T00:53:30.766313",
+          "micro_timestamp": 1754780010.766313,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 6,
+          "cognitive_load": 0.12960000000000002,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 128,
+            "has_question": false,
+            "word_count": 21,
+            "complexity_score": 0.5142857142857143
+          },
+          "previous_move": 5,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 7
+        },
+        {
+          "content": "Apply: Where in your current scheme would this change your approach, and why?",
+          "timestamp": "2025-08-10T00:53:30.866313",
+          "micro_timestamp": 1754780010.866313,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 7,
+          "cognitive_load": 0.12480000000000001,
+          "context": {
+            "sentence_position": 6,
+            "text_length": 77,
+            "has_question": true,
+            "word_count": 13,
+            "complexity_score": 0.8
+          },
+          "previous_move": 6,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "analysis",
+        "general",
+        "general",
+        "general",
+        "analysis",
+        "analysis",
+        "analysis",
+        "synthesis",
+        "synthesis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "interaction_type": "knowledge_request",
+        "understanding_level": "low",
+        "confidence_level": "uncertain",
+        "engagement_level": "medium",
+        "overconfidence_score": 0,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "is_example_request": false,
+        "shows_confusion": false,
+        "requests_help": false,
+        "demonstrates_overconfidence": false,
+        "seeks_validation": false,
+        "classification": "question",
+        "ai_reasoning": "Manual override for knowledge_request",
+        "manual_override": true,
+        "is_question_response": false,
+        "thread_context": "normal_turn",
+        "last_message": "I don`t know what to consider first when designing a museum layout? what is the most important thing?",
+        "user_input": "I don`t know what to consider first when designing a museum layout? what is the most important thing?"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    }
+  ]
 }

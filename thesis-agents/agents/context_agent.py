@@ -3,6 +3,7 @@ from typing import Dict, Any, List, Optional, Tuple
 import os
 import re
 from openai import OpenAI
+import logging
 from dotenv import load_dotenv
 import sys
 
@@ -10,20 +11,24 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from state_manager import ArchMentorState
+from utils.client_manager import get_shared_client
 from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
+
 class ContextAgent:
     def __init__(self, domain="architecture"):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = get_shared_client()
         self.domain = domain
         self.name = "context_agent"
         
         # Initialize context analysis patterns
         self.analysis_patterns = self._initialize_analysis_patterns()
         
-        print(f"🔍 {self.name} initialized for domain: {domain}")
+        logger.info(f"{self.name} initialized for domain: {domain}")
     
     def _initialize_analysis_patterns(self) -> Dict[str, List[str]]:
         """Initialize linguistic and behavioral analysis patterns"""
@@ -120,8 +125,7 @@ class ContextAgent:
     async def analyze_student_input(self, state: ArchMentorState, current_input: str) -> AgentResponse:
         """Main context analysis function - transforms raw input into rich context"""
         
-        print(f"\n🔍 {self.name}: Analyzing student input...")
-        print(f"   Input: {current_input[:100]}...")
+        logger.debug(f"{self.name}: Analyzing student input... Input: {current_input[:100]}...")
         
         # CORE CLASSIFICATION
         core_classification = await self._perform_core_classification(current_input, state)  # <-- FIXED
@@ -167,11 +171,13 @@ class ContextAgent:
             "conversation_history": state.messages if hasattr(state, 'messages') else []
         }
         
-        print(f"   ✅ Context analysis complete")
-        print(f"   🎯 Interaction type: {core_classification['interaction_type']}")
-        print(f"   📊 Understanding: {core_classification['understanding_level']}")
-        print(f"   💭 Confidence: {core_classification['confidence_level']}")
-        print(f"   ⚡ Engagement: {core_classification['engagement_level']}")
+        logger.debug(
+            "Context analysis complete | type=%s understanding=%s confidence=%s engagement=%s",
+            core_classification['interaction_type'],
+            core_classification['understanding_level'],
+            core_classification['confidence_level'],
+            core_classification['engagement_level'],
+        )
         
         # Convert to AgentResponse format
         return self._convert_to_agent_response(context_package, current_input, state)
@@ -193,7 +199,7 @@ class ContextAgent:
         
         # If it matches a specific pattern, prioritize this over AI classification
         if manual_interaction_type in manual_override_types:
-            print(f"🎯 MANUAL OVERRIDE: Detected {manual_interaction_type}, bypassing AI classification")
+            logger.debug("Manual override detected for interaction_type=%s", manual_interaction_type)
             
             # Use manual classification for interaction type, but get other metrics from AI
             ai_classification = await self._get_ai_classification_for_other_metrics(input_text, state)
@@ -291,7 +297,8 @@ class ContextAgent:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=200,
                 temperature=0.2
@@ -300,13 +307,14 @@ class ContextAgent:
             classification_text = response.choices[0].message.content.strip()
             classification = self._parse_ai_classification(classification_text)
             
-            print(f"🔍 AI Learning State Detection:")
-            print(f"   Type: {classification['interaction_type']}")
-            print(f"   Confidence: {classification['confidence_level']}")
-            print(f"   Understanding: {classification['understanding_level']}")
-            print(f"   Engagement: {classification['engagement_level']}")
-            print(f"   Is Example Request: {classification.get('is_example_request', False)}")
-            print(f"   Reasoning: {classification.get('reasoning', 'No reasoning')}")
+            logger.debug(
+                "AI Learning State | type=%s confidence=%s understanding=%s engagement=%s example_request=%s",
+                classification['interaction_type'],
+                classification['confidence_level'],
+                classification['understanding_level'],
+                classification['engagement_level'],
+                classification.get('is_example_request', False),
+            )
             
             return {
                 "interaction_type": classification["interaction_type"],
@@ -327,7 +335,7 @@ class ContextAgent:
             }
             
         except Exception as e:
-            print(f"⚠️ AI classification failed, using enhanced fallback: {e}")
+            logger.warning("AI classification failed, using enhanced fallback: %s", e)
             return self._enhanced_fallback_detection(input_text)
 
     def _parse_ai_classification(self, text: str) -> Dict[str, Any]:
@@ -345,14 +353,14 @@ class ContextAgent:
                 required_fields = ["confidence_level", "understanding_level", "engagement_level", "interaction_type"]
                 for field in required_fields:
                     if field not in parsed:
-                        print(f"⚠️ Missing field {field} in AI response")
+                        logger.debug("Missing field %s in AI response", field)
                         return self._default_classification()
                 
                 return parsed
         except json.JSONDecodeError as e:
-            print(f"⚠️ JSON parsing failed: {e}")
+            logger.debug("JSON parsing failed: %s", e)
         except Exception as e:
-            print(f"⚠️ Classification parsing error: {e}")
+            logger.debug("Classification parsing error: %s", e)
         
         return self._default_classification()
 

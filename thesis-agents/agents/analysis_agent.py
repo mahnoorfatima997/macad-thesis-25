@@ -5,6 +5,7 @@ import sys
 import os
 import re
 from openai import OpenAI
+import logging
 from dotenv import load_dotenv
 import numpy as np
 from datetime import datetime, timedelta
@@ -17,10 +18,13 @@ from state_manager import ArchMentorState, StudentProfile, VisualArtifact
 from knowledge_base.knowledge_manager import KnowledgeManager
 from conversation_progression import ConversationProgressionManager
 from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
+from utils.client_manager import get_shared_client
+
+logger = logging.getLogger(__name__)
 
 class AnalysisAgent:
     def __init__(self, domain="architecture"):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  #memory issue
+        self.client = get_shared_client()  # shared client
         self.domain = domain
         self.sketch_analyzer = SketchAnalyzer(domain)
         self.knowledge_manager = KnowledgeManager(domain)
@@ -33,7 +37,7 @@ class AnalysisAgent:
         # 0708-Initialize conversation progression manager
         self.conversation_progression = ConversationProgressionManager(domain)
         
-        print(f"🔍 {self.name} initialized for domain: {domain}")
+        logger.info(f"{self.name} initialized for domain: {domain}")
     
     def _initialize_phase_indicators(self) -> Dict[str, Dict[str, List[str]]]:
         """Initialize comprehensive phase detection indicators"""
@@ -416,7 +420,8 @@ class AnalysisAgent:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=20,
                 temperature=0.1
@@ -723,7 +728,8 @@ class AnalysisAgent:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150,
                 temperature=0.1

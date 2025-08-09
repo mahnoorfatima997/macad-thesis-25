@@ -7,6 +7,9 @@ A text-only testing interface to debug conversation flows without the Streamlit 
 import asyncio
 import json
 import logging
+import argparse
+from enum import Enum
+from dataclasses import is_dataclass, asdict
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from pathlib import Path
@@ -58,6 +61,46 @@ def load_api_key():
         return api_key
     
     return None
+
+
+def make_json_safe(obj):
+    """Recursively convert objects to JSON-serializable forms.
+
+    - dataclasses → dict
+    - Enum → value
+    - datetime → isoformat
+    - objects with __dict__ → dict of json-safe fields
+    - fallback → str(obj)
+    """
+    # Primitives
+    if obj is None or isinstance(obj, (str, int, float, bool)):
+        return obj
+    # Dataclass
+    if is_dataclass(obj):
+        return make_json_safe(asdict(obj))
+    # Enum
+    if isinstance(obj, Enum):
+        return obj.value
+    # datetime-like
+    if hasattr(obj, 'isoformat'):
+        try:
+            return obj.isoformat()
+        except Exception:
+            pass
+    # Mapping
+    if isinstance(obj, dict):
+        return {make_json_safe(k): make_json_safe(v) for k, v in obj.items()}
+    # Iterable
+    if isinstance(obj, (list, tuple, set)):
+        return [make_json_safe(x) for x in obj]
+    # Generic object with __dict__
+    if hasattr(obj, '__dict__'):
+        try:
+            return make_json_safe(vars(obj))
+        except Exception:
+            pass
+    # Fallback string
+    return str(obj)
 
 class UserPersona:
     """Defines different user personas for testing"""
@@ -162,8 +205,9 @@ class RAGConversationTester:
             logger.error(f"❌ Failed to initialize components: {e}")
             raise
     
-    async def simulate_conversation(self, num_exchanges: int = 5, 
-                                  custom_questions: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def simulate_conversation(self, num_exchanges: int = 5,
+                                   custom_questions: Optional[List[str]] = None,
+                                   collect_quality: bool = True) -> Dict[str, Any]:
         """Simulate a conversation with the architectural mentor"""
         
         logger.info(f"🎭 Starting conversation simulation with {self.persona['skill_level']} level student")
@@ -182,16 +226,23 @@ class RAGConversationTester:
         
         for i in range(min(num_exchanges, len(questions))):
             user_question = questions[i]
-            
+
             logger.info(f"\n--- Exchange {i+1}/{num_exchanges} ---")
             logger.info(f"👤 {self.persona['skill_level']} Student: {user_question}")
-            
+
+            # Push current user message into state BEFORE processing
+            self.arch_state.messages.append({
+                "role": "user",
+                "content": user_question,
+            })
+
             # Process through orchestrator
             try:
                 result = await self.orchestrator.process_student_input(self.arch_state)
                 
                 assistant_response = result.get("response", "No response generated")
                 metadata = result.get("metadata", {})
+                quality = metadata.get("quality", {}) if isinstance(metadata, dict) else {}
                 
                 logger.info(f"🤖 Assistant: {assistant_response[:200]}...")
                 logger.info(f"📊 Metadata: {metadata}")
@@ -202,16 +253,13 @@ class RAGConversationTester:
                     "user_question": user_question,
                     "assistant_response": assistant_response,
                     "metadata": metadata,
+                    "quality": quality if collect_quality else {},
                     "timestamp": datetime.now().isoformat()
                 }
                 
                 conversation_log["exchanges"].append(exchange)
                 
-                # Update state with the exchange
-                self.arch_state.messages.append({
-                    "role": "user",
-                    "content": user_question
-                })
+                # Update state with assistant response
                 self.arch_state.messages.append({
                     "role": "assistant", 
                     "content": assistant_response
@@ -229,6 +277,8 @@ class RAGConversationTester:
         
         # Generate conversation summary
         conversation_log["summary"] = self._analyze_conversation(conversation_log)
+        if collect_quality:
+            conversation_log["quality_summary"] = self._analyze_quality(conversation_log)
         
         return conversation_log
     
@@ -266,6 +316,28 @@ class RAGConversationTester:
             "unique_agents_used": unique_agents,
             "response_type_distribution": {rt: response_types.count(rt) for rt in set(response_types)},
             "agent_usage_distribution": {agent: agents_used.count(agent) for agent in unique_agents}
+        }
+
+    def _analyze_quality(self, conversation_log: Dict[str, Any]) -> Dict[str, Any]:
+        """Compute simple pass/fail counts for quality bits per assistant turn."""
+        exchanges = conversation_log.get("exchanges", [])
+        q_items = [e.get("quality", {}) for e in exchanges if e.get("assistant_response")]
+        total = len(q_items)
+        if total == 0:
+            return {"total": 0}
+        ends_q = sum(1 for q in q_items if q.get("ends_with_question"))
+        bullets = sum(1 for q in q_items if q.get("has_bullets"))
+        synth = sum(1 for q in q_items if q.get("has_synthesis_header"))
+        avg_len = sum(int(q.get("char_length", 0)) for q in q_items) / total
+        return {
+            "total": total,
+            "ends_with_question_count": ends_q,
+            "has_bullets_count": bullets,
+            "has_synthesis_header_count": synth,
+            "avg_char_length": avg_len,
+            "ends_with_question_pct": ends_q / total,
+            "has_bullets_pct": bullets / total,
+            "has_synthesis_header_pct": synth / total,
         }
     
     def run_multiple_persona_tests(self, num_exchanges: int = 3) -> Dict[str, Any]:
@@ -339,15 +411,66 @@ class RAGConversationTester:
         output_path = Path("results") / filename
         output_path.parent.mkdir(exist_ok=True)
         
-        with open(output_path, 'w') as f:
-            json.dump(results, f, indent=2)
+        safe_results = make_json_safe(results)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(safe_results, f, indent=2, ensure_ascii=False)
         
         logger.info(f"💾 Test results saved to: {output_path}")
         return output_path
 
+    def save_quality_csv(self, results: Dict[str, Any], filename: str = None):
+        """Save per-exchange quality bits to a CSV in results/ if present."""
+        exchanges = results.get("exchanges") or results.get("persona_results")
+        # Handle single persona (dict with exchanges) vs. multi-persona (dict keyed by persona)
+        rows: List[Dict[str, Any]] = []
+        if isinstance(exchanges, list):
+            # Single persona log
+            for e in results.get("exchanges", []):
+                q = e.get("quality", {}) or {}
+                rows.append({
+                    "exchange": e.get("exchange_number"),
+                    "ends_with_question": q.get("ends_with_question"),
+                    "has_bullets": q.get("has_bullets"),
+                    "has_synthesis_header": q.get("has_synthesis_header"),
+                    "char_length": q.get("char_length"),
+                })
+        elif isinstance(exchanges, dict):
+            # Multi-persona: flatten
+            for persona, convo in results.get("persona_results", {}).items():
+                for e in convo.get("exchanges", []):
+                    q = e.get("quality", {}) or {}
+                    rows.append({
+                        "persona": persona,
+                        "exchange": e.get("exchange_number"),
+                        "ends_with_question": q.get("ends_with_question"),
+                        "has_bullets": q.get("has_bullets"),
+                        "has_synthesis_header": q.get("has_synthesis_header"),
+                        "char_length": q.get("char_length"),
+                    })
+        if not rows:
+            return None
+        import csv
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"rag_quality_{timestamp}.csv"
+        output_path = Path("results") / filename
+        output_path.parent.mkdir(exist_ok=True)
+        with open(output_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+            writer.writeheader()
+            writer.writerows(rows)
+        logger.info(f"💾 Quality CSV saved to: {output_path}")
+        return output_path
+
 def main():
     """Main function to run RAG conversation tests"""
-    
+    # CLI args
+    parser = argparse.ArgumentParser(description="RAG Conversation Tester")
+    parser.add_argument("--num-exchanges", type=int, default=8, help="Number of user turns (default 8)")
+    parser.add_argument("--quality-report", action="store_true", help="Collect and export quality bits per exchange")
+    parser.add_argument("--save-quality-csv", action="store_true", help="Save a CSV of per-exchange quality bits")
+    args, unknown = parser.parse_known_args()
+
     # Load API key from .env file or environment
     api_key = load_api_key()
     if not api_key:
@@ -373,12 +496,12 @@ def main():
     if choice == "1":
         # Single persona test
         print("\n🎭 Running single persona test...")
-        results = asyncio.run(tester.simulate_conversation(num_exchanges=5))
+        results = asyncio.run(tester.simulate_conversation(num_exchanges=args.num_exchanges, collect_quality=args.quality_report))
         
     elif choice == "2":
         # Multi-persona test
         print("\n🧪 Running multi-persona test...")
-        results = tester.run_multiple_persona_tests(num_exchanges=3)
+        results = tester.run_multiple_persona_tests(num_exchanges=args.num_exchanges)
         
     elif choice == "3":
         # Custom conversation
@@ -394,8 +517,9 @@ def main():
         
         if custom_questions:
             results = asyncio.run(tester.simulate_conversation(
-                num_exchanges=len(custom_questions),
-                custom_questions=custom_questions
+                num_exchanges=min(args.num_exchanges, len(custom_questions)),
+                custom_questions=custom_questions,
+                collect_quality=args.quality_report,
             ))
         else:
             print("No questions provided. Exiting.")
@@ -407,6 +531,8 @@ def main():
     
     # Save results
     filename = tester.save_test_results(results)
+    if args.quality_report and args.save_quality_csv:
+        tester.save_quality_csv(results)
     
     # Print summary
     if "summary" in results:
@@ -416,6 +542,13 @@ def main():
         print(f"   Success rate: {summary['success_rate']:.1%}")
         print(f"   Average confidence: {summary['average_confidence']:.2f}")
         print(f"   Agents used: {', '.join(summary['unique_agents_used'])}")
+        if args.quality_report and results.get("quality_summary"):
+            qs = results["quality_summary"]
+            print("   Quality:")
+            print(f"     Ends with question: {qs.get('ends_with_question_count',0)}/{qs.get('total',0)} ({qs.get('ends_with_question_pct',0):.0%})")
+            print(f"     Has bullets: {qs.get('has_bullets_count',0)}/{qs.get('total',0)} ({qs.get('has_bullets_pct',0):.0%})")
+            print(f"     Has synthesis header: {qs.get('has_synthesis_header_count',0)}/{qs.get('total',0)} ({qs.get('has_synthesis_header_pct',0):.0%})")
+            print(f"     Avg length (chars): {qs.get('avg_char_length',0):.0f}")
     
     elif "overall_summary" in results:
         summary = results["overall_summary"]

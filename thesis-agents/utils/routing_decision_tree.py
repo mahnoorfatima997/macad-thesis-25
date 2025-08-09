@@ -257,6 +257,14 @@ class AdvancedRoutingDecisionTree:
                 "description": "Design problem with high engagement - Socratic exploration",
                 "context_agent_override": False
             },
+            # 0908-ADDED: explicit feedback request routing to multi-agent comprehensive
+            "feedback_request_default": {
+                "priority": 11.5,
+                "route": RouteType.MULTI_AGENT_COMPREHENSIVE,
+                "conditions": ["user_intent == 'feedback_request'"],
+                "description": "Feedback request - comprehensive analysis",
+                "context_agent_override": False
+            },
             "design_problem_low_engagement": {
                 "priority": 12,
                 "route": RouteType.SUPPORTIVE_SCAFFOLDING,
@@ -264,11 +272,27 @@ class AdvancedRoutingDecisionTree:
                 "description": "Design problem with low engagement - supportive scaffolding",
                 "context_agent_override": False
             },
+            # 0908-ADDED: improvement seeking → design guidance instead of default
+            "improvement_seeking": {
+                "priority": 12.5,
+                "route": RouteType.DESIGN_GUIDANCE,
+                "conditions": ["user_intent == 'improvement_seeking'"],
+                "description": "Improvement seeking - provide design guidance",
+                "context_agent_override": False
+            },
             "implementation_request_high_understanding": {
                 "priority": 13,
                 "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
                 "conditions": ["user_intent == 'implementation_request'", "understanding_level == 'high'"],
                 "description": "Implementation request with high understanding",
+                "context_agent_override": False
+            },
+            # 0908-ADDED: implementation medium understanding routing
+            "implementation_request_medium_understanding": {
+                "priority": 13.5,
+                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "conditions": ["user_intent == 'implementation_request'", "understanding_level == 'medium'"],
+                "description": "Implementation request with medium understanding",
                 "context_agent_override": False
             },
             "implementation_request_low_understanding": {

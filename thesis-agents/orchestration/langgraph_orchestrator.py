@@ -41,6 +41,11 @@ from utils.state_validator import StateValidator, StateMonitor
 from utils.response_length_controller import ensure_quality
 from config.user_experience_config import get_max_response_length
 from openai import OpenAI
+try:
+    # Optional phase progression enrichment (read-only integration)
+    from phase_progression_system import PhaseProgressionSystem
+except Exception:  # pragma: no cover
+    PhaseProgressionSystem = None  # type: ignore
 
 class WorkflowState(TypedDict):
     """LangGraph state that flows between agents"""
@@ -97,6 +102,18 @@ class LangGraphOrchestrator:
             self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         except Exception:
             self.openai_client = None
+        
+        # Optional phase progression system (read-only, for metadata enrichment only)
+        self._phase_system = None
+        self._phase_session_id = None
+        try:
+            if PhaseProgressionSystem is not None:
+                self._phase_system = PhaseProgressionSystem()
+                self._phase_session_id = "orchestrator_session"
+                self._phase_system.start_session(self._phase_session_id)
+        except Exception:
+            self._phase_system = None
+            self._phase_session_id = None
         
 
 
@@ -667,9 +684,46 @@ class LangGraphOrchestrator:
         if existing_response:
             self.logger.info("🎯 Using existing progressive response - skipping synthesis")
             metadata = state.get("response_metadata", {})
-            
-                    # Phase progression integration can be added here if needed
-            
+            # Ensure required metadata fields are present (phase, routing, agents)
+            try:
+                metadata = self._augment_metadata(
+                    metadata,
+                    agent_results={
+                        "socratic": state.get("socratic_result", {}),
+                        "domain": state.get("domain_expert_result", {}),
+                        "analysis": state.get("analysis_result", {}),
+                        "cognitive": state.get("cognitive_enhancement_result", {}),
+                    },
+                    routing_decision=state.get("routing_decision", {}),
+                    classification=state.get("student_classification", {}),
+                )
+            except Exception:
+                pass
+
+            # 0908-ADDED:Apply Study Mode quality and final formatting to progressive opening
+            try:
+                # Normalize response type for progressive opening
+                normalized = self._normalize_response_type(
+                    raw_type=metadata.get("response_type", "socratic_guidance"),
+                    routing_path=state.get("routing_decision", {}).get("path", "progressive_opening"),
+                    classification=state.get("student_classification", {}),
+                )
+                if normalized:
+                    metadata["response_type"] = normalized
+                # Final behavioral polish
+                existing_response = self._apply_study_mode_quality(
+                    existing_response,
+                    metadata.get("response_type", "socratic_primary"),
+                    state,
+                    state.get("student_classification", {}),
+                    state.get("routing_decision", {}),
+                )
+                # Agent type for length/ending control
+                agent_type = "socratic_tutor"
+                existing_response = ensure_quality(existing_response, agent_type)
+            except Exception:
+                pass
+
             result_state = {
                 **state,
                 "final_response": existing_response,
@@ -706,6 +760,18 @@ class LangGraphOrchestrator:
             "final_response": final_response,
             "response_metadata": metadata
         }
+        
+        # Optional: enrich phase info using standalone progression system (read-only)
+        try:
+            meta_enriched = self._enrich_phase_metadata_with_progression(
+                metadata,
+                state.get("last_message", ""),
+                final_response,
+            )
+            if meta_enriched:
+                result_state["response_metadata"] = meta_enriched
+        except Exception:
+            pass
         
         # Validate and monitor output state
         output_validation = self.state_validator.validate_state(result_state["student_state"])
@@ -1154,12 +1220,14 @@ class LangGraphOrchestrator:
         
         if is_design_guidance_request:
             self.logger.info(f"🎯 DESIGN GUIDANCE REQUEST: '{last_message}' → default (Knowledge + Socratic)")
-            return {
+            decision = {
                 "path": "default",
                 "agents_to_activate": ["domain_expert", "socratic_tutor"],
                 "reason": "Design guidance request needs both knowledge and Socratic questioning",
                 "confidence": 0.9
             }
+            self._validate_routing_consistency(decision, classification)
+            return decision
         
         # Get classification details for other routing decisions
         confidence_level = classification.get("confidence_level", "confident")
@@ -1171,11 +1239,76 @@ class LangGraphOrchestrator:
         shows_confusion = classification.get("shows_confusion", False)
         demonstrates_overconfidence = classification.get("demonstrates_overconfidence", False)
         is_knowledge_seeking = classification.get("interaction_type") == "knowledge_seeking"
+        # 0908-ADDED:NEW-VARIABLE BELOW
+        is_example_request = classification.get("is_example_request", False)
         is_socratic_clarification = classification.get("is_socratic_clarification", False)
 
         self.logger.debug(f"📊 Classification: {confidence_level} confidence, {understanding_level} understanding, {engagement_level} engagement")
         self.logger.debug(f"📊 Interaction type: {classification.get('interaction_type', 'unknown')}")
-    # CONTINUING the determine_routing method - PRESERVED ALL ORIGINAL LOGIC:
+        # 0908-ADDED:Tie-breakers (deterministic) when signals conflict
+        # Safety first: confusion overrules unless strict technical
+        if shows_confusion and not is_technical:
+            #0908-ADDED:.decisions instead of return and added validate_routing_consistency
+            decision = {
+                "path": "clarification_support",
+                "agents_to_activate": ["socratic_tutor"],
+                "reason": "Confusion indicated; prioritizing clarifying support",
+                "confidence": 0.9,
+            }
+            self._validate_routing_consistency(decision, classification)
+            return decision
+
+        # Technical override
+        if is_technical:
+            decision = {
+                "path": "technical_guidance",
+                "agents_to_activate": ["domain_expert", "socratic_tutor"],
+                "reason": "Strict technical request; provide knowledge then probe application",
+                "confidence": 0.9,
+            }
+            self._validate_routing_consistency(decision, classification)
+            return decision
+
+        # Early-turn guard for example requests
+        try:
+            user_message_count = 0
+            if state and getattr(state, "messages", None):
+                user_message_count = len([m for m in state.messages if m.get("role") == "user"])
+            if is_example_request and user_message_count <= 2:
+                decision = {
+                    "path": "socratic_exploration",
+                    "agents_to_activate": ["socratic_tutor"],
+                    "reason": "Early turn example request → probe first",
+                    "confidence": 0.85,
+                }
+                self._validate_routing_consistency(decision, classification)
+                return decision
+        except Exception:
+            pass
+
+        # Cognitive risk: overconfidence + low engagement → challenge
+        if demonstrates_overconfidence and engagement_level == "low":
+            decision = {
+                "path": "cognitive_challenge",
+                "agents_to_activate": ["cognitive_enhancement", "socratic_tutor"],
+                "reason": "Overconfidence with low engagement → cognitive challenge",
+                "confidence": 0.9,
+            }
+            self._validate_routing_consistency(decision, classification)
+            return decision
+
+        # Feedback explicitness
+        if is_feedback_request:
+            decision = {
+                "path": "analysis_guidance",
+                "agents_to_activate": ["analysis_agent", "socratic_tutor"],
+                "reason": "Explicit feedback request",
+                "confidence": 0.9,
+            }
+            self._validate_routing_consistency(decision, classification)
+            return decision
+
+        # CONTINUING the determine_routing method - PRESERVED ALL ORIGINAL LOGIC:
 
         # Handle socratic clarification requests
         if is_socratic_clarification:
@@ -1238,14 +1371,13 @@ class LangGraphOrchestrator:
                 "confidence": 0.9
             }
         
-        # 6. Feedback requests → Multi-agent
+        # 6.0908-ADDED Feedback requests → Analysis guidance (align with canonical sequence)
         elif is_feedback_request:
             routing_decision = {
-                "path": "multi_agent",
-                "agents_to_activate": ["domain_expert", "socratic_tutor", "cognitive_enhancement"],
-                "sequence": ["domain_expert", "socratic_tutor", "cognitive_enhancement"],
-                "reason": "Design feedback request - comprehensive response needed",
-                "confidence": 0.8
+                "path": "analysis_guidance",
+                "agents_to_activate": ["analysis_agent", "socratic_tutor"],
+                "reason": "Explicit feedback request - analyze then guide Socratically",
+                "confidence": 0.9
             }
         
         # 7. Default → Knowledge + Socratic for design thinking
@@ -1256,7 +1388,8 @@ class LangGraphOrchestrator:
                 "reason": "Standard interaction - knowledge + Socratic guidance for design thinking",
                 "confidence": 0.6
             }
-
+        #0908-ADDED:validate_routing_consistency
+        self._validate_routing_consistency(routing_decision, classification)
         self.logger.info(f"✅ Route chosen: {routing_decision['path']}")
         self.logger.info(f"🤖 Agents to activate: {routing_decision['agents_to_activate']}")
 
@@ -1489,16 +1622,37 @@ class LangGraphOrchestrator:
                          bool(agent_results.get("cognitive")))
         self.logger.debug("Routing path: %s", routing_decision.get('path', 'unknown'))
         
-        # Extract individual results for easier access
-        domain_result = agent_results.get("domain", {})
-        socratic_result = agent_results.get("socratic", {})
-        cognitive_result = agent_results.get("cognitive", {})
+        # Canonical agent sequencing for stability across edge paths
+        user_message_count = 0
+        try:
+            student_state = state.get("student_state")
+            user_message_count = len([m for m in getattr(student_state, "messages", []) if m.get("role") == "user"])
+        except Exception:
+            pass
+
+        canonical_sequence = self._get_canonical_agent_sequence(routing_decision.get("path", "default"), classification, user_message_count)
+        # Filter and order available results according to canonical sequence
+        ordered_results: Dict[str, Any] = {}
+        for key in canonical_sequence:
+            if agent_results.get(key):
+                ordered_results[key] = agent_results[key]
+
+        # Extract individual results for synthesis decisions (ordered)
+        domain_result = ordered_results.get("domain", {})
+        socratic_result = ordered_results.get("socratic", {})
+        cognitive_result = ordered_results.get("cognitive", {})
         
         # Determine response type and synthesize
         routing_path = routing_decision.get("path", "default")
         final_response, response_type = self._synthesize_by_routing_path(
             routing_path, agent_results, user_input, classification, state
         )
+
+        # Normalize response type to Study Mode contract for logging/evaluation
+        #0908-ADDED:raw_response_type
+        raw_response_type = response_type
+        normalized_type = self._normalize_response_type(response_type, routing_path, classification)
+        response_type = normalized_type or response_type
         
         # Create sophisticated response by combining domain knowledge with Socratic guidance
         if domain_result and socratic_result:
@@ -1540,11 +1694,82 @@ class LangGraphOrchestrator:
         # The cognitive data is still tracked in metadata for analysis
         
         # Build metadata
-        metadata = self._build_metadata(response_type, agent_results, routing_decision, classification)
+        #0908-changed below line
+        metadata = self._build_metadata(response_type, ordered_results, routing_decision, classification, raw_response_type=raw_response_type)
+        # 0908-ADDED: basic response quality flags for quick health checks
+        try:
+            quality_flags = {
+                "ends_with_question": (final_response.strip().endswith("?")),
+                "has_bullets": ("- " in final_response),
+                "has_synthesis_header": ("Synthesis:" in final_response),
+                "char_length": len(final_response),
+            }
+            metadata["quality"] = quality_flags
+        except Exception:
+            pass
+        # Enforce canonical agents_used ordering in metadata
+        try:
+            agent_name_map = {
+                "socratic": "socratic_tutor",
+                "domain": "domain_expert",
+                "analysis": "analysis_agent",
+                "cognitive": "cognitive_enhancement",
+            }
+            used_in_sequence = [agent_name_map[k] for k in canonical_sequence if ordered_results.get(k)]
+            if used_in_sequence:
+                metadata["agents_used"] = used_in_sequence[:3]  # cap to max 3 to avoid verbosity
+        except Exception:
+            pass
+
+        # Fallback: if no phase_analysis from analysis agent, use context_agent's detected design_phase if available
+        try:
+            if not metadata.get("phase_analysis"):
+                context_analysis = state.get("context_analysis", {})
+                design_phase = context_analysis.get("design_phase")
+                if isinstance(design_phase, dict) and design_phase.get("current_phase"):
+                    metadata["phase_analysis"] = {
+                        "phase": design_phase.get("current_phase"),
+                        "confidence": design_phase.get("confidence", 0.5),
+                        "previous_phase": design_phase.get("previous_phase", None),
+                    }
+                elif isinstance(design_phase, str) and design_phase:
+                    metadata["phase_analysis"] = {"phase": design_phase, "confidence": 0.5}
+        except Exception:
+            pass
         
         # Print summary if enabled
         self._print_summary_if_enabled(state, response_type, metadata)
         
+        # 0908-ADDED:Route-specific shaping (style/structure) before final behavioral polish
+        try:
+            context_analysis = state.get("context_analysis", {})
+            final_response = self._shape_by_route(
+                text=final_response,
+                routing_path=routing_path,
+                classification=classification,
+                ordered_results=ordered_results,
+                user_message_count=user_message_count,
+                context_analysis=context_analysis,
+            )
+        except Exception:
+            pass
+
+        # Apply Study Mode behavioral quality controls before final polishing
+        try:
+            #0908-ADDE BELOW LINE
+            shaped_before = final_response
+            final_response = self._apply_study_mode_quality(
+                final_response,
+                response_type,
+                state,
+                classification,
+                routing_decision,
+            )
+            #0908-ADDED BELOW LINE:Simple assertion-like guards (non-fatal): ensure expected structure per type
+            final_response = self._assert_behavioral_contract(final_response, response_type, routing_path)
+        except Exception:
+            pass
+
         # Apply response length/ending quality control based on response type
         agent_type_map = {
             "domain_knowledge": "domain_expert",
@@ -1565,6 +1790,537 @@ class LangGraphOrchestrator:
         final_response = ensure_quality(final_response, agent_type)
         
         return final_response, metadata
+    #0908-ADDED BELOW DEFINITION
+    def _assert_behavioral_contract(self, text: str, response_type: str, routing_path: str) -> str:
+        """Non-fatal checks that nudge the response into expected Study Mode structure."""
+        if not text:
+            return text
+        rt = response_type or ""
+        # For knowledge_support, ensure bullets and an application question
+        if rt == "knowledge_support":
+            if "- " not in text:
+                # Insert quick bullets by splitting sentences
+                import re
+                sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+                bullets = "\n".join([f"- {s}" for s in sentences[:4]])
+                text = bullets
+            if "?" not in text:
+                text += "\n\nWhere in your current scheme would this change your approach, and why?"
+        # For socratic_primary, ensure at least one question
+        if rt == "socratic_primary" and "?" not in text:
+            text += "\n\nWhat would you examine first?"
+        # For cognitive_intervention, ensure prompts presence
+        if rt == "cognitive_intervention" and "- " not in text:
+            prompts = [
+                "- Try a constraint change: what if one key assumption flips?",
+                "- Shift perspective: how would a different user group see this?",
+                "- Explore an alternative: outline a viable opposite approach.",
+            ]
+            text = text.strip() + "\n\n" + "\n".join(prompts)
+        return text
+    #0908-ADDED:Route-specific shaping (style/structure) before final behavioral polish
+    def _shape_by_route(self, text: str, routing_path: str, classification: Dict[str, Any], ordered_results: Dict[str, Any], user_message_count: int, context_analysis: Dict[str, Any]) -> str:
+        """Lightweight, deterministic shaping per route to match thesis Study Mode styles.
+
+        - technical_question: 3-5 bullets + 1 application question
+        - confusion_expression: 1-2 clarifying questions
+        - example_request: early → probe; later → 2 examples + apply question
+        - cognitive_intervention: 3 prompts
+        - multi_agent: short synthesis + 1 next action + 1 question
+        """
+        if not text:
+            text = ""
+
+        path = routing_path or "default"
+        is_technical = bool(classification.get("is_technical_question"))
+        is_confusion = classification.get("interaction_type") == "confusion_expression"
+        is_example = classification.get("is_example_request", False)
+        early = user_message_count <= 2
+
+        domain_text = (ordered_results.get("domain", {}) or {}).get("response_text", "")
+        socratic_text = (ordered_results.get("socratic", {}) or {}).get("response_text", "")
+        cognitive_text = (ordered_results.get("cognitive", {}) or {}).get("response_text", "")
+
+        def _to_bullets(src: str, max_items: int = 5) -> str:
+            lines = [l.strip("-• \t") for l in src.splitlines() if l.strip()]
+            # If no clear lines, split by sentences
+            if len(lines) <= 1:
+                import re
+                lines = [s.strip() for s in re.split(r"(?<=[.!?])\s+", src) if s.strip()]
+            return "\n".join([f"- {l}" for l in lines[:max_items]])
+
+        def _ensure_question(qtext: str, fallback: str) -> str:
+            return qtext if "?" in qtext else fallback
+        #0908-ADDED:SHORTEST_EXAMPLE_ITEMS
+        def _shorten_example_items(src: str, max_items: int = 3, url_items: list | None = None) -> str:
+            """Create up to 3 concise example lines with short project labels.
+
+            Preference order for label:
+            1) Use url_items[i].title if provided
+            2) Use left side of ':'/' - '/' — ' in the text
+            3) Fallback to first ~5 words
+            """
+            import re
+            
+            # Clean up source text - remove "Sources:" section and other metadata
+            src = re.sub(r'\n\s*Sources?:\s*\n.*', '', src, flags=re.DOTALL)
+            src = re.sub(r'\n\s*Read more.*', '', src, flags=re.DOTALL)
+            src = re.sub(r'\n\s*More details.*', '', src, flags=re.DOTALL)
+            src = re.sub(r'\n\s*Learn.*', '', src, flags=re.DOTALL)
+            
+            raw_lines = [l.strip("-• \t") for l in src.splitlines() if l.strip()]
+            if len(raw_lines) <= 1:
+                raw_lines = [s.strip() for s in re.split(r"(?<=[.!?])\s+", src) if s.strip()]
+
+            def label_from_text(line: str) -> tuple[str, str]:
+                # Look for project names followed by descriptions
+                # Common patterns: "Project Name: description" or "Project Name - description"
+                parts = re.split(r'\s*[-–—:]\s*', line, maxsplit=1)
+                if len(parts) == 2:
+                    label, desc = parts[0], parts[1]
+                else:
+                    # Try to find natural break points
+                    words = line.split()
+                    if len(words) <= 8:
+                        label = line
+                        desc = ""
+                    else:
+                        # Look for a good break point (after first sentence or ~5-6 words)
+                        sentences = re.split(r'[.!?]', line)
+                        if len(sentences) > 1 and len(sentences[0].split()) <= 8:
+                            label = sentences[0].strip()
+                            desc = '. '.join(sentences[1:3]).strip()
+                        else:
+                            label = " ".join(words[:6])
+                            desc = " ".join(words[6:])
+                
+                return label.strip().rstrip("-–—: "), desc.strip()
+
+            # Determine how many bullets to produce
+            target_count = min(max_items, len(raw_lines))
+            if target_count == 0:
+                target_count = 1
+
+            items = []
+            for idx in range(target_count):
+                if idx >= len(raw_lines):
+                    break
+                    
+                line = raw_lines[idx]
+                label, desc = label_from_text(line)
+                
+                # Prefer url title when available
+                if url_items and idx < len(url_items):
+                    title = (url_items[idx] or {}).get('title')
+                    if isinstance(title, str) and title.strip():
+                        label = title.strip()
+                
+                # Format the item
+                if desc and len(desc) > 20:
+                    # Truncate description to reasonable length
+                    desc_words = desc.split()
+                    desc_short = " ".join(desc_words[:15])
+                    if len(desc_words) > 15:
+                        desc_short += "..."
+                    items.append(f"{idx+1}. **{label}**: {desc_short}")
+                else:
+                    items.append(f"{idx+1}. **{label}**")
+
+            return "\n".join(items)
+
+
+
+
+
+
+
+
+
+
+
+        # Technical guidance → concise bullets + application question
+        if path in {"technical_guidance", "knowledge_provision", "knowledge_only"} or is_technical:
+            body = domain_text or text
+            bullets = _to_bullets(body, max_items=5)
+            header = "Key points:"
+            apply_q = "Apply: Where in your current scheme would this change your approach, and why?"
+            return f"{header}\n{bullets}\n\n{apply_q}"
+
+        # Confusion → clarifying Socratic questions
+        if is_confusion or path in {"clarification_support"}:
+            base = socratic_text or text
+            # Add a gentle acknowledgment header and ensure 1–2 clarifiers
+            ack = "Let's clarify together:"
+            clarifiers = [
+                "What feels most unclear right now?",
+                "Which part would you like to unpack first?",
+            ]
+            q_count = base.count("?")
+            needed = max(0, 2 - q_count)
+            tail = ("\n" + "\n".join(clarifiers[:needed])) if needed > 0 else ""
+            if base.strip():
+                return f"{ack}\n\n{base.strip()}{tail}"
+            return f"{ack}\n\n{clarifiers[0]}\n{clarifiers[1]}"
+
+        # Example request → early: probe; later: 2–3 examples + apply
+        if is_example or path in {"knowledge_exploration"}:
+            if early:
+                probe = "Probe: What type of example would help most (scale, program, context), and what should it demonstrate?"
+                return text.strip() + ("\n\n" + probe if "?" not in text else "")
+            
+            body = domain_text or text
+            # Clean up the body text to remove metadata sections
+            import re
+            body = re.sub(r'\n\s*Sources?:\s*\n.*', '', body, flags=re.DOTALL)
+            body = re.sub(r'\n\s*Read more.*', '', body, flags=re.DOTALL)
+            body = re.sub(r'\n\s*More details.*', '', body, flags=re.DOTALL)
+            body = re.sub(r'\n\s*Learn.*', '', body, flags=re.DOTALL)
+            
+            # Try to pass structured url_items from DomainExpert result when available
+            url_items = None
+            try:
+                url_items = (ordered_results.get("domain", {}) or {}).get("url_items")
+            except Exception:
+                url_items = None
+                
+            bullets = _shorten_example_items(body, max_items=3, url_items=url_items)
+            
+            header = "Examples:"
+            apply_q = "Apply: Looking at these, what principle would you adapt to your project and how?"
+            return f"{header}\n{bullets}\n\n{apply_q}"
+
+        # Cognitive intervention → 3 prompts
+        if path in {"cognitive_challenge", "cognitive_intervention"}:
+            body = cognitive_text or text
+            header = "Let's test your assumptions:"
+            prompts = [
+                "- Try a constraint change: what if one key assumption flips?",
+                "- Shift perspective: how would a different user group see this?",
+                "- Explore an alternative: outline a viable opposite approach.",
+            ]
+            # Keep leading framing if present
+            intro = body.splitlines()[0] if body else header
+            return f"{intro}\n\n" + "\n".join(prompts) + "\n\nWhich one will you try first?"
+
+        # 0908Multi-agent → short synthesis (Insight/Direction/Watch) + next action
+        if path in {"multi_agent", "balanced_guidance", "design_guidance", "multi_agent_comprehensive"}:
+            header = "Synthesis:"
+            # Compose compact labeled bullets from agent texts
+            def _first_sentence(s: str, max_len: int = 300) -> str:
+                if not s:
+                    return ""
+                import re
+                parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", s) if p.strip()]
+                # Prefer up to two sentences to avoid feeling cut off
+                out = ". ".join(parts[:2]) if parts else s.strip()
+                out = out.replace("\n", " ")
+                return out[:max_len].rstrip()
+
+            def _first_question(s: str, max_len: int = 300) -> str:
+                if not s:
+                    return ""
+                import re
+                m = re.search(r"[^?\n]{3,}\?", s)
+                q = m.group(0) if m else _first_sentence(s, max_len)
+                q = q.replace("\n", " ")
+                return q[:max_len].rstrip()
+
+            def _sanitize(line: str) -> str:
+                # Remove leading bullets/quotes and redundant label echoes
+                t = (line or "").lstrip("-• \t\"'")
+                # Drop repeated label if present
+                lowered = t.lower().strip()
+                if lowered.startswith("insight:"):
+                    t = t.split(":", 1)[1].strip()
+                if lowered.startswith("direction:"):
+                    t = t.split(":", 1)[1].strip()
+                if lowered.startswith("watch:"):
+                    t = t.split(":", 1)[1].strip()
+                return t
+
+            items = []
+            if domain_text:
+                insight = _sanitize(_first_sentence(domain_text))
+                if insight:
+                    items.append(f"- Insight: {insight}")
+            if socratic_text:
+                direction = _sanitize(_first_question(socratic_text))
+                if direction and not direction.endswith("?"):
+                    direction = direction + "?"
+                if direction:
+                    items.append(f"- Direction: {direction}")
+            if cognitive_text:
+                watch = _sanitize(_first_sentence(cognitive_text))
+            else:
+                watch = "Check circulation pinch points, glare in galleries, and acoustic leaks between spaces."
+            if watch:
+                items.append(f"- Watch: {watch}")
+            items = [it for it in items if it][:3]
+            body = header + ("\n" + "\n".join(items) if items else "\n" + _first_sentence(text))
+            next_action = "Next: test one concrete change and tell me what you notice."
+            question = "What will you try first?"
+            return f"{body}\n\n{next_action} {question}"
+
+        # 0908-ADDED:Additional aliases shape to closest family styles
+        if path in {"knowledge_with_challenge", "knowledge_exploration", "knowledge_provision"}:
+            body = domain_text or text
+            bullets = _to_bullets(body, max_items=5)
+            apply_q = "Where in your current scheme would this change your approach, and why?"
+            return f"{bullets}\n\n{apply_q}"
+
+        if path in {"supportive_scaffolding", "confidence_building", "foundational_building"}:
+            base = socratic_text or text
+            if base.count("?") >= 2:
+                return base
+            clarifiers = [
+                "What feels most important to understand next?",
+                "Which part would you like to try first?",
+            ]
+            need = 2 - base.count("?")
+            return base.strip() + ("\n\n" + "\n".join(clarifiers[:need]) if need > 0 else "")
+
+        if path in {"balanced_guidance", "multi_agent_comprehensive", "design_guidance"}:
+            header = "Synthesis:"
+            def _first_sentence2(s: str, max_len: int = 140) -> str:
+                if not s:
+                    return ""
+                import re
+                parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", s) if p.strip()]
+                out = parts[0] if parts else s.strip()
+                return (out[:max_len].rstrip() + ("…" if len(out) > max_len else ""))
+            def _first_question2(s: str, max_len: int = 140) -> str:
+                if not s:
+                    return ""
+                import re
+                m = re.search(r"[^?\n]{3,}\?", s)
+                q = m.group(0) if m else _first_sentence2(s, max_len)
+                return (q[:max_len].rstrip() + ("…" if len(q) > max_len else ""))
+            items = []
+            if domain_text:
+                items.append(f"- Insight: {_first_sentence2(domain_text)}")
+            if socratic_text:
+                items.append(f"- Direction: {_first_question2(socratic_text)}")
+            if cognitive_text:
+                items.append(f"- Watch: {_first_sentence2(cognitive_text)}")
+            items = [it for it in items if it][:3]
+            body = header + ("\n" + "\n".join(items) if items else "\n" + _first_sentence2(text))
+            next_action = "Next, test one concrete change and tell me what you notice."
+            question = "What will you try first?"
+            return f"{body}\n\n{next_action} {question}"
+
+
+
+
+
+
+
+        # Example request: early → probe; later → examples + apply question
+        if path == "example_request":
+            is_example = classification.get("is_example_request", False)
+            if not is_example:
+                return text
+                
+            # Early turns get a probe question
+            if user_message_count <= 2:
+                probe = "Probe: What type of example would help most (scale, program, context), and what should it demonstrate?"
+                return text.strip() + ("\n\n" + probe if "?" not in text else "")
+                
+            # Later turns get examples + apply question
+            body = domain_text or text
+            # Clean up the body text to remove metadata sections
+            import re
+            body = re.sub(r'\n\s*Sources?:\s*\n.*', '', body, flags=re.DOTALL)
+            body = re.sub(r'\n\s*Read more.*', '', body, flags=re.DOTALL)
+            body = re.sub(r'\n\s*More details.*', '', body, flags=re.DOTALL)
+            body = re.sub(r'\n\s*Learn.*', '', body, flags=re.DOTALL)
+            
+            # Try to pass structured url_items from DomainExpert result when available
+            url_items = None
+            try:
+                url_items = (ordered_results.get("domain", {}) or {}).get("url_items")
+            except Exception:
+                url_items = None
+            
+            bullets = _shorten_example_items(body, max_items=3, url_items=url_items)
+            
+            header = "Examples:"
+            apply_q = "Apply: Looking at these, what principle would you adapt to your project and how?"
+            return f"{header}\n{bullets}\n\n{apply_q}"
+
+        # Default: return as-is
+        return text
+
+    def _enrich_phase_metadata_with_progression(self, metadata: Dict[str, Any], user_text: str, assistant_text: str) -> Dict[str, Any]:
+        """Augment metadata.phase_analysis with phase progression system. Safe no-op if unavailable."""
+        if not self._phase_system or not self._phase_session_id:
+            return metadata
+
+        # Update checklist heuristically (does not change routing)
+        try:
+            self._phase_system.update_checklist_from_interaction(self._phase_session_id, user_text, assistant_text)
+        except Exception:
+            pass
+
+        # Snapshot produces completion percentage and phase info
+        completion_pct = None
+        try:
+            snap = self._phase_system.get_snapshot(self._phase_session_id) or {}
+            completion_pct = snap.get("completion_pct")
+        except Exception:
+            pass
+
+        # 0908-ADDED:Session summary gives current phase; next Socratic step from question bank
+        current_phase = None
+        next_step_name = None
+        try:
+            summary = self._phase_system.get_session_summary(self._phase_session_id) or {}
+            current_phase = summary.get("current_phase")
+            nq = self._phase_system.get_next_question(self._phase_session_id)
+            if nq and hasattr(nq, "step"):
+                next_step_name = getattr(nq.step, "value", None) or str(nq.step)
+        
+        
+        
+        except Exception:
+            pass
+
+        # Merge into metadata
+        meta = dict(metadata or {})
+        phase_meta = dict(meta.get("phase_analysis") or {})
+        if current_phase and "phase" not in phase_meta:
+            phase_meta["phase"] = current_phase
+        if completion_pct is not None:
+            phase_meta["completion_pct"] = completion_pct
+        if next_step_name:
+            phase_meta["next_socratic_step"] = next_step_name
+        if phase_meta:
+            meta["phase_analysis"] = phase_meta
+        return meta
+
+
+
+
+
+    def _get_canonical_agent_sequence(self, routing_path: str, classification: Dict[str, Any], user_message_count: int) -> List[str]:
+        """Return stable agent execution order by route and context.
+
+        Keys correspond to internal result keys: 'domain', 'socratic', 'cognitive', 'analysis'.
+        """
+        path = routing_path or "default"
+        is_technical = bool(classification.get("is_technical_question"))
+        is_confusion = classification.get("interaction_type") == "confusion_expression"
+        is_example = classification.get("is_example_request", False)
+        early = user_message_count <= 2
+
+        # Strong route rules
+        if path in {"cognitive_challenge", "cognitive_intervention"}:
+            return ["cognitive", "socratic"]
+        if path in {"technical_guidance", "knowledge_provision", "knowledge_only"} or is_technical:
+            return ["domain", "socratic"]
+        if path in {"feedback_request", "analysis_guidance"}:
+            return ["analysis", "socratic"]
+        if path in {"multi_agent", "balanced_guidance", "design_guidance"}:
+            return ["domain", "socratic", "cognitive"]
+        if is_example and early:
+            return ["socratic"]
+        if is_example:
+            return ["domain", "socratic"]
+        if is_confusion:
+            return ["socratic"]
+
+        # Default exploration
+        return ["domain", "socratic"]
+
+    def _validate_routing_consistency(self, decision: Dict[str, Any], classification: Dict[str, Any]) -> None:
+        """Log warnings for contradictory signals vs chosen path (non-fatal)."""
+        try:
+            path = decision.get("path", "")
+            is_technical = classification.get("is_technical_question", False)
+            shows_confusion = classification.get("shows_confusion", False)
+            is_example = classification.get("is_example_request", False)
+            if path == "technical_guidance" and shows_confusion:
+                self.logger.debug("Routing consistency: technical overrides confusion by policy.")
+            if path in {"clarification_support", "socratic_focus"} and is_technical:
+                self.logger.debug("Routing consistency: confusion support chosen while technical signals present.")
+            if path == "socratic_exploration" and not is_example:
+                self.logger.debug("Routing consistency: exploration chosen without explicit example; acceptable for early probing.")
+        except Exception:
+            pass
+
+    def _normalize_response_type(self, raw_type: str, routing_path: str, classification: Dict[str, Any]) -> str:
+        """Map internal/raw types to standardized Study Mode response types.
+
+        Standard set: socratic_primary | knowledge_support | cognitive_intervention | synthesis | fallback
+        """
+        path = routing_path or "default"
+        # Priority: explicit route
+        if path in {"cognitive_challenge", "cognitive_intervention"}:
+            return "cognitive_intervention"
+        if path in {"technical_guidance", "knowledge_provision", "knowledge_only", "knowledge_exploration", "knowledge_with_challenge"} or classification.get("is_technical_question"):
+            return "knowledge_support"
+        if path in {"multi_agent", "balanced_guidance", "design_guidance", "multi_agent_comprehensive"}:
+            return "synthesis"
+        if path in {"socratic_exploration", "clarification_support", "supportive_scaffolding", "exploratory_guidance", "confidence_building", "foundational_building", "default"}:
+            return "socratic_primary"
+
+        # Fallback to raw type mapping
+        raw_map = {
+            "domain_knowledge": "knowledge_support",
+            "socratic_guidance": "socratic_primary",
+            "cognitive_enhancement": "cognitive_intervention",
+            "multi_agent_synthesis": "synthesis",
+            "fallback": "fallback",
+        }
+        return raw_map.get(raw_type, "socratic_primary")
+
+    def _augment_metadata(self, metadata: Dict[str, Any], agent_results: Dict[str, Any], routing_decision: Dict[str, Any], classification: Dict[str, Any]) -> Dict[str, Any]:
+        """Ensure required fields exist in metadata without overwriting existing values."""
+        metadata = dict(metadata or {})
+        if "routing_path" not in metadata:
+            metadata["routing_path"] = routing_decision.get("path", "unknown")
+        if "agents_used" not in metadata:
+            agents_used: list[str] = []
+            if agent_results.get("socratic"): agents_used.append("socratic_tutor")
+            if agent_results.get("domain"): agents_used.append("domain_expert")
+            if agent_results.get("analysis"): agents_used.append("analysis_agent")
+            if agent_results.get("cognitive"): agents_used.append("cognitive_enhancement")
+            metadata["agents_used"] = agents_used
+        if "phase_analysis" not in metadata:
+            metadata["phase_analysis"] = (agent_results.get("analysis", {}) or {}).get("phase_analysis", {})
+        if "classification" not in metadata:
+            metadata["classification"] = classification
+        return metadata
+
+    def _apply_study_mode_quality(self, text: str, response_type: str, state: WorkflowState, classification: Dict[str, Any], routing_decision: Dict[str, Any]) -> str:
+        """Apply light Study Mode rules: ensure a question and avoid early direct answers."""
+        if not text:
+            return text
+        student_state = state.get("student_state")
+        user_messages = []
+        try:
+            user_messages = [m.get("content", "") for m in getattr(student_state, "messages", []) if m.get("role") == "user"]
+        except Exception:
+            pass
+        is_first_turn = len(user_messages) <= 1
+
+        # Map to standardized response family (do not override original label in metadata)
+        path = routing_decision.get("path", "default")
+        needs_question = response_type in ("socratic_guidance", "domain_knowledge", "multi_agent_synthesis") or path in (
+            "socratic_exploration", "knowledge_provision", "multi_agent", "default",
+        )
+
+        # Avoid first-turn answer dump for non-technical requests
+        if is_first_turn and not classification.get("is_technical_question"):
+            # If no question mark present, add one tailored prompt
+            if "?" not in text:
+                text = text.strip()
+                text += ("\n\nWhat aspect would you like to explore first?")
+
+        # Ensure at least one question for guidance/synthesis types
+        if needs_question and "?" not in text:
+            text = text.strip() + "\n\nWhat would you examine next?"
+
+        return text
     
     def _get_agent_results(self, state: WorkflowState) -> Dict[str, Any]:
         """Extract all agent results from state"""
@@ -1710,7 +2466,7 @@ class LangGraphOrchestrator:
         return final_response
     
     def _build_metadata(self, response_type: str, agent_results: Dict[str, Any], 
-                       routing_decision: Dict, classification: Dict) -> Dict[str, Any]:
+                       routing_decision: Dict, classification: Dict, raw_response_type: Optional[str] = None) -> Dict[str, Any]:
         """Build comprehensive metadata for the response"""
         
         # Determine which agents were used
@@ -1728,8 +2484,8 @@ class LangGraphOrchestrator:
         analysis_result = agent_results.get("analysis", {})
         cognitive_result = agent_results.get("cognitive", {})
         domain_result = agent_results.get("domain", {})
-        
-        return {
+        #0908-ADDED:meta and if raw below
+        meta = {
             "response_type": response_type,
             "agents_used": agents_used,
             "routing_path": routing_decision.get("path", "unknown"),
@@ -1742,6 +2498,13 @@ class LangGraphOrchestrator:
             "processing_time": "N/A",  # Will be set by the orchestrator
             "classification": classification
         }
+        if raw_response_type:
+            meta["raw_response_type"] = raw_response_type
+        return meta
+
+
+
+        
 #0908ADDED
     def _refine_to_budget(self, text: str, agent_type: str) -> str:
         """Rewrite the response to fit within the agent-specific word budget.

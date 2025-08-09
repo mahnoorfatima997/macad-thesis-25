@@ -3,6 +3,7 @@ from typing import Dict, Any, List, Optional
 import os
 import random
 from openai import OpenAI
+import logging
 from dotenv import load_dotenv
 import sys
 
@@ -10,23 +11,24 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from state_manager import ArchMentorState
+from utils.client_manager import get_shared_client
 from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
 load_dotenv()
 
 class SocraticTutorAgent:
     def __init__(self, domain="architecture"):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = get_shared_client()
         self.llm = self.client.chat.completions  # Fix LLM reference
         self.domain = domain
         self.name = "socratic_tutor"
-        print(f"🤔 {self.name} initialized for domain: {domain}")
+        logging.getLogger(__name__).info(f"{self.name} initialized for domain: {domain}")
     
     #3107 ADDED DOMAIN EXPERT RESULT ONLY
     async def generate_response(self, state: ArchMentorState, analysis_result: Dict[str, Any], context_classification: Optional[Dict] = None, domain_expert_result: Optional[Dict] = None) -> AgentResponse:
         """Generate sophisticated Socratic responses with advanced analysis - now returns AgentResponse"""
         
-        print(f"\n🤔 {self.name} generating sophisticated Socratic response...")
+        logging.getLogger(__name__).debug(f"{self.name} generating sophisticated Socratic response...")
         
         # Get user's last input
         last_message = ""
@@ -52,9 +54,12 @@ class SocraticTutorAgent:
         # Check if we have milestone context from the orchestrator
         milestone_context = analysis_result.get("milestone_context", {})
         if milestone_context:
-            print(f"🎯 Milestone Context: {milestone_context.get('milestone_type', 'None')} in {milestone_context.get('phase', 'None')} phase")
-            print(f"🎯 Required Actions: {milestone_context.get('required_actions', [])}")
-            print(f"🎯 Success Criteria: {milestone_context.get('success_criteria', [])}")
+            logging.getLogger(__name__).debug(
+                "Milestone Context: %s phase=%s actions=%s",
+                milestone_context.get('milestone_type', 'None'),
+                milestone_context.get('phase', 'None'),
+                milestone_context.get('required_actions', []),
+            )
             
             # Add milestone information to student analysis
             student_analysis["milestone_context"] = milestone_context
@@ -88,21 +93,36 @@ class SocraticTutorAgent:
             elif milestone_type == "readiness_assessment":
                 response_strategy = "clarifying_guidance"  # Focus on assessment
         
-        print(f"📊 Student Analysis: {student_analysis}")
-        print(f"🔄 Conversation Stage: {conversation_progression['stage']}")
-        print(f"💡 Student Insights: {student_insights['key_insights']}")
-        print(f"🎯 Response Strategy: {response_strategy}")
+        logging.getLogger(__name__).debug(
+            "Student Analysis=%s stage=%s strategy=%s",
+            student_analysis,
+            conversation_progression['stage'],
+            response_strategy,
+        )
         if milestone_context:
             print(f"🎯 Milestone Strategy: {milestone_context.get('milestone_type', 'None')} -> {response_strategy}")
         
+        # 0908Detect technical intent for route-aware technical follow-ups
+        is_technical = False
+        try:
+            is_technical = bool((context_classification or {}).get("is_technical_question")) or self._looks_technical(last_message)
+        except Exception:
+            is_technical = self._looks_technical(last_message)
+
         # 0208 UPDATED: For early conversations, use enhanced clarifying guidance
         if is_early_conversation and not has_examples:
-            print("🆕 Early conversation detected - providing enhanced clarifying guidance")
+            logging.getLogger(__name__).debug("Early conversation detected - clarifying guidance")
             response_result = await self._generate_clarifying_guidance(state, student_analysis, conversation_progression)
+        # 0908: Design guidance synthesis (Insight/Direction/Watch) + Next probe
+        elif self._looks_design_guidance(last_message):
+            response_result = await self._generate_design_guidance_synthesis(state, analysis_result, domain_expert_result)
+        # 0908: Technical follow-up tied to DomainExpert knowledge output
+        elif is_technical and domain_expert_result and domain_expert_result.get("response_text", ""):
+            response_result = await self._generate_technical_followup(state, domain_expert_result)
         # 3107-BEFORE IT WAS if response_strategy == "clarifying_guidance": Generate response based on strategy, with special handling for examples
         elif has_examples:
             # If we have examples from domain expert, ask questions about them
-            print("📚 Domain expert provided examples - generating questions about those examples")
+            logging.getLogger(__name__).debug("Domain expert provided examples - questioning examples")
             response_result = await self._generate_example_based_question(state, student_analysis, conversation_progression, domain_expert_result)
         elif response_strategy == "clarifying_guidance":
             response_result = await self._generate_clarifying_guidance(state, student_analysis, conversation_progression)
@@ -490,6 +510,9 @@ class SocraticTutorAgent:
             else:
                 response_text = await self._generate_topic_specific_guidance(main_topic, building_type, last_message, student_analysis)
         
+        # 0908: Ensure clarifying format with header and 1–2 crisp questions
+        response_text = self._format_clarification(response_text, building_type, last_message)
+
         return {
             "agent": self.name,
             "response_text": response_text,
@@ -498,6 +521,37 @@ class SocraticTutorAgent:
             "student_analysis": student_analysis,
             "conversation_progression": conversation_progression
         }
+    #0908-ADDED:FORMAT_CLARIFICATION
+    def _format_clarification(self, text: str, building_type: str, last_message: str) -> str:
+        """Format clarification with a stable header and 1–2 tailored questions, ending with a question.
+
+        Keeps content concise; derives clarifying questions from user input when possible.
+        """
+        try:
+            base = text.strip()
+            # Derive a focus topic from the user's last message
+            topic = self._extract_main_topic(last_message) if last_message else "your focus"
+            # Build 1–2 short questions
+            q1 = f"Which aspect of {topic} in your {building_type} matters most right now?"
+            q2 = f"What constraint or goal should guide that choice?"
+
+            # Ensure not overly long
+            max_len = 420
+            if len(base) > max_len:
+                base = base[:max_len].rstrip() + "…"
+
+            # Ensure we end with a question
+            tail = q1 if "?" not in base[-60:] else q2
+            formatted = f"Let's clarify:\n{base}\n\n{q1}\n{q2 if tail == q2 else ''}".rstrip()
+            if not formatted.endswith("?"):
+                formatted += "?"
+            return formatted
+        except Exception:
+            # Safe fallback
+            return f"Let's clarify:\n{text}\n\nWhat is the most important decision about {building_type} you are making here?"
+    
+
+
     
     def _generate_specific_architectural_guidance(self, focus_area: str, building_type: str, main_topic: str, student_analysis: Dict = None, last_message: str = "") -> str:
         """Generate specific architectural guidance using LLM for any building type"""
@@ -543,7 +597,8 @@ class SocraticTutorAgent:
         
         try:
             response = self.llm.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=200,  # Reduced from 400
                 temperature=0.7
@@ -559,6 +614,105 @@ class SocraticTutorAgent:
                 return f"Let's examine the layout for your {building_type}. What are the primary functional zones and how should they relate to each other? How can you balance open, flexible spaces with areas that need acoustic or visual separation?"
             else:
                 return f"Let's focus on {focus_area} for your {building_type}. What specific challenges or opportunities do you see in this area? How does it relate to your overall design goals?"
+    #0908-ADDED:LOOKS_TECHNICAL AND GENERATE_TECHNICAL_FOLLOWUP
+    def _looks_technical(self, text: str) -> bool:
+        """Heuristic to detect technical questions from user text."""
+        if not text:
+            return False
+        t = text.lower()
+        indicators = [
+            "requirement", "requirements", "code", "codes", "ada", "standard", "standards",
+            "regulation", "slope", "width", "landing", "clearance", "egress",
+        ]
+        return any(k in t for k in indicators)
+    #0908-ADDED:LOOKS_DESIGN_GUIDANCE
+    def _looks_design_guidance(self, text: str) -> bool:
+        """Heuristic to detect design-guidance phrasing."""
+        if not text:
+            return False
+        t = text.lower()
+        patterns = [
+            "how should", "how can i", "how do i", "how to", "how might",
+            "what direction", "which direction", "where should", "design direction",
+        ]
+        return any(p in t for p in patterns)
+
+    async def _generate_technical_followup(self, state: ArchMentorState, domain_expert_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Produce 1–2 concise application probes referencing DomainExpert key points."""
+        building_type = self._extract_building_type_from_context(state)
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+
+        # Try to extract short labels from DomainExpert response
+        text = (domain_expert_result or {}).get("response_text", "").strip()
+        labels: List[str] = []
+        if text:
+            import re
+            bullets = re.findall(r"^\s*[-•]\s*(.+)$", text, flags=re.MULTILINE)
+            for b in bullets[:3]:
+                # Use first 4 words as a short label
+                words = b.split()
+                labels.append(" ".join(words[:4]))
+
+        topic = self._extract_main_topic(last_message) if last_message else "your focus"
+        if not labels:
+            labels = [f"{topic} detail", f"{topic} compliance"]
+
+        q1 = f"Given {labels[0]}, where in your {building_type} does this most affect the layout or user flow?"
+        q2 = f"How will you verify {labels[1]} meets your project’s constraints?"
+
+        response_text = f"Apply these points in context:\n{q1}\n{q2}"
+
+        return {
+            "response_text": response_text,
+            "response_type": "technical_followup",
+        }
+    #0908-ADDED:GENERATE_DESIGN_GUIDANCE_SYNTHESIS
+    async def _generate_design_guidance_synthesis(self, state: ArchMentorState, analysis_result: Dict[str, Any], domain_expert_result: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """Produce compact design guidance with Insight/Direction/Watch bullets + Next probe."""
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+
+        topic = self._extract_main_topic(last_message) if last_message else "your focus"
+        building_type = self._extract_building_type_from_context(state)
+
+        domain_text = (domain_expert_result or {}).get("response_text", "") if domain_expert_result else ""
+
+        def _first_sentence(s: str, max_len: int = 140) -> str:
+            if not s:
+                return ""
+            import re
+            parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", s) if p.strip()]
+            out = parts[0] if parts else s.strip()
+            return (out[:max_len].rstrip() + ("…" if len(out) > max_len else ""))
+
+        # Build labeled bullets
+        items = []
+        if domain_text:
+            items.append(f"- Insight: {_first_sentence(domain_text)}")
+        else:
+            items.append(f"- Insight: Consider {topic} trade-offs for a {building_type}.")
+
+        direction_q = f"Which approach to {topic} best supports your {building_type} goals?"
+        items.append(f"- Direction: {direction_q}")
+
+        watch_line = f"- Watch: Check implications for circulation/daylight/acoustics."
+        items.append(watch_line)
+
+        header = "Synthesis:"
+        next_probe = "Next: test one concrete change and tell me what you notice. What will you try first?"
+        response_text = header + "\n" + "\n".join(items) + "\n\n" + next_probe
+
+        return {
+            "response_text": response_text,
+            "response_type": "design_guidance",
+        }
     
     async def _generate_topic_specific_guidance(self, main_topic: str, building_type: str, last_message: str, student_analysis: Dict = None) -> str:
         """Generate topic-specific architectural guidance using LLM"""
@@ -604,7 +758,8 @@ class SocraticTutorAgent:
         
         try:
             response = self.llm.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=200,  # Reduced from 400
                 temperature=0.7
@@ -631,11 +786,37 @@ class SocraticTutorAgent:
         # Provide specific, encouraging guidance based on the topic
         supportive_guidance = self._get_supportive_architectural_guidance(main_topic, building_type, student_analysis)
         
+        supportive_guidance = self._format_supportive_scaffold(supportive_guidance, building_type, last_message)
+        
         return {
             "response_text": supportive_guidance,
             "response_type": "supportive_guidance",
             "user_input_addressed": "learning_support"
         }
+    #0908-ADDED:FORMAT_SUPPORTIVE_SCAFFOLD  
+    def _format_supportive_scaffold(self, text: str, building_type: str, last_message: str) -> str:
+        """Format supportive scaffold with a small next step and 1–2 clarifiers.
+
+        Keeps content short and ensures we end with a question.
+        """
+        try:
+            base = (text or "").strip()
+            topic = self._extract_main_topic(last_message) if last_message else "your focus"
+            step = f"Try one small step: sketch a quick diagram for {topic} in your {building_type}."
+            q1 = f"What will you test first about {topic}?"
+            q2 = f"Which outcome would indicate you should adjust?"
+
+            # Trim overly long base
+            max_len = 420
+            if len(base) > max_len:
+                base = base[:max_len].rstrip() + "…"
+
+            out = f"Let's take a small step:\n{base}\n\n{step}\n\n{q1}\n{q2}"
+            if not out.endswith("?"):
+                out += "?"
+            return out
+        except Exception:
+            return f"Let's take a small step:\n{text}\n\nWhat will you test first?"
     
     def _get_supportive_architectural_guidance(self, topic: str, building_type: str, student_analysis: Dict) -> str:
         """Generate supportive architectural guidance using LLM with milestone awareness"""
@@ -805,7 +986,8 @@ class SocraticTutorAgent:
         
         try:
             response = self.llm.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150,  # Reduced from 300
                 temperature=0.7
@@ -1112,7 +1294,8 @@ I sense you might be scratching the surface of this problem. Let's explore the l
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=80,
                 temperature=0.3
@@ -1329,7 +1512,8 @@ I sense you might be scratching the surface of this problem. Let's explore the l
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                #0908-ADDED:MODEL-CHANGED-TO-GPT-4O-MINI
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=80,
                 temperature=0.7

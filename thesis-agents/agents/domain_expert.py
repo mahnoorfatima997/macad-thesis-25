@@ -3,6 +3,7 @@
 from typing import Dict, Any, List
 import os
 from openai import OpenAI
+import logging
 from dotenv import load_dotenv
 import sys
 import re
@@ -33,6 +34,7 @@ except ImportError:
     def get_dev_token_limit(component): return 200
 
 from state_manager import ArchMentorState
+from utils.client_manager import get_shared_client
 from knowledge_base.knowledge_manager import KnowledgeManager
 from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, ResponseBuilder, EnhancementMetrics
 
@@ -304,63 +306,85 @@ def generate_alternate_search_query(query: str) -> str:
 
 class DomainExpertAgent:
     def __init__(self, domain="architecture"):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = get_shared_client()
         self.domain = domain
         self.name = "domain_expert"
         self.knowledge_manager = KnowledgeManager(domain)
+        # 0908: Simple in-memory cache for web search results (reduces API calls)
+        self._web_cache: Dict[str, List[Dict]] = {}
+        self._web_cache_max_entries: int = 64
         
-        print(f"📚 {self.name} initialized with knowledge base for {domain}")
+        logging.getLogger(__name__).info(f"{self.name} initialized with knowledge base for {domain}")
 
     # Enhanced web search with context awareness
     async def search_web_for_knowledge(self, topic: str, state: ArchMentorState = None) -> List[Dict]:
-        """Web search using only Tavily, with contextual queries and safe fallback."""
+        """Web search using only Tavily, with contextual queries, caching, and safe fallback."""
 
+        logger = logging.getLogger(__name__)
         try:
             # Analyze conversation context for better search queries
             context = {}
             if state:
                 context = analyze_conversation_context_for_search(state)
-                print(f"🔍 Context analysis: {context}")
+                logger.debug("Web search context: %s", context)
 
             # Generate context-aware search query
             search_query = generate_context_aware_search_query(topic, context)
-            print(f"🌐 Tavily search: {search_query}")
+            logger.info("Tavily search query: %s", search_query)
+
+            # Cache key incorporates query and key context fields
+            cache_key = f"{search_query}::bt={context.get('building_type','')}"
+            if cache_key in self._web_cache:
+                logger.debug("Using cached web results for query")
+                return self._web_cache[cache_key]
 
             # Use Tavily as the sole web search provider
             results: List[Dict] = []
             tavily_results = await self._try_tavily_search(search_query, context)
             if tavily_results:
                 results.extend(tavily_results)
-                print(f"✅ Tavily search found {len(tavily_results)} results")
+                logger.info("Tavily search returned %d results", len(tavily_results))
 
             # If no results, try an alternate, case-study-focused query with Tavily
             if not results:
                 alt_query = generate_alternate_search_query(search_query)
                 if alt_query != search_query:
-                    print(f"🔁 Retrying with alternate Tavily query: {alt_query}")
+                    logger.debug("Retrying tavily with alternate query: %s", alt_query)
                     tavily_alt_results = await self._try_tavily_search(alt_query, context)
                     if tavily_alt_results:
                         results.extend(tavily_alt_results)
-                        print(f"✅ Tavily alternate search found {len(tavily_alt_results)} results")
+                        logger.info("Alternate Tavily search returned %d results", len(tavily_alt_results))
 
             # Fallback to architectural knowledge base
             if not results:
-                print("⚠️ No Tavily results found, using architectural knowledge base")
+                logger.warning("No Tavily results found, using architectural knowledge fallback")
                 results = await self._get_architectural_knowledge_fallback(topic, context)
+
+            # Store in cache (simple bound)
+            if len(self._web_cache) >= self._web_cache_max_entries:
+                # remove an arbitrary item (FIFO-ish)
+                try:
+                    first_key = next(iter(self._web_cache.keys()))
+                    self._web_cache.pop(first_key, None)
+                except Exception:
+                    self._web_cache.clear()
+            self._web_cache[cache_key] = results
 
             return results
 
         except Exception as e:
-            print(f"❌ Tavily web search failed: {e}")
+            logger.error("Tavily web search failed: %s", e)
             return await self._get_architectural_knowledge_fallback(topic, context)
     
 
     async def _try_tavily_search(self, query: str, context: Dict[str, Any]) -> List[Dict]:
         """Use Tavily API for web search, constrained to preferred architecture domains."""
+        logger = logging.getLogger(__name__)
         try:
             import requests
             api_key = os.getenv("TAVILY_API_KEY")
             if not api_key:
+                logger.debug("TAVILY_API_KEY missing; skipping web search")
                 return []
 
             include_domains: List[str] = get_preferred_architecture_domains()
@@ -408,7 +432,7 @@ class DomainExpertAgent:
                     })
                 return items
         except Exception as e:
-            print(f"Tavily search failed: {e}")
+            logger.error("Tavily search failed: %s", e)
         return []
 
     
@@ -1178,6 +1202,9 @@ class DomainExpertAgent:
             ai_response = response.choices[0].message.content.strip()
             print(f"📚 AI-generated knowledge response: {ai_response[:100]}...")
             
+            # 0908-ADDED: If the user's query appears technical, format as concise bullets + apply question
+            ai_response = self._maybe_format_technical_response(state, ai_response)
+
             response_result = {
                 "agent": self.name,
                 "response_text": ai_response,
@@ -1200,6 +1227,36 @@ class DomainExpertAgent:
             print(f"⚠️ AI response generation failed: {e}")
             fallback_response = self._generate_fallback_knowledge(user_input, building_type)
             return self._convert_to_agent_response(fallback_response, state, analysis_result, gap_type)
+    #0908 ADDED DEFINITION  
+    def _maybe_format_technical_response(self, state: ArchMentorState, text: str) -> str:
+        """If the last user message looks technical, convert text to short bullets and add an apply question.
+
+        This aligns agent-side output with Study Mode technical_guidance behavior while keeping content intact.
+        """
+        try:
+            # Detect basic technical intent from last user message
+            last_user = ""
+            for msg in reversed(state.messages):
+                if msg.get("role") == "user":
+                    last_user = msg.get("content", "").lower()
+                    break
+            technical_indicators = [
+                "requirement", "requirements", "code", "codes", "ada", "standard", "standards",
+                "regulation", "slope", "width", "landing", "clearance", "egress",
+            ]
+            is_technical = any(t in last_user for t in technical_indicators)
+            if not is_technical:
+                return text
+
+            # Convert sentences to bullets
+            import re
+            sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+            bullets = [f"- {s}" for s in sentences[:5]] if sentences else [f"- {text.strip()}"]
+            building_type = self._extract_building_type_from_context(state)
+            apply_q = f"Apply: Where in your {building_type} scheme would this change your approach, and why?"
+            return "Key points:\n" + "\n".join(bullets) + "\n\n" + apply_q
+        except Exception:
+            return text
     
     def _convert_to_agent_response(self, response_result: Dict, state: ArchMentorState, analysis_result: Dict, gap_type: str) -> AgentResponse:
         """Convert the original response to AgentResponse format while preserving all data"""
@@ -1542,32 +1599,32 @@ I understand you're looking for examples of {user_input.lower().split('examples'
         project_context = state.current_design_brief
         
         #310 ADDED-RETRIEVAL STRATEGY
-        print(f"📚 Implementing KNOWLEDGE RETRIEVAL PIPELINE for: {user_input}")
+        logging.getLogger(__name__).debug("Implementing knowledge retrieval pipeline for: %s", user_input)
         
         # STEP 1: QUERY ANALYSIS
         # Extract architectural concepts from user input
         user_topic = self._extract_topic_from_user_input(user_input)
-        print(f"   🎯 Extracted topic: {user_topic}")
+        logging.getLogger(__name__).debug("Extracted topic: %s", user_topic)
         
         # STEP 2: RETRIEVAL STRATEGY
         # First try database search
-        print(f"   🔍 Searching database for: {user_topic}")
+        logging.getLogger(__name__).debug("Searching database for: %s", user_topic)
         knowledge_results = await self.discover_knowledge(user_topic, {}, state)
         
         # If database search is insufficient, use web search
         if not knowledge_results or len(knowledge_results) < 2:
-            print(f"   🌐 Database insufficient, searching web for: {user_topic}")
+            logging.getLogger(__name__).debug("Database insufficient, searching web for: %s", user_topic)
             web_results = await self.search_web_for_knowledge(user_topic, state)
             if web_results:
                 knowledge_results.extend(web_results)
-                print(f"   🌐 Found {len(web_results)} web results")
+                logging.getLogger(__name__).debug("Found %d web results", len(web_results))
         
         # STEP 3: SYNTHESIS ALGORITHM
         if knowledge_results:
-            print(f"   🔧 Synthesizing {len(knowledge_results)} knowledge sources")
+            logging.getLogger(__name__).debug("Synthesizing %d knowledge sources", len(knowledge_results))
             return await self.synthesize_knowledge(knowledge_results, user_topic, state, {})
         else:
-            print(f"   ⚠️ No knowledge found, using AI generation")
+            logging.getLogger(__name__).warning("No knowledge found, using AI generation")
             # Use AI to generate examples when no knowledge is found
             return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
     
@@ -2328,6 +2385,8 @@ I understand you're looking for examples of {user_input.lower().split('examples'
                 "synthesis_quality": "multi_strategy",
                 "discovery_methods": methods_used,
                 "sources": [r.get('metadata', {}).get('source', 'Unknown') for r in knowledge_results[:3]],
+                # 0908-ADDED: provide structured url items for orchestrator shaping (title+url)
+                "url_items": urls,
                 "urls_provided": len(urls) > 0,
                 "contextual_variety": True
             }
