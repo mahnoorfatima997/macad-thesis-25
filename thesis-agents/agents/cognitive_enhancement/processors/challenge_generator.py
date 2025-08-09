@@ -1,0 +1,466 @@
+"""
+Challenge generation processing module for creating cognitive challenges.
+"""
+from typing import Dict, Any, List
+import random
+from ..config import CHALLENGE_TEMPLATES, STRATEGY_MAPPINGS
+from ...common import TextProcessor, MetricsCalculator, AgentTelemetry, LLMClient
+from state_manager import ArchMentorState
+
+
+class ChallengeGeneratorProcessor:
+    """
+    Processes cognitive challenge generation and strategy selection.
+    """
+    
+    def __init__(self):
+        self.telemetry = AgentTelemetry("challenge_generator")
+        self.text_processor = TextProcessor()
+        self.metrics_calculator = MetricsCalculator()
+        self.client = LLMClient()
+        
+    def select_enhancement_strategy(self, cognitive_state: Dict, analysis_result: Dict, state: ArchMentorState) -> str:
+        """
+        Select appropriate enhancement strategy based on cognitive state.
+        """
+        self.telemetry.log_agent_start("select_enhancement_strategy")
+        
+        try:
+            # Strategy selection based on cognitive state
+            if cognitive_state.get("overconfidence_level") == "high":
+                return "challenge_assumptions"
+            elif cognitive_state.get("passivity_level") == "high":
+                return "increase_engagement"
+            elif cognitive_state.get("metacognitive_awareness") == "low":
+                return "promote_reflection"
+            elif cognitive_state.get("cognitive_load") == "underload":
+                return "increase_challenge"
+            elif cognitive_state.get("engagement_level") == "low":
+                return "stimulate_curiosity"
+            else:
+                return "balanced_development"
+                
+        except Exception as e:
+            self.telemetry.log_error("select_enhancement_strategy", str(e))
+            return "balanced_development"
+    
+    async def generate_cognitive_challenge(self, strategy: str, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict) -> Dict[str, Any]:
+        """
+        Generate appropriate cognitive challenge based on strategy.
+        """
+        self.telemetry.log_agent_start("generate_cognitive_challenge")
+        
+        try:
+            # Select challenge type based on strategy
+            challenge_mapping = {
+                "challenge_assumptions": ("metacognitive_challenge", "assumptions"),
+                "increase_engagement": ("perspective_challenge", "user_perspective"),
+                "promote_reflection": ("metacognitive_challenge", "process_reflection"),
+                "increase_challenge": ("constraint_challenge", "spatial"),
+                "stimulate_curiosity": ("alternative_challenge", "structural"),
+                "balanced_development": ("perspective_challenge", "temporal_perspective")
+            }
+            
+            challenge_type, subtype = challenge_mapping.get(strategy, ("constraint_challenge", "functional"))
+            
+            # Generate specific challenge based on type
+            if challenge_type == "constraint_challenge":
+                challenge_result = await self._generate_constraint_challenge(cognitive_state, state, analysis_result, subtype)
+            elif challenge_type == "perspective_challenge":
+                challenge_result = await self._generate_perspective_challenge(cognitive_state, state, analysis_result, subtype)
+            elif challenge_type == "alternative_challenge":
+                challenge_result = await self._generate_alternative_challenge(cognitive_state, state, analysis_result, subtype)
+            elif challenge_type == "metacognitive_challenge":
+                challenge_result = await self._generate_metacognitive_challenge(cognitive_state, state, analysis_result, subtype)
+            else:
+                challenge_result = await self._generate_general_challenge(cognitive_state, state, analysis_result)
+            
+            # Add strategy and pedagogical information
+            challenge_result.update({
+                "strategy": strategy,
+                "challenge_type": challenge_type,
+                "subtype": subtype,
+                "pedagogical_intent": self._get_pedagogical_intent(strategy, cognitive_state),
+                "difficulty_level": self._assess_challenge_difficulty(challenge_result, cognitive_state),
+                "generation_timestamp": self.telemetry.get_timestamp()
+            })
+            
+            return challenge_result
+            
+        except Exception as e:
+            self.telemetry.log_error("generate_cognitive_challenge", str(e))
+            return self._get_fallback_challenge(strategy)
+    
+    async def _generate_constraint_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, constraint_type: str = "spatial") -> Dict[str, Any]:
+        """Generate constraint-based cognitive challenge."""
+        self.telemetry.log_agent_start("_generate_constraint_challenge")
+        
+        try:
+            # Get challenge templates for constraint type
+            challenges = CHALLENGE_TEMPLATES.get("constraint_challenge", {}).get(constraint_type, [])
+            if not challenges:
+                challenges = ["How would your design change under different constraints?"]
+            
+            base_challenge = random.choice(challenges)
+            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "constraint_challenge", constraint_type)
+            
+            return {
+                "challenge_text": contextualized_challenge,
+                "challenge_type": "constraint_challenge",
+                "constraint_type": constraint_type,
+                "pedagogical_intent": "Challenge design assumptions through constraint exploration",
+                "cognitive_target": "flexibility_and_adaptation",
+                "expected_outcome": "Increased design flexibility and creative problem-solving"
+            }
+            
+        except Exception as e:
+            self.telemetry.log_error("_generate_constraint_challenge", str(e))
+            return {
+                "challenge_text": "Consider how your design would adapt to different constraints.",
+                "challenge_type": "constraint_challenge",
+                "constraint_type": constraint_type,
+                "pedagogical_intent": "Encourage adaptive thinking",
+                "cognitive_target": "flexibility"
+            }
+    
+    async def _generate_perspective_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, perspective_type: str = "user_perspective") -> Dict[str, Any]:
+        """Generate perspective-shifting cognitive challenge."""
+        self.telemetry.log_agent_start("_generate_perspective_challenge")
+        
+        try:
+            # Get challenge templates for perspective type
+            challenges = CHALLENGE_TEMPLATES.get("perspective_challenge", {}).get(perspective_type, [])
+            if not challenges:
+                challenges = ["How would different users experience your design?"]
+            
+            base_challenge = random.choice(challenges)
+            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "perspective_challenge", perspective_type)
+            
+            return {
+                "challenge_text": contextualized_challenge,
+                "challenge_type": "perspective_challenge",
+                "perspective_type": perspective_type,
+                "pedagogical_intent": "Expand perspective and empathy in design thinking",
+                "cognitive_target": "perspective_taking",
+                "expected_outcome": "Enhanced empathy and user-centered design thinking"
+            }
+            
+        except Exception as e:
+            self.telemetry.log_error("_generate_perspective_challenge", str(e))
+            return {
+                "challenge_text": "Consider how different users might experience your design.",
+                "challenge_type": "perspective_challenge",
+                "perspective_type": perspective_type,
+                "pedagogical_intent": "Encourage empathetic design thinking",
+                "cognitive_target": "empathy"
+            }
+    
+    async def _generate_alternative_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, alternative_type: str = "structural") -> Dict[str, Any]:
+        """Generate alternative exploration cognitive challenge."""
+        self.telemetry.log_agent_start("_generate_alternative_challenge")
+        
+        try:
+            # Get challenge templates for alternative type
+            challenges = CHALLENGE_TEMPLATES.get("alternative_challenge", {}).get(alternative_type, [])
+            if not challenges:
+                challenges = ["What alternative approaches could you explore?"]
+            
+            base_challenge = random.choice(challenges)
+            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "alternative_challenge", alternative_type)
+            
+            return {
+                "challenge_text": contextualized_challenge,
+                "challenge_type": "alternative_challenge",
+                "alternative_type": alternative_type,
+                "pedagogical_intent": "Encourage exploration of design alternatives",
+                "cognitive_target": "divergent_thinking",
+                "expected_outcome": "Increased creative exploration and solution diversity"
+            }
+            
+        except Exception as e:
+            self.telemetry.log_error("_generate_alternative_challenge", str(e))
+            return {
+                "challenge_text": "Explore alternative approaches to your current design solution.",
+                "challenge_type": "alternative_challenge",
+                "alternative_type": alternative_type,
+                "pedagogical_intent": "Encourage creative exploration",
+                "cognitive_target": "creativity"
+            }
+    
+    async def _generate_metacognitive_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, metacognitive_type: str = "process_reflection") -> Dict[str, Any]:
+        """Generate metacognitive reflection challenge."""
+        self.telemetry.log_agent_start("_generate_metacognitive_challenge")
+        
+        try:
+            # Get challenge templates for metacognitive type
+            challenges = CHALLENGE_TEMPLATES.get("metacognitive_challenge", {}).get(metacognitive_type, [])
+            if not challenges:
+                challenges = ["What are you thinking about your thinking in this design process?"]
+            
+            base_challenge = random.choice(challenges)
+            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "metacognitive_challenge", metacognitive_type)
+            
+            return {
+                "challenge_text": contextualized_challenge,
+                "challenge_type": "metacognitive_challenge",
+                "metacognitive_type": metacognitive_type,
+                "pedagogical_intent": "Promote metacognitive awareness and reflection",
+                "cognitive_target": "metacognition",
+                "expected_outcome": "Enhanced self-awareness and reflective practice"
+            }
+            
+        except Exception as e:
+            self.telemetry.log_error("_generate_metacognitive_challenge", str(e))
+            return {
+                "challenge_text": "Reflect on your design thinking process and decision-making.",
+                "challenge_type": "metacognitive_challenge",
+                "metacognitive_type": metacognitive_type,
+                "pedagogical_intent": "Encourage self-reflection",
+                "cognitive_target": "self_awareness"
+            }
+    
+    async def _generate_general_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict) -> Dict[str, Any]:
+        """Generate general cognitive challenge when specific types aren't suitable."""
+        general_challenges = [
+            "What aspect of your design would you like to explore more deeply?",
+            "How might you approach this problem from a completely different angle?",
+            "What would happen if you had to explain your design to someone from a different field?",
+            "Which part of your design process feels most uncertain, and how could you address that?",
+            "What would you do differently if you started this project again?"
+        ]
+        
+        return {
+            "challenge_text": random.choice(general_challenges),
+            "challenge_type": "general_challenge",
+            "pedagogical_intent": "Stimulate general cognitive engagement",
+            "cognitive_target": "general_reflection",
+            "expected_outcome": "Increased engagement and deeper thinking"
+        }
+    
+    async def _contextualize_challenge(self, base_challenge: str, state: ArchMentorState, challenge_type: str, subtype: str) -> str:
+        """Contextualize challenge to the current project."""
+        try:
+            project_context = getattr(state, 'current_design_brief', 'architectural project')
+            
+            prompt = f"""
+            Adapt this cognitive challenge for an architecture student's specific project:
+            
+            BASE CHALLENGE: {base_challenge}
+            STUDENT'S PROJECT: {project_context}
+            CHALLENGE TYPE: {challenge_type} - {subtype}
+            
+            Make the challenge:
+            1. Specific to their architectural project
+            2. Thought-provoking and engaging
+            3. Appropriate for their skill level
+            4. Clear and actionable
+            
+            Keep it under 100 words and end with a specific question.
+            """
+            
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are an expert in architectural pedagogy."),
+                self.client.create_user_message(prompt)
+            ])
+            
+            if response and response.get("content"):
+                return response["content"]
+            
+        except Exception as e:
+            self.telemetry.log_error(f"Challenge contextualization failed: {e}")
+        
+        # Fallback to base challenge
+        return base_challenge
+    
+    def _get_pedagogical_intent(self, strategy: str, cognitive_state: Dict) -> str:
+        """Get pedagogical intent for the strategy."""
+        intent_mapping = {
+            "challenge_assumptions": "Encourage critical thinking and question underlying assumptions",
+            "increase_engagement": "Stimulate active participation and deeper involvement",
+            "promote_reflection": "Foster metacognitive awareness and self-evaluation",
+            "increase_challenge": "Provide appropriate cognitive challenge for growth",
+            "stimulate_curiosity": "Spark interest and motivation for exploration",
+            "balanced_development": "Support well-rounded cognitive development"
+        }
+        
+        base_intent = intent_mapping.get(strategy, "Support cognitive development")
+        
+        # Customize based on cognitive state
+        if cognitive_state.get("engagement_level") == "low":
+            base_intent += " with focus on increasing engagement"
+        elif cognitive_state.get("cognitive_load") == "overload":
+            base_intent += " while managing cognitive load"
+        
+        return base_intent
+    
+    def _assess_challenge_difficulty(self, challenge_result: Dict, cognitive_state: Dict) -> str:
+        """Assess the difficulty level of the generated challenge."""
+        try:
+            challenge_type = challenge_result.get("challenge_type", "general")
+            cognitive_load = cognitive_state.get("cognitive_load", "optimal")
+            engagement_level = cognitive_state.get("engagement_level", "moderate")
+            
+            # Base difficulty on challenge type
+            difficulty_mapping = {
+                "constraint_challenge": "medium",
+                "perspective_challenge": "medium",
+                "alternative_challenge": "high",
+                "metacognitive_challenge": "high",
+                "general_challenge": "low"
+            }
+            
+            base_difficulty = difficulty_mapping.get(challenge_type, "medium")
+            
+            # Adjust based on cognitive state
+            if cognitive_load == "overload":
+                # Reduce difficulty if student is overwhelmed
+                if base_difficulty == "high":
+                    return "medium"
+                elif base_difficulty == "medium":
+                    return "low"
+            elif cognitive_load == "underload" and engagement_level == "high":
+                # Increase difficulty if student needs more challenge
+                if base_difficulty == "low":
+                    return "medium"
+                elif base_difficulty == "medium":
+                    return "high"
+            
+            return base_difficulty
+            
+        except Exception as e:
+            self.telemetry.log_error("_assess_challenge_difficulty", str(e))
+            return "medium"
+    
+    def _get_fallback_challenge(self, strategy: str) -> Dict[str, Any]:
+        """Get fallback challenge when generation fails."""
+        fallback_challenges = {
+            "challenge_assumptions": "What assumptions might you be making about this design problem?",
+            "increase_engagement": "What aspect of this project interests you most, and why?",
+            "promote_reflection": "How would you describe your design thinking process so far?",
+            "increase_challenge": "How might you make this design more ambitious or complex?",
+            "stimulate_curiosity": "What would you like to learn more about in this project?",
+            "balanced_development": "What's the next step in developing your design?"
+        }
+        
+        return {
+            "challenge_text": fallback_challenges.get(strategy, "Continue developing your design approach."),
+            "challenge_type": "fallback_challenge",
+            "strategy": strategy,
+            "pedagogical_intent": "Maintain engagement and progress",
+            "cognitive_target": "continued_development",
+            "difficulty_level": "medium"
+        }
+    
+    def evaluate_challenge_effectiveness(self, challenge_history: List[Dict], state: ArchMentorState) -> Dict[str, Any]:
+        """Evaluate the effectiveness of previous challenges."""
+        try:
+            if not challenge_history:
+                return {
+                    "effectiveness_score": 0.5,
+                    "recommendations": ["Continue with balanced challenge approach"]
+                }
+            
+            recent_challenges = challenge_history[-3:] if len(challenge_history) >= 3 else challenge_history
+            
+            # Analyze challenge types and outcomes
+            challenge_types = {}
+            difficulty_levels = {}
+            
+            for challenge in recent_challenges:
+                c_type = challenge.get("challenge_type", "unknown")
+                difficulty = challenge.get("difficulty_level", "medium")
+                
+                challenge_types[c_type] = challenge_types.get(c_type, 0) + 1
+                difficulty_levels[difficulty] = difficulty_levels.get(difficulty, 0) + 1
+            
+            # Simple effectiveness assessment
+            user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+            if len(user_messages) >= 2:
+                recent_engagement = len(user_messages[-1].split())
+                earlier_engagement = len(user_messages[-2].split())
+                engagement_trend = recent_engagement / max(earlier_engagement, 1)
+            else:
+                engagement_trend = 1.0
+            
+            effectiveness_score = min(engagement_trend * 0.6 + 0.2, 1.0)
+            
+            return {
+                "effectiveness_score": effectiveness_score,
+                "challenge_types": challenge_types,
+                "difficulty_distribution": difficulty_levels,
+                "engagement_trend": engagement_trend,
+                "recommendations": self._generate_challenge_recommendations(effectiveness_score, challenge_types, difficulty_levels)
+            }
+            
+        except Exception as e:
+            self.telemetry.log_error("evaluate_challenge_effectiveness", str(e))
+            return {
+                "effectiveness_score": 0.5,
+                "error": str(e),
+                "recommendations": ["Continue with current challenge approach"]
+            }
+    
+    def _generate_challenge_recommendations(self, effectiveness_score: float, challenge_types: Dict, difficulty_levels: Dict) -> List[str]:
+        """Generate recommendations for future challenge selection."""
+        recommendations = []
+        
+        if effectiveness_score < 0.4:
+            recommendations.append("Consider reducing challenge difficulty")
+            recommendations.append("Focus on more engaging challenge types")
+        elif effectiveness_score > 0.8:
+            recommendations.append("Current challenge approach is highly effective")
+            recommendations.append("Consider gradually increasing difficulty")
+        else:
+            recommendations.append("Challenge effectiveness is moderate - continue with adjustments")
+        
+        # Type-specific recommendations
+        if challenge_types.get("metacognitive_challenge", 0) > 2:
+            recommendations.append("Balance metacognitive challenges with more concrete tasks")
+        
+        if difficulty_levels.get("high", 0) > difficulty_levels.get("low", 0) + difficulty_levels.get("medium", 0):
+            recommendations.append("Consider including more accessible challenges")
+        
+        return recommendations
+    
+    def generate_challenge_summary(self, challenges: List[Dict]) -> str:
+        """Generate a summary of challenges for analysis."""
+        try:
+            if not challenges:
+                return "No challenges generated in this session."
+            
+            challenge_count = len(challenges)
+            challenge_types = {}
+            difficulty_levels = {}
+            
+            for challenge in challenges:
+                c_type = challenge.get("challenge_type", "unknown")
+                difficulty = challenge.get("difficulty_level", "medium")
+                
+                challenge_types[c_type] = challenge_types.get(c_type, 0) + 1
+                difficulty_levels[difficulty] = difficulty_levels.get(difficulty, 0) + 1
+            
+            most_common_type = max(challenge_types.items(), key=lambda x: x[1]) if challenge_types else ("none", 0)
+            most_common_difficulty = max(difficulty_levels.items(), key=lambda x: x[1]) if difficulty_levels else ("medium", 0)
+            
+            summary = f"""
+            🎯 CHALLENGE GENERATION SUMMARY
+            
+            Total Challenges: {challenge_count}
+            Most Common Type: {most_common_type[0]} ({most_common_type[1]} times)
+            Most Common Difficulty: {most_common_difficulty[0]} ({most_common_difficulty[1]} times)
+            
+            Challenge Types:
+            """
+            
+            for c_type, count in sorted(challenge_types.items()):
+                summary += f"• {c_type.replace('_', ' ').title()}: {count}\n"
+            
+            summary += "\nDifficulty Distribution:\n"
+            for difficulty, count in sorted(difficulty_levels.items()):
+                summary += f"• {difficulty.title()}: {count}\n"
+            
+            return summary.strip()
+            
+        except Exception as e:
+            self.telemetry.log_error("generate_challenge_summary", str(e))
+            return "Challenge summary unavailable." 
