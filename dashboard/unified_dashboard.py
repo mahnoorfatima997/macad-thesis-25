@@ -28,7 +28,6 @@ from .processors.mode_processors import ModeProcessor
 from .analysis.phase_analyzer import PhaseAnalyzer
 
 # Import external dependencies
-from mega_architectural_mentor import MegaArchitecturalMentor
 from phase_progression_system import PhaseProgressionSystem
 from thesis_tests.test_dashboard import TestDashboard
 from thesis_tests.data_models import InteractionData, TestPhase
@@ -50,10 +49,7 @@ def get_cached_orchestrator():
         return LangGraphOrchestrator(domain="architecture")
 
 
-@st.cache_resource
-def get_cached_mentor(api_key: str):
-    """Get cached mentor instance."""
-    return MegaArchitecturalMentor(api_key)
+# Removed: get_cached_mentor - functionality integrated into dashboard
 
 
 @st.cache_resource
@@ -88,7 +84,6 @@ class UnifiedArchitecturalDashboard:
     def _initialize_components(self):
         """Initialize core dashboard components."""
         # Lazy + cached heavy objects
-        self.mentor = get_cached_mentor(self.api_key)
         self.orchestrator = get_cached_orchestrator()
         self.phase_system = get_cached_phase_system()
         
@@ -225,27 +220,67 @@ class UnifiedArchitecturalDashboard:
                 st.error(f"❌ Analysis failed: {str(e)}")
     
     def _run_mentor_analysis(self, project_description: str, uploaded_file, skill_level: str):
-        """Run mentor analysis for MENTOR mode."""
-        # Use asyncio to run the async analyze_design method
+        """Run mentor analysis for MENTOR mode using orchestrator directly."""
+        # Create ArchMentorState for analysis
+        import sys
+        import os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
+        from state_manager import ArchMentorState, StudentProfile, VisualArtifact
+        from agents.analysis_agent import AnalysisAgent
+        
+        # Create student profile
+        student_profile = StudentProfile(
+            skill_level=skill_level,
+            learning_style="visual",
+            cognitive_load=0.3,
+            engagement_level=0.7
+        )
+        
+        # Initialize state
+        state = ArchMentorState()
+        state.current_design_brief = project_description
+        state.student_profile = student_profile
+        state.domain = "architecture"
+        
+        # Add initial message
+        state.messages = [
+            {"role": "user", "content": f"I'm working on my {project_description.lower()} and need help with the design process."}
+        ]
+        
+        # Handle image if provided
+        if uploaded_file is not None:
+            image = Image.open(uploaded_file)
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                image.save(tmp_file.name)
+                temp_image_path = tmp_file.name
+                
+            artifact = VisualArtifact(
+                id="uploaded_sketch",
+                type="sketch",
+                image_path=temp_image_path
+            )
+            state.current_sketch = artifact
+            state.visual_artifacts.append(artifact)
+        
+        # Run analysis using AnalysisAgent directly
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            temp_image_path = None
-            if uploaded_file is not None:
-                image = Image.open(uploaded_file)
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
-                    image.save(tmp_file.name)
-                    temp_image_path = tmp_file.name
+            analysis_agent = AnalysisAgent("architecture")
+            analysis_result = loop.run_until_complete(analysis_agent.process(state))
             
-            results = loop.run_until_complete(
-                self.mentor.analyze_design(
-                    design_brief=project_description,
-                    image_path=temp_image_path,
-                    skill_level=skill_level,
-                    domain="architecture"
-                )
-            )
-            return results
+            # Convert AgentResponse to dictionary if needed
+            if hasattr(analysis_result, 'response_text'):
+                from .ui.analysis_components import convert_agent_response_to_dict
+                analysis_result = convert_agent_response_to_dict(analysis_result)
+            
+            # Return comprehensive results
+            return {
+                "state": state,
+                "analysis_result": analysis_result,
+                "vision_available": uploaded_file is not None,
+                **analysis_result  # Merge analysis result into top level for compatibility
+            }
         finally:
             loop.close()
     

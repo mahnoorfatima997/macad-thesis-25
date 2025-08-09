@@ -197,7 +197,6 @@ Detailed progress section with:
 ### **External Systems**
 - **thesis-agents/**: Multi-agent orchestration system
 - **phase_progression_system.py**: Socratic dialogue and phase management
-- **mega_architectural_mentor.py**: Legacy integration for compatibility
 
 ### **Data Collection**
 - **InteractionLogger**: Comprehensive session logging
