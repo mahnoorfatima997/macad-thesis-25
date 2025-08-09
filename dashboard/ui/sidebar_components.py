@@ -103,25 +103,17 @@ def render_session_management(data_collector=None):
 
 
 def render_pretest_section():
-    """Render inline pre-test section."""
-    try:
-        from thesis_tests.assessment_tools import PreTestAssessment
-        
-        if 'pre_test_component' not in st.session_state:
-            st.session_state.pre_test_component = PreTestAssessment()
+    """Render pre-test visibility toggle in the sidebar."""
+    # Initialize the toggle if missing
+    if 'show_pre_test' not in st.session_state:
+        st.session_state.show_pre_test = False
 
-        st.markdown("### 🧪 Pre-Test (optional)")
-        with st.expander("Show/Hide Pre-Test", expanded=False):
-            comp = st.session_state.pre_test_component
-            comp.render_critical_thinking_questions()
-            comp.render_architectural_knowledge_questions()
-            comp.render_spatial_reasoning_questions()
-            
-            if st.button("Save Pre-Test Responses", key="save_pretest_sidebar"):
-                st.success("Pre-test responses saved for this session.")
-                
-    except Exception as e:
-        st.info("Pre-test tools unavailable. Skipping pre-test section.")
+    st.markdown("### 🧪 Pre-Test (optional)")
+    st.checkbox(
+        "Show Pre-Test before chat",
+        key="show_pre_test",
+        help="When checked, the pre-test appears above the mentor chat in the main area."
+    )
 
 
 def export_session_data(data_collector=None):

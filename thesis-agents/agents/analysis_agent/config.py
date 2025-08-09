@@ -151,6 +151,43 @@ BUILDING_TYPE_PATTERNS = {
     "community": ["community", "civic", "public", "social", "gathering"]
 }
 
+# Detail level detection patterns for briefs
+# Used by TextAnalysisProcessor.assess_detail_level
+DETAIL_LEVEL_PATTERNS = {
+    "low": [
+        "brief", "short", "simple", "basic", "overview", "initial",
+        "idea", "concept", "sketch"
+    ],
+    "medium": [
+        "requirements", "program", "constraints", "materials", "context",
+        "users", "lighting", "circulation", "layout", "functions"
+    ],
+    "high": [
+        "dimensions", "specifications", "codes", "regulations", "structure",
+        "hvac", "mep", "tolerances", "performance", "compliance"
+    ],
+}
+
+# Cognitive pattern indicators used by SynthesisProcessor and related analyses
+COGNITIVE_PATTERNS = {
+    "engagement": [
+        "interested", "curious", "explore", "learn more", "let's try",
+        "I tried", "experiment", "iterate", "build on"
+    ],
+    "confidence": [
+        "I think", "I believe", "I'm confident", "clear", "sure",
+        "definitely", "obviously"
+    ],
+    "confusion": [
+        "confused", "don't understand", "unclear", "stuck", "help",
+        "not sure", "lost"
+    ],
+    "frustration": [
+        "frustrated", "annoyed", "difficult", "hard", "overwhelmed",
+        "too much"
+    ],
+}
+
 # Response generation limits
 RESPONSE_LIMITS = {
     "max_response_length": 800,

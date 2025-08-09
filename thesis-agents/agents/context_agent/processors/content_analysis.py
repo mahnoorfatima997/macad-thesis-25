@@ -2,6 +2,7 @@
 Content analysis processing module for analyzing content depth and extracting technical information.
 """
 from typing import Dict, Any, List, Optional
+import re
 from ..schemas import ContentAnalysis
 from ...common import TextProcessor, MetricsCalculator, AgentTelemetry
 from state_manager import ArchMentorState

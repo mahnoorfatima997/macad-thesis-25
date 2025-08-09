@@ -7,11 +7,11 @@ class UserExperienceConfig:
     MAX_RESPONSE_LENGTH = 140  # tighter default limit for readability
     MAX_COGNITIVE_INTERVENTION_LENGTH = 110
     MAX_SOCRATIC_RESPONSE_LENGTH = 120
-    MAX_DOMAIN_EXPERT_RESPONSE_LENGTH = 120
+    MAX_DOMAIN_EXPERT_RESPONSE_LENGTH = 500
     
     # METRICS DISPLAY SETTINGS
-    SHOW_SCIENTIFIC_METRICS = False  # Hide verbose metrics from user
-    SHOW_COGNITIVE_SUMMARY = False  # Hide cognitive assessment summary
+    SHOW_SCIENTIFIC_METRICS = True  # Hide verbose metrics from user
+    SHOW_COGNITIVE_SUMMARY = True  # Hide cognitive assessment summary
     SHOW_RESPONSE_SUMMARY = True  # Show brief processing summary
     SHOW_DEBUG_INFO = False  # Hide debug information
     
@@ -27,7 +27,7 @@ class UserExperienceConfig:
     USE_BOLD_HEADERS = True  # Use bold headers for structure
     
     # CONVERSATION SETTINGS
-    CONVERSATION_DEPTH_THRESHOLD = 3  # Minimum messages before feedback
+    CONVERSATION_DEPTH_THRESHOLD = 2  # Minimum messages before feedback
     EXAMPLE_REQUEST_THRESHOLD = 5  # Minimum messages before examples
     MAX_CONSECUTIVE_QUESTIONS = 2  # Maximum consecutive questions from agent
     

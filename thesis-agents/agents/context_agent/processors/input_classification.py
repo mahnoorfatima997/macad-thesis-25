@@ -51,15 +51,16 @@ class InputClassificationProcessor:
                 understanding_level=understanding_level,
                 confidence_level=confidence_level,
                 engagement_level=engagement_level,
-                is_response_to_previous=is_response_to_previous,
-                is_technical_question=is_technical_question,
-                is_feedback_request=is_feedback_request,
-                question_complexity=question_complexity,
-                learning_intent=learning_intent,
-                context_dependency=context_dependency,
-                classification_confidence=self._calculate_classification_confidence(
-                    interaction_type, understanding_level, confidence_level, engagement_level
-                )
+                is_response_to_question=is_response_to_previous,
+            )
+            # Attach extended fields dynamically to preserve richer data
+            classification.is_technical_question = is_technical_question
+            classification.is_feedback_request = is_feedback_request
+            classification.question_complexity = question_complexity
+            classification.learning_intent = learning_intent
+            classification.context_dependency = context_dependency
+            classification.classification_confidence = self._calculate_classification_confidence(
+                interaction_type, understanding_level, confidence_level, engagement_level
             )
             
             self.telemetry.log_agent_end("perform_core_classification")
@@ -473,19 +474,20 @@ class InputClassificationProcessor:
     
     def _get_fallback_classification(self) -> CoreClassification:
         """Return fallback classification when analysis fails."""
-        return CoreClassification(
+        fallback = CoreClassification(
             interaction_type='general_statement',
             understanding_level='moderate',
             confidence_level='neutral',
             engagement_level='moderate',
-            is_response_to_previous=False,
-            is_technical_question=False,
-            is_feedback_request=False,
-            question_complexity='intermediate',
-            learning_intent='general_inquiry',
-            context_dependency='medium',
-            classification_confidence=0.4
+            is_response_to_question=False,
         )
+        fallback.is_technical_question = False
+        fallback.is_feedback_request = False
+        fallback.question_complexity = 'intermediate'
+        fallback.learning_intent = 'general_inquiry'
+        fallback.context_dependency = 'medium'
+        fallback.classification_confidence = 0.4
+        return fallback
     
     def validate_classification(self, classification: CoreClassification) -> bool:
         """Validate the classification results."""

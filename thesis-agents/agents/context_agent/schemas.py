@@ -64,13 +64,27 @@ class CoreClassification:
 
 @dataclass
 class ContentAnalysis:
-    """Analysis of content characteristics."""
+    """Analysis of content characteristics.
+
+    Extended to align with processor outputs and downstream usage
+    (e.g., context generation). Existing fields are preserved for
+    backward compatibility.
+    """
+    # Existing fields
     technical_terms: List[str] = field(default_factory=list)
     emotional_indicators: Dict[str, int] = field(default_factory=dict)
     complexity_score: float = 0.0
     specificity_score: float = 0.0
     word_count: int = 0
     sentence_count: int = 0
+
+    # New fields expected by processors/context generation
+    key_topics: List[str] = field(default_factory=list)
+    content_structure: Dict[str, Any] = field(default_factory=dict)
+    content_quality: str = "medium"
+    domain_concepts: List[str] = field(default_factory=list)
+    information_density: float = 0.0
+    analysis_confidence: float = 0.0
 
 
 @dataclass

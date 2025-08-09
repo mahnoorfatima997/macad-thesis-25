@@ -20,6 +20,15 @@ class KnowledgeSearchProcessor:
         self.text_processor = TextProcessor()
         self.metrics_calculator = MetricsCalculator()
         self.client = LLMClient()
+        # Preferred architecture domains to keep results high-quality and on-topic
+        self.preferred_domains = set([
+            "dezeen.com", "archdaily.com", "archello.com", "architectural-review.com",
+            "architecturaldigest.com", "architectmagazine.com", "architecturalrecord.com",
+            "designboom.com", "worldarchitecturenews.com", "bustler.net",
+            "archnet.org", "archinect.com", "architecturetoday.co.uk", "landezine.com",
+            "divisare.com", "e-architect.com", "metropolismag.com", "domusweb.it",
+            "frameweb.com", "world-architects.com", "aia.org", "riba.org", "architecture.com"
+        ])
         
         # Initialize search configurations
         self.google_api_key = os.getenv('GOOGLE_API_KEY')
@@ -151,20 +160,8 @@ class KnowledgeSearchProcessor:
     async def _try_enhanced_duckduckgo(self, query: str) -> List[Dict]:
         """Try enhanced DuckDuckGo search with architectural focus."""
         try:
-            # Enhanced query for architectural content
-            arch_query = f"{query} architecture design building construction"
-            
-            # Simple DuckDuckGo implementation (would use duckduckgo-search library in real implementation)
-            results = [
-                {
-                    'title': f"Architectural Guide to {query}",
-                    'snippet': f"Comprehensive information about {query} in architectural design and construction.",
-                    'url': f"https://example.com/architecture/{query.replace(' ', '-')}",
-                    'source': 'duckduckgo'
-                }
-            ]
-            
-            return results
+            # Disable synthetic DDG fallback to avoid low-quality generic snippets
+            return []
             
         except Exception as e:
             self.telemetry.log_error("_try_enhanced_duckduckgo", str(e))
@@ -339,7 +336,22 @@ class KnowledgeSearchProcessor:
         """Process and enhance search results."""
         processed_results = []
         
+        def _host(url: str) -> str:
+            try:
+                from urllib.parse import urlparse
+                return urlparse(url).netloc.lower()
+            except Exception:
+                return ""
+        
         for result in results:
+            # Filter out placeholder or low-quality domains
+            url = result.get('url', '')
+            host = _host(url)
+            if not url or host.endswith("example.com"):
+                continue
+            if self.preferred_domains and not any(host.endswith(dom) for dom in self.preferred_domains):
+                # Skip non-preferred domains to keep content architectural and high-quality
+                continue
             # Score result relevance
             relevance_score = self._score_result_relevance(result, topic)
             

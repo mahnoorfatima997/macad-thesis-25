@@ -105,6 +105,12 @@ CHALLENGE_TEMPLATES = {
     }
 }
 
+# Backward-compatibility aliases (singular keys expected by processors)
+CHALLENGE_TEMPLATES["constraint_challenge"] = CHALLENGE_TEMPLATES.get("constraint_challenges", {})
+CHALLENGE_TEMPLATES["perspective_challenge"] = CHALLENGE_TEMPLATES.get("perspective_challenges", {})
+CHALLENGE_TEMPLATES["alternative_challenge"] = CHALLENGE_TEMPLATES.get("alternative_challenges", {})
+CHALLENGE_TEMPLATES["metacognitive_challenge"] = CHALLENGE_TEMPLATES.get("metacognitive_challenges", {})
+
 # Enhancement strategies based on cognitive state
 ENHANCEMENT_STRATEGIES = {
     "high_engagement_low_complexity": "increase_challenge",

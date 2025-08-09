@@ -4,7 +4,7 @@ Shared metrics calculation utilities for agents.
 
 import numpy as np
 from typing import Dict, Any, List, Optional
-from ..utils.agent_response import EnhancementMetrics
+from utils.agent_response import EnhancementMetrics
 
 
 class MetricsCalculator:

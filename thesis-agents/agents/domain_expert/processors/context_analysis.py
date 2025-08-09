@@ -46,7 +46,8 @@ class ContextAnalysisProcessor:
             topic_focus = self._extract_topic_focus(user_messages)
             complexity_level = self._assess_complexity_level(user_messages)
             user_intent = self._analyze_user_intent(user_messages)
-            recent_topics = self._extract_recent_topics(user_messages)
+            # Backward-compatible alias: some callers referenced a private name
+            recent_topics = self.extract_recent_topics(user_messages)
             
             # Calculate confidence in analysis
             confidence_score = self._calculate_context_confidence(

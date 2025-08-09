@@ -24,6 +24,20 @@ class CognitiveFlag(Enum):
     KNOWLEDGE_INTEGRATION = "knowledge_integration"
     METACOGNITIVE_AWARENESS = "metacognitive_awareness"
     LEARNING_PROGRESSION = "learning_progression"
+    # Backward-compatibility and extended flags used across processors
+    NEEDS_ENCOURAGEMENT = "needs_encouragement"
+    CHALLENGE_APPROPRIATE = "challenge_appropriate"
+    PRACTICAL_APPLICATION = "practical_application"
+    CONTEXT_AWARENESS = "context_awareness"
+    HIGH_ENGAGEMENT = "high_engagement"
+    CONFUSION_DETECTED = "confusion_detected"
+    READY_FOR_CHALLENGE = "ready_for_challenge"
+    REQUIRES_SIMPLIFICATION = "requires_simplification"
+    SHOWING_PROGRESS = "showing_progress"
+    CREATIVE_THINKING = "creative_thinking"
+    ANALYTICAL_MODE = "analytical_mode"
+    SYNTHESIS_READY = "synthesis_ready"
+    KNOWLEDGE_INTEGRATED = "knowledge_integrated"
 
 @dataclass
 class JourneyAlignment:

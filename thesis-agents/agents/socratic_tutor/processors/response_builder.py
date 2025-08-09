@@ -39,13 +39,14 @@ class SocraticResponseBuilderProcessor:
             cognitive_flags = self._extract_cognitive_flags(question_result, context_classification)
             
             # Build response using ResponseBuilder
-            response = ResponseBuilder.build_guidance_response(
+            response = ResponseBuilder.create_socratic_response(
                 response_text=question_result.question_text,
-                question_type=question_result.question_type,
-                pedagogical_intent=question_result.pedagogical_intent,
                 cognitive_flags=self._convert_cognitive_flags(cognitive_flags),
                 enhancement_metrics=enhancement_metrics,
-                agent_name="socratic_tutor"
+                metadata={
+                    "question_type": question_result.question_type,
+                    "pedagogical_intent": question_result.pedagogical_intent
+                }
             )
             
             self.telemetry.log_agent_end("convert_to_agent_response")
@@ -53,7 +54,7 @@ class SocraticResponseBuilderProcessor:
             
         except Exception as e:
             self.telemetry.log_error("convert_to_agent_response", str(e))
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Socratic response conversion failed: {str(e)}",
                 agent_name="socratic_tutor"
             )

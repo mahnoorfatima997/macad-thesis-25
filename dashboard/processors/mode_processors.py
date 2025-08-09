@@ -114,7 +114,25 @@ class ModeProcessor:
             )
             
             if self.data_collector:
-                self.data_collector.log_interaction(interaction)
+                # Minimal safe logging to satisfy logger signature
+                routing_meta = response_metadata if isinstance(response_metadata, dict) else {}
+                agents_used = routing_meta.get("agents_used", []) or [st.session_state.get('current_mode','MENTOR')]
+                routing_path = routing_meta.get("routing_path") or routing_meta.get("route") or "mentor_mode"
+                cognitive_flags = routing_meta.get("cognitive_flags", [])
+                self.data_collector.log_interaction(
+                    student_input=user_input,
+                    agent_response=str(response)[:500],
+                    routing_path=routing_path,
+                    agents_used=agents_used,
+                    response_type=st.session_state.get('current_mode','MENTOR').lower(),
+                    cognitive_flags=cognitive_flags if isinstance(cognitive_flags, list) else [],
+                    student_skill_level=student_profile.skill_level,
+                    confidence_score=0.6,
+                    sources_used=routing_meta.get('sources', []),
+                    response_time=1.0,
+                    context_classification=routing_meta.get('classification', {}),
+                    metadata=routing_meta
+                )
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
         
@@ -167,7 +185,24 @@ class ModeProcessor:
             )
             
             if self.data_collector:
-                self.data_collector.log_interaction(interaction)
+                routing_meta = response_metadata if isinstance(response_metadata, dict) else {}
+                agents_used = routing_meta.get("agents_used", []) or ["raw_gpt"]
+                routing_path = routing_meta.get("routing_path") or routing_meta.get("route") or "raw_gpt_mode"
+                cognitive_flags = routing_meta.get("cognitive_flags", [])
+                self.data_collector.log_interaction(
+                    student_input=user_input,
+                    agent_response=str(response)[:500],
+                    routing_path=routing_path,
+                    agents_used=agents_used,
+                    response_type="raw_gpt",
+                    cognitive_flags=cognitive_flags if isinstance(cognitive_flags, list) else [],
+                    student_skill_level='intermediate',
+                    confidence_score=0.7,
+                    sources_used=routing_meta.get('sources', []),
+                    response_time=1.0,
+                    context_classification=routing_meta.get('classification', {}),
+                    metadata=routing_meta
+                )
         except Exception as e:
             print(f"Warning: Could not log Raw GPT interaction: {e}")
         
@@ -206,7 +241,21 @@ class ModeProcessor:
             )
             
             if self.data_collector:
-                self.data_collector.log_interaction(interaction)
+                routing_meta = {"routing_path": "generic_ai_mode", "agents_used": ["generic_ai"]}
+                self.data_collector.log_interaction(
+                    student_input=user_input,
+                    agent_response=str(response)[:500],
+                    routing_path=routing_meta["routing_path"],
+                    agents_used=routing_meta["agents_used"],
+                    response_type="generic_ai",
+                    cognitive_flags=[],
+                    student_skill_level='intermediate',
+                    confidence_score=0.6,
+                    sources_used=[],
+                    response_time=1.0,
+                    context_classification={},
+                    metadata=routing_meta
+                )
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
         
@@ -245,7 +294,21 @@ class ModeProcessor:
             )
             
             if self.data_collector:
-                self.data_collector.log_interaction(interaction)
+                routing_meta = {"routing_path": "control_mode", "agents_used": ["control"]}
+                self.data_collector.log_interaction(
+                    student_input=user_input,
+                    agent_response=str(response)[:500],
+                    routing_path=routing_meta["routing_path"],
+                    agents_used=routing_meta["agents_used"],
+                    response_type="control",
+                    cognitive_flags=[],
+                    student_skill_level='intermediate',
+                    confidence_score=0.5,
+                    sources_used=[],
+                    response_time=1.0,
+                    context_classification={},
+                    metadata=routing_meta
+                )
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
         

@@ -3,7 +3,7 @@ Phase detection processing module for analyzing design phases.
 """
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
-from ..schemas import DesignPhase, PhaseAnalysis
+from ..schemas import DesignPhase, PhaseProgression
 from ..config import PHASE_INDICATORS, PHASE_WEIGHTS
 from ...common import TextProcessor, MetricsCalculator, AgentTelemetry
 from state_manager import ArchMentorState
@@ -84,7 +84,11 @@ class PhaseDetectionProcessor:
         """Analyze conversation content for phase indicators."""
         try:
             messages = []
-            if hasattr(state, 'conversation_history') and state.conversation_history:
+            # Prefer state.messages for backward compatibility; fallback to conversation_history
+            if hasattr(state, 'messages') and state.messages:
+                messages = [m.get('content', '') for m in state.messages if m.get('role') == 'user']
+                messages = messages[-10:]
+            elif hasattr(state, 'conversation_history') and state.conversation_history:
                 messages = [msg.get('content', '') for msg in state.conversation_history[-10:]]
             
             phase_scores = {}
@@ -137,7 +141,10 @@ class PhaseDetectionProcessor:
         try:
             # Get recent conversation history
             messages = []
-            if hasattr(state, 'conversation_history') and state.conversation_history:
+            if hasattr(state, 'messages') and state.messages:
+                messages = [m.get('content', '') for m in state.messages if m.get('role') == 'user']
+                messages = messages[-5:]
+            elif hasattr(state, 'conversation_history') and state.conversation_history:
                 messages = [msg.get('content', '') for msg in state.conversation_history[-5:]]
             
             phase_scores = {}
@@ -161,7 +168,9 @@ class PhaseDetectionProcessor:
         try:
             # Simple temporal analysis based on conversation length and recency
             conversation_length = 0
-            if hasattr(state, 'conversation_history') and state.conversation_history:
+            if hasattr(state, 'messages') and state.messages:
+                conversation_length = len([m for m in state.messages if m.get('role') == 'user'])
+            elif hasattr(state, 'conversation_history') and state.conversation_history:
                 conversation_length = len(state.conversation_history)
             
             # Basic temporal scoring (could be enhanced with actual timestamps)
@@ -368,7 +377,9 @@ class PhaseDetectionProcessor:
         """Assess readiness to progress to next phase."""
         # Simple heuristic based on conversation depth
         conversation_length = 0
-        if hasattr(state, 'conversation_history') and state.conversation_history:
+        if hasattr(state, 'messages') and state.messages:
+            conversation_length = len([m for m in state.messages if m.get('role') == 'user'])
+        elif hasattr(state, 'conversation_history') and state.conversation_history:
             conversation_length = len(state.conversation_history)
         
         # More conversation indicates more development
@@ -380,7 +391,9 @@ class PhaseDetectionProcessor:
         # Simplified implementation - could be enhanced with actual transition detection
         transitions = []
         
-        if hasattr(state, 'conversation_history') and state.conversation_history:
+        if hasattr(state, 'messages') and state.messages:
+            history_length = len([m for m in state.messages if m.get('role') == 'user'])
+        elif hasattr(state, 'conversation_history') and state.conversation_history:
             history_length = len(state.conversation_history)
             if history_length > 5:
                 transitions.append({

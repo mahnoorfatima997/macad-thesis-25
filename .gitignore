@@ -70,6 +70,7 @@ Thumbs.db
 .env.test
 .env.production
 *.env
+.streamlit/secrets.toml
 
 # Configuration files with sensitive data
 config.json

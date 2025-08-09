@@ -114,7 +114,7 @@ class ContextAgent:
             
         except Exception as e:
             self.telemetry.log_error(f"Student input analysis failed: {str(e)}")
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Context analysis failed: {str(e)}",
                 agent_name=self.name
             )

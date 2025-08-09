@@ -108,7 +108,7 @@ class DomainExpertAgent:
             
         except Exception as e:
             self.telemetry.log_error(f"Knowledge provision failed: {str(e)}")
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Knowledge provision failed: {str(e)}",
                 agent_name=self.name
             )

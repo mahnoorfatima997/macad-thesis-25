@@ -122,6 +122,10 @@ class UnifiedArchitecturalDashboard:
     
     def _render_main_chat(self):
         """Render the main chat interface."""
+        # Optional: show pre-test at the very top before any other UI (when enabled and before analysis)
+        if st.session_state.get("show_pre_test", False) and not st.session_state.get("analysis_complete", False):
+            self._render_pretest_block()
+
         # Welcome section
         render_welcome_section()
         
@@ -349,6 +353,10 @@ class UnifiedArchitecturalDashboard:
     def _render_chat_interface(self):
         """Render the chat interface."""
         with st.columns([1, 2, 1])[1]:  # Center column
+            # Optional: show pre-test above the chat when enabled via sidebar
+            if st.session_state.get("show_pre_test", False):
+                self._render_pretest_block()
+
             # Display chat messages
             render_chat_history()
             
@@ -410,9 +418,31 @@ class UnifiedArchitecturalDashboard:
                     "timestamp": datetime.now().isoformat(),
                     "mentor_type": st.session_state.current_mode
                 })
-                
+
                 # Update data collector with response
                 self._update_data_collector_response(response, user_input)
+                # Minimal safe logging to satisfy logger signature
+                try:
+                    routing_meta = st.session_state.get("last_response_metadata", {}) or {}
+                    agents_used = routing_meta.get("agents_used", []) or [st.session_state.get('current_mode','mentor')]
+                    routing_path = routing_meta.get("routing_path", "mentor_mode")
+                    cognitive_flags = routing_meta.get("cognitive_flags", [])
+                    self.data_collector.log_interaction(
+                        student_input=user_input,
+                        agent_response=str(response)[:500],
+                        routing_path=routing_path,
+                        agents_used=agents_used,
+                        response_type=st.session_state.get('current_mode','MENTOR').lower(),
+                        cognitive_flags=cognitive_flags if isinstance(cognitive_flags, list) else [],
+                        student_skill_level='intermediate',
+                        confidence_score=0.6,
+                        sources_used=routing_meta.get('sources', []),
+                        response_time=1.0,
+                        context_classification=routing_meta.get('classification', {}),
+                        metadata=routing_meta
+                    )
+                except Exception:
+                    pass
                 
             except Exception as e:
                 error_response = f"I apologize, but I encountered an error: {str(e)}"
@@ -515,6 +545,38 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             st.warning(f"Response logging error: {e}")
     
+    def _render_pretest_block(self):
+        """Render the pre-test assessment block in the main area (above chat)."""
+        try:
+            from thesis_tests.assessment_tools import PreTestAssessment
+
+            if "pre_test_component" not in st.session_state:
+                st.session_state.pre_test_component = PreTestAssessment()
+
+            st.markdown("---")
+            st.markdown(
+                """
+                <div class="compact-text" style="font-size: 16px; font-weight: bold; margin-bottom: 10px; text-align: center;">
+                    🧪 Pre-Test Assessment
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            comp = st.session_state.pre_test_component
+            comp.render_critical_thinking_questions()
+            comp.render_architectural_knowledge_questions()
+            comp.render_spatial_reasoning_questions()
+
+            if st.button("Save Pre-Test Responses", key="save_pretest_main"):
+                st.success("Pre-test responses saved for this session.")
+
+            st.markdown("---")
+
+        except Exception:
+            # If pre-test tools are not available, silently skip in main content
+            pass
+
     def _render_phase_insights(self):
         """Render phase progression and learning insights."""
         with st.columns([1, 2, 1])[1]:  # Center column

@@ -75,13 +75,28 @@ class AgentTelemetry:
         if flags:
             self.logger.info(f"🧠 Cognitive flags: {', '.join(flags)}")
     
-    def log_error(self, error_message: str, **kwargs):
-        """Log error with context."""
+    def log_error(self, error_message: str, *args, **kwargs):
+        """Log error with optional details and context.
+
+        Backward compatible with calls that pass an additional positional detail like str(e).
+        """
+        if args:
+            try:
+                details = " ".join(str(a) for a in args)
+                error_message = f"{error_message}: {details}"
+            except Exception:
+                pass
         self.logger.error(f"❌ {error_message}", extra=kwargs)
         self.increment_counter("errors")
     
-    def log_warning(self, warning_message: str, **kwargs):
-        """Log warning with context."""
+    def log_warning(self, warning_message: str, *args, **kwargs):
+        """Log warning with optional details and context (backward compatible)."""
+        if args:
+            try:
+                details = " ".join(str(a) for a in args)
+                warning_message = f"{warning_message}: {details}"
+            except Exception:
+                pass
         self.logger.warning(f"⚠️ {warning_message}", extra=kwargs)
         self.increment_counter("warnings")
     
@@ -106,9 +121,27 @@ class AgentTelemetry:
         metrics_str = ", ".join(f"{k}={v}" for k, v in metrics.items())
         self.logger.info(f"📈 Metrics: {metrics_str}")
     
+    # Backward-compat: several processors call log_metric(name, value)
+    def log_metric(self, name: str, value: Any):
+        """Log a single metric value (compat layer)."""
+        try:
+            self.logger.info(f"📈 Metric: {name}={value}")
+        except Exception:
+            pass
+        # Track count of single-metric logs as well
+        self.increment_counter(f"metric_{name}")
+
     def time_operation(self, operation_name: str):
         """Context manager for timing operations."""
         return TimedOperation(self, operation_name)
+
+    # Backward-compat helper used in various processors
+    def get_timestamp(self) -> str:
+        """Return ISO timestamp for logging consistency."""
+        try:
+            return datetime.now().isoformat()
+        except Exception:
+            return ""
 
 
 class TimedOperation:

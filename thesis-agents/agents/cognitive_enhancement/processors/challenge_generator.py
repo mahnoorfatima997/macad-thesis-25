@@ -3,7 +3,7 @@ Challenge generation processing module for creating cognitive challenges.
 """
 from typing import Dict, Any, List
 import random
-from ..config import CHALLENGE_TEMPLATES, STRATEGY_MAPPINGS
+from ..config import CHALLENGE_TEMPLATES
 from ...common import TextProcessor, MetricsCalculator, AgentTelemetry, LLMClient
 from state_manager import ArchMentorState
 

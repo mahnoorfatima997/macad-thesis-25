@@ -93,7 +93,7 @@ class SocraticTutorAgent:
             
         except Exception as e:
             self.telemetry.log_error(f"Guidance provision failed: {str(e)}")
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Guidance provision failed: {str(e)}",
                 agent_name=self.name
             )
@@ -213,7 +213,7 @@ class SocraticTutorAgent:
             
         except Exception as e:
             self.telemetry.log_error("_convert_to_agent_response", str(e))
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Response conversion failed: {str(e)}",
                 agent_name=self.name
             )

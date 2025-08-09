@@ -2,7 +2,17 @@
 Dashboard configuration settings and constants.
 """
 
+import os
 import streamlit as st
+from dotenv import load_dotenv
+
+# Load environment variables from .env in common locations
+# 1) Current working directory
+load_dotenv()
+# 2) Project root relative to this file
+_ROOT_ENV = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+if os.path.exists(_ROOT_ENV):
+    load_dotenv(_ROOT_ENV, override=True)
 
 # Streamlit page configuration
 PAGE_CONFIG = {
@@ -55,7 +65,6 @@ EXPORT_FORMATS = ["JSON", "CSV", "Excel"]
 
 def get_api_key() -> str:
     """Get API key from environment or Streamlit secrets"""
-    import os
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
         try:

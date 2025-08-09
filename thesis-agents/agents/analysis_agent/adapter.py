@@ -134,12 +134,11 @@ class AnalysisAgent:
             response_text = self._generate_response_text_internal(analysis_result)
             
             # Step 13: Build final response
-            response = ResponseBuilder.build_analysis_response(
+            response = ResponseBuilder.create_analysis_response(
                 response_text=response_text,
-                analysis_result=analysis_result.to_dict(),
                 cognitive_flags=self._convert_cognitive_flags(cognitive_flags),
                 enhancement_metrics=enhancement_metrics,
-                agent_name=self.name
+                metadata={"analysis_result": analysis_result.to_dict()}
             )
             
             self.telemetry.log_agent_end("process")
@@ -148,7 +147,7 @@ class AnalysisAgent:
         except Exception as e:
             self.telemetry.log_error(f"Processing failed: {str(e)}")
             # Return error response maintaining compatibility
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Analysis processing failed: {str(e)}",
                 agent_name=self.name
             )
@@ -177,18 +176,39 @@ class AnalysisAgent:
     # Internal methods using modular components
     def _analyze_design_brief_internal(self, state: ArchMentorState) -> TextAnalysis:
         """Internal method for design brief analysis using modular components."""
-        # Implementation would use the text analysis processor
-        # For now, return a basic analysis to maintain functionality
         brief = state.current_design_brief or ""
-        if not brief and state.messages:
+        if not brief and getattr(state, 'messages', None):
             user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
             brief = " ".join(user_messages)
-        
-        # Basic analysis - would be replaced with full processor
-        building_type = self._detect_building_type(brief)
-        
+
+        # Attempt LLM classification for building type (small budget), fallback to rules
+        building_type = None
+        try:
+            system = self.client.create_system_message(
+                "You are an expert architectural analyst. Identify the building type succinctly."
+            )
+            user = self.client.create_user_message(
+                "Analyze this architectural design brief and identify the building type from common categories "
+                "(community center, housing/residential, office/workplace, school/educational, hospital/healthcare, "
+                "library, museum/gallery, retail/commercial, restaurant/food service, industrial/manufacturing, mixed-use, cultural center, sports/recreation, transportation, religious/worship).\n\n"
+                f"BRIEF: \"{brief}\"\n\nReturn ONLY the building type as a short phrase."
+            )
+            resp = self.client.client.chat.completions.create(
+                model=self.client.model,
+                messages=[system, user],
+                max_tokens=16,
+                temperature=0.1,
+            )
+            building_type = (resp.choices[0].message.content or "").strip().lower()
+        except Exception:
+            pass
+
+        if not building_type or building_type == "unknown":
+            building_type = self._detect_building_type(brief)
+
+        bt_enum = BuildingType(building_type) if building_type in [bt.value for bt in BuildingType] else BuildingType.UNKNOWN
         return TextAnalysis(
-            building_type=BuildingType(building_type) if building_type in [bt.value for bt in BuildingType] else BuildingType.UNKNOWN,
+            building_type=bt_enum,
             key_themes=["design", "architecture"],
             program_requirements=["functional spaces", "user needs"],
             complexity_level="moderate"
@@ -206,12 +226,18 @@ class AnalysisAgent:
     
     async def _analyze_visual_artifacts(self, state: ArchMentorState) -> VisualAnalysis:
         """Analyze visual artifacts using existing sketch analyzer."""
-        if not state.visual_artifacts or not state.current_sketch:
+        # Back-compat: accept either `state.visual_artifacts` or just a `current_sketch`
+        has_any_visual = bool(getattr(state, 'visual_artifacts', None)) or bool(getattr(state, 'current_sketch', None))
+        if not has_any_visual:
             return VisualAnalysis(has_visual=False)
         
         # Use existing sketch analyzer
         try:
-            sketch_result = await self.sketch_analyzer.analyze_sketch(state.current_sketch.image_path)
+            # Try common shapes of current_sketch
+            sketch_input = None
+            if getattr(state, 'current_sketch', None) is not None:
+                sketch_input = getattr(state.current_sketch, 'image_path', None) or state.current_sketch
+            sketch_result = await self.sketch_analyzer.analyze_sketch(sketch_input)
             return VisualAnalysis(
                 has_visual=True,
                 visual_type="sketch",
@@ -261,10 +287,18 @@ class AnalysisAgent:
         )
     
     def _integrate_conversation_progression(self, state: ArchMentorState) -> Optional[Dict[str, Any]]:
-        """Integrate conversation progression analysis."""
+        """Integrate conversation progression analysis using available API."""
         try:
-            # Use existing conversation progression manager
-            return self.conversation_progression.analyze_conversation_flow(state)
+            # Determine last user input if available
+            user_messages = [m for m in getattr(state, 'messages', []) if m.get('role') == 'user']
+            last_user_input = user_messages[-1]["content"] if user_messages else ""
+
+            # If first interaction or no milestones, analyze first message
+            if not getattr(self.conversation_progression, 'milestones', []):
+                return self.conversation_progression.analyze_first_message(last_user_input, state)
+
+            # Otherwise, progress conversation based on latest input
+            return self.conversation_progression.progress_conversation(last_user_input, "", state)
         except Exception as e:
             self.telemetry.log_warning(f"Conversation progression failed: {e}")
             return None
@@ -295,13 +329,15 @@ class AnalysisAgent:
     def _convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
         """Convert string flags to CognitiveFlag enums."""
         flag_mapping = {
-            "requires_scaffolding": CognitiveFlag.REQUIRES_SCAFFOLDING,
-            "needs_deeper_exploration": CognitiveFlag.NEEDS_DEEPER_EXPLORATION,
+            "requires_scaffolding": CognitiveFlag.SCAFFOLDING_PROVIDED,
+            "needs_deeper_exploration": CognitiveFlag.DEEP_THINKING_ENCOURAGED,
             "ready_for_challenge": CognitiveFlag.READY_FOR_CHALLENGE,
-            "overwhelmed_by_complexity": CognitiveFlag.OVERWHELMED_BY_COMPLEXITY
+            "overwhelmed_by_complexity": CognitiveFlag.REQUIRES_SIMPLIFICATION,
         }
-        
-        return [flag_mapping.get(flag, CognitiveFlag.REQUIRES_SCAFFOLDING) for flag in cognitive_flags] 
+        mapped: List[CognitiveFlag] = []
+        for flag in cognitive_flags:
+            mapped.append(flag_mapping.get(flag, CognitiveFlag.SCAFFOLDING_PROVIDED))
+        return mapped
     # ========== ADDITIONAL BACKWARD COMPATIBILITY METHODS ==========
     
     def _initialize_phase_indicators(self):

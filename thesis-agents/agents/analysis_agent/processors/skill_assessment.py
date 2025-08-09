@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 from ..schemas import SkillLevel, SkillAssessment
 from ..config import SKILL_INDICATORS, SKILL_ASSESSMENT_THRESHOLDS
 from ...common import TextProcessor, MetricsCalculator, AgentTelemetry
-from ...state_manager import ArchMentorState
+from state_manager import ArchMentorState
 
 
 class SkillAssessmentProcessor:

@@ -117,7 +117,7 @@ class CognitiveEnhancementAgent:
             
         except Exception as e:
             self.telemetry.log_error(f"Challenge provision failed: {str(e)}")
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Challenge provision failed: {str(e)}",
                 agent_name=self.name
             )
@@ -202,11 +202,11 @@ class CognitiveEnhancementAgent:
         # Build response
         response_text = challenge_result.get("challenge_text", "Continue exploring your design approach.")
         
-        return ResponseBuilder.build_challenge_response(
+        return ResponseBuilder.create_cognitive_enhancement_response(
             response_text,
-            enhancement_metrics,
-            converted_flags,
-            agent_name=self.name
+            cognitive_flags=converted_flags,
+            enhancement_metrics=enhancement_metrics,
+            metadata={}
         )
     
     def _calculate_enhancement_metrics(self, challenge_result: Dict, state: ArchMentorState, analysis_result: Dict) -> EnhancementMetrics:
@@ -218,14 +218,7 @@ class CognitiveEnhancementAgent:
         learning_velocity = 0.6  # Simplified
         cognitive_load = complexity_value
         
-        return EnhancementMetrics(
-            complexity_score=complexity_value,
-            engagement_score=engagement_score,
-            learning_velocity=learning_velocity,
-            cognitive_load=cognitive_load,
-            analysis_depth=len(challenge_result.get("pedagogical_intent", "")),
-            interaction_count=len(state.messages) if hasattr(state, 'messages') else 0
-        )
+        return EnhancementMetrics()
     
     def _extract_cognitive_flags(self, challenge_result: Dict, state: ArchMentorState, context_classification: Dict) -> List[str]:
         """Extract cognitive flags from the challenge result."""

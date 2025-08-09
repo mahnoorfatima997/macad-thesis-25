@@ -25,14 +25,57 @@ class KnowledgeSynthesisProcessor:
         self.telemetry.log_agent_start("synthesize_knowledge_internal")
         
         try:
+            # If no knowledge data available, attempt an LLM-generated, context-aware fallback
             if not knowledge_data:
-                return self._create_fallback_synthesis(topic)
+                try:
+                    prepared = self._prepare_knowledge_delivery([], 'educational')
+                    llm_response = await self._generate_educational_response(
+                        topic, prepared, context or {}
+                    )
+                    # Build a minimal synthesis result package using the LLM output
+                    synthesis_result = {
+                        'topic': topic,
+                        'knowledge_summary': f"Limited information retrieved for {topic} at this moment.",
+                        'educational_response': llm_response,
+                        'contextual_insights': self._generate_contextual_insights(topic, (context or {}).get('building_type')),
+                        'response_package': self._create_response_package(topic, [] , context or {}),
+                        'follow_up_questions': self._generate_follow_up_questions(topic, context or {}),
+                        'knowledge_gaps': ['Limited source diversity'],
+                        'source_count': 0,
+                        'synthesis_quality': 'basic',
+                        'synthesis_timestamp': self.telemetry.get_timestamp()
+                    }
+                    self.telemetry.log_agent_end("synthesize_knowledge_internal")
+                    return synthesis_result
+                except Exception:
+                    # Hard fallback if LLM generation fails
+                    return self._create_fallback_synthesis(topic)
             
             # Generate knowledge summary
             knowledge_summary = self._generate_knowledge_summary(topic, knowledge_data)
             
-            # Create educational response
-            educational_response = self._create_educational_response(topic, knowledge_data, context)
+            # Decide if user is asking for examples/projects explicitly
+            user_wants_examples = False
+            try:
+                if state and getattr(state, 'messages', None):
+                    last_user = next((m.get('content','').lower() for m in reversed(state.messages) if m.get('role')=='user'), '')
+                    for kw in [
+                        'example','examples','precedent','precedents','case study','case studies',
+                        'project','projects','show me','can you give','can you provide','similar projects'
+                    ]:
+                        if kw in last_user:
+                            user_wants_examples = True
+                            break
+            except Exception:
+                pass
+
+            # If examples are requested, produce concise, example-focused response with links
+            if user_wants_examples:
+                educational_response = self._create_example_focused_response(topic, knowledge_data, context)
+            else:
+                # Prefer LLM-generated educational response for variety and context-awareness
+                prepared_knowledge = self._prepare_knowledge_delivery(knowledge_data, 'educational')
+                educational_response = await self._generate_educational_response(topic, prepared_knowledge, context or {})
             
             # Generate contextual insights
             building_type = context.get('building_type') if context else None
@@ -181,6 +224,55 @@ class KnowledgeSynthesisProcessor:
         except Exception as e:
             self.telemetry.log_error("_create_educational_response", str(e))
             return f"Educational information about {topic} in architectural design."
+
+    def _create_example_focused_response(self, topic: str, knowledge_data: List[Dict], context: Dict = None) -> str:
+        """Create concise example-focused response with Markdown links, filtered to buildings if needed."""
+        try:
+            if not knowledge_data:
+                return f"Examples of {topic} in architecture are varied. Would you like me to look for specific projects?"
+
+            def host(url: str) -> str:
+                try:
+                    from urllib.parse import urlparse
+                    return urlparse(url).netloc
+                except Exception:
+                    return ""
+
+            # Filter results for likely building examples and preferred sources
+            examples = []
+            for item in knowledge_data:
+                title = item.get('title') or item.get('metadata', {}).get('title', '')
+                url = item.get('url') or item.get('metadata', {}).get('url', '')
+                snippet = item.get('snippet') or item.get('content') or ''
+                if not url or 'http' not in url:
+                    continue
+                # Prefer items that look like case studies/projects
+                is_example = any(k in (title or '').lower() for k in ['case', 'project', 'example']) or any(
+                    k in (snippet or '').lower() for k in ['case', 'project', 'example']
+                )
+                if is_example:
+                    examples.append((title.strip()[:80], url.strip(), snippet.strip()))
+                if len(examples) >= 3:
+                    break
+
+            if not examples:
+                return self._create_educational_response(topic, knowledge_data, context)
+
+            # Build concise example list with links
+            lines = [f"Examples of {topic}:"]
+            for title, url, snip in examples[:3]:
+                short = snip[:120] + ('...' if len(snip) > 120 else '')
+                lines.append(f"- [{title}]({url}) — {short}")
+
+            # Add a short application prompt
+            lines.append("")
+            bt = (context or {}).get('building_type', 'your project')
+            lines.append(f"How could these approaches inform {bt} design in your context?")
+            return "\n".join(lines)
+
+        except Exception as e:
+            self.telemetry.log_error("_create_example_focused_response", str(e))
+            return self._create_educational_response(topic, knowledge_data, context)
     
     def _generate_contextual_insights(self, topic: str, building_type: str = None) -> List[str]:
         """Generate contextual insights for the topic."""
@@ -236,6 +328,24 @@ class KnowledgeSynthesisProcessor:
                 'practical_tips': [],
                 'further_reading': []
             }
+
+    def _format_examples_list(self, examples: List[str]) -> List[str]:
+        """Format example titles or snippets into a concise list."""
+        try:
+            if not examples:
+                return []
+            formatted = []
+            for ex in examples[:5]:
+                if not isinstance(ex, str):
+                    continue
+                ex = ex.strip()
+                if len(ex) > 120:
+                    ex = ex[:117] + "..."
+                formatted.append(ex)
+            return formatted
+        except Exception as e:
+            self.telemetry.log_error("_format_examples_list", str(e))
+            return examples or []
     
     def _generate_follow_up_questions(self, topic: str, context: Dict = None) -> List[str]:
         """Generate relevant follow-up questions."""
@@ -591,7 +701,9 @@ class KnowledgeSynthesisProcessor:
         return {
             'topic': topic,
             'knowledge_summary': f"General information about {topic} in architecture.",
-            'educational_response': f"I can help you learn about {topic} in architectural design.",
+            'educational_response': (
+                f"Let's explore {topic} in your project context. I'll outline key considerations, common pitfalls, and practical next steps you can act on."
+            ),
             'contextual_insights': [f"{topic} is relevant to architectural practice"],
             'response_package': {'main_content': f"Information about {topic}"},
             'follow_up_questions': [f"Would you like to learn more about {topic}?"],

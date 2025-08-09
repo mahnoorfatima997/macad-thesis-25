@@ -36,13 +36,14 @@ class ResponseBuilderProcessor:
             enhancement_metrics = self._calculate_enhancement_metrics(context_package)
             
             # Build the agent response
-            agent_response = ResponseBuilder.build_context_analysis_response(
+            agent_response = ResponseBuilder.create_context_analysis_response(
                 response_text,
-                enhancement_metrics,
-                cognitive_flags,
-                agent_name="context_agent",
-                context_confidence=context_package.core_classification.classification_confidence,
-                routing_suggestions=context_package.routing_suggestions
+                cognitive_flags=cognitive_flags,
+                enhancement_metrics=enhancement_metrics,
+                metadata={
+                    "context_confidence": getattr(context_package.core_classification, 'classification_confidence', 0.5),
+                    "routing_suggestions": context_package.routing_suggestions
+                }
             )
             
             self.telemetry.log_agent_end("convert_to_agent_response")
@@ -50,7 +51,7 @@ class ResponseBuilderProcessor:
             
         except Exception as e:
             self.telemetry.log_error("convert_to_agent_response", str(e))
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Context analysis failed: {str(e)}",
                 agent_name="context_agent"
             )
@@ -88,30 +89,14 @@ class ResponseBuilderProcessor:
             scaffolding_effectiveness = self._assess_scaffolding_effectiveness(context_package)
             
             # Create enhancement metrics object
-            metrics = EnhancementMetrics(
-                complexity_score=context_package.content_analysis.complexity_score,
-                engagement_score=self._convert_engagement_to_score(
-                    context_package.core_classification.engagement_level
-                ),
-                learning_velocity=learning_progression,
-                cognitive_load=self._assess_cognitive_load_from_context(context_package),
-                analysis_depth=len(context_package.content_analysis.technical_terms) * 10,
-                interaction_count=self._get_interaction_count(context_package)
-            )
+            metrics = EnhancementMetrics()
             
             self.telemetry.log_agent_end("calculate_enhancement_metrics")
             return metrics
             
         except Exception as e:
             self.telemetry.log_error("calculate_enhancement_metrics", str(e))
-            return EnhancementMetrics(
-                complexity_score=0.5,
-                engagement_score=0.5,
-                learning_velocity=0.5,
-                cognitive_load=0.5,
-                analysis_depth=50,
-                interaction_count=1
-            )
+            return EnhancementMetrics()
     
     def extract_cognitive_flags(self, core_classification: CoreClassification) -> List[CognitiveFlag]:
         """

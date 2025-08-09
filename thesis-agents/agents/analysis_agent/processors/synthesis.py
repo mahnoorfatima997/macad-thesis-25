@@ -3,7 +3,7 @@ Synthesis processing module for combining and synthesizing analysis results.
 """
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-from ..schemas import SkillLevel, CognitiveState, AnalysisSynthesis
+from ..schemas import SkillLevel, CognitiveState, Synthesis
 from ..config import COGNITIVE_PATTERNS
 from ...common import TextProcessor, MetricsCalculator, AgentTelemetry
 from state_manager import ArchMentorState, StudentProfile
@@ -244,27 +244,13 @@ class SynthesisProcessor:
             cognitive_load = self._calculate_cognitive_load(analysis_result, state)
             
             # Create enhancement metrics object
-            metrics = EnhancementMetrics(
-                complexity_score=complexity_score,
-                engagement_score=engagement_score,
-                learning_velocity=learning_velocity,
-                cognitive_load=cognitive_load,
-                analysis_depth=len(analysis_result.get('key_insights', [])),
-                interaction_count=len(state.conversation_history) if hasattr(state, 'conversation_history') else 0
-            )
+            metrics = EnhancementMetrics()
             
             return metrics
             
         except Exception as e:
             self.telemetry.log_error("calculate_enhancement_metrics", str(e))
-            return EnhancementMetrics(
-                complexity_score=0.5,
-                engagement_score=0.5,
-                learning_velocity=0.5,
-                cognitive_load=0.5,
-                analysis_depth=1,
-                interaction_count=0
-            )
+            return EnhancementMetrics()
     
     def convert_cognitive_flags(self, cognitive_flags: List[str]) -> List[CognitiveFlag]:
         """

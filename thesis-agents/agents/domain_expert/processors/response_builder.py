@@ -43,20 +43,24 @@ class ResponseBuilderProcessor:
             converted_flags = self._convert_cognitive_flags(cognitive_flags)
             
             # Build the agent response
-            agent_response = ResponseBuilder.build_knowledge_response(
+            agent_response = ResponseBuilder.create_knowledge_response(
                 response_text,
-                enhancement_metrics,
-                converted_flags,
-                agent_name="domain_expert",
-                knowledge_sources=knowledge_response.get('source_count', 0)
+                sources_used=knowledge_response.get('sources', []),
+                metadata={
+                    'source_count': knowledge_response.get('source_count', 0),
+                    'synthesis_quality': knowledge_response.get('synthesis_quality', 'medium')
+                }
             )
+            # Preserve enhancement metrics and flags on the response
+            agent_response.enhancement_metrics = enhancement_metrics
+            agent_response.cognitive_flags = converted_flags
             
             self.telemetry.log_agent_end("convert_to_agent_response")
             return agent_response
             
         except Exception as e:
             self.telemetry.log_error("convert_to_agent_response", str(e))
-            return ResponseBuilder.build_error_response(
+            return ResponseBuilder.create_error_response(
                 f"Knowledge response conversion failed: {str(e)}",
                 agent_name="domain_expert"
             )
@@ -87,13 +91,23 @@ class ResponseBuilderProcessor:
             # Get interaction count
             interaction_count = len(state.messages) if hasattr(state, 'messages') else 0
             
+            # Map computed values into our standardized EnhancementMetrics
+            overall = (
+                (1 - min(max(cognitive_load, 0.0), 1.0)) * 0.2 +
+                min(max(engagement_score, 0.0), 1.0) * 0.2 +
+                min(max(learning_velocity, 0.0), 1.0) * 0.2 +
+                min(max(complexity_score, 0.0), 1.0) * 0.2 +
+                min(max(analysis_depth, 0.0), 1.0) * 0.2
+            )
             metrics = EnhancementMetrics(
-                complexity_score=complexity_score,
-                engagement_score=engagement_score,
-                learning_velocity=learning_velocity,
-                cognitive_load=cognitive_load,
-                analysis_depth=analysis_depth,
-                interaction_count=interaction_count
+                cognitive_offloading_prevention_score=max(0.0, 1.0 - cognitive_load),
+                deep_thinking_engagement_score=min(max(engagement_score, 0.0), 1.0),
+                knowledge_integration_score=min(max(analysis_depth, 0.0), 1.0),
+                scaffolding_effectiveness_score=min(max((engagement_score + (1 - cognitive_load)) / 2, 0.0), 1.0),
+                learning_progression_score=min(max(learning_velocity, 0.0), 1.0),
+                metacognitive_awareness_score=min(max((engagement_score + complexity_score) / 2, 0.0), 1.0),
+                overall_cognitive_score=min(max(overall, 0.0), 1.0),
+                scientific_confidence=0.7
             )
             
             self.telemetry.log_agent_end("calculate_enhancement_metrics")
@@ -101,14 +115,7 @@ class ResponseBuilderProcessor:
             
         except Exception as e:
             self.telemetry.log_error("calculate_enhancement_metrics", str(e))
-            return EnhancementMetrics(
-                complexity_score=0.5,
-                engagement_score=0.5,
-                learning_velocity=0.5,
-                cognitive_load=0.5,
-                analysis_depth=50,
-                interaction_count=0
-            )
+            return EnhancementMetrics()
     
     def extract_cognitive_flags(self, knowledge_response: Dict[str, Any],
                                state: ArchMentorState, context_classification: Dict) -> List[str]:

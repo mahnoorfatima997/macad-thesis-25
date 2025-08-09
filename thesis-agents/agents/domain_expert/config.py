@@ -75,6 +75,22 @@ SEARCH_CONFIG = {
     "fallback_enabled": True
 }
 
+# Web search configuration (alias used by processors)
+WEB_SEARCH_CONFIG = {
+    "providers": ["serpapi", "bing", "google"],
+    "max_results": SEARCH_CONFIG["max_results"],
+    "timeout_seconds": SEARCH_CONFIG["timeout_seconds"],
+    "retry_attempts": SEARCH_CONFIG["retry_attempts"],
+}
+
+# Supported search engines (alias used by processors)
+SEARCH_ENGINES = ["serpapi", "bing", "google"]
+
+# Knowledge domains (alias used by processors)
+KNOWLEDGE_DOMAINS = {
+    "architecture": ARCHITECTURAL_SOURCES,
+}
+
 # Knowledge synthesis configuration
 SYNTHESIS_CONFIG = {
     "max_knowledge_items": 5,
