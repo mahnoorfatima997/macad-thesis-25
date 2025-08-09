@@ -1,5 +1,6 @@
 # Python virtual environments
 mega_env/
+venv/
 segment-anything-2/
 
 # Byte-compiled / cache files
