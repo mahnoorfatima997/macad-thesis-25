@@ -39,6 +39,8 @@ from utils.routing_decision_tree import (
 # Import state validation system
 from utils.state_validator import StateValidator, StateMonitor
 from utils.response_length_controller import ensure_quality
+from config.user_experience_config import get_max_response_length
+from openai import OpenAI
 
 class WorkflowState(TypedDict):
     """LangGraph state that flows between agents"""
@@ -89,6 +91,12 @@ class LangGraphOrchestrator:
         # Initialize state validation system
         self.state_validator = StateValidator()
         self.state_monitor = StateMonitor()
+
+        # 0908-ADDEDLightweight client for brief refinement passes
+        try:
+            self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        except Exception:
+            self.openai_client = None
         
         # Build the workflow graph
         self.workflow = self.build_workflow()
@@ -676,7 +684,17 @@ class LangGraphOrchestrator:
         
         # Standard synthesis for multi-agent paths
         self.logger.debug("cognitive_enhancement_result: %s", state.get("cognitive_enhancement_result"))
-        final_response, metadata = self.synthesize_responses(state)
+        synth_result = self.synthesize_responses(state)
+        if isinstance(synth_result, tuple):
+            # Allow extra values defensively
+            final_response = synth_result[0]
+            metadata = synth_result[1] if len(synth_result) > 1 else {}
+        elif isinstance(synth_result, dict):
+            final_response = synth_result.get("final_response") or synth_result.get("response") or ""
+            metadata = synth_result.get("metadata", {})
+        else:
+            final_response = str(synth_result)
+            metadata = {}
         
         # Phase progression integration can be added here if needed
         
@@ -1531,6 +1549,16 @@ class LangGraphOrchestrator:
             "cognitive_enhancement": "cognitive_enhancement",
         }
         agent_type = agent_type_map.get(response_type, "default")
+        # 0908-ADDEDCentralized refinement to respect target word budgets per agent type
+        try:
+            final_response = self._refine_to_budget(final_response, agent_type)
+        except Exception:
+            # Fail-safe: keep original if refinement has any issue
+            pass
+
+
+
+
         final_response = ensure_quality(final_response, agent_type)
         
         return final_response, metadata
@@ -1560,32 +1588,36 @@ class LangGraphOrchestrator:
                 return self._synthesize_default_response(agent_results)
         
         elif routing_path == "knowledge_only":
-            return self._synthesize_knowledge_only_response(agent_results, user_input, classification)
+            return self._synthesize_knowledge_only_response(agent_results, user_input, classification, state)
         elif routing_path == "socratic_exploration":
             return self._synthesize_socratic_exploration_response(agent_results)
         elif routing_path == "cognitive_intervention":
             return self._synthesize_cognitive_intervention_response(agent_results)
         elif routing_path == "technical_question":
             domain_result = agent_results.get("domain", {})
-            return self._synthesize_technical_response(domain_result, user_input, classification)
+            final_response = self._synthesize_technical_response(domain_result, user_input, classification)
+            return final_response, "technical_response"
         elif routing_path == "feedback_request":
             socratic_result = agent_results.get("socratic", {})
             domain_result = agent_results.get("domain", {})
-            return self._synthesize_feedback_response(socratic_result, domain_result, user_input, classification)
+            final_response = self._synthesize_feedback_response(socratic_result, domain_result, user_input, classification)
+            return final_response, "feedback_response"
         elif routing_path == "design_guidance":
-            return self._synthesize_design_guidance_response(agent_results, user_input, classification)
+            final_response = self._synthesize_design_guidance_response(agent_results, user_input, classification)
+            return final_response, "design_guidance"
         elif routing_path == "supportive_scaffolding":
             # Provide concise clarification/scaffolding
             socratic_result = agent_results.get("socratic", {})
             domain_result = agent_results.get("domain", {})
-            return self._synthesize_clarification_response(
+            final_response = self._synthesize_clarification_response(
                 socratic_result, domain_result, user_input, classification
             )
+            return final_response, "clarification"
         else:
             return self._synthesize_default_response(agent_results)
     
     def _synthesize_knowledge_only_response(self, agent_results: Dict[str, Any], 
-                                          user_input: str, classification: Dict) -> tuple[str, str]:
+                                          user_input: str, classification: Dict, state: WorkflowState = None) -> tuple[str, str]:
         """Synthesize knowledge-only response with optional Socratic questions"""
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
@@ -1597,7 +1629,7 @@ class LangGraphOrchestrator:
             response_type = "knowledge_only_with_socratic"
             self.logger.debug("Combining examples + Socratic questions about examples")
         else:
-            final_response = self._synthesize_example_response(domain_result, user_input, classification)
+            final_response = self._synthesize_example_response(domain_result, user_input, classification, state.get("student_state") if state else None)
             response_type = "knowledge_only"
             self.logger.debug("Using knowledge_only synthesis (examples only)")
         
@@ -1707,7 +1739,64 @@ class LangGraphOrchestrator:
             "processing_time": "N/A",  # Will be set by the orchestrator
             "classification": classification
         }
+#0908ADDED
+    def _refine_to_budget(self, text: str, agent_type: str) -> str:
+        """Rewrite the response to fit within the agent-specific word budget.
+
+        Uses a short LLM pass to compress and cleanly end the response without ellipses.
+        Falls back to original text if client is unavailable.
+        """
+        if not text:
+            return text
+
+        # Determine target word limit from UX config
+        try:
+            limit_words = int(get_max_response_length(agent_type))
+        except Exception:
+            limit_words = 300
+
+        # If already within budget, return as-is
+        try:
+            current_words = len(str(text).split())
+            if current_words <= limit_words:
+                return text
+        except Exception:
+            pass
+
+        # If no client available, return original
+        if self.openai_client is None:
+            return text
+
+        system_prompt = (
+            "You are an expert editor. Rewrite the user's response to be concise, clear, and within the specified "
+            "word budget. Preserve key ideas, keep 2-4 short paragraphs or bullets, end on a complete sentence, "
+            "and avoid ellipses. Include at most one thoughtful question if appropriate."
+        )
+
+        user_prompt = (
+            f"Word budget: <= {limit_words} words.\n\n"
+            "Rewrite this response accordingly. Output only the revised text, no preamble or notes:\n\n"
+            f"{text}"
+        )
+
+        try:
+            resp = self.openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                max_tokens=min(900, max(300, limit_words * 3)),
+                temperature=0.2,
+            )
+            refined = (resp.choices[0].message.content or "").strip()
+            return refined or text
+        except Exception:
+            return text
     
+
+
+
     def _print_summary_if_enabled(self, state: WorkflowState, response_type: str, metadata: Dict[str, Any]) -> None:
         """Print comprehensive summary if enabled in student state"""
         student_state = state.get("student_state", {})

@@ -9,6 +9,15 @@ import re
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Ensure environment variables are loaded (prefer .envs, fallback to default .env)
+try:
+    loaded = load_dotenv('.envs')
+    if not loaded:
+        load_dotenv()
+except Exception:
+    # Fallback to default behavior if loading fails
+    load_dotenv()
+
 # Import development configuration for cost-efficient testing
 try:
     from config.development_config import dev_config, should_skip_expensive_call, get_dev_token_limit
@@ -29,13 +38,50 @@ from utils.agent_response import AgentResponse, ResponseType, CognitiveFlag, Res
 
 # Enhanced architectural sources for better search results
 ARCHITECTURAL_SOURCES = [
-    "site:dezeen.com", "site:archdaily.com", "site:archello.com", 
-    "site:architectural-review.com", "site:architecturaldigest.com", 
-    "site:architectmagazine.com", "site:architecturalrecord.com",
-    "site:architect.org", "site:aia.org", "site:architecturalleague.org",
-    "site:architecturalfoundation.org", "site:architecturalassociation.org.uk",
-    "site:architecturalrecord.com", "site:architecturaldigest.com"
+    # Major Architecture & Design News
+    "site:dezeen.com",
+    "site:archdaily.com",
+    "site:archello.com",
+    "site:architectural-review.com",
+    "site:architecturaldigest.com",
+    "site:architectmagazine.com",
+    "site:architecturalrecord.com",
+    "site:designboom.com",
+    "site:worldarchitecturenews.com",
+    "site:bustler.net",
+
+    # Architectural Organizations & Associations
+    "site:architect.org",                # Boston Society of Architects
+    "site:aia.org",                      # American Institute of Architects
+    "site:riba.org",                     # Royal Institute of British Architects
+    "site:architecture.com",             # RIBA portal
+    "site:architecturalleague.org",      # Architectural League of New York
+    "site:architecturalfoundation.org",
+    "site:architecturalassociation.org.uk",
+
+    # Academic / Research
+    "site:archnet.org",
+    "site:archinect.com",
+    "site:architecturetoday.co.uk",
+    "site:landezine.com",                 # Landscape architecture
+    "site:divisare.com",                  # High-quality photography + case studies
+    "site:e-architect.com",
+    "site:metropolismag.com",
+    "site:domusweb.it",                   # Domus magazine
+    "site:frameweb.com",                  # Interior & spatial design
+    "site:world-architects.com"
 ]
+
+def get_preferred_architecture_domains() -> List[str]:
+    """Return a whitelist of preferred architecture domains from ARCHITECTURAL_SOURCES.
+    Removes leading 'site:' and deduplicates."""
+    raw = ARCHITECTURAL_SOURCES
+    cleaned: List[str] = []
+    for it in raw:
+        dom = it.replace("site:", "").strip()
+        if dom and dom not in cleaned:
+            cleaned.append(dom)
+    return cleaned
 
 # Comprehensive architectural keyword configuration for flexible detection
 ARCHITECTURAL_KEYWORDS = {
@@ -229,10 +275,32 @@ def generate_context_aware_search_query(topic: str, context: Dict[str, Any]) -> 
 
     parts.append('architecture')
 
+    # Add intent-based boosters for better results
+    intent_boosters = []
+    topic_lower = (topic or '').lower()
+    if any(k in topic_lower for k in ['example', 'examples', 'project', 'case study', 'case studies', 'precedent', 'built project']):
+        intent_boosters.extend(['case study', 'project example', 'architectural precedent'])
+
+    if intent_boosters:
+        parts.extend(intent_boosters)
+
     query = " ".join(p for p in parts if p).strip()
     if len(query) > 150:
         query = query[:150]
     return query
+
+def generate_alternate_search_query(query: str) -> str:
+    """Create an alternate query to fetch case-study oriented results if the first query is too broad."""
+    import re
+    q = (query or '').strip()
+    q_lower = q.lower()
+    if any(k in q_lower for k in [
+        'case study', 'case studies', 'example', 'examples', 'project', 'precedent'
+    ]):
+        return q
+    alt = f"{q} architectural case studies project examples"
+    alt = re.sub(r"\s+", " ", alt).strip()
+    return alt[:200]
 
 class DomainExpertAgent:
     def __init__(self, domain="architecture"):
@@ -245,225 +313,104 @@ class DomainExpertAgent:
 
     # Enhanced web search with context awareness
     async def search_web_for_knowledge(self, topic: str, state: ArchMentorState = None) -> List[Dict]:
-        """Enhanced web search with better search methods and fallback strategies"""
-        
+        """Web search using only Tavily, with contextual queries and safe fallback."""
+
         try:
-            import requests
-            from urllib.parse import quote
-            import re
-            import json
-            
             # Analyze conversation context for better search queries
             context = {}
             if state:
                 context = analyze_conversation_context_for_search(state)
                 print(f"🔍 Context analysis: {context}")
-            
+
             # Generate context-aware search query
             search_query = generate_context_aware_search_query(topic, context)
-            print(f"🌐 Enhanced web search: {search_query}")
-            
-            # Try multiple search strategies
-            results = []
-            
-            # Strategy 1: Try Google Custom Search API (if available)
-            google_results = await self._try_google_search(search_query)
-            if google_results:
-                results.extend(google_results)
-                print(f"✅ Google search found {len(google_results)} results")
-            
-            # Strategy 2: Try SerpAPI (if available)
+            print(f"🌐 Tavily search: {search_query}")
+
+            # Use Tavily as the sole web search provider
+            results: List[Dict] = []
+            tavily_results = await self._try_tavily_search(search_query, context)
+            if tavily_results:
+                results.extend(tavily_results)
+                print(f"✅ Tavily search found {len(tavily_results)} results")
+
+            # If no results, try an alternate, case-study-focused query with Tavily
             if not results:
-                serp_results = await self._try_serp_search(search_query)
-                if serp_results:
-                    results.extend(serp_results)
-                    print(f"✅ SerpAPI search found {len(serp_results)} results")
-            
-            # Strategy 3: Enhanced DuckDuckGo with better parsing
+                alt_query = generate_alternate_search_query(search_query)
+                if alt_query != search_query:
+                    print(f"🔁 Retrying with alternate Tavily query: {alt_query}")
+                    tavily_alt_results = await self._try_tavily_search(alt_query, context)
+                    if tavily_alt_results:
+                        results.extend(tavily_alt_results)
+                        print(f"✅ Tavily alternate search found {len(tavily_alt_results)} results")
+
+            # Fallback to architectural knowledge base
             if not results:
-                ddg_results = await self._try_enhanced_duckduckgo(search_query)
-                if ddg_results:
-                    results.extend(ddg_results)
-                    print(f"✅ Enhanced DuckDuckGo found {len(ddg_results)} results")
-            
-            # Strategy 4: Fallback to architectural knowledge base
-            if not results:
-                print("⚠️ No web results found, using architectural knowledge base")
+                print("⚠️ No Tavily results found, using architectural knowledge base")
                 results = await self._get_architectural_knowledge_fallback(topic, context)
-            
+
             return results
-            
+
         except Exception as e:
-            print(f"❌ Web search failed: {e}")
+            print(f"❌ Tavily web search failed: {e}")
             return await self._get_architectural_knowledge_fallback(topic, context)
     
-    async def _try_google_search(self, query: str) -> List[Dict]:
-        """Try Google Custom Search API"""
-        try:
-            api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
-            cx = os.getenv("GOOGLE_SEARCH_CX")
-            
-            if not api_key or not cx:
-                return []
-            
-            url = "https://www.googleapis.com/customsearch/v1"
-            params = {
-                'key': api_key,
-                'cx': cx,
-                'q': query,
-                'num': 5
-            }
-            
-            response = requests.get(url, params=params, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                results = []
-                
-                for item in data.get('items', []):
-                    results.append({
-                        'title': item.get('title', ''),
-                        'snippet': item.get('snippet', ''),
-                        'url': item.get('link', ''),
-                        'source': 'google',
-                        'is_web_result': True
-                    })
-                
-                return results
-        except Exception as e:
-            print(f"Google search failed: {e}")
-        
-        return []
-    
-    async def _try_serp_search(self, query: str) -> List[Dict]:
-        """Try SerpAPI for web search"""
-        try:
-            api_key = os.getenv("SERPAPI_KEY")
-            if not api_key:
-                return []
-            
-            url = "https://serpapi.com/search"
-            params = {
-                'api_key': api_key,
-                'q': query,
-                'engine': 'google',
-                'num': 5
-            }
-            
-            response = requests.get(url, params=params, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                results = []
-                
-                for result in data.get('organic_results', []):
-                    results.append({
-                        'title': result.get('title', ''),
-                        'snippet': result.get('snippet', ''),
-                        'url': result.get('link', ''),
-                        'source': 'serpapi',
-                        'is_web_result': True
-                    })
-                
-                return results
-        except Exception as e:
-            print(f"SerpAPI search failed: {e}")
-        
-        return []
-    
-    async def _try_enhanced_duckduckgo(self, query: str) -> List[Dict]:
-        """Enhanced DuckDuckGo search with better parsing"""
+
+    async def _try_tavily_search(self, query: str, context: Dict[str, Any]) -> List[Dict]:
+        """Use Tavily API for web search, constrained to preferred architecture domains."""
         try:
             import requests
-            from urllib.parse import quote
-            
-            encoded_query = quote(query)
-            search_url = f"https://duckduckgo.com/html/?q={encoded_query}"
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate',
-                'Connection': 'keep-alive',
+            api_key = os.getenv("TAVILY_API_KEY")
+            if not api_key:
+                return []
+
+            include_domains: List[str] = get_preferred_architecture_domains()
+
+            payload = {
+                'api_key': api_key,
+                'query': query,
+                'search_depth': 'advanced',
+                'max_results': 8,
+                'include_answer': False,
+                'include_raw_content': False,
+                'include_images': False,
             }
-            
-            response = requests.get(search_url, headers=headers, timeout=15)
-            
+            # Always restrict to domain whitelist to avoid irrelevant sources
+            if include_domains:
+                payload['include_domains'] = include_domains
+
+            url = 'https://api.tavily.com/search'
+            response = requests.post(url, json=payload, timeout=20)
             if response.status_code == 200:
-                results = []
-                
-                # Multiple patterns to catch different DuckDuckGo layouts
-                patterns = [
-                    r'<a[^>]*class="result__a"[^>]*>([^<]+)</a>',
-                    r'<a[^>]*class="result__title"[^>]*>([^<]+)</a>',
-                    r'<a[^>]*class="[^"]*result[^"]*"[^>]*>([^<]+)</a>',
-                    r'<h2[^>]*><a[^>]*>([^<]+)</a></h2>',
-                    r'<a[^>]*href="[^"]*"[^>]*>([^<]+)</a>'
-                ]
-                
-                snippet_patterns = [
-                    r'<a[^>]*class="result__snippet"[^>]*>([^<]+)</a>',
-                    r'<span[^>]*class="result__snippet"[^>]*>([^<]+)</span>',
-                    r'<div[^>]*class="[^"]*snippet[^"]*"[^>]*>([^<]+)</div>'
-                ]
-                
-                url_patterns = [
-                    r'<a[^>]*class="result__a"[^>]*href="([^"]+)"',
-                    r'<a[^>]*class="result__title"[^>]*href="([^"]+)"',
-                    r'<a[^>]*href="([^"]+)"[^>]*class="[^"]*result[^"]*"'
-                ]
-                
-                titles = []
-                snippets = []
-                urls = []
-                
-                # Try all patterns
-                for pattern in patterns:
-                    titles.extend(re.findall(pattern, response.text))
-                    if titles:
-                        break
-                
-                for pattern in snippet_patterns:
-                    snippets.extend(re.findall(pattern, response.text))
-                    if snippets:
-                        break
-                
-                for pattern in url_patterns:
-                    urls.extend(re.findall(pattern, response.text))
-                    if urls:
-                        break
-                
-                # Clean and filter results
-                for i in range(min(5, len(titles))):
+                data = response.json()
+                items: List[Dict] = []
+                allowed = set(include_domains)
+                for r in data.get('results', [])[:12]:
+                    title = r.get('title', '')
+                    snippet = r.get('content') or r.get('snippet', '')
+                    url = r.get('url', '')
+                    # Final filtering by hostname just in case
                     try:
-                        title = titles[i] if i < len(titles) else "Architectural Resource"
-                        snippet = snippets[i] if i < len(snippets) else ""
-                        url = urls[i] if i < len(urls) else ""
-                        
-                        # Clean HTML entities
-                        title = re.sub(r'&[a-zA-Z]+;', '', title).strip()
-                        snippet = re.sub(r'&[a-zA-Z]+;', '', snippet).strip()
-                        
-                        # Filter out non-architectural results
-                        if any(arch_term in title.lower() or arch_term in snippet.lower() 
-                               for arch_term in ['architecture', 'design', 'building', 'construction', 'project']):
-                            results.append({
-                                'title': title,
-                                'snippet': snippet,
-                                'url': url,
-                                'source': 'duckduckgo',
-                                'is_web_result': True
-                            })
-                    
-                    except Exception as e:
-                        print(f"Error processing result {i}: {e}")
-                        continue
-                
-                return results
-                
+                        from urllib.parse import urlparse
+                        host = urlparse(url).netloc
+                        if allowed and not any(host.endswith(dom) for dom in allowed):
+                            continue
+                    except Exception:
+                        pass
+                    items.append({
+                        'content': snippet,
+                        'metadata': {
+                            'title': title,
+                            'url': url,
+                            'source': 'tavily',
+                            'type': 'web_result'
+                        },
+                        'discovery_method': 'web'
+                    })
+                return items
         except Exception as e:
-            print(f"Enhanced DuckDuckGo search failed: {e}")
-        
+            print(f"Tavily search failed: {e}")
         return []
+
     
     async def _get_architectural_knowledge_fallback(self, topic: str, context: Dict) -> List[Dict]:
         """Fallback to architectural knowledge base"""
@@ -538,7 +485,10 @@ class DomainExpertAgent:
         """Enhanced fallback knowledge with better example-focused content"""
         
         # Enhanced fallback content that addresses example requests better
-        if any(word in topic.lower() for word in ["example", "project", "precedent"]):
+        if any(word in topic.lower() for word in [
+            "example", "examples", "precedent", "precedents", "case study", "case studies",
+            "real project", "built project"
+        ]):
             # For example requests, provide project-focused content
             fallback_content = f"While I don't have specific project examples readily available for {topic}, I can guide you toward key principles that successful projects typically demonstrate. Consider looking at award-winning projects in architectural databases like ArchDaily, Dezeen, or the AIA Awards that showcase {topic}. These resources often feature detailed case studies with photos, plans, and architect insights that can provide the concrete examples you're seeking."
         else:
@@ -810,9 +760,11 @@ class DomainExpertAgent:
         
         # Check if they provided insights (substantial content) AND requested examples
         has_insights = len(last_user_msg.split()) > 10  # Substantial response
+        # Require more specific example/precedent cues to avoid accidental trigger from verbs like 'provide'
         requests_examples = any(phrase in last_user_msg for phrase in [
-            "example", "examples", "show me", "can you give", "provide"
-        ])
+            "example", "examples", "show me", "can you give", "can you provide",
+            "precedent", "precedents", "case study", "case studies"
+        ]) and not ("provide" in last_user_msg and "example" not in last_user_msg and "precedent" not in last_user_msg)
         
         return has_insights and requests_examples
     
@@ -892,54 +844,93 @@ class DomainExpertAgent:
             return await self._provide_additional_examples(state, context, gap_type)
     
     def _extract_building_type_from_context(self, state: ArchMentorState) -> str:
-        """Extract building type from project context or user messages, avoiding hardcoded defaults"""
-        
-        # First check project brief
-        if state.current_design_brief:
-            brief_lower = state.current_design_brief.lower()
-            
-            # Expanded building type detection
-            building_types = {
-                "office": ["office", "workplace", "corporate", "coworking"],
-                "school": ["school", "university", "educational", "campus", "classroom"],
-                "hospital": ["hospital", "medical", "healthcare", "clinic", "health center"],
-                "library": ["library", "archive", "reading", "study"],
-                "museum": ["museum", "gallery", "exhibition", "cultural center"],
-                "retail": ["store", "shop", "retail", "commercial", "mall"],
-                "residential": ["housing", "apartment", "residential", "home", "living"],
-                "restaurant": ["restaurant", "cafe", "dining", "food service"],
-                "community center": ["community center", "civic", "public facility"],
-                "industrial": ["factory", "warehouse", "industrial", "manufacturing"],
-                "religious": ["church", "temple", "mosque", "religious", "worship"]
-            }
-            
-            for building_type, keywords in building_types.items():
-                if any(keyword in brief_lower for keyword in keywords):
-                    return building_type
-        
-        # Check recent user messages for building type clues
-        recent_messages = [msg['content'] for msg in state.messages[-3:] if msg.get('role') == 'user']
-        combined_text = " ".join(recent_messages).lower()
-        
-        building_types = {
-            "office": ["office", "workplace", "corporate"],
-            "school": ["school", "university", "educational"],
-            "hospital": ["hospital", "medical", "healthcare"],
-            "library": ["library", "study space"],
-            "museum": ["museum", "gallery", "exhibition"],
-            "retail": ["store", "shop", "retail"],
-            "residential": ["housing", "apartment", "home"],
-            "restaurant": ["restaurant", "cafe", "dining"],
-            "community center": ["community center", "civic center"],
-            "industrial": ["factory", "warehouse", "industrial"]
-        }
-        
-        for building_type, keywords in building_types.items():
-            if any(keyword in combined_text for keyword in keywords):
-                return building_type
-        
-        # Final fallback - use generic "building" instead of assuming community center
-        return "public building"
+        """Robust building-type inference that prefers the declared project type and only changes on explicit signals.
+
+        Rules:
+        - Prefer analysis_result.text_analysis.building_type if set and not 'unknown'.
+        - Establish a base_type from the initial brief + first user message.
+        - Mentions in later messages do NOT change the type unless an explicit switch phrase is detected.
+        - Avoid inferring 'museum' from generic words like 'exhibition' or 'cultural center'.
+        """
+
+        def detect_explicit(text: str, type_word: str) -> bool:
+            t = text.lower()
+            patterns = [
+                f"i am designing a {type_word}",
+                f"designing a {type_word}",
+                f"project is a {type_word}",
+                f"project type is {type_word}",
+                f"this is a {type_word}",
+            ]
+            return any(p in t for p in patterns)
+
+        def detect_switch(text: str, type_word: str) -> bool:
+            t = text.lower()
+            patterns = [
+                f"switch to {type_word}",
+                f"change to {type_word}",
+                f"make it a {type_word}",
+                f"let's make it a {type_word}",
+            ]
+            return any(p in t for p in patterns)
+
+        canonical_types = [
+            "community center", "school", "office", "museum", "library", "hospital",
+            "residential", "restaurant", "retail", "industrial", "religious"
+        ]
+
+        # 1) Prefer analyzer result if available
+        try:
+            analysis = getattr(state, 'analysis_result', None)
+            if isinstance(analysis, dict):
+                bt = analysis.get('text_analysis', {}).get('building_type')
+                if bt and bt != 'unknown':
+                    base_type = bt.lower()
+                else:
+                    base_type = None
+            else:
+                base_type = None
+        except Exception:
+            base_type = None
+
+        # 2) Establish base from initial brief and first user message (if not set)
+        initial_user_msgs = [m.get('content', '') for m in state.messages if m.get('role') == 'user']
+        first_user = initial_user_msgs[0].lower() if initial_user_msgs else ""
+        brief_lower = (state.current_design_brief or "").lower()
+
+        if not base_type:
+            # Strong phrase-first detection across canonical types
+            for ct in canonical_types:
+                if detect_explicit(brief_lower, ct) or detect_explicit(first_user, ct):
+                    base_type = ct
+                    break
+        if not base_type:
+            # Keyword presence as a weak hint, pick first match in brief or first message
+            for ct in canonical_types:
+                if ct in brief_lower or ct in first_user:
+                    base_type = ct
+                    break
+
+        # Default fallback if still unknown
+        if not base_type:
+            base_type = "project"
+
+        # 3) Only change type later if explicit switch phrases are detected
+        recent_user_msgs = [m.get('content', '') for m in state.messages[-5:] if m.get('role') == 'user']
+        combined_recent = " \n".join(recent_user_msgs).lower()
+        for ct in canonical_types:
+            if detect_switch(combined_recent, ct) or detect_explicit(combined_recent, ct):
+                # Respect an explicit change
+                return ct
+
+        # 4) Avoid over-triggering 'museum' from generic terms
+        if base_type == "museum":
+            # Confirm 'museum' explicitly exists; ignore generic exhibition terms
+            if ("museum" not in brief_lower) and ("museum" not in first_user):
+                # Roll back to project unless explicitly switched later
+                base_type = "project"
+
+        return base_type
     
     async def _provide_additional_examples(self, state: ArchMentorState, context: Dict[str, Any], gap_type: str) -> Dict[str, Any]:
         """Provide additional examples while maintaining topic continuity"""

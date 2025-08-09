@@ -754,27 +754,36 @@ class AdvancedRoutingDecisionTree:
         }
     
     def _is_pure_example_request(self, classification: Dict[str, Any], context: RoutingContext) -> bool:
-        """Determine if this is a pure example request"""
-        message = classification.get("last_message", "").lower()
+        """Determine if this is a pure example/precedent request (no guidance sought).
+        Treat 'adaptive reuse' as neutral (not a guidance signal)."""
+        # Prefer direct user input; fall back to last_message
+        message_raw = classification.get("user_input") or classification.get("last_message", "")
+        message = message_raw.lower()
         interaction_type = classification.get("interaction_type", "")
-        
+
         if interaction_type != "example_request":
             return False
-        
+
+        # Keywords that strongly indicate a request for examples/precedents
         pure_example_keywords = [
             "example", "examples", "project", "projects", "precedent", "precedents",
             "case study", "case studies", "show me", "can you give", "can you provide",
-            "can you show", "real project", "built project", "actual project"
+            "can you show", "real project", "built project", "actual project",
+            "precedent study", "project references", "reference projects"
         ]
-        
+
+        # Guidance phrases (exclude ambiguous single word 'adapt' to avoid 'adaptive reuse' false positives)
         guidance_keywords = [
-            "how can i", "how do i", "how to", "how might", "incorporate", 
-            "integrate", "implement", "apply", "use", "adapt"
+            "how can i", "how do i", "how to", "how might", "incorporate",
+            "integrate", "implement", "apply", "use", "advise me", "guide me"
         ]
-        
-        has_pure_keywords = any(keyword in message for keyword in pure_example_keywords)
-        has_guidance_keywords = any(keyword in message for keyword in guidance_keywords)
-        
+
+        # Neutralize "adaptive reuse" so it doesn't trip guidance via 'adapt'
+        neutral_message = message.replace("adaptive reuse", "")
+
+        has_pure_keywords = any(keyword in neutral_message for keyword in pure_example_keywords)
+        has_guidance_keywords = any(keyword in neutral_message for keyword in guidance_keywords)
+
         return has_pure_keywords and not has_guidance_keywords
     
     def _calculate_route_confidence(self, classification: Dict[str, Any]) -> float:

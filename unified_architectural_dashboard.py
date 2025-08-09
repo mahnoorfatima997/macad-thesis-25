@@ -5,6 +5,8 @@ import json
 import tempfile
 from PIL import Image
 from typing import Dict, Any, Optional, List
+import re
+from html import escape
 from datetime import datetime
 import pandas as pd
 import plotly.express as px
@@ -249,13 +251,23 @@ _palette_css = Template(
     /* Chat messages */
     .chat-message {
         background: #fff;
-        padding: 16px;
+        padding: 12px;
         border-radius: 12px;
-        margin: 12px 0;
+        margin: 10px 0;
         border: 1px solid rgba(0,0,0,0.06);
         word-wrap: break-word;
-        white-space: pre-wrap;
+        white-space: normal;
+        text-align: left;
+        display: block;
+        width: 100%;
+        line-height: 1.4;
     }
+    .chat-message p { margin: 0.25rem 0; }
+    .chat-message h1, .chat-message h2, .chat-message h3, .chat-message h4, .chat-message h5, .chat-message h6 {
+        margin: 0.4rem 0 0.3rem;
+    }
+    .chat-message ul, .chat-message ol { margin: 0.4rem 0 0.4rem 1rem; }
+    .chat-message li { margin: 0.2rem 0; }
     .chat-message.user {
         border-left: 5px solid var(--accent-coral);
         background: linear-gradient(0deg, rgba(205,118,109,0.06), rgba(205,118,109,0.06)), #fff;
@@ -379,6 +391,150 @@ class UnifiedArchitecturalDashboard:
             st.session_state.test_dashboard = None
         self.test_dashboard = st.session_state.test_dashboard
     
+    def _normalize_text_for_html(self, text: str) -> str:
+        """Collapse excessive blank lines/indentation and convert to safe HTML with <br> for line breaks.
+
+        Minimal fixes only:
+        - Merge enumerator lines like "1." / "2." with the following non-empty line
+        - Merge broken bold spans split across lines (until ** is balanced)
+        - Convert markdown links [text](url) and bare URLs into clickable anchors
+        """
+        if text is None:
+            return ""
+        # Normalize newlines
+        normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
+        # Trim each line and collapse multiple blank lines
+        lines = [ln.strip() for ln in normalized.split("\n")]
+        collapsed: List[str] = []
+        last_blank = False
+        for ln in lines:
+            if ln == "":
+                if not last_blank:
+                    collapsed.append("")
+                last_blank = True
+            else:
+                collapsed.append(ln)
+                last_blank = False
+        # Minimal post-processing for enumerations and bold
+        processed: List[str] = []
+        i = 0
+        while i < len(collapsed):
+            line = collapsed[i]
+            # Case: previous text ends with ": 1." → keep prefix on this line, move enumerator to next with merged content
+            s = line.strip()
+            if s.endswith('.'):
+                colon_idx = s.rfind(':')
+                if colon_idx != -1:
+                    tail = s[colon_idx + 1 :].strip()
+                    if tail.endswith('.'):
+                        num_str = tail[:-1].strip()
+                        if num_str.isdigit():
+                            prefix = s[:colon_idx].strip()
+                            # find next non-empty line for content
+                            j = i + 1
+                            while j < len(collapsed) and collapsed[j] == "":
+                                j += 1
+                            if j < len(collapsed):
+                                item_line = f"{num_str}. {collapsed[j]}".strip()
+                                # If bold is unbalanced, merge following lines until balanced
+                                if item_line.count("**") % 2 == 1:
+                                    k = j + 1
+                                    merged_item = item_line
+                                    while k < len(collapsed) and collapsed[k] != "":
+                                        merged_item = f"{merged_item} {collapsed[k]}".strip()
+                                        if merged_item.count("**") % 2 == 0:
+                                            break
+                                        k += 1
+                                    item_line = merged_item
+                                    j = k
+                                if prefix:
+                                    processed.append(f"{prefix}:")
+                                processed.append(item_line)
+                                i = j + 1
+                                continue
+                            # No following content; fall through
+            # If line is just a number + dot (e.g., "1.") → merge with next non-empty line
+            if len(line) > 1 and line.endswith(".") and line[:-1].isdigit():
+                j = i + 1
+                while j < len(collapsed) and collapsed[j] == "":
+                    j += 1
+                if j < len(collapsed):
+                    processed.append(f"{line[:-1]}. {collapsed[j]}")
+                    i = j + 1
+                    continue
+                # No following content
+                processed.append(line)
+                i += 1
+                continue
+            # If bold markers are unbalanced on this line, merge following non-empty lines until balanced
+            if line.count("**") % 2 == 1:
+                merged = line
+                j = i + 1
+                while j < len(collapsed) and collapsed[j] != "":
+                    merged = f"{merged} {collapsed[j]}".strip()
+                    if merged.count("**") % 2 == 0:
+                        break
+                    j += 1
+                processed.append(merged)
+                i = max(j + 1, i + 1)
+                continue
+            processed.append(line)
+            i += 1
+
+        normalized = "\n".join(processed).strip()
+        # Ensure enumerators after a colon start on a new line (e.g., "...: 1." → "...:\n1. ")
+        normalized = re.sub(r":\s*(\d+)\.\s*\n\s*", r":\n\1. ", normalized)
+
+        # Prepare link tokenization to preserve anchors through escaping
+        token_to_anchor: Dict[str, str] = {}
+        token_counter = 0
+
+        def _make_token() -> str:
+            nonlocal token_counter
+            token_counter += 1
+            return f"@@LINK_TOKEN_{token_counter}@@"
+
+        # 1) Convert markdown links to tokens
+        def _md_link_repl(m: re.Match) -> str:
+            text_part = m.group(1)
+            url_part = m.group(2)
+            token = _make_token()
+            token_to_anchor[token] = f'<a href="{escape(url_part)}" target="_blank" rel="noopener noreferrer">{escape(text_part)}</a>'
+            return token
+
+        normalized_with_tokens = re.sub(r"\[([^\]]+)\]\((https?://[^\s)]+)\)", _md_link_repl, normalized)
+
+        # 2) Convert bare URLs to tokens (avoid ones already part of tokens)
+        def _url_repl(m: re.Match) -> str:
+            url = m.group(1)
+            token = _make_token()
+            token_to_anchor[token] = f'<a href="{escape(url)}" target="_blank" rel="noopener noreferrer">{escape(url)}</a>'
+            return token
+
+        normalized_with_tokens = re.sub(r"(?<!@)\b(https?://[^\s<]+)", _url_repl, normalized_with_tokens)
+
+        # 3) Convert markdown bold (**text**) to HTML <strong> while safely escaping other content
+        html_parts: List[str] = []
+        last_idx = 0
+        for match in re.finditer(r"\*\*(.+?)\*\*", normalized_with_tokens, flags=re.DOTALL):
+            start, end = match.span()
+            inner = match.group(1)
+            # escape text before bold
+            html_parts.append(escape(normalized_with_tokens[last_idx:start]))
+            # add bold with escaped inner text
+            html_parts.append(f"<strong>{escape(inner)}</strong>")
+            last_idx = end
+        # tail
+        html_parts.append(escape(normalized_with_tokens[last_idx:]))
+        html = "".join(html_parts)
+
+        # 4) Restore anchor tokens
+        for token, anchor_html in token_to_anchor.items():
+            html = html.replace(escape(token), anchor_html)
+
+        # 5) Convert newlines to <br>
+        return html.replace("\n", "<br>")
+
     def _get_api_key(self) -> str:
         """Get API key from environment or Streamlit secrets"""
         api_key = os.getenv('OPENAI_API_KEY')
@@ -392,12 +548,15 @@ class UnifiedArchitecturalDashboard:
     def render_chat_message(self, message: Dict[str, Any]):
         """Render a chat message with appropriate styling (matching mega_architectural_mentor)"""
         
+        # Normalize whitespace and convert to safe HTML
+        safe_content = self._normalize_text_for_html(message.get("content", ""))
+
         if message["role"] == "user":
             st.markdown(
                 f"""
             <div class="chat-message user">
                 <strong>👤 You:</strong><br>
-                {message["content"]}
+                {safe_content}
             </div>
             """,
                 unsafe_allow_html=True,
@@ -422,7 +581,7 @@ class UnifiedArchitecturalDashboard:
                 f"""
             <div class="chat-message assistant">
                 <strong>{mentor_icon} {mentor_label}:</strong><br>
-                {message["content"]}
+                {safe_content}
             </div>
             """,
                 unsafe_allow_html=True,
@@ -626,31 +785,32 @@ class UnifiedArchitecturalDashboard:
         
         # Collect data for analysis (simplified for now)
         try:
-            # Log the interaction using the TestSessionLogger's actual methods
-            from thesis_tests.data_models import InteractionData, MoveType, TestPhase, Modality, DesignFocus, MoveSource
-            
-            interaction = InteractionData(
-                 id=str(uuid.uuid4()),
-                 session_id=st.session_state.session_id,
-                 timestamp=datetime.now(),
-                 phase=TestPhase.IDEATION,
-                 interaction_type="mentor_response",
-                 user_input=user_input,
-                 system_response=response,
-                 response_time=1.0,
-                 cognitive_metrics={
-                     "understanding_level": 0.7,
-                     "confidence_level": 0.6,
-                     "engagement_level": 0.8,
-                     "confidence_score": 0.8
-                 },
-                  metadata={
-                      **{"mode": "MENTOR"},
-                      **(response_metadata if isinstance(response_metadata, dict) else {})
-                  }
-             )
-            
-            self.data_collector.log_interaction(interaction)
+            # Derive logging fields from orchestrator metadata
+            classification = result.get("classification", {}) or {}
+            level = (classification.get("confidence_level") or "medium").lower()
+            level_to_score = {"high": 0.9, "confident": 0.8, "medium": 0.6, "uncertain": 0.4, "low": 0.3}
+            confidence_score = level_to_score.get(level, 0.6)
+
+            routing_path = response_metadata.get("routing_path") or response_metadata.get("route") or result.get("routing_path", "mentor_mode")
+            agents_used = response_metadata.get("agents_used") or ["orchestrator"]
+            response_type = response_metadata.get("response_type", "mentor_response")
+            cognitive_flags = response_metadata.get("cognitive_flags") or []
+            sources_used = response_metadata.get("sources", [])
+
+            self.data_collector.log_interaction(
+                student_input=user_input,
+                agent_response=response,
+                routing_path=routing_path,
+                agents_used=agents_used,
+                response_type=response_type,
+                cognitive_flags=cognitive_flags,
+                student_skill_level=getattr(state.student_profile, 'skill_level', 'intermediate'),
+                confidence_score=confidence_score,
+                sources_used=sources_used,
+                response_time=1.0,
+                context_classification=classification,
+                metadata={**{"mode": "MENTOR"}, **(response_metadata if isinstance(response_metadata, dict) else {})}
+            )
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
         

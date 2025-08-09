@@ -1,0 +1,1199 @@
+[
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:40:12.530073",
+    "interaction_number": 1,
+    "student_input": "   We should ask who the main groups are, what activities they need space for, how they like to gather, which parts of the warehouse\u2019s history to preserve, and what cultural or accessibility needs to consider.",
+    "input_length": 35,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "When considering the transformation of a warehouse into a community center, it's essential to delve into the diverse needs and desires of the community.",
+    "response_length": 1,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 2,
+    "design_moves": [
+      {
+        "content": "We should ask who the main groups are, what activities they need space for, how they like to gather, which parts of the warehouse\u2019s history to preserve, and what cultural or accessibility needs to consider.",
+        "timestamp": "2025-08-08T19:40:12.529946",
+        "micro_timestamp": 1754674812.529946,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.34320000000000006,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 206,
+          "has_question": false,
+          "word_count": 35,
+          "complexity_score": 0.8914285714285715
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:40:12.629946",
+        "micro_timestamp": 1754674812.629946,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:41:26.013217",
+    "interaction_number": 2,
+    "student_input": "one that comes to my mind is The Plant in Chicago, which converted an old meatpacking facility into a shared space for food production, markets, and community events.",
+    "input_length": 28,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "The Plant in Chicago is indeed a fascinating example of adaptive reuse, where an old industrial facility is transformed into a vibrant community hub.",
+    "response_length": 1,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 2,
+    "design_moves": [
+      {
+        "content": "one that comes to my mind is The Plant in Chicago, which converted an old meatpacking facility into a shared space for food production, markets, and community events.",
+        "timestamp": "2025-08-08T19:41:26.013020",
+        "micro_timestamp": 1754674886.01302,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.223,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 166,
+          "has_question": false,
+          "word_count": 28,
+          "complexity_score": 0.7964285714285715
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:41:26.113020",
+        "micro_timestamp": 1754674886.11302,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:42:57.932195",
+    "interaction_number": 3,
+    "student_input": "           The existing industrial character gives the building authenticity and a tangible link to its history, which can create a stronger emotional connection for the community. It also offers unique spatial qualities\u2014like high ceilings, open spans, and robust materials\u2014that are hard to replicate in new construction.\nIf we completely transformed it, we\u2019d risk losing that sense of place and memory, and the building might feel generic rather than rooted in the neighborhood\u2019s story.\n\n\nand can you help me understand how we can keep the industrial character help strengthen the community\u2019s connection to the space and make it feel more unique and meaningful?",
+    "input_length": 101,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 5,
+    "design_moves": [
+      {
+        "content": "The existing industrial character gives the building authenticity and a tangible link to its history, which can create a stronger emotional connection for the community.",
+        "timestamp": "2025-08-08T19:42:57.931961",
+        "micro_timestamp": 1754674977.931961,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.17,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 169,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.6799999999999999
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "It also offers unique spatial qualities\u2014like high ceilings, open spans, and robust materials\u2014that are hard to replicate in new construction.",
+        "timestamp": "2025-08-08T19:42:58.031961",
+        "micro_timestamp": 1754674978.031961,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.16099999999999998,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 140,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.8049999999999999
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "If we completely transformed it, we\u2019d risk losing that sense of place and memory, and the building might feel generic rather than rooted in the neighborhood\u2019s story.",
+        "timestamp": "2025-08-08T19:42:58.131961",
+        "micro_timestamp": 1754674978.131961,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.193,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 165,
+          "has_question": false,
+          "word_count": 27,
+          "complexity_score": 0.7148148148148148
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "and can you help me understand how we can keep the industrial character help strengthen the community\u2019s connection to the space and make it feel more unique and meaningful?",
+        "timestamp": "2025-08-08T19:42:58.231961",
+        "micro_timestamp": 1754674978.231961,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.15840000000000004,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 172,
+          "has_question": true,
+          "word_count": 29,
+          "complexity_score": 0.496551724137931
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:42:58.331961",
+        "micro_timestamp": 1754674978.331961,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:43:20.718105",
+    "interaction_number": 4,
+    "student_input": "                           The existing industrial character gives the building authenticity and a tangible link to its history, which can create a stronger emotional connection for the community. It also offers unique spatial qualities\u2014like high ceilings, open spans, and robust materials\u2014that are hard to replicate in new construction.\nIf we completely transformed it, we\u2019d risk losing that sense of place and memory, and the building might feel generic rather than rooted in the neighborhood\u2019s story.\nand can you help me understand how we can keep the industrial character help strengthen the community\u2019s connection to the space and make it feel more unique and meaningful?",
+    "input_length": 101,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "You've thoughtfully considered how to retain the building's industrial essence to enhance community connection and authenticity.\nHow might you integrate modern amenities while preserving these spatial qualities to meet the needs of current users and future-proof the site?",
+    "response_length": 1,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 5,
+    "design_moves": [
+      {
+        "content": "The existing industrial character gives the building authenticity and a tangible link to its history, which can create a stronger emotional connection for the community.",
+        "timestamp": "2025-08-08T19:43:20.717922",
+        "micro_timestamp": 1754675000.717922,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.17,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 169,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.6799999999999999
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "It also offers unique spatial qualities\u2014like high ceilings, open spans, and robust materials\u2014that are hard to replicate in new construction.",
+        "timestamp": "2025-08-08T19:43:20.817922",
+        "micro_timestamp": 1754675000.817922,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.16099999999999998,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 140,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.8049999999999999
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "If we completely transformed it, we\u2019d risk losing that sense of place and memory, and the building might feel generic rather than rooted in the neighborhood\u2019s story.",
+        "timestamp": "2025-08-08T19:43:20.917922",
+        "micro_timestamp": 1754675000.917922,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.193,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 165,
+          "has_question": false,
+          "word_count": 27,
+          "complexity_score": 0.7148148148148148
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "and can you help me understand how we can keep the industrial character help strengthen the community\u2019s connection to the space and make it feel more unique and meaningful?",
+        "timestamp": "2025-08-08T19:43:21.017922",
+        "micro_timestamp": 1754675001.017922,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.15840000000000004,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 172,
+          "has_question": true,
+          "word_count": 29,
+          "complexity_score": 0.496551724137931
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:43:21.117922",
+        "micro_timestamp": 1754675001.117922,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:44:49.793357",
+    "interaction_number": 5,
+    "student_input": "I am not sure abut that! can you help me understand?",
+    "input_length": 11,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "To maintain the industrial character while enhancing community connection, consider how you might repurpose existing elements like high ceilings and robust materials to create inviting spaces that encourage interaction and community activities.\nFor instance, could these features be used to support a community gathering space or an exhibition area that celebrates the building's history?\nHow might you design pathways or visual connections that honor the building's past while drawing the community in, perhaps through storytelling elements or interactive displays?",
+    "response_length": 1,
+    "routing_path": "supportive_scaffolding",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 3,
+    "design_moves": [
+      {
+        "content": "I am not sure abut that!",
+        "timestamp": "2025-08-08T19:44:49.793273",
+        "micro_timestamp": 1754675089.793273,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.019,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 24,
+          "has_question": false,
+          "word_count": 6,
+          "complexity_score": 0.31666666666666665
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "can you help me understand?",
+        "timestamp": "2025-08-08T19:44:49.893273",
+        "micro_timestamp": 1754675089.893273,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.023,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 27,
+          "has_question": true,
+          "word_count": 5,
+          "complexity_score": 0.45999999999999996
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:44:49.993273",
+        "micro_timestamp": 1754675089.993273,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:46:32.523839",
+    "interaction_number": 6,
+    "student_input": "can you tell me more about how to use storytelling elements or interactive displays?",
+    "input_length": 14,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "To maintain the industrial character while strengthening community connections, consider using storytelling elements and interactive displays that highlight the building's historical significance and architectural features, like high ceilings and open spans.\nYou could incorporate digital exhibits or interactive installations that engage visitors with the history and stories of the space.\nHow might you use these elements to create a narrative that emphasizes both the building's unique identity and its role in fostering community connections?\nAdditionally, what types of interactive experiences do you think would resonate most with your specific user groups?",
+    "response_length": 1,
+    "routing_path": "supportive_scaffolding",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 2,
+    "design_moves": [
+      {
+        "content": "can you tell me more about how to use storytelling elements or interactive displays?",
+        "timestamp": "2025-08-08T19:46:32.523759",
+        "micro_timestamp": 1754675192.523759,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.0781,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 84,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.5071428571428571
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:46:32.623759",
+        "micro_timestamp": 1754675192.623759,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:48:09.423884",
+    "interaction_number": 7,
+    "student_input": "can you give some example projects for adaptive reuse which uses interactive installations in the building to celebrate the building`s past?",
+    "input_length": 21,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "For your project on adaptive reuse with interactive installations, consider how these elements can both celebrate the building's past and ensure accessibility for all users.\nThink about incorporating multi-sensory displays that can engage diverse audiences, including those with visual or auditory impairments, to tell the building's story effectively.\nHow might you design interactive elements that are intuitive and inclusive for all user groups while maintaining the historical integrity of the space?\nAdditionally, what strategies can you use to ensure that your storytelling installations are accessible without compromising the historical aesthetic of the building?",
+    "response_length": 1,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 2,
+    "design_moves": [
+      {
+        "content": "can you give some example projects for adaptive reuse which uses interactive installations in the building to celebrate the building`s past?",
+        "timestamp": "2025-08-08T19:48:09.423761",
+        "micro_timestamp": 1754675289.423761,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.132,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 140,
+          "has_question": true,
+          "word_count": 21,
+          "complexity_score": 0.5714285714285714
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:48:09.523761",
+        "micro_timestamp": 1754675289.523761,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250808_193929",
+    "timestamp": "2025-08-08T19:48:52.662700",
+    "interaction_number": 8,
+    "student_input": "yes but it would be really nice to learn about example projects for this?",
+    "input_length": 14,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Certainly!",
+    "response_length": 1,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 2,
+    "design_moves": [
+      {
+        "content": "yes but it would be really nice to learn about example projects for this?",
+        "timestamp": "2025-08-08T19:48:52.662627",
+        "micro_timestamp": 1754675332.662627,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.066,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 73,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.42857142857142855
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-08T19:48:52.762627",
+        "micro_timestamp": 1754675332.762627,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  }
+]
