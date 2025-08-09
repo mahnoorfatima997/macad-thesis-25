@@ -1,0 +1,1964 @@
+{
+  "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
+  "timestamp": "2025-08-06T15:07:06.375633",
+  "linkograph": {
+    "id": "01663653-1f0f-444a-ad6a-f9e8918a3b11",
+    "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
+    "phase": "ideation",
+    "generated_at": 1754510826.375633,
+    "move_count": 23,
+    "link_count": 244,
+    "moves": [
+      {
+        "id": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "timestamp": 1754510415.092168,
+        "content": "I need your help defining the program of a community center",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "timestamp": 1754510415.10017,
+        "content": "Considering the unique needs of the community you're designing for, how might the program of your community center reflect and enhance the cultural, social, and recreational activities that are most valued by its members?",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "timestamp": 1754510466.928277,
+        "content": "well, this is for a Chinese community",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "timestamp": 1754510466.960329,
+        "content": "When designing a community center for a Chinese community, it's essential to consider the cultural, social, and functional aspects that will shape the programming of the space.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "timestamp": 1754510466.960329,
+        "content": "**Cultural Significance and Traditions**: Chinese communities often have rich cultural traditions that could influence the design of a community center.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "timestamp": 1754510466.960329,
+        "content": "How might these cultural activities influence the spatial layout and design elements of your project?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "timestamp": 1754510466.960329,
+        "content": "2. **Social Dynamics and Inclusivity**: Community centers serve as gathering places for people of all ages and backgrounds.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "timestamp": 1754510466.960329,
+        "content": "In a Chinese community, there might be a need for spaces that cater to both traditional family structures and modern social interactions.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "timestamp": 1754510466.961336,
+        "content": "How can you design flexible spaces that accommodate diverse activities and foster a sense of belonging for all community members?\n\n3.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "timestamp": 1754510466.961336,
+        "content": "**Functional Requirements and Adaptability**: Consider the types of activities and services the community center will host.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "07432347-88fb-4513-874a-607fbc424021",
+        "timestamp": 1754510466.961336,
+        "content": "Will it include\n\nLooking at the example of incorporating spaces for tai chi, calligraphy, or tea ceremonies in the design of a community center, what underlying principles about cultural significance and spatial layout can you identify, and how might these principles guide you in creating a design that respects and enhances the cultural traditions of the Chinese community you are working with?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "932fb975-8c66-4812-a4e9-67e046646665",
+        "timestamp": 1754510517.967848,
+        "content": "I don't know anything about Chinese culture, so I need your help defining the most appropiate program so is culturally sensitive",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "timestamp": 1754510517.977399,
+        "content": "Given your interest in creating a culturally sensitive community space without prior knowledge of Chinese culture, how might you engage with local Chinese communities to discover which cultural elements are most significant to them and how these could inspire an authentic architectural program for your project?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "837f5aac-9cb2-4f47-b693-a9bbca6eb1aa",
+        "timestamp": 1754510557.482094,
+        "content": "I can't engage with them because I won't have the chance, so I need your help instead",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "timestamp": 1754510557.489993,
+        "content": "How might you design a community space that fosters engagement and interaction, even when direct communication with the community isn't possible, and how could architectural elements like layout, materials, or lighting play a role in this?",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "448cb62d-648d-4464-80db-18340def7efe",
+        "timestamp": 1754510593.358509,
+        "content": "don't ask me more questions, I need answers",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "timestamp": 1754510593.366953,
+        "content": "I understand you\u2019re seeking clarity, but if we consider the essence of your community project, how might embracing the complexity of multiple perspectives lead to a design that truly serves and unites its users?",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "timestamp": 1754510654.987018,
+        "content": "Now I need your help visualizing the building, how would it traditionally look like?",
+        "move_type": "synthesis",
+        "phase": "visualization",
+        "modality": "text"
+      },
+      {
+        "id": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "timestamp": 1754510654.994412,
+        "content": "How might you incorporate traditional architectural elements into your community building design while also ensuring it meets the unique needs and cultural identity of the local community?",
+        "move_type": "synthesis",
+        "phase": "visualization",
+        "modality": "text"
+      },
+      {
+        "id": "af8eda97-7196-4f88-ac14-b5fcea3c3c95",
+        "timestamp": 1754510691.568975,
+        "content": "You cannot answer all of my questions qith another question buddy",
+        "move_type": "analysis",
+        "phase": "visualization",
+        "modality": "text"
+      },
+      {
+        "id": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "timestamp": 1754510691.578079,
+        "content": "Let's dive deeper into your community project: How can the design elements you've chosen foster a sense of belonging and interaction among community members, while also addressing any specific challenges or needs you've identified in your project?",
+        "move_type": "reflection",
+        "phase": "visualization",
+        "modality": "text"
+      },
+      {
+        "id": "f873d19b-1c36-4e38-a1ef-ab3bd7ff3238",
+        "timestamp": 1754510764.039572,
+        "content": "Ok, so far you've been very unhelpful, let's see if you do better helping me define the construction system for this building, it will be located in san francisco",
+        "move_type": "synthesis",
+        "phase": "materialization",
+        "modality": "text"
+      },
+      {
+        "id": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "timestamp": 1754510764.04547,
+        "content": "Given the diverse community in San Francisco and its unique seismic challenges, how might you approach selecting a construction system that not only ensures structural safety but also fosters a sense of inclusivity and engagement for the local community?",
+        "move_type": "reflection",
+        "phase": "materialization",
+        "modality": "text"
+      }
+    ],
+    "links": [
+      {
+        "id": "79eaa2b3-988a-40a9-a7ec-a6b1d08918b4",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.7130513191223145,
+        "link_type": "lateral"
+      },
+      {
+        "id": "43003a73-72a6-4575-bd65-59a6b9e93c24",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.628867506980896,
+        "link_type": "forward"
+      },
+      {
+        "id": "936920e8-e1c4-4537-b0df-dbc261bd4a81",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.47795504331588745,
+        "link_type": "forward"
+      },
+      {
+        "id": "b3f78ccb-5f1b-4212-aee0-0d8dfd0f833b",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.5758824944496155,
+        "link_type": "forward"
+      },
+      {
+        "id": "ebaba15a-af13-4e62-98bc-763dd18e2cf5",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.48030954599380493,
+        "link_type": "forward"
+      },
+      {
+        "id": "90f7b44e-34b0-442d-9178-be87dcb4e4e8",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.6651544570922852,
+        "link_type": "forward"
+      },
+      {
+        "id": "c663b47e-dad2-4876-b903-6ef9b9ec411e",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.4587762951850891,
+        "link_type": "forward"
+      },
+      {
+        "id": "97880b7a-a5ba-433e-9fd5-61213ca1a819",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.4030226469039917,
+        "link_type": "forward"
+      },
+      {
+        "id": "eb8c837d-5a95-4a8b-be81-a9a79bb8c02a",
+        "source_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.43747806549072266,
+        "link_type": "forward"
+      },
+      {
+        "id": "e2fa593c-9e2d-4194-ab0b-57e80404d7cf",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.7130513191223145,
+        "link_type": "lateral"
+      },
+      {
+        "id": "9c47b603-9f51-4e8f-adb5-f6275d096570",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.7049194574356079,
+        "link_type": "lateral"
+      },
+      {
+        "id": "ba461ba9-0483-4210-b51d-59090403ef59",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.6553452610969543,
+        "link_type": "forward"
+      },
+      {
+        "id": "7d2e26b9-243c-45df-bf7b-69372646be9a",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.5036188960075378,
+        "link_type": "forward"
+      },
+      {
+        "id": "d30157c7-c106-4bbb-8e07-1677c656089e",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.6104423403739929,
+        "link_type": "forward"
+      },
+      {
+        "id": "c5dedb01-7b80-40bb-8270-5728397685ca",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.35722285509109497,
+        "link_type": "forward"
+      },
+      {
+        "id": "d1f796bc-e947-4c6e-a815-6ed4d85f95dd",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.5904092788696289,
+        "link_type": "forward"
+      },
+      {
+        "id": "f464129f-1165-464f-a53d-57590b98751c",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.6992180943489075,
+        "link_type": "forward"
+      },
+      {
+        "id": "4fd0cff5-848c-4df3-9c79-fac71deaf0c6",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.6117554903030396,
+        "link_type": "forward"
+      },
+      {
+        "id": "60492231-57b0-4569-9260-0386088a629e",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.3688719868659973,
+        "link_type": "forward"
+      },
+      {
+        "id": "8e42478e-6211-4025-a988-4b8db533c13b",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.5401818156242371,
+        "link_type": "forward"
+      },
+      {
+        "id": "97891d47-80a3-438b-b9e2-8fecdada40ea",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.5511007905006409,
+        "link_type": "forward"
+      },
+      {
+        "id": "ba38473f-ede5-47ff-9ed1-cdec5d1e1a1e",
+        "source_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.45663920044898987,
+        "link_type": "forward"
+      },
+      {
+        "id": "5ba35de7-48fa-4b83-bd43-f26b7af09675",
+        "source_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.5273371338844299,
+        "link_type": "forward"
+      },
+      {
+        "id": "2b3b4dc6-44bc-4733-93fe-610be468132b",
+        "source_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.5863112211227417,
+        "link_type": "forward"
+      },
+      {
+        "id": "7f6534a9-c02f-4beb-b789-bc40d99a1ace",
+        "source_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.5481446981430054,
+        "link_type": "forward"
+      },
+      {
+        "id": "0f8f283f-8d96-4d24-b0c1-21883e8831e4",
+        "source_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.4756618142127991,
+        "link_type": "forward"
+      },
+      {
+        "id": "85f2f8a1-8704-4f19-84e2-9c3917d7a002",
+        "source_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.5045351982116699,
+        "link_type": "forward"
+      },
+      {
+        "id": "6c544168-a7e1-49dc-9ce1-c975f96a241d",
+        "source_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.529063880443573,
+        "link_type": "forward"
+      },
+      {
+        "id": "d4516b9f-ca6b-43d4-b78b-8ad65c3167ac",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.628867506980896,
+        "link_type": "backward"
+      },
+      {
+        "id": "1b342400-56de-4dec-b23f-73b5e827d195",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.7049194574356079,
+        "link_type": "lateral"
+      },
+      {
+        "id": "e30d6f97-9ceb-47ba-851d-1317a49c30eb",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "strength": 0.5273371338844299,
+        "link_type": "backward"
+      },
+      {
+        "id": "9c606d44-88ef-4056-b9b2-57b99fa66829",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.8178237676620483,
+        "link_type": "lateral"
+      },
+      {
+        "id": "4da8fee7-a7f3-4878-993e-3c0ff1d0c6c9",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.504910409450531,
+        "link_type": "forward"
+      },
+      {
+        "id": "ac6548cd-a5f4-4ca3-bb67-356bd074331c",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.5646166205406189,
+        "link_type": "forward"
+      },
+      {
+        "id": "8b016723-a0c0-4375-a12d-75c60f723112",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.6382487416267395,
+        "link_type": "forward"
+      },
+      {
+        "id": "7396a686-35d1-4189-a2ec-cc245f2d0dca",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.5396414995193481,
+        "link_type": "forward"
+      },
+      {
+        "id": "cc31287d-e2f6-41e4-a27e-d002e004f866",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.6108130812644958,
+        "link_type": "forward"
+      },
+      {
+        "id": "30222446-354f-47f9-8e0c-2a24131fb95c",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.7796069979667664,
+        "link_type": "forward"
+      },
+      {
+        "id": "2442e9b6-827e-4560-b02e-fd075229ae21",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.5272714495658875,
+        "link_type": "forward"
+      },
+      {
+        "id": "ab76a350-6971-4713-8cac-8d754bbfdb57",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.6985538601875305,
+        "link_type": "forward"
+      },
+      {
+        "id": "1c54cbca-258e-44e6-af9b-8fcd78f44547",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.5247517228126526,
+        "link_type": "forward"
+      },
+      {
+        "id": "38b7d4bd-83cc-4808-9f78-825034e1aa2e",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.3974786698818207,
+        "link_type": "forward"
+      },
+      {
+        "id": "1a198a8c-c1c1-4dac-a813-72f0c833027d",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "strength": 0.37513187527656555,
+        "link_type": "forward"
+      },
+      {
+        "id": "8d001bbe-41f6-4529-92fd-4921f187b1c8",
+        "source_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.5541365742683411,
+        "link_type": "forward"
+      },
+      {
+        "id": "2f627203-3227-4ee3-b379-7b7ba01fa513",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.47795504331588745,
+        "link_type": "backward"
+      },
+      {
+        "id": "03d4faae-2f16-41dd-967f-36c961be078e",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.6553452610969543,
+        "link_type": "backward"
+      },
+      {
+        "id": "f07bed2b-5841-4af9-a86a-3acd616ae46f",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "strength": 0.5863112211227417,
+        "link_type": "backward"
+      },
+      {
+        "id": "7be41acd-1e72-4edc-bb7d-d80bbd3ada73",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.8178237676620483,
+        "link_type": "lateral"
+      },
+      {
+        "id": "7c406e97-7c39-4efd-999b-cfc918d51b0e",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.5603893399238586,
+        "link_type": "forward"
+      },
+      {
+        "id": "2ffa798d-21a0-486f-b22c-166f6bde540c",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.5593001842498779,
+        "link_type": "forward"
+      },
+      {
+        "id": "43ac9b20-8f6a-4c99-bc88-c8032518da04",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.6621730327606201,
+        "link_type": "forward"
+      },
+      {
+        "id": "13289bbe-47ee-4ffb-ae84-c1f704cff3b6",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.448554128408432,
+        "link_type": "forward"
+      },
+      {
+        "id": "1d43e36e-4386-49f4-9009-6ea8e1c969c8",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.5133447647094727,
+        "link_type": "forward"
+      },
+      {
+        "id": "1d577419-d2b0-4b16-8e52-51ed6e503d0c",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.8040833473205566,
+        "link_type": "forward"
+      },
+      {
+        "id": "235c2fb1-9e42-4437-a5ad-289920b7ff2e",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.4785161316394806,
+        "link_type": "forward"
+      },
+      {
+        "id": "0170b6c9-16d5-4be1-986d-ce75ffe4076e",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.7287530899047852,
+        "link_type": "forward"
+      },
+      {
+        "id": "7fb6ae82-992e-4bc7-bedc-81a2af13a420",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.4386104345321655,
+        "link_type": "forward"
+      },
+      {
+        "id": "a2ed3950-2b37-4fdb-b7c0-055e5d92969f",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.41507819294929504,
+        "link_type": "forward"
+      },
+      {
+        "id": "6e21871b-24fa-4e36-8c83-ef346cacad8c",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "strength": 0.38419896364212036,
+        "link_type": "forward"
+      },
+      {
+        "id": "cbef2fb7-3b1c-4dbf-9e9b-ff79c955e382",
+        "source_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.5909281373023987,
+        "link_type": "forward"
+      },
+      {
+        "id": "33a39417-e8b2-4e55-9445-2e2f025162d2",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.5036188960075378,
+        "link_type": "backward"
+      },
+      {
+        "id": "8ba8182f-942f-45c6-b17e-e2a2a1ed9274",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.504910409450531,
+        "link_type": "backward"
+      },
+      {
+        "id": "53ae76b8-016a-46b1-979f-d404adaa6f5d",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.5603893399238586,
+        "link_type": "backward"
+      },
+      {
+        "id": "2d7fcb61-8417-49b7-b85e-420fe2c39557",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.3961164653301239,
+        "link_type": "forward"
+      },
+      {
+        "id": "c24e6cf6-8a2c-45f7-ac0e-eb14a3767061",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.4404311776161194,
+        "link_type": "forward"
+      },
+      {
+        "id": "561872ec-5e44-43b0-9a03-ff2dfac31d06",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.460399866104126,
+        "link_type": "forward"
+      },
+      {
+        "id": "6805d887-c0d6-480c-b838-356b12e8e1b6",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.36571094393730164,
+        "link_type": "forward"
+      },
+      {
+        "id": "02f9f5f0-224e-4b70-8e58-9aa2d0b49e7b",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.6262589693069458,
+        "link_type": "forward"
+      },
+      {
+        "id": "bd7ed9db-16ba-42c0-8df8-edc641cfcbc0",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.37155526876449585,
+        "link_type": "forward"
+      },
+      {
+        "id": "4c0a3986-6b37-4f1e-b08f-6fc98da32b8b",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.5653260946273804,
+        "link_type": "forward"
+      },
+      {
+        "id": "0bb1c9c1-d1a9-4016-8066-e7da26ac9a07",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.46114540100097656,
+        "link_type": "forward"
+      },
+      {
+        "id": "fa35431b-67df-403b-9c35-537d276cd90c",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.41969746351242065,
+        "link_type": "forward"
+      },
+      {
+        "id": "d6f591e6-00f5-4293-887d-f828181523c6",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "strength": 0.4912935197353363,
+        "link_type": "forward"
+      },
+      {
+        "id": "09103ef7-e6d8-4a54-9df2-af285ec57d79",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.552263617515564,
+        "link_type": "forward"
+      },
+      {
+        "id": "76c6d07f-6718-4ab7-be57-f553ee361c60",
+        "source_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.44703903794288635,
+        "link_type": "forward"
+      },
+      {
+        "id": "aeb5b42e-f7aa-4b60-b8c0-f7dab36c1710",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.5758824944496155,
+        "link_type": "backward"
+      },
+      {
+        "id": "a8479193-6108-41ff-b0db-eb1748fbbfb0",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.6104423403739929,
+        "link_type": "backward"
+      },
+      {
+        "id": "afcad732-bab7-4ac0-9e0d-156f52666e94",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.5646166205406189,
+        "link_type": "backward"
+      },
+      {
+        "id": "eccb5f59-7e54-4151-8b4e-cb6e4ddb6f82",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.5593001842498779,
+        "link_type": "backward"
+      },
+      {
+        "id": "57f6f3ef-e1f9-4ed0-941e-f09611b2b05a",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.3961164653301239,
+        "link_type": "backward"
+      },
+      {
+        "id": "8424682c-a4a2-48b6-9aa1-49c7285d2f6d",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.5297490358352661,
+        "link_type": "forward"
+      },
+      {
+        "id": "c427af99-c2f5-4c5a-8199-76e19aac29ab",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.6251457929611206,
+        "link_type": "forward"
+      },
+      {
+        "id": "aa42ba01-cd7c-4202-8527-40c19167dd9a",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.5974634885787964,
+        "link_type": "forward"
+      },
+      {
+        "id": "9fddcff4-d870-49bb-af49-b724e72aea2d",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.4636537432670593,
+        "link_type": "forward"
+      },
+      {
+        "id": "d52b1a0b-1642-46ab-9178-ac5b581ca016",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.3861438035964966,
+        "link_type": "forward"
+      },
+      {
+        "id": "4934ba2b-b69d-4abd-9f02-c5bb1cc46db2",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.5761920809745789,
+        "link_type": "forward"
+      },
+      {
+        "id": "fa463f9c-0aa7-43e8-bb4e-4c886fdc0fa9",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.3536415994167328,
+        "link_type": "forward"
+      },
+      {
+        "id": "bf78814d-ac39-426f-8a39-0dde00f8e158",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.43813279271125793,
+        "link_type": "forward"
+      },
+      {
+        "id": "dae5b975-2dbf-4be0-9117-fe20e93c5b49",
+        "source_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.5184609889984131,
+        "link_type": "forward"
+      },
+      {
+        "id": "cfccb92e-d0ba-457b-8c19-7badf251c45e",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.35722285509109497,
+        "link_type": "backward"
+      },
+      {
+        "id": "70cca030-a66c-4d30-8d14-fe0c6cee85ba",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "strength": 0.5481446981430054,
+        "link_type": "backward"
+      },
+      {
+        "id": "a70ec861-80f4-486c-9c12-bdbd1f54028a",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.6382487416267395,
+        "link_type": "backward"
+      },
+      {
+        "id": "0ecad6d9-e1e9-4b4d-8b6b-951163ee30ce",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.6621730327606201,
+        "link_type": "backward"
+      },
+      {
+        "id": "3920ec94-e37b-4f93-bf81-54c5355d7e83",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.4404311776161194,
+        "link_type": "backward"
+      },
+      {
+        "id": "eb163bc8-e106-46cc-83cb-d80c2f4242af",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.5297490358352661,
+        "link_type": "backward"
+      },
+      {
+        "id": "dbba4ede-2025-4f65-9829-1d78e53ad63f",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.494159460067749,
+        "link_type": "forward"
+      },
+      {
+        "id": "bf250e2f-5f0e-40dd-8f19-61e67c45be27",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.6561693549156189,
+        "link_type": "forward"
+      },
+      {
+        "id": "509fc680-0553-4584-945d-676b5a264d0b",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.42256277799606323,
+        "link_type": "forward"
+      },
+      {
+        "id": "84e3fa00-2839-4f99-a98b-2c6107d9a5a1",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.5539458394050598,
+        "link_type": "forward"
+      },
+      {
+        "id": "2cb5be0e-209d-4582-9717-7ca80f239b53",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.4388165771961212,
+        "link_type": "forward"
+      },
+      {
+        "id": "30f179cb-af09-41b7-be46-0550a35b0f6c",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.42789870500564575,
+        "link_type": "forward"
+      },
+      {
+        "id": "447e3b91-9053-42d0-9122-ebcd31601248",
+        "source_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.38135480880737305,
+        "link_type": "forward"
+      },
+      {
+        "id": "2a4077a4-fd7f-497a-81d7-d7c21baf1000",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.48030954599380493,
+        "link_type": "backward"
+      },
+      {
+        "id": "013db081-d5fb-41fa-9d67-c6f1275a8052",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.5904092788696289,
+        "link_type": "backward"
+      },
+      {
+        "id": "43527c35-8aa1-4b04-ac3a-850370c474a1",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.5396414995193481,
+        "link_type": "backward"
+      },
+      {
+        "id": "368c7ab2-7ada-404f-9cb2-28925a0c12bd",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.448554128408432,
+        "link_type": "backward"
+      },
+      {
+        "id": "9625a6cc-7da8-4395-98ce-bbbb262e0e4b",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.460399866104126,
+        "link_type": "backward"
+      },
+      {
+        "id": "7640b00b-eef3-4ea0-b483-dc1cee1e16bc",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.6251457929611206,
+        "link_type": "backward"
+      },
+      {
+        "id": "e0a5e215-5452-4f48-834d-a5f1b7b8bfe0",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.494159460067749,
+        "link_type": "backward"
+      },
+      {
+        "id": "ef0c1154-45d0-4b3e-b66e-786012923da3",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.5499167442321777,
+        "link_type": "forward"
+      },
+      {
+        "id": "9ee4323b-8f75-47d7-b694-0fd840f204d2",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.5054366588592529,
+        "link_type": "forward"
+      },
+      {
+        "id": "487fb584-c6e8-465d-b426-98da217610b5",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.4662272334098816,
+        "link_type": "forward"
+      },
+      {
+        "id": "dc7ac8ce-1f72-4836-ab73-71fa3d4e6875",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.6784291863441467,
+        "link_type": "forward"
+      },
+      {
+        "id": "b38c36ba-9012-4436-9aa4-4e600d240996",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.5591048002243042,
+        "link_type": "forward"
+      },
+      {
+        "id": "888d2347-842c-43b3-b231-1086cf5625c4",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.5962138175964355,
+        "link_type": "forward"
+      },
+      {
+        "id": "6ba57d77-23e7-4273-9062-1c2be8240f71",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.6688368916511536,
+        "link_type": "forward"
+      },
+      {
+        "id": "61b0127f-6fab-413e-a979-8b7ebd10805e",
+        "source_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.4568197429180145,
+        "link_type": "forward"
+      },
+      {
+        "id": "3cfb2b10-1e26-4f71-bca4-5c1ce6dc8501",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.6651544570922852,
+        "link_type": "backward"
+      },
+      {
+        "id": "fff191a5-dfa5-40de-b851-f4fd8799d569",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.6992180943489075,
+        "link_type": "backward"
+      },
+      {
+        "id": "8ef79904-4f2d-48d2-828b-31702a348788",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.6108130812644958,
+        "link_type": "backward"
+      },
+      {
+        "id": "9ff16eda-fd6d-4662-9d7f-e7b92dacf425",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.5133447647094727,
+        "link_type": "backward"
+      },
+      {
+        "id": "8e8a87b7-73a1-4805-9af8-b5617a0e854b",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.36571094393730164,
+        "link_type": "backward"
+      },
+      {
+        "id": "1f0b921e-3f15-45fd-83da-39b44ab22d78",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.5974634885787964,
+        "link_type": "backward"
+      },
+      {
+        "id": "0f94a2cd-c0d7-46cb-b91d-6d865bf82789",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.5499167442321777,
+        "link_type": "backward"
+      },
+      {
+        "id": "767ffdef-814e-4039-8e96-55eb18b316a9",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.4454582631587982,
+        "link_type": "forward"
+      },
+      {
+        "id": "8d7880b8-0b93-401e-91de-3d98db50ad73",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.3618941605091095,
+        "link_type": "forward"
+      },
+      {
+        "id": "76fe72c2-03fe-4ac4-b9cb-06ab8f1908f0",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.5132198929786682,
+        "link_type": "forward"
+      },
+      {
+        "id": "49283500-98a9-4b69-aba2-3002ea1fd0fb",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.46890532970428467,
+        "link_type": "forward"
+      },
+      {
+        "id": "f20cd393-ad60-4971-9eda-5ee2563470ee",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.4704284071922302,
+        "link_type": "forward"
+      },
+      {
+        "id": "2c5378d1-fb30-4d67-9f2d-04bab3571659",
+        "source_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.39259573817253113,
+        "link_type": "forward"
+      },
+      {
+        "id": "9e863b53-56ef-461d-bc22-bc20fd24771e",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.4587762951850891,
+        "link_type": "backward"
+      },
+      {
+        "id": "2d978581-c713-48a4-bdac-95e71ddf7d2d",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.6117554903030396,
+        "link_type": "backward"
+      },
+      {
+        "id": "b7609ed4-a05b-4b29-92c5-ea3307117190",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "strength": 0.4756618142127991,
+        "link_type": "backward"
+      },
+      {
+        "id": "bbda80d1-dba8-4833-ac46-fa7613cd2121",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.7796069979667664,
+        "link_type": "backward"
+      },
+      {
+        "id": "40595d44-a22e-44f1-aaea-869919e6135d",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.8040833473205566,
+        "link_type": "backward"
+      },
+      {
+        "id": "aec721a8-e3a6-4396-bc5a-b3d11a8fadbb",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.6262589693069458,
+        "link_type": "backward"
+      },
+      {
+        "id": "fc755c38-76e4-4225-b465-24240287d064",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.4636537432670593,
+        "link_type": "backward"
+      },
+      {
+        "id": "5331b93b-ea31-4cfa-887e-991d08ea23e0",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.6561693549156189,
+        "link_type": "backward"
+      },
+      {
+        "id": "9fb73166-3b56-4f24-9b36-274388be5263",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.5054366588592529,
+        "link_type": "backward"
+      },
+      {
+        "id": "003b08cf-5b1d-4bc7-98ad-3ee7e46571b7",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.4454582631587982,
+        "link_type": "backward"
+      },
+      {
+        "id": "e38dfeda-1504-4a5b-8e95-e2186a716de1",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.49099940061569214,
+        "link_type": "forward"
+      },
+      {
+        "id": "d29266c0-b93d-4af9-a957-9979238c34c9",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.7059933543205261,
+        "link_type": "lateral"
+      },
+      {
+        "id": "524fa66c-48cb-4456-88a2-75feff8e2c84",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.48565173149108887,
+        "link_type": "forward"
+      },
+      {
+        "id": "6ad37b72-dd40-42af-930e-e41c780cd044",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.4018986225128174,
+        "link_type": "forward"
+      },
+      {
+        "id": "b5faf2ab-ea81-4505-b32d-63022e290ed3",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "strength": 0.4646858870983124,
+        "link_type": "forward"
+      },
+      {
+        "id": "775a89dd-63a7-41b3-bb59-f4c08d2dda51",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.5925019979476929,
+        "link_type": "forward"
+      },
+      {
+        "id": "4ca8d04b-a926-4be5-a3bf-3c0c0e3a88e0",
+        "source_move": "07432347-88fb-4513-874a-607fbc424021",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.5398043394088745,
+        "link_type": "forward"
+      },
+      {
+        "id": "7f38532f-ba0f-4241-87f8-d3b0667ee510",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.4030226469039917,
+        "link_type": "backward"
+      },
+      {
+        "id": "0f7a43cc-e67f-452b-bd5a-a8113c94321f",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.3688719868659973,
+        "link_type": "backward"
+      },
+      {
+        "id": "1262cb2e-e64e-4e6b-89dd-4d360e5346bd",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "strength": 0.5045351982116699,
+        "link_type": "backward"
+      },
+      {
+        "id": "95a0e6da-23d7-4667-8d11-0687625740e9",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.5272714495658875,
+        "link_type": "backward"
+      },
+      {
+        "id": "e069b527-4c2c-4df7-a2ab-4c2ae191dee1",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.4785161316394806,
+        "link_type": "backward"
+      },
+      {
+        "id": "5ad47e4c-05cd-41e8-b2ea-efd480025999",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.37155526876449585,
+        "link_type": "backward"
+      },
+      {
+        "id": "cfa122ae-4042-4532-90f3-ac015137787b",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.42256277799606323,
+        "link_type": "backward"
+      },
+      {
+        "id": "3c77a0ab-3b8b-41f8-b427-0df051729e1a",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.49099940061569214,
+        "link_type": "backward"
+      },
+      {
+        "id": "2546b218-4099-4693-8de4-b4dd41d98006",
+        "source_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.5853773355484009,
+        "link_type": "forward"
+      },
+      {
+        "id": "5d2f55da-689d-4149-9b10-9bac1856f519",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.5401818156242371,
+        "link_type": "backward"
+      },
+      {
+        "id": "685ffeb9-5c07-44b9-93bf-387f04267910",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "af4c7d89-56da-40e0-8111-e9d01471b59c",
+        "strength": 0.529063880443573,
+        "link_type": "backward"
+      },
+      {
+        "id": "fe65342e-3d34-4498-b73d-33e356866c9b",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.6985538601875305,
+        "link_type": "backward"
+      },
+      {
+        "id": "7a73e3b1-2937-436a-a282-e992e8749bdd",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.7287530899047852,
+        "link_type": "backward"
+      },
+      {
+        "id": "7a9ab130-e150-4e9d-9307-5758173e1a66",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.5653260946273804,
+        "link_type": "backward"
+      },
+      {
+        "id": "4fb2a689-170c-494f-9191-f38202d65f33",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.3861438035964966,
+        "link_type": "backward"
+      },
+      {
+        "id": "c0ea66ca-072f-4ec0-8c59-c8171ac40df4",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.5539458394050598,
+        "link_type": "backward"
+      },
+      {
+        "id": "93679e40-970e-42e9-9fe5-1c98c2d969c3",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.4662272334098816,
+        "link_type": "backward"
+      },
+      {
+        "id": "dafba8e3-1e46-47a2-948d-e50d0efa2e84",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.3618941605091095,
+        "link_type": "backward"
+      },
+      {
+        "id": "de0595fd-0c0d-4aeb-8d99-7af2a0a1d4f2",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.7059933543205261,
+        "link_type": "lateral"
+      },
+      {
+        "id": "06718673-92cf-4dcc-8a16-0c71aca46ebe",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "932fb975-8c66-4812-a4e9-67e046646665",
+        "strength": 0.5853773355484009,
+        "link_type": "backward"
+      },
+      {
+        "id": "bbc011c2-e170-4a6a-a45b-49accd84985b",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.4897858500480652,
+        "link_type": "forward"
+      },
+      {
+        "id": "b4d9ecc7-88a7-426e-a46b-1f809240cb55",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.3834732174873352,
+        "link_type": "forward"
+      },
+      {
+        "id": "0752529c-20f8-43d2-b8b4-872b75a268f3",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.7108335494995117,
+        "link_type": "forward"
+      },
+      {
+        "id": "896cdb1b-d51d-40fd-8305-7e483210f272",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.570769727230072,
+        "link_type": "forward"
+      },
+      {
+        "id": "d4b24470-81a1-4b62-a46b-a9074fbc90ac",
+        "source_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.4659580588340759,
+        "link_type": "forward"
+      },
+      {
+        "id": "4b3d7860-9903-42a6-a82c-bdc9f545394c",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+        "strength": 0.43747806549072266,
+        "link_type": "backward"
+      },
+      {
+        "id": "25a2dc2c-830d-4b8c-bfb7-60f06f7e0941",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.5511007905006409,
+        "link_type": "backward"
+      },
+      {
+        "id": "d7efb511-904d-42a4-9ccc-526f21970719",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.5247517228126526,
+        "link_type": "backward"
+      },
+      {
+        "id": "ed7fe6c3-0892-4192-a6cd-3b6901247a44",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.4386104345321655,
+        "link_type": "backward"
+      },
+      {
+        "id": "b265fc50-d78c-4dc1-b1ab-b9127ded1c2f",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.46114540100097656,
+        "link_type": "backward"
+      },
+      {
+        "id": "9a3129a9-ae67-452b-8f83-5209c3d2af42",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.5761920809745789,
+        "link_type": "backward"
+      },
+      {
+        "id": "2be6fcbf-820a-48b9-954e-106db5d33b69",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.4388165771961212,
+        "link_type": "backward"
+      },
+      {
+        "id": "20ab0fc1-4565-46ce-9a02-0807b2d760bc",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.6784291863441467,
+        "link_type": "backward"
+      },
+      {
+        "id": "dd6c8dce-5906-48e4-a3be-9a2fb15d3dee",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.5132198929786682,
+        "link_type": "backward"
+      },
+      {
+        "id": "5de45be0-6c33-4f10-9763-21e6dc954c16",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.48565173149108887,
+        "link_type": "backward"
+      },
+      {
+        "id": "5dd9657d-bbc7-4180-8dca-1489519214a7",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.4897858500480652,
+        "link_type": "backward"
+      },
+      {
+        "id": "9840b626-9c69-416e-9c8c-5e39d8f2ae51",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.48774537444114685,
+        "link_type": "forward"
+      },
+      {
+        "id": "fb31cf8d-6c3b-4c06-9fc2-0de06ad8ef8d",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "strength": 0.3536589741706848,
+        "link_type": "forward"
+      },
+      {
+        "id": "157d4aa5-d8df-4499-a2c3-8f9b33e7fd3d",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.6028108596801758,
+        "link_type": "forward"
+      },
+      {
+        "id": "3a6371d8-8f14-4686-90b1-f049eb875075",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.6546380519866943,
+        "link_type": "forward"
+      },
+      {
+        "id": "03c19c3f-8200-4d36-a5af-f4784e2908b6",
+        "source_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.4087446331977844,
+        "link_type": "forward"
+      },
+      {
+        "id": "e4679e2b-2596-4cfc-bb00-52a8f2bb866c",
+        "source_move": "448cb62d-648d-4464-80db-18340def7efe",
+        "target_move": "af8eda97-7196-4f88-ac14-b5fcea3c3c95",
+        "strength": 0.46984249353408813,
+        "link_type": "forward"
+      },
+      {
+        "id": "8d2420e0-8bab-4df2-b1e6-70a0773f47f1",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+        "strength": 0.45663920044898987,
+        "link_type": "backward"
+      },
+      {
+        "id": "f12b6704-9f23-446a-989b-9c48da741077",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.3974786698818207,
+        "link_type": "backward"
+      },
+      {
+        "id": "9ab5d534-c1d6-42c1-8f81-1a81904cadcd",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.41507819294929504,
+        "link_type": "backward"
+      },
+      {
+        "id": "8df84c0c-18fc-480d-9508-b64c778927d4",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.41969746351242065,
+        "link_type": "backward"
+      },
+      {
+        "id": "801f0596-6726-489b-adc8-f73ab25ab862",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.3536415994167328,
+        "link_type": "backward"
+      },
+      {
+        "id": "950cdb0e-1f98-4683-b042-e3cdb72db4bd",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.5591048002243042,
+        "link_type": "backward"
+      },
+      {
+        "id": "b3f11efa-073f-4a36-8923-ea6dc13b9911",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.4018986225128174,
+        "link_type": "backward"
+      },
+      {
+        "id": "3c4c9d84-e7c3-46a3-b7b8-5fa84e9af7cf",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.3834732174873352,
+        "link_type": "backward"
+      },
+      {
+        "id": "0424310b-265e-4b55-ae9c-8acabbd8ca38",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.48774537444114685,
+        "link_type": "backward"
+      },
+      {
+        "id": "02e00744-e96a-4b82-9395-66e9cd83e8d2",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.5442335605621338,
+        "link_type": "forward"
+      },
+      {
+        "id": "80ced1d0-c59d-4b89-b306-e3967923f80c",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.6536241173744202,
+        "link_type": "forward"
+      },
+      {
+        "id": "4c35de46-bf14-4c0d-9437-f986357ece74",
+        "source_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.360289990901947,
+        "link_type": "forward"
+      },
+      {
+        "id": "76515f19-74a9-4b9f-a4b8-d8b87f788d53",
+        "source_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.37513187527656555,
+        "link_type": "backward"
+      },
+      {
+        "id": "91777862-794d-47f1-a88e-6686cb826d79",
+        "source_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.38419896364212036,
+        "link_type": "backward"
+      },
+      {
+        "id": "249753eb-3dd8-4871-abb4-5ac581631843",
+        "source_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.4912935197353363,
+        "link_type": "backward"
+      },
+      {
+        "id": "efcee4c7-30d1-4dc6-912c-7e5386ac6492",
+        "source_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.4646858870983124,
+        "link_type": "backward"
+      },
+      {
+        "id": "409835d3-2414-438b-bd40-fa4facb50db2",
+        "source_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.3536589741706848,
+        "link_type": "backward"
+      },
+      {
+        "id": "166210cb-52b3-4daf-9c1f-814ef6742f41",
+        "source_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.48997610807418823,
+        "link_type": "forward"
+      },
+      {
+        "id": "69933616-c7a0-4b45-a970-e4bd45a2fdc4",
+        "source_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "target_move": "f873d19b-1c36-4e38-a1ef-ab3bd7ff3238",
+        "strength": 0.5424636602401733,
+        "link_type": "forward"
+      },
+      {
+        "id": "23d6c7a4-d22f-471a-afc3-04c1a303fb57",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "1e86116f-87ee-4015-b023-4f982db59cf6",
+        "strength": 0.5541365742683411,
+        "link_type": "backward"
+      },
+      {
+        "id": "e4361120-f1eb-40e3-ab83-2119d36c6e4d",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "c5badc8e-272c-4f23-bc51-6c76751a616a",
+        "strength": 0.5909281373023987,
+        "link_type": "backward"
+      },
+      {
+        "id": "fed70085-e16e-4d06-b33c-ccb4ecffb4e2",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.552263617515564,
+        "link_type": "backward"
+      },
+      {
+        "id": "6e32e72a-ecc1-4afe-a383-261719f63a60",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.43813279271125793,
+        "link_type": "backward"
+      },
+      {
+        "id": "f32f1bba-c589-4cee-a739-2e4677b0a859",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.42789870500564575,
+        "link_type": "backward"
+      },
+      {
+        "id": "aef2ca70-1ff5-40c6-873f-405874162774",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.5962138175964355,
+        "link_type": "backward"
+      },
+      {
+        "id": "fd5635d9-c086-4933-a3c2-49773af63b15",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.46890532970428467,
+        "link_type": "backward"
+      },
+      {
+        "id": "bb2c51ae-f31d-4898-94d4-5b1584939b35",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.5925019979476929,
+        "link_type": "backward"
+      },
+      {
+        "id": "89127772-ac46-44e4-9d3c-3a8f46955a74",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.7108335494995117,
+        "link_type": "backward"
+      },
+      {
+        "id": "80412963-9963-4b67-b049-3bf7ce968cb5",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.6028108596801758,
+        "link_type": "backward"
+      },
+      {
+        "id": "4b37251c-0f31-44e7-ae4f-b9c4fd5dd4cb",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.5442335605621338,
+        "link_type": "backward"
+      },
+      {
+        "id": "95e35b95-078e-4f8f-823e-d98c9624f6cc",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "strength": 0.48997610807418823,
+        "link_type": "backward"
+      },
+      {
+        "id": "a40738f5-b9bc-4d1c-87ba-f31a1bb4a039",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.690235435962677,
+        "link_type": "forward"
+      },
+      {
+        "id": "948bd91e-fd25-4119-a4e5-fdd8dcb9142b",
+        "source_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.5524612665176392,
+        "link_type": "forward"
+      },
+      {
+        "id": "32e65fb6-76d0-4b9f-af0c-544900e85388",
+        "source_move": "af8eda97-7196-4f88-ac14-b5fcea3c3c95",
+        "target_move": "448cb62d-648d-4464-80db-18340def7efe",
+        "strength": 0.46984249353408813,
+        "link_type": "backward"
+      },
+      {
+        "id": "c16cb1c5-904e-474b-8787-64ece97ff218",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+        "strength": 0.44703903794288635,
+        "link_type": "backward"
+      },
+      {
+        "id": "fc94642c-020c-450c-a4f2-a6937819b820",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+        "strength": 0.5184609889984131,
+        "link_type": "backward"
+      },
+      {
+        "id": "b5d6d850-2432-493a-a823-4b75f54e4f1c",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+        "strength": 0.38135480880737305,
+        "link_type": "backward"
+      },
+      {
+        "id": "e3b6551a-2027-426d-9615-a26e876d263b",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.6688368916511536,
+        "link_type": "backward"
+      },
+      {
+        "id": "addb7a23-0838-41f1-a371-38f84f4dcd03",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.4704284071922302,
+        "link_type": "backward"
+      },
+      {
+        "id": "7798b133-7a70-4f28-a322-833d83bcd4fc",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "07432347-88fb-4513-874a-607fbc424021",
+        "strength": 0.5398043394088745,
+        "link_type": "backward"
+      },
+      {
+        "id": "da6e1847-8a8f-4064-a07d-df86d43798de",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.570769727230072,
+        "link_type": "backward"
+      },
+      {
+        "id": "924f2074-fe66-4b51-aa88-a1c188492c03",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.6546380519866943,
+        "link_type": "backward"
+      },
+      {
+        "id": "04b206b0-fc05-4d22-842a-1eedd7ebb7fe",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.6536241173744202,
+        "link_type": "backward"
+      },
+      {
+        "id": "42335f15-8e13-4bcd-a78d-9e15a288a99b",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.690235435962677,
+        "link_type": "backward"
+      },
+      {
+        "id": "73c3559a-3c11-46be-9bc0-43845728cdad",
+        "source_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.4675096571445465,
+        "link_type": "forward"
+      },
+      {
+        "id": "42c565f7-e28a-4f72-91f5-3d52d61cd66a",
+        "source_move": "f873d19b-1c36-4e38-a1ef-ab3bd7ff3238",
+        "target_move": "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+        "strength": 0.5424636602401733,
+        "link_type": "backward"
+      },
+      {
+        "id": "e03ea92a-bd33-49ec-b440-bef927c8ca58",
+        "source_move": "f873d19b-1c36-4e38-a1ef-ab3bd7ff3238",
+        "target_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "strength": 0.5933217406272888,
+        "link_type": "forward"
+      },
+      {
+        "id": "d1d359bd-b2e8-459a-a640-3c6557a2a667",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "21258e59-3a6e-4244-ba46-49d6387ac849",
+        "strength": 0.4568197429180145,
+        "link_type": "backward"
+      },
+      {
+        "id": "5726a316-2794-40c6-85dd-1b6d19b40961",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "240c1bd0-0340-4e62-8489-36c1f9270165",
+        "strength": 0.39259573817253113,
+        "link_type": "backward"
+      },
+      {
+        "id": "ac0d335a-817c-4e64-a3cb-4d65a7e03a8f",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "8fb6ca55-60d1-4269-9f75-f907991b751c",
+        "strength": 0.4659580588340759,
+        "link_type": "backward"
+      },
+      {
+        "id": "d0f36cf1-3167-4d26-a775-5ffba9336d20",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+        "strength": 0.4087446331977844,
+        "link_type": "backward"
+      },
+      {
+        "id": "1bf97ba9-3e3d-400f-8283-7b5cb908fd64",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+        "strength": 0.360289990901947,
+        "link_type": "backward"
+      },
+      {
+        "id": "9303b1c8-fa18-400b-8455-f3f5be8d8980",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "34b6260d-d73e-487c-808a-822cd15bd506",
+        "strength": 0.5524612665176392,
+        "link_type": "backward"
+      },
+      {
+        "id": "8da6e1c7-0fee-408f-8399-7f983ce4f1d4",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "ddce17ad-f8db-49db-9406-a85dc7892933",
+        "strength": 0.4675096571445465,
+        "link_type": "backward"
+      },
+      {
+        "id": "357f8a38-6b2c-46e0-9a39-14158fe8f442",
+        "source_move": "ad0cd5dc-3ac4-45c4-9954-d13519ab558d",
+        "target_move": "f873d19b-1c36-4e38-a1ef-ab3bd7ff3238",
+        "strength": 0.5933217406272888,
+        "link_type": "backward"
+      }
+    ]
+  },
+  "metrics": {
+    "link_density": 5.576669247254081,
+    "critical_move_ratio": 0.8260869565217391,
+    "entropy": 0.99641529988165,
+    "phase_balance": {
+      "ideation": 0.7391304347826086,
+      "visualization": 0.17391304347826086,
+      "materialization": 0.08695652173913043
+    },
+    "cognitive_indicators": {
+      "deep_thinking": 0.0,
+      "offloading_prevention": 0.0,
+      "knowledge_integration": 0.0,
+      "learning_progression": 0.0,
+      "metacognitive_awareness": 0.0
+    },
+    "avg_link_strength": 0.5256696421591962,
+    "max_link_range": 15,
+    "orphan_move_ratio": 0.043478260869565216,
+    "chunk_count": 14,
+    "web_count": 19,
+    "sawtooth_count": 1
+  },
+  "move_count": 23,
+  "link_count": 244,
+  "critical_moves": [
+    "7abc8a36-0f78-4327-a821-ac6795cdbc24",
+    "10185ea0-adef-4cbe-86cf-68653d0cc49a",
+    "af4c7d89-56da-40e0-8111-e9d01471b59c",
+    "1e86116f-87ee-4015-b023-4f982db59cf6",
+    "c5badc8e-272c-4f23-bc51-6c76751a616a",
+    "6ece50bc-4b84-42e6-9e16-b7333a4b3735",
+    "a7ad13cc-3105-4417-8a5e-ca7dd2fa3e37",
+    "a3d84d9e-a8c1-42c6-b394-acafc65fe3a8",
+    "21258e59-3a6e-4244-ba46-49d6387ac849",
+    "240c1bd0-0340-4e62-8489-36c1f9270165",
+    "07432347-88fb-4513-874a-607fbc424021",
+    "932fb975-8c66-4812-a4e9-67e046646665",
+    "8fb6ca55-60d1-4269-9f75-f907991b751c",
+    "f6da31f4-4c7b-4fa3-ad35-0b1712799e80",
+    "cbe0f6d4-8393-4e3f-bbc6-95da168d4b9d",
+    "fe580586-7f1c-4d2f-8df9-288422e5f06d",
+    "34b6260d-d73e-487c-808a-822cd15bd506",
+    "ddce17ad-f8db-49db-9406-a85dc7892933",
+    "ad0cd5dc-3ac4-45c4-9954-d13519ab558d"
+  ],
+  "patterns": {
+    "chunks": 14,
+    "webs": 19,
+    "sawteeth": 1
+  },
+  "phase_distribution": {
+    "ideation": 0.7391304347826086,
+    "visualization": 0.17391304347826086,
+    "materialization": 0.08695652173913043
+  }
+}
