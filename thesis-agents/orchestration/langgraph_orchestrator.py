@@ -98,6 +98,9 @@ class LangGraphOrchestrator:
         except Exception:
             self.openai_client = None
         
+
+
+        
         # Build the workflow graph
         self.workflow = self.build_workflow()
         
