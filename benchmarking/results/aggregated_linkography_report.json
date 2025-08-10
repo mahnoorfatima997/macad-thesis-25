@@ -1,15 +1,15 @@
 {
   "metadata": {
-    "timestamp": "2025-08-08T14:32:03.018866",
-    "total_sessions": 5,
+    "timestamp": "2025-08-10T12:08:40.480021",
+    "total_sessions": 11,
     "analysis_type": "aggregated_linkography"
   },
   "aggregated_metrics": {
-    "total_moves": 32,
-    "total_links": 78,
+    "total_moves": 42,
+    "total_links": 80,
     "average_similarity": 1.0,
-    "average_moves_per_session": 6.4,
-    "average_links_per_session": 15.6
+    "average_moves_per_session": 3.8181818181818183,
+    "average_links_per_session": 7.2727272727272725
   },
   "cognitive_patterns_summary": {
     "sessions_with_overload": 0,
@@ -19,11 +19,40 @@
     "fixation_percentage": 0.0
   },
   "session_details": {
+    "0b8cee5c-ec09-4d10-8c22-fb932d815219": {
+      "session_id": "0b8cee5c-ec09-4d10-8c22-fb932d815219",
+      "user_id": "unknown",
+      "start_time": "2025-08-10T12:08:39.494890",
+      "end_time": "2025-08-10T12:11:54.494890",
+      "num_linkographs": 3,
+      "total_moves": 4,
+      "total_links": 2,
+      "overall_metrics": {
+        "link_density": 3.0,
+        "avg_link_strength": 1.0,
+        "critical_move_ratio": 1.0,
+        "entropy": 1.0
+      },
+      "patterns_detected": [
+        "web",
+        "web",
+        "web",
+        "web"
+      ],
+      "cognitive_mapping": {
+        "cognitive_offloading_prevention": 0.0,
+        "deep_thinking_engagement": 0.8,
+        "knowledge_integration": 0.3666666666666667,
+        "scaffolding_effectiveness": 0.35,
+        "learning_progression": 0.6542893218813453,
+        "metacognitive_awareness": 0.6499999999999999
+      }
+    },
     "0bb1d410-484f-4f9d-bd16-851fa8ef9306": {
       "session_id": "0bb1d410-484f-4f9d-bd16-851fa8ef9306",
       "user_id": "unknown",
-      "start_time": "2025-08-08T14:32:02.535136",
-      "end_time": "2025-08-08T14:33:10.935136",
+      "start_time": "2025-08-10T12:08:39.510016",
+      "end_time": "2025-08-10T12:09:47.910016",
       "num_linkographs": 3,
       "total_moves": 3,
       "total_links": 0,
@@ -46,8 +75,8 @@
     "2f042b32-2ff5-449b-a7be-b3d2993cd27b": {
       "session_id": "2f042b32-2ff5-449b-a7be-b3d2993cd27b",
       "user_id": "unknown",
-      "start_time": "2025-08-08T14:32:02.547135",
-      "end_time": "2025-08-08T14:35:28.947135",
+      "start_time": "2025-08-10T12:08:39.521220",
+      "end_time": "2025-08-10T12:12:05.921220",
       "num_linkographs": 3,
       "total_moves": 5,
       "total_links": 4,
@@ -74,11 +103,35 @@
         "metacognitive_awareness": 0.615
       }
     },
+    "445b9186-5fdd-466d-b659-ad7ac346e64b": {
+      "session_id": "445b9186-5fdd-466d-b659-ad7ac346e64b",
+      "user_id": "unknown",
+      "start_time": "2025-08-10T12:08:39.533219",
+      "end_time": "2025-08-10T12:08:39.533219",
+      "num_linkographs": 1,
+      "total_moves": 1,
+      "total_links": 0,
+      "overall_metrics": {
+        "link_density": 0.0,
+        "avg_link_strength": 0.0,
+        "critical_move_ratio": 0.0,
+        "entropy": 0.0
+      },
+      "patterns_detected": [],
+      "cognitive_mapping": {
+        "cognitive_offloading_prevention": 0.0,
+        "deep_thinking_engagement": 0.0,
+        "knowledge_integration": 0.0,
+        "scaffolding_effectiveness": 0.0,
+        "learning_progression": 0.4,
+        "metacognitive_awareness": 0.0
+      }
+    },
     "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954": {
       "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
       "user_id": "unknown",
-      "start_time": "2025-08-08T14:32:02.556131",
-      "end_time": "2025-08-08T14:37:51.756131",
+      "start_time": "2025-08-10T12:08:39.541523",
+      "end_time": "2025-08-10T12:14:28.741523",
       "num_linkographs": 3,
       "total_moves": 8,
       "total_links": 14,
@@ -114,8 +167,8 @@
     "66c03479-fbc3-4ef8-98ee-d1a36936d997": {
       "session_id": "66c03479-fbc3-4ef8-98ee-d1a36936d997",
       "user_id": "unknown",
-      "start_time": "2025-08-08T14:32:02.565192",
-      "end_time": "2025-08-08T15:42:02.565192",
+      "start_time": "2025-08-10T12:08:39.553523",
+      "end_time": "2025-08-10T13:18:39.553523",
       "num_linkographs": 3,
       "total_moves": 15,
       "total_links": 60,
@@ -162,11 +215,11 @@
         "metacognitive_awareness": 0.4299999999999995
       }
     },
-    "833c4065-db34-4198-a3f7-310dee537175": {
-      "session_id": "833c4065-db34-4198-a3f7-310dee537175",
+    "70e4aea8-435f-49b9-916e-ce81e31b689b": {
+      "session_id": "70e4aea8-435f-49b9-916e-ce81e31b689b",
       "user_id": "unknown",
-      "start_time": "2025-08-08T14:32:02.579105",
-      "end_time": "2025-08-08T14:32:02.579105",
+      "start_time": "2025-08-10T12:08:39.569030",
+      "end_time": "2025-08-10T12:08:39.569030",
       "num_linkographs": 1,
       "total_moves": 1,
       "total_links": 0,
@@ -184,6 +237,102 @@
         "scaffolding_effectiveness": 0.0,
         "learning_progression": 0.4,
         "metacognitive_awareness": 0.0
+      }
+    },
+    "833c4065-db34-4198-a3f7-310dee537175": {
+      "session_id": "833c4065-db34-4198-a3f7-310dee537175",
+      "user_id": "unknown",
+      "start_time": "2025-08-10T12:08:39.578144",
+      "end_time": "2025-08-10T12:08:39.578144",
+      "num_linkographs": 1,
+      "total_moves": 1,
+      "total_links": 0,
+      "overall_metrics": {
+        "link_density": 0.0,
+        "avg_link_strength": 0.0,
+        "critical_move_ratio": 0.0,
+        "entropy": 0.0
+      },
+      "patterns_detected": [],
+      "cognitive_mapping": {
+        "cognitive_offloading_prevention": 0.0,
+        "deep_thinking_engagement": 0.0,
+        "knowledge_integration": 0.0,
+        "scaffolding_effectiveness": 0.0,
+        "learning_progression": 0.4,
+        "metacognitive_awareness": 0.0
+      }
+    },
+    "b4fe582e-83e0-4519-ba37-6a3518ca0287": {
+      "session_id": "b4fe582e-83e0-4519-ba37-6a3518ca0287",
+      "user_id": "unknown",
+      "start_time": "2025-08-10T12:08:39.587249",
+      "end_time": "2025-08-10T12:08:39.587249",
+      "num_linkographs": 1,
+      "total_moves": 1,
+      "total_links": 0,
+      "overall_metrics": {
+        "link_density": 0.0,
+        "avg_link_strength": 0.0,
+        "critical_move_ratio": 0.0,
+        "entropy": 0.0
+      },
+      "patterns_detected": [],
+      "cognitive_mapping": {
+        "cognitive_offloading_prevention": 0.0,
+        "deep_thinking_engagement": 0.0,
+        "knowledge_integration": 0.0,
+        "scaffolding_effectiveness": 0.0,
+        "learning_progression": 0.4,
+        "metacognitive_awareness": 0.0
+      }
+    },
+    "c868d31a-58fc-4abb-897f-8fe8273f6b70": {
+      "session_id": "c868d31a-58fc-4abb-897f-8fe8273f6b70",
+      "user_id": "unknown",
+      "start_time": "2025-08-10T12:08:39.595254",
+      "end_time": "2025-08-10T12:08:39.595254",
+      "num_linkographs": 1,
+      "total_moves": 1,
+      "total_links": 0,
+      "overall_metrics": {
+        "link_density": 0.0,
+        "avg_link_strength": 0.0,
+        "critical_move_ratio": 0.0,
+        "entropy": 0.0
+      },
+      "patterns_detected": [],
+      "cognitive_mapping": {
+        "cognitive_offloading_prevention": 0.0,
+        "deep_thinking_engagement": 0.0,
+        "knowledge_integration": 0.0,
+        "scaffolding_effectiveness": 0.0,
+        "learning_progression": 0.4,
+        "metacognitive_awareness": 0.0
+      }
+    },
+    "eefa0c66-c924-4814-af28-f05443efaa4d": {
+      "session_id": "eefa0c66-c924-4814-af28-f05443efaa4d",
+      "user_id": "unknown",
+      "start_time": "2025-08-10T12:08:39.601260",
+      "end_time": "2025-08-10T12:09:22.801260",
+      "num_linkographs": 2,
+      "total_moves": 2,
+      "total_links": 0,
+      "overall_metrics": {
+        "link_density": 1.0,
+        "avg_link_strength": 1.0,
+        "critical_move_ratio": 1.0,
+        "entropy": 1.0
+      },
+      "patterns_detected": [],
+      "cognitive_mapping": {
+        "cognitive_offloading_prevention": 0.43000000000000005,
+        "deep_thinking_engagement": 0.4,
+        "knowledge_integration": 0.2,
+        "scaffolding_effectiveness": 0.35,
+        "learning_progression": 0.45857864376269053,
+        "metacognitive_awareness": 0.6499999999999999
       }
     }
   }

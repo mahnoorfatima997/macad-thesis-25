@@ -125,15 +125,13 @@ st.markdown(f"""
 
 class BenchmarkDashboard:
     def __init__(self):
-        # Fix path to work from both root and benchmarking directory
-        # Check benchmarking/results first (the actual location)
-        if Path("benchmarking/results").exists():
-            self.results_path = Path("benchmarking/results")
-        elif Path("results").exists():
-            self.results_path = Path("results")
-        else:
-            # Try absolute path as fallback
-            self.results_path = Path(__file__).parent / "results"
+        # Always use absolute path from script location for consistency
+        # This ensures it works regardless of where the script is run from
+        base_dir = Path(__file__).parent.parent  # Go up to project root
+        self.results_path = base_dir / "benchmarking" / "results"
+        
+        # Ensure the directory exists
+        self.results_path.mkdir(exist_ok=True, parents=True)
         
         # Load master metrics if available
         self.master_session_metrics = None
@@ -1087,15 +1085,17 @@ class BenchmarkDashboard:
             fig_sessions = go.Figure()
             
             # Sort sessions by improvement score for better visualization
-            df_sorted = df_metrics.sort_values('improvement_score', ascending=True)
+            # Handle both column names (master metrics vs thesis data)
+            improvement_col = 'improvement_score' if 'improvement_score' in df_metrics.columns else 'improvement'
+            df_sorted = df_metrics.sort_values(improvement_col, ascending=True)
             
             fig_sessions.add_trace(go.Bar(
-                x=df_sorted['improvement_score'],
+                x=df_sorted[improvement_col],
                 y=[f"Session {i+1}" for i in range(len(df_sorted))],
                 orientation='h',
-                text=df_sorted['session_id'].str[:8],
+                text=df_sorted['session_id'].str[:8] if 'session_id' in df_sorted.columns else df_sorted.index.astype(str).str[:8],
                 textposition='inside',
-                marker_color=df_sorted['deep_thinking_rate'],
+                marker_color=df_sorted['deep_thinking_rate'] if 'deep_thinking_rate' in df_sorted.columns else df_sorted['deep_thinking'],
                 marker=dict(
                     colorscale=PLOTLY_COLORSCALES['main'],
                     showscale=True,

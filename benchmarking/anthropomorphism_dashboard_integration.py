@@ -59,21 +59,41 @@ def _load_thesis_data(group_filter='all', session_filter=None):
                                    'input_type', 'confidence_level', 'understanding_level',
                                    'metadata'])
     
-    # First, load test groups from JSON session files
+    # First try to load test groups from master metrics (most accurate)
     session_test_groups = {}
-    json_pattern = "../thesis_data/session_*.json" if Path("../thesis_data").exists() else "thesis_data/session_*.json"
-    json_files = glob.glob(json_pattern)
     
-    for json_file in json_files:
+    # Try master metrics first
+    base_dir = Path(__file__).parent.parent  # Go up to project root
+    master_metrics_path = base_dir / "benchmarking" / "results" / "master_session_metrics.csv"
+    if master_metrics_path.exists():
         try:
-            with open(json_file, 'r') as f:
-                session_data = json.load(f)
-                session_id = session_data.get('session_id')
-                test_group = session_data.get('test_group', 'unknown').upper()
-                if session_id:
-                    session_test_groups[session_id] = test_group
+            import pandas as pd
+            master_df = pd.read_csv(master_metrics_path)
+            for _, row in master_df.iterrows():
+                session_id = row['session_id']
+                test_group = row.get('test_group', 'unknown')
+                if pd.notna(session_id):
+                    # Normalize the test group to uppercase for consistency
+                    session_test_groups[str(session_id)] = test_group.upper() if isinstance(test_group, str) else 'UNKNOWN'
+            print(f"Loaded test groups from master metrics: {len(session_test_groups)} sessions")
         except Exception as e:
-            print(f"Error loading {json_file}: {e}")
+            print(f"Error loading master metrics: {e}")
+    
+    # Fallback to JSON files if master metrics not available or incomplete
+    if len(session_test_groups) < 12:  # We know we have 12 sessions
+        json_pattern = "../thesis_data/session_*.json" if Path("../thesis_data").exists() else "thesis_data/session_*.json"
+        json_files = glob.glob(json_pattern)
+        
+        for json_file in json_files:
+            try:
+                with open(json_file, 'r') as f:
+                    session_data = json.load(f)
+                    session_id = session_data.get('session_id')
+                    test_group = session_data.get('test_group', 'unknown').upper()
+                    if session_id and session_id not in session_test_groups:
+                        session_test_groups[session_id] = test_group
+            except Exception as e:
+                continue  # Silently skip errors to avoid cluttering output
     
     # Load and combine all CSV files
     dfs = []
@@ -303,14 +323,45 @@ def create_anthropomorphism_dashboard_section():
 
 
 def _get_session_group_mapping(data: pd.DataFrame) -> Dict[str, str]:
-    """Get mapping of session IDs to their test groups from session JSON files"""
+    """Get mapping of session IDs to their test groups - prioritize master metrics"""
     session_groups = {}
     
-    # Look for session JSON files in thesis_data
+    # First try to load from master metrics (most accurate and complete)
+    base_dir = Path(__file__).parent.parent  # Go up to project root
+    master_metrics_path = base_dir / "benchmarking" / "results" / "master_session_metrics.csv"
+    
+    if master_metrics_path.exists():
+        try:
+            master_df = pd.read_csv(master_metrics_path)
+            for _, row in master_df.iterrows():
+                session_id = str(row['session_id'])
+                test_group = row.get('test_group', 'unknown')
+                if pd.notna(session_id) and pd.notna(test_group):
+                    # Normalize test group names
+                    if test_group in ['MENTOR', 'mentor']:
+                        session_groups[session_id] = 'mentor'
+                    elif test_group in ['GENERIC_AI', 'generic_ai']:
+                        session_groups[session_id] = 'generic_ai'
+                    elif test_group in ['CONTROL', 'NO_AI', 'no_ai', 'control']:
+                        session_groups[session_id] = 'no_ai'
+                    else:
+                        session_groups[session_id] = test_group.lower() if test_group != 'unknown' else 'unknown'
+            
+            # If we got all sessions from master metrics, return early
+            if len(session_groups) >= len(data['session_id'].unique()):
+                return session_groups
+        except Exception as e:
+            print(f"Error loading master metrics for test groups: {e}")
+    
+    # Fallback to original logic for any missing sessions
     thesis_data_path = Path("../thesis_data") if Path("../thesis_data").exists() else Path("thesis_data")
     
     for session_id in data['session_id'].unique():
-        # First try to find session JSON file
+        # Skip if already found in master metrics
+        if session_id in session_groups:
+            continue
+            
+        # Try to find session JSON file
         session_file = thesis_data_path / f"session_{session_id}.json"
         
         if session_file.exists():
@@ -338,7 +389,14 @@ def _get_session_group_mapping(data: pd.DataFrame) -> Dict[str, str]:
                         if pd.notna(row['metadata']):
                             metadata = json.loads(row['metadata']) if isinstance(row['metadata'], str) else row['metadata']
                             test_group = metadata.get('test_group', 'unknown')
-                            session_groups[session_id] = test_group
+                            if test_group in ['MENTOR', 'mentor']:
+                                session_groups[session_id] = 'mentor'
+                            elif test_group in ['GENERIC_AI', 'generic_ai']:
+                                session_groups[session_id] = 'generic_ai'
+                            elif test_group in ['CONTROL', 'NO_AI', 'no_ai', 'control']:
+                                session_groups[session_id] = 'no_ai'
+                            else:
+                                session_groups[session_id] = test_group.lower() if test_group != 'unknown' else 'unknown'
                             break
                     except:
                         continue
