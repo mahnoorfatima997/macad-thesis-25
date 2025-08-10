@@ -1,0 +1,591 @@
+{
+  "session_id": "445b9186-5fdd-466d-b659-ad7ac346e64b",
+  "timestamp": "2025-08-07T23:54:44.202767",
+  "linkograph": {
+    "id": "9ead74b5-f2d6-4bb2-b43d-136a8d3369ef",
+    "session_id": "445b9186-5fdd-466d-b659-ad7ac346e64b",
+    "phase": "ideation",
+    "generated_at": 1754603684.202354,
+    "move_count": 11,
+    "link_count": 66,
+    "moves": [
+      {
+        "id": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "timestamp": 1754603683.43221,
+        "content": "I am designing a community center for a diverse urban neighborhood of 15,000 residents",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "timestamp": 1754603683.433358,
+        "content": "The site is a former industrial warehouse (150m x 80m x 12m height)",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "timestamp": 1754603683.4338,
+        "content": "When designing a community center in a diverse urban neighborhood, the concept of adaptive reuse offers a fascinating opportunity to breathe new life into the former industrial warehouse",
+        "move_type": "transformation",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "timestamp": 1754603683.434061,
+        "content": "Consider the spatial dynamics of the warehouse: its vast open areas and high ceilings",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "timestamp": 1754603683.434457,
+        "content": "How might these features be leveraged to create flexible, multi-functional spaces that accommodate various community activities",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "timestamp": 1754603683.434678,
+        "content": "Think about how the existing structure can be adapted to foster inclusivity and accessibility for all residents, regardless of age or ability",
+        "move_type": "transformation",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "timestamp": 1754603683.435064,
+        "content": "This might involve incorporating local art, using materials or colors that resonate with the community, or creating spaces that encourage cultural exchange and dialogue",
+        "move_type": "transformation",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "timestamp": 1754603683.437989,
+        "content": "What are the potential trade-offs between maintaining the warehouse's industrial character and integrating elements that speak to the community's cultural fabric",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "c1573665-3444-4665-83a6-be31a423747a",
+        "timestamp": 1754603683.438215,
+        "content": "Sustainability is another key consideration",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "timestamp": 1754603683.438527,
+        "content": "Retrofitting the existing structure can\n\nLooking at the example of using adaptive reuse to transform a former industrial warehouse into a community center, what underlying principles do you identify in terms of balancing the preservation of historical elements with the integration of culturally resonant features",
+        "move_type": "transformation",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "timestamp": 1754603683.438792,
+        "content": "How can these principles guide your design to ensure it reflects the diverse identities and histories of your neighborhood while maintaining the warehouse's industrial character",
+        "move_type": "reflection",
+        "phase": "ideation",
+        "modality": "text"
+      }
+    ],
+    "links": [
+      {
+        "id": "eaccf894-9649-46ff-a5a1-59f24ec4ce95",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "strength": 0.5717074275016785,
+        "link_type": "backward"
+      },
+      {
+        "id": "da8d0b32-7d29-48d7-bf86-5b37d1473dbc",
+        "source_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.5717074275016785,
+        "link_type": "forward"
+      },
+      {
+        "id": "f5b9f467-e221-4f3e-b798-8ff8fcf57c0f",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "strength": 0.3577164113521576,
+        "link_type": "backward"
+      },
+      {
+        "id": "3733e48c-10c7-4618-9321-552d76e80fba",
+        "source_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.3577164113521576,
+        "link_type": "forward"
+      },
+      {
+        "id": "d9569b0e-6c31-47f2-981c-a13beb6860e5",
+        "source_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "target_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "strength": 0.5482611656188965,
+        "link_type": "backward"
+      },
+      {
+        "id": "20c5df0b-df43-4f64-9567-2f5418960f5b",
+        "source_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "target_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "strength": 0.5482611656188965,
+        "link_type": "forward"
+      },
+      {
+        "id": "917e58aa-26c8-4117-a311-16013092c2cd",
+        "source_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.4321032762527466,
+        "link_type": "backward"
+      },
+      {
+        "id": "503da57c-89db-4464-8029-acf1034043bc",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "strength": 0.4321032762527466,
+        "link_type": "forward"
+      },
+      {
+        "id": "7930c60f-b5ae-41a2-b2b3-04cad9106c62",
+        "source_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "target_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "strength": 0.4820352792739868,
+        "link_type": "backward"
+      },
+      {
+        "id": "9075999f-e647-4ed8-9143-65e9e1085a43",
+        "source_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "target_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "strength": 0.4820352792739868,
+        "link_type": "forward"
+      },
+      {
+        "id": "f8ab6188-e85b-413e-9685-90dd0763c3c7",
+        "source_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.4959033131599426,
+        "link_type": "backward"
+      },
+      {
+        "id": "6de37cfd-c557-45d3-9620-48935d4ec51d",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "strength": 0.4959033131599426,
+        "link_type": "forward"
+      },
+      {
+        "id": "31a2a76e-0045-4f86-90ce-8bc5d2bdf0a5",
+        "source_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "target_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "strength": 0.4712464511394501,
+        "link_type": "backward"
+      },
+      {
+        "id": "f07fe7d7-1985-4af2-9953-27f62dcb7698",
+        "source_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "target_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "strength": 0.4712464511394501,
+        "link_type": "forward"
+      },
+      {
+        "id": "36433fe7-19eb-4e79-8d13-23507dbb09ed",
+        "source_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.4327711760997772,
+        "link_type": "backward"
+      },
+      {
+        "id": "263f03e6-608c-4ad7-91d1-635fd3e451ed",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "strength": 0.4327711760997772,
+        "link_type": "forward"
+      },
+      {
+        "id": "bc96731f-e569-4dbc-8b03-d9badd54f0f4",
+        "source_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "target_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "strength": 0.4441777169704437,
+        "link_type": "backward"
+      },
+      {
+        "id": "eaeb2a60-f8a4-4158-ae30-4de96a087e03",
+        "source_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "target_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "strength": 0.4441777169704437,
+        "link_type": "forward"
+      },
+      {
+        "id": "94f2f795-6715-47b2-9102-e09c051384dc",
+        "source_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "target_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "strength": 0.5016056299209595,
+        "link_type": "backward"
+      },
+      {
+        "id": "750dfc5d-bd03-44da-ab0f-4e5337e32feb",
+        "source_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "target_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "strength": 0.5016056299209595,
+        "link_type": "forward"
+      },
+      {
+        "id": "bb090170-3011-49d3-9ff0-38e352e4ac90",
+        "source_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.373191773891449,
+        "link_type": "backward"
+      },
+      {
+        "id": "76e8c3b7-b07e-4b95-ad0a-aeb5dfc48854",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "strength": 0.373191773891449,
+        "link_type": "forward"
+      },
+      {
+        "id": "8007e727-069d-4505-9f96-dc889c9c1a7a",
+        "source_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "target_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "strength": 0.45549276471138,
+        "link_type": "backward"
+      },
+      {
+        "id": "69c01819-c4d1-4175-b761-7934481a90a5",
+        "source_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "target_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "strength": 0.45549276471138,
+        "link_type": "forward"
+      },
+      {
+        "id": "f240e6e8-8cde-48e9-8a33-6c4c8c061985",
+        "source_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "target_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "strength": 0.46109217405319214,
+        "link_type": "backward"
+      },
+      {
+        "id": "5da8149a-1bc9-4c81-a018-a8b2c6afa6bb",
+        "source_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "target_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "strength": 0.46109217405319214,
+        "link_type": "forward"
+      },
+      {
+        "id": "1ac90d48-f74b-4620-b7fd-a24d8ea072ff",
+        "source_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.6221029162406921,
+        "link_type": "backward"
+      },
+      {
+        "id": "0f93eed5-d25f-4d84-9fbc-d475aa950df7",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "strength": 0.6221029162406921,
+        "link_type": "forward"
+      },
+      {
+        "id": "aef0a61f-e2bf-4f98-9bc3-f34bd85ba18b",
+        "source_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "target_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "strength": 0.564242422580719,
+        "link_type": "backward"
+      },
+      {
+        "id": "9417706d-9a94-4867-9cfd-2a9c6cb2ccc1",
+        "source_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "target_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "strength": 0.564242422580719,
+        "link_type": "forward"
+      },
+      {
+        "id": "f342afb7-f7e5-44b4-baeb-02f6e595982b",
+        "source_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "target_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "strength": 0.36587056517601013,
+        "link_type": "backward"
+      },
+      {
+        "id": "ec1cc6aa-9f98-4ce0-92b7-07482b1cc7c6",
+        "source_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "target_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "strength": 0.36587056517601013,
+        "link_type": "forward"
+      },
+      {
+        "id": "25f73ff3-3c5c-4489-8957-c10d8713017a",
+        "source_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "target_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "strength": 0.47137269377708435,
+        "link_type": "backward"
+      },
+      {
+        "id": "04f2f11b-78a6-41fc-9700-fa9c3333dd62",
+        "source_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "target_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "strength": 0.47137269377708435,
+        "link_type": "forward"
+      },
+      {
+        "id": "8b6818ff-ae78-4303-b345-b30b4c1b5a80",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "strength": 0.3860584497451782,
+        "link_type": "backward"
+      },
+      {
+        "id": "05e6771a-5bf0-4636-a2a3-b0edd35740ee",
+        "source_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.3860584497451782,
+        "link_type": "forward"
+      },
+      {
+        "id": "b5da22fd-5150-4981-a7ec-03aa4465cd66",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.7894853353500366,
+        "link_type": "backward"
+      },
+      {
+        "id": "91c0c2f7-a95d-4b90-8ee7-f5354b8f6c95",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.7894853353500366,
+        "link_type": "forward"
+      },
+      {
+        "id": "73d4b065-1755-48e1-8506-a789d8530c3e",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "strength": 0.38611334562301636,
+        "link_type": "backward"
+      },
+      {
+        "id": "861a2dcb-2d60-4b53-ab44-2ca9af5d8f82",
+        "source_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.38611334562301636,
+        "link_type": "forward"
+      },
+      {
+        "id": "3051816f-84de-4696-bd4a-c8f93dff2369",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "strength": 0.43147963285446167,
+        "link_type": "backward"
+      },
+      {
+        "id": "1532158e-e563-4fcf-9f92-4f2d80d84067",
+        "source_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.43147963285446167,
+        "link_type": "forward"
+      },
+      {
+        "id": "3ddcbe4f-9978-4bc8-a32e-dce4a09a31fc",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "strength": 0.4050714373588562,
+        "link_type": "backward"
+      },
+      {
+        "id": "8a6b63aa-8b3e-4e53-8327-ff49600c3ea1",
+        "source_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.4050714373588562,
+        "link_type": "forward"
+      },
+      {
+        "id": "fd1bb042-92e4-4b0b-a84e-9b6169f4f447",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "strength": 0.43398517370224,
+        "link_type": "backward"
+      },
+      {
+        "id": "4ac2abe0-c1cf-47f5-9e2a-1188b26f4274",
+        "source_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.43398517370224,
+        "link_type": "forward"
+      },
+      {
+        "id": "716580fe-3221-4a94-b232-221d692efba1",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "strength": 0.6579692959785461,
+        "link_type": "backward"
+      },
+      {
+        "id": "52d883d3-6d1a-4125-9123-de1a85f32e5a",
+        "source_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.6579692959785461,
+        "link_type": "forward"
+      },
+      {
+        "id": "b56b0c0d-2cac-460a-9da2-47752ef4750a",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "strength": 0.46415480971336365,
+        "link_type": "backward"
+      },
+      {
+        "id": "1e05ee89-9ff3-480d-bc47-d972f580926f",
+        "source_move": "9fca5688-76cc-4495-996a-4d5fe641e528",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.46415480971336365,
+        "link_type": "forward"
+      },
+      {
+        "id": "32526d1a-0954-4130-a387-56e45880111f",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "strength": 0.4488178491592407,
+        "link_type": "backward"
+      },
+      {
+        "id": "9bfe2007-fddb-4d4d-8cc0-f1734f6fca04",
+        "source_move": "9c8d1ceb-38dd-45ce-b4c1-6396413ca489",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.4488178491592407,
+        "link_type": "forward"
+      },
+      {
+        "id": "4c420f37-a148-4649-ad0d-2b0e6de075bc",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "strength": 0.6345058679580688,
+        "link_type": "backward"
+      },
+      {
+        "id": "a5043f57-0813-43ae-97fd-20fc7b96acc0",
+        "source_move": "1cbdf72e-d327-49f6-a7fd-a1ca71446d72",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.6345058679580688,
+        "link_type": "forward"
+      },
+      {
+        "id": "14ebc542-0548-45d7-970a-bbf1c74be862",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "strength": 0.5807608962059021,
+        "link_type": "backward"
+      },
+      {
+        "id": "2496dc57-4f55-45cb-aa84-78750f4620a1",
+        "source_move": "c9e5afb0-63aa-45b1-bfd6-6667a1c2f14c",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.5807608962059021,
+        "link_type": "forward"
+      },
+      {
+        "id": "ad01cfaf-d9d9-469a-b167-7c7a97012a2b",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "strength": 0.4210383892059326,
+        "link_type": "backward"
+      },
+      {
+        "id": "7fa0518e-569c-412e-9e00-3c1d27794216",
+        "source_move": "3497cbc0-069a-4a22-89c7-13acd506cc63",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.4210383892059326,
+        "link_type": "forward"
+      },
+      {
+        "id": "2ed0035e-52e8-479e-847f-54affd495e22",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "strength": 0.3731319308280945,
+        "link_type": "backward"
+      },
+      {
+        "id": "262f6d91-33d6-49a0-977e-afab449accb5",
+        "source_move": "a996934b-fc0b-4b87-9efb-24c58fbe7aed",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.3731319308280945,
+        "link_type": "forward"
+      },
+      {
+        "id": "48ee2dba-cefe-406a-b753-167848f2e53c",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "strength": 0.3980938792228699,
+        "link_type": "backward"
+      },
+      {
+        "id": "809aa2c3-9b71-44dc-b2de-76e9ca0f7657",
+        "source_move": "0b307d59-f7a3-4e00-b9b2-dfdedf8f9b3e",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.3980938792228699,
+        "link_type": "forward"
+      },
+      {
+        "id": "72f6880e-9bb9-4c57-9176-1037bdcf0d6c",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "strength": 0.7628235816955566,
+        "link_type": "backward"
+      },
+      {
+        "id": "398c6e9e-1eb6-4473-93af-e0c65f332aeb",
+        "source_move": "61530eaf-d1c0-43c1-8d73-62e82326bdad",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.7628235816955566,
+        "link_type": "forward"
+      },
+      {
+        "id": "ead0a21a-a1ad-4b3f-9497-fe35a7b864fe",
+        "source_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "target_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "strength": 0.6447046399116516,
+        "link_type": "backward"
+      },
+      {
+        "id": "1412c3ff-f36a-4484-b754-a848c8d53673",
+        "source_move": "9c0b58a4-8882-46de-bb57-ff7ffd67fa74",
+        "target_move": "17c1dc65-cd73-49a3-9e7b-7d8f62975c3e",
+        "strength": 0.6447046399116516,
+        "link_type": "forward"
+      }
+    ]
+  },
+  "metrics": {
+    "link_density": 2.958015940406106,
+    "critical_move_ratio": 0.9090909090909091,
+    "entropy": 0.994369685643882,
+    "phase_balance": {
+      "ideation": 1.0,
+      "visualization": 0.0,
+      "materialization": 0.0
+    },
+    "cognitive_indicators": {
+      "deep_thinking": 0.0,
+      "offloading_prevention": 0.0,
+      "knowledge_integration": 0.0,
+      "learning_progression": 0.0,
+      "metacognitive_awareness": 0.0
+    },
+    "avg_link_strength": 0.49300265673435095,
+    "max_link_range": 10,
+    "orphan_move_ratio": 0.09090909090909091,
+    "chunk_count": 7,
+    "web_count": 10,
+    "sawtooth_count": 1
+  },
+  "move_count": 11,
+  "link_count": 66
+}

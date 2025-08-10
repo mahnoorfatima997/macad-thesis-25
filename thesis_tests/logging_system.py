@@ -50,6 +50,7 @@ class TestSessionLogger:
         self.moves_file = self.data_dir / f"moves_{session_id}.csv"
         self.interactions_file = self.data_dir / f"interactions_{session_id}.csv"
         self.metrics_file = self.data_dir / f"metrics_{session_id}.csv"
+        self.session_summary_file = self.data_dir / f"session_summary_{session_id}.json"
         
         # Initialize CSV files
         self._initialize_csv_files()
@@ -71,7 +72,7 @@ class TestSessionLogger:
             writer = csv.DictWriter(f, fieldnames=moves_headers)
             writer.writeheader()
         
-        # Interactions CSV - include all columns expected by benchmarking
+        # Interactions CSV - include all columns expected by benchmarking (+ phase/checklist extras)
         interactions_headers = [
             'session_id', 'timestamp', 'interaction_number', 'student_input', 'input_length',
             'input_type', 'student_skill_level', 'understanding_level', 'confidence_level',
@@ -81,7 +82,12 @@ class TestSessionLogger:
             'sources_count', 'response_time', 'prevents_cognitive_offloading',
             'encourages_deep_thinking', 'provides_scaffolding', 'maintains_engagement',
             'adapts_to_skill_level', 'multi_agent_coordination', 'appropriate_agent_selection',
-            'response_coherence', 'metadata'
+            'response_coherence',
+            # Added phase/checklist flattening fields (compatible additions)
+            'current_phase', 'phase_score', 'phase_transition_from', 'phase_transition_to',
+            'checklist_delta_json', 'next_targets_json',
+            # Raw merged metadata (JSON)
+            'metadata'
         ]
         
         with open(self.interactions_file, 'w', newline='', encoding='utf-8') as f:
@@ -198,10 +204,13 @@ class TestSessionLogger:
                 'sources_count', 'response_time', 'prevents_cognitive_offloading',
                 'encourages_deep_thinking', 'provides_scaffolding', 'maintains_engagement',
                 'adapts_to_skill_level', 'multi_agent_coordination', 'appropriate_agent_selection',
-                'response_coherence', 'metadata'
+                'response_coherence',
+                'current_phase', 'phase_score', 'phase_transition_from', 'phase_transition_to',
+                'checklist_delta_json', 'next_targets_json',
+                'metadata'
             ])
             
-            # Prepare metadata
+            # Prepare merged metadata (logger core + provided)
             metadata = {
                 'phase': interaction.phase.value,
                 'cognitive_metrics': interaction.cognitive_metrics,
@@ -209,6 +218,45 @@ class TestSessionLogger:
                 'error_occurred': interaction.error_occurred,
                 'test_group': self.test_group.value
             }
+            # Merge in interaction-provided metadata (from orchestrator/dashboard)
+            try:
+                if isinstance(interaction.metadata, dict):
+                    metadata.update(interaction.metadata)
+            except Exception:
+                pass
+
+            # Extract flattened fields from metadata
+            meta_routing_path = metadata.get('routing_path') or metadata.get('route') or 'test_environment'
+            meta_agents_used = metadata.get('agents_used')
+            if isinstance(meta_agents_used, list):
+                meta_agents_used_str = '|'.join([str(a) for a in meta_agents_used])
+            else:
+                meta_agents_used_str = str(meta_agents_used) if meta_agents_used is not None else self.test_group.value
+            cognitive_flags_val = metadata.get('cognitive_flags', [])
+            if isinstance(cognitive_flags_val, list):
+                cognitive_flags_str = '|'.join([str(f) for f in cognitive_flags_val])
+                cognitive_flags_count = len(cognitive_flags_val)
+            else:
+                cognitive_flags_str = str(cognitive_flags_val) if cognitive_flags_val else ''
+                cognitive_flags_count = 0 if not cognitive_flags_val else 1
+            sources_used_val = metadata.get('sources', [])
+            if isinstance(sources_used_val, list):
+                sources_used_str = json.dumps(sources_used_val)
+                sources_count_val = len(sources_used_val)
+            else:
+                sources_used_str = ''
+                sources_count_val = 0
+            knowledge_integrated_val = 1 if metadata.get('knowledge_integrated', False) else metadata.get('knowledge_integrated', 0)
+
+            current_phase_val = metadata.get('current_phase') or metadata.get('phase')  # allow either
+            phase_score_val = metadata.get('phase_score')
+            transition = metadata.get('phase_transition') or {}
+            phase_transition_from = transition.get('from') if isinstance(transition, dict) else None
+            phase_transition_to = transition.get('to') if isinstance(transition, dict) else None
+            checklist_delta = metadata.get('checklist_delta', [])
+            next_targets = metadata.get('next_targets', [])
+            checklist_delta_json = json.dumps(checklist_delta) if checklist_delta else ''
+            next_targets_json = json.dumps(next_targets) if next_targets else ''
             
             writer.writerow({
                 'session_id': interaction.session_id,
@@ -223,16 +271,16 @@ class TestSessionLogger:
                 'engagement_level': 'high' if self.test_group == TestGroup.MENTOR else 'medium',
                 'agent_response': interaction.system_response,
                 'response_length': len(interaction.system_response.split()),
-                'routing_path': 'test_environment',
-                'agents_used': self.test_group.value,
+                'routing_path': meta_routing_path,
+                'agents_used': meta_agents_used_str,
                 'response_type': interaction.interaction_type,
                 'primary_agent': self.test_group.value,
-                'cognitive_flags': '',
-                'cognitive_flags_count': 0,
+                'cognitive_flags': cognitive_flags_str,
+                'cognitive_flags_count': cognitive_flags_count,
                 'confidence_score': 0.8,
-                'sources_used': '',
-                'knowledge_integrated': 1 if self.test_group != TestGroup.CONTROL else 0,
-                'sources_count': 0,
+                'sources_used': sources_used_str,
+                'knowledge_integrated': knowledge_integrated_val if knowledge_integrated_val in [0,1] else (1 if self.test_group != TestGroup.CONTROL else 0),
+                'sources_count': sources_count_val,
                 'response_time': interaction.response_time,
                 'prevents_cognitive_offloading': prevents_offloading,
                 'encourages_deep_thinking': encourages_thinking,
@@ -242,7 +290,13 @@ class TestSessionLogger:
                 'multi_agent_coordination': 1 if self.test_group == TestGroup.MENTOR else 0,
                 'appropriate_agent_selection': 1,
                 'response_coherence': 1,
-                'metadata': json.dumps(metadata)
+                'current_phase': current_phase_val,
+                'phase_score': phase_score_val if isinstance(phase_score_val, (int, float)) else '',
+                'phase_transition_from': phase_transition_from,
+                'phase_transition_to': phase_transition_to,
+                'checklist_delta_json': checklist_delta_json,
+                'next_targets_json': next_targets_json,
+                'metadata': json.dumps(metadata, default=str)
             })
     
     def log_design_move(self, move: DesignMove):
@@ -403,11 +457,43 @@ class TestSessionLogger:
             "total_moves": len(self.design_moves),
             "total_interactions": len(self.interactions)
         })
+
+        # Ensure a session summary JSON exists (merge-safe)
+        try:
+            if self.session_summary_file.exists():
+                with open(self.session_summary_file, 'r', encoding='utf-8') as f:
+                    existing = json.load(f)
+            else:
+                existing = {}
+            existing.setdefault('session_id', self.session_id)
+            existing['summary'] = session_data['summary']
+            with open(self.session_summary_file, 'w', encoding='utf-8') as f:
+                json.dump(existing, f, indent=2)
+        except Exception:
+            pass
     
     def export_session_data(self) -> str:
         """Export complete session data"""
         self.finalize_session()
         return str(self.session_file)
+
+    def log_phase_snapshot(self, snapshot: Dict[str, Any]):
+        """Log a periodic phase assessment snapshot and persist to session_summary JSON."""
+        # Event log
+        self._log_event("assessment_snapshot", snapshot)
+        # Merge into session_summary JSON
+        try:
+            if self.session_summary_file.exists():
+                with open(self.session_summary_file, 'r', encoding='utf-8') as f:
+                    existing = json.load(f)
+            else:
+                existing = {"session_id": self.session_id}
+            timeline = existing.setdefault('phase_progression_timeline', [])
+            timeline.append(snapshot)
+            with open(self.session_summary_file, 'w', encoding='utf-8') as f:
+                json.dump(existing, f, indent=2)
+        except Exception:
+            pass
     
     def _log_event(self, event_type: str, data: Dict[str, Any]):
         """Internal method to log events"""
