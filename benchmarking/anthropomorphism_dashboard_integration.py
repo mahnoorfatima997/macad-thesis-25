@@ -125,12 +125,18 @@ def _load_thesis_data(group_filter='all', session_filter=None):
         
         # Apply group filter based on JSON test groups
         if group_filter != 'all':
+            # Debug: Check what test groups are in the data
+            unique_groups = combined_df['test_group_from_json'].unique() if 'test_group_from_json' in combined_df.columns else []
+            print(f"Debug: Available test groups in data: {unique_groups}")
+            
             if group_filter == 'mentor':
-                combined_df = combined_df[combined_df['test_group_from_json'].isin(['MENTOR', 'mentor', 'mega_mentor'])]
+                combined_df = combined_df[combined_df['test_group_from_json'].isin(['MENTOR', 'mentor', 'mega_mentor', 'Mentor'])]
             elif group_filter == 'generic_ai':
-                combined_df = combined_df[combined_df['test_group_from_json'].isin(['GENERIC_AI', 'generic_ai'])]
+                combined_df = combined_df[combined_df['test_group_from_json'].isin(['GENERIC_AI', 'generic_ai', 'Generic_AI'])]
             elif group_filter == 'no_ai':
-                combined_df = combined_df[combined_df['test_group_from_json'].isin(['NO_AI', 'no_ai', 'CONTROL', 'control'])]
+                combined_df = combined_df[combined_df['test_group_from_json'].isin(['NO_AI', 'no_ai', 'CONTROL', 'control', 'No_AI'])]
+            
+            print(f"Debug: After filtering for '{group_filter}', data has {len(combined_df)} rows")
         
         # Apply session filter
         if session_filter and session_filter != 'All Sessions':
@@ -691,8 +697,9 @@ def render_neural_engagement_metrics():
     # Load data to check size
     data = _load_thesis_data(group_filter=group_filter, session_filter=session_filter)
     
-    if session_filter != 'All Sessions':
-        st.caption(f"Debug: Session {session_filter[:8]}... has {len(data)} interactions")
+    if data.empty:
+        st.warning("⚠️ No data available for the selected filters. Try selecting 'All' for group filter or 'All Sessions' for session filter.")
+        return
     
     # Cognitive Complexity Heatmap
     st.subheader("Cognitive Complexity Throughout Session")
@@ -832,8 +839,9 @@ def render_risk_assessment():
     # Load data to check size
     data = _load_thesis_data(group_filter=group_filter, session_filter=session_filter)
     
-    if session_filter != 'All Sessions':
-        st.caption(f"Debug: Session {session_filter[:8]}... has {len(data)} interactions")
+    if data.empty:
+        st.warning("⚠️ No data available for the selected filters. Try selecting 'All' for group filter or 'All Sessions' for session filter.")
+        return
     
     # Risk Matrix
     st.subheader("Cognitive Dependency Risk Matrix")
