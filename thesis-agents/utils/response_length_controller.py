@@ -183,6 +183,9 @@ class ResponseLengthController:
             last_end = max(cleaned.rfind('.'), cleaned.rfind('!'), cleaned.rfind('?'))
             if last_end != -1:
                 cleaned = cleaned[: last_end + 1]
+            else:
+                # As a last resort, append a period to avoid trailing fragments
+                cleaned = cleaned.rstrip() + "."
         response_text = cleaned
 
         # Readability polish: add gentle paragraph breaks between sentences
@@ -191,6 +194,9 @@ class ResponseLengthController:
 
         # Normalize simple list markers into bullets
         response_text = _re.sub(r'(?m)^\s*(•|\-)\s*', '- ', response_text)
+
+        # Normalize numbered lists to one-per-line structure for readability
+        response_text = _re.sub(r'(?m)\s*(\d+)\.\s+', lambda m: f"\n{m.group(1)}. ", response_text)
 
         # Bold short heading-like lines that end with a colon
         response_text = _re.sub(r'(?m)^([A-Z][A-Za-z ]{2,40}):\s*$', r'**\1:**', response_text)
