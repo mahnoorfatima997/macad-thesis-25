@@ -165,6 +165,22 @@ class LangGraphOrchestrator:
             routing_path, agent_results, user_input, classification, state
         )
 
+        # ENHANCEMENT: Apply route-specific shaping before quality controls
+        try:
+            from .synthesis import shape_by_route
+            user_message_count = len([m for m in state.get("messages", []) if m.get("role") == "user"])
+            context_analysis = state.get("context_analysis", {})
+            final_response = shape_by_route(
+                text=final_response,
+                routing_path=routing_path,
+                classification=classification,
+                ordered_results=agent_results,
+                user_message_count=user_message_count,
+                context_analysis=context_analysis,
+            )
+        except Exception as e:
+            self.logger.warning(f"Route shaping failed: {e}")
+
         # Apply response quality controls similar to legacy logic
         agent_type_map = {
             "domain_knowledge": "domain_expert",
@@ -174,15 +190,40 @@ class LangGraphOrchestrator:
         agent_type = agent_type_map.get(response_type, "default")
         final_response = self.ensure_quality(final_response, agent_type)
 
-        metadata = self._build_metadata(response_type, agent_results, routing_decision, classification)
+        # ENHANCEMENT: Build metadata with quality flags and student state
+        metadata = self._build_metadata(response_type, agent_results, routing_decision, classification, state)
+
+        # Add quality flags to metadata
+        try:
+            from .synthesis import calculate_quality_flags
+            metadata["quality"] = calculate_quality_flags(final_response)
+        except Exception as e:
+            self.logger.warning(f"Quality flags calculation failed: {e}")
+
         return final_response, metadata
 
     def _get_agent_results(self, state: WorkflowState) -> Dict[str, Any]:
+        # Ensure all agent results are dictionaries, not AgentResponse objects
+        socratic_result = state.get("socratic_result", {})
+        domain_result = state.get("domain_expert_result", {})
+        analysis_result = state.get("analysis_result", {})
+        cognitive_result = state.get("cognitive_enhancement_result", {})
+        
+        # Convert AgentResponse objects to dictionaries if needed
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(analysis_result, 'to_dict'):
+            analysis_result = analysis_result.to_dict()
+        if hasattr(cognitive_result, 'to_dict'):
+            cognitive_result = cognitive_result.to_dict()
+        
         return {
-            "socratic": state.get("socratic_result", {}),
-            "domain": state.get("domain_expert_result", {}),
-            "analysis": state.get("analysis_result", {}),
-            "cognitive": state.get("cognitive_enhancement_result", {}),
+            "socratic": socratic_result,
+            "domain": domain_result,
+            "analysis": analysis_result,
+            "cognitive": cognitive_result,
         }
 
     def _synthesize_by_routing_path(
@@ -206,22 +247,48 @@ class LangGraphOrchestrator:
             return self._synthesize_cognitive_intervention_response(agent_results)
         if routing_path == "technical_question":
             domain_result = agent_results.get("domain", {})
+            # Safety check: ensure result is a dictionary
+            if hasattr(domain_result, 'to_dict'):
+                domain_result = domain_result.to_dict()
             return self._synthesize_technical_response(domain_result, user_input, classification), "technical_question"
         if routing_path == "feedback_request":
-            return self._synthesize_feedback_response(
-                agent_results.get("socratic", {}), agent_results.get("domain", {}), user_input, classification
-            ), "feedback_request"
+            socratic_result = agent_results.get("socratic", {})
+            domain_result = agent_results.get("domain", {})
+            # Safety check: ensure results are dictionaries
+            if hasattr(socratic_result, 'to_dict'):
+                socratic_result = socratic_result.to_dict()
+            if hasattr(domain_result, 'to_dict'):
+                domain_result = domain_result.to_dict()
+            return self._synthesize_feedback_response(socratic_result, domain_result, user_input, classification), "feedback_request"
         if routing_path == "design_guidance":
             return self._synthesize_design_guidance_response(agent_results, user_input, classification), "design_guidance"
         if routing_path == "supportive_scaffolding":
-            return self._synthesize_clarification_response(
-                agent_results.get("socratic", {}), agent_results.get("domain", {}), user_input, classification
-            ), "supportive_scaffolding"
+            socratic_result = agent_results.get("socratic", {})
+            domain_result = agent_results.get("domain", {})
+            # Safety check: ensure results are dictionaries
+            if hasattr(socratic_result, 'to_dict'):
+                socratic_result = socratic_result.to_dict()
+            if hasattr(domain_result, 'to_dict'):
+                domain_result = domain_result.to_dict()
+            return self._synthesize_clarification_response(socratic_result, domain_result, user_input, classification), "supportive_scaffolding"
         return self._synthesize_default_response(agent_results)
 
     def _synthesize_knowledge_only_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
+        
+        # Safety check: ensure results are dictionaries
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        
+        # For pure example requests, prefer just the examples (no appended Socratic follow-up)
+        is_example_req = any(k in user_input.lower() for k in ["example", "examples", "precedent", "case study", "case studies", "project", "projects"]) and classification.get("interaction_type") == "example_request"
+        if is_example_req:
+            text = domain_result.get('response_text', '') if domain_result else ''
+            return text or self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
+
         if domain_result and socratic_result:
             final_response = f"{domain_result.get('response_text', '')}\n\n{socratic_result.get('response_text', '')}"
             return final_response, "knowledge_only_with_socratic"
@@ -229,6 +296,11 @@ class LangGraphOrchestrator:
 
     def _synthesize_socratic_exploration_response(self, agent_results: Dict[str, Any]) -> tuple[str, str]:
         socratic_result = agent_results.get("socratic", {})
+        
+        # Safety check: ensure socratic_result is a dictionary
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        
         if socratic_result and socratic_result.get("response_text"):
             return socratic_result.get("response_text", ""), "socratic_exploration"
         return (
@@ -238,6 +310,11 @@ class LangGraphOrchestrator:
 
     def _synthesize_cognitive_intervention_response(self, agent_results: Dict[str, Any]) -> tuple[str, str]:
         cognitive_result = agent_results.get("cognitive", {})
+        
+        # Safety check: ensure result is a dictionary
+        if hasattr(cognitive_result, 'to_dict'):
+            cognitive_result = cognitive_result.to_dict()
+        
         if cognitive_result and cognitive_result.get("response_text"):
             return cognitive_result.get("response_text", ""), "cognitive_intervention"
         return (
@@ -249,6 +326,15 @@ class LangGraphOrchestrator:
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
         cognitive_result = agent_results.get("cognitive", {})
+        
+        # Safety check: ensure all results are dictionaries
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(cognitive_result, 'to_dict'):
+            cognitive_result = cognitive_result.to_dict()
+        
         if domain_result and socratic_result:
             return (
                 f"{domain_result.get('response_text', '')}\n\n{socratic_result.get('response_text', '')}",
@@ -291,6 +377,18 @@ class LangGraphOrchestrator:
         except Exception:
             return "project"
 
+    def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
+        """Extract student state from agent results for phase detection."""
+        # Try to get student state from various sources
+        for agent_name, result in agent_results.items():
+            if result and hasattr(result, 'student_state'):
+                return result.student_state
+            elif result and isinstance(result, dict) and 'student_state' in result:
+                return result['student_state']
+        
+        # If no student state found, return None
+        return None
+
     def _extract_topic_from_user_input(self, user_input: str) -> str:
         topics = ["circulation", "lighting", "spatial", "form", "function", "context", "materials", "structure"]
         user_lower = user_input.lower()
@@ -300,6 +398,10 @@ class LangGraphOrchestrator:
         return "design"
 
     def _synthesize_example_response(self, domain_result: Dict[str, Any], user_input: str, classification: Dict[str, Any], state=None) -> str:
+        # Safety check: ensure result is a dictionary
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        
         domain_text = domain_result.get("response_text", "") if domain_result else ""
         if domain_text:
             return domain_text
@@ -311,6 +413,12 @@ class LangGraphOrchestrator:
         )
 
     def _synthesize_feedback_response(self, socratic_result: Dict[str, Any], domain_result: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> str:
+        # Safety check: ensure results are dictionaries
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        
         if socratic_result and socratic_result.get("response_text"):
             return socratic_result["response_text"]
         if domain_result and domain_result.get("response_text"):
@@ -318,12 +426,22 @@ class LangGraphOrchestrator:
         return "I'd be glad to provide feedback! What specific aspects of your project should I focus on?"
 
     def _synthesize_technical_response(self, domain_result: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> str:
+        # Safety check: ensure result is a dictionary
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        
         if domain_result and domain_result.get("response_text"):
             return domain_result["response_text"]
         topic = self._extract_topic_from_user_input(user_input)
         return f"I'd be happy to help with technical requirements for {topic}! Could you specify what technical aspects you need information about?"
 
     def _synthesize_clarification_response(self, socratic_result: Dict[str, Any], domain_result: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> str:
+        # Safety check: ensure results are dictionaries
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        
         if socratic_result and socratic_result.get("response_text"):
             return socratic_result["response_text"]
         if domain_result and domain_result.get("response_text"):
@@ -334,6 +452,13 @@ class LangGraphOrchestrator:
     def _synthesize_design_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> str:
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
+        
+        # Safety check: ensure results are dictionaries
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        
         if socratic_result and socratic_result.get("response_text"):
             return socratic_result.get("response_text", "")
         if domain_result and domain_result.get("response_text"):
@@ -342,7 +467,7 @@ class LangGraphOrchestrator:
 
     # ------------- Metadata helpers (ported minimally) -------------
 
-    def _build_metadata(self, response_type: str, agent_results: Dict[str, Any], routing_decision: Dict, classification: Dict) -> Dict[str, Any]:
+    def _build_metadata(self, response_type: str, agent_results: Dict[str, Any], routing_decision: Dict, classification: Dict, state: WorkflowState = None) -> Dict[str, Any]:
         agents_used: List[str] = []
         if agent_results.get("socratic"): agents_used.append("socratic_tutor")
         if agent_results.get("domain"): agents_used.append("domain_expert")
@@ -353,6 +478,16 @@ class LangGraphOrchestrator:
         cognitive_result = agent_results.get("cognitive", {})
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
+        
+        # Safety check: ensure all results are dictionaries
+        if hasattr(analysis_result, 'to_dict'):
+            analysis_result = analysis_result.to_dict()
+        if hasattr(cognitive_result, 'to_dict'):
+            cognitive_result = cognitive_result.to_dict()
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
 
         # Extract enhancement metrics from all agents
         enhancement_metrics = {}
@@ -390,6 +525,72 @@ class LangGraphOrchestrator:
                 "progression_score": getattr(phase_assessment, 'progression_score', 0),
                 "next_phase": getattr(phase_assessment, 'next_phase', None)
             }
+        else:
+            # Generate phase analysis using the phase manager
+            try:
+                from phase_assessment.phase_manager import PhaseAssessmentManager
+                phase_manager = PhaseAssessmentManager()
+                
+                # Use the state parameter directly for phase detection
+                if state and hasattr(state, 'student_state'):
+                    student_state = state.student_state
+                    print(f"🔍 Phase detection: Using student state with {len(student_state.messages)} messages")
+                    current_phase, current_step = phase_manager.detect_current_phase(student_state)
+                    print(f"🎯 Phase detection result: {current_phase.value} - {current_step.value}")
+                    #1108 tracking: Phase detection (real tracking): compute early and attach to analysis_result
+                    # Map step to a 0-1 progression within the current phase
+                    step_progress_map = {
+                        "initial_context_reasoning": 0.25,
+                        "knowledge_synthesis_trigger": 0.5,
+                        "socratic_questioning": 0.75,
+                        "metacognitive_prompt": 1.0,
+                    }
+                    prog = step_progress_map.get(getattr(current_step, 'value', ''), 0.25)
+
+                    # Heuristic confidence: grows with messages and later steps
+                    user_msg_count = len([m for m in getattr(student_state, 'messages', []) if m.get('role') == 'user'])
+                    confidence = max(0.5, min(0.95, 0.5 + (user_msg_count / 20.0) + (prog - 0.25) / 2))
+
+                    # Provide both legacy and logger-expected keys
+                    phase_info = {
+                        "phase": current_phase.value,
+                        "step": current_step.value,
+                        "confidence": confidence,
+                        "progression_score": prog,
+                        # Back-compat keys
+                        "current_phase": current_phase.value,
+                        "current_step": current_step.value,
+                        "phase_confidence": confidence,
+                        "next_phase": None,
+                    }
+                else:
+                    print(f"⚠️ Phase detection: No student state available, using fallback")
+                    # Fallback phase info (use logger-expected keys too)
+                    phase_info = {
+                        "phase": "ideation",
+                        "step": "initial_context_reasoning",
+                        "confidence": 0.7,
+                        "progression_score": 0.25,
+                        # Back-compat keys
+                        "current_phase": "ideation",
+                        "current_step": "initial_context_reasoning",
+                        "phase_confidence": 0.7,
+                        "next_phase": None,
+                    }
+            except Exception as e:
+                print(f"⚠️ Phase detection failed: {e}")
+                # Fallback phase info
+                phase_info = {
+                    "phase": "ideation",
+                    "step": "initial_context_reasoning",
+                    "confidence": 0.6,
+                    "progression_score": 0.25,
+                    # Back-compat keys
+                    "current_phase": "ideation",
+                    "current_step": "initial_context_reasoning",
+                    "phase_confidence": 0.6,
+                    "next_phase": None,
+                }
 
         return {
             "response_type": response_type,
@@ -404,6 +605,7 @@ class LangGraphOrchestrator:
             "sources": domain_result.get("sources", []) if domain_result else [],
             "processing_time": "N/A",
             "classification": classification,
+
         }
 
     # expose ensure_quality used by nodes.synthesizer via synthesis.build_synthesizer binding
@@ -531,8 +733,12 @@ class LangGraphOrchestrator:
             print(f"   🔬 Scientific Confidence: {metrics.get('scientific_confidence', 0):.2f}")
 
         # Show conversation analysis if available
-        if final_state.get("analysis_result", {}).get("conversation_patterns"):
-            patterns = final_state["analysis_result"]["conversation_patterns"]
+        analysis_result = final_state.get("analysis_result", {})
+        if hasattr(analysis_result, 'to_dict'):
+            analysis_result = analysis_result.to_dict()
+        
+        if analysis_result and analysis_result.get("conversation_patterns"):
+            patterns = analysis_result["conversation_patterns"]
             print(f"\n🔍 CONVERSATION ANALYSIS:")
             print(f"   📈 Engagement Trend: {patterns.get('engagement_trend', 'unknown')}")
             print(f"   🎓 Understanding Progression: {patterns.get('understanding_progression', 'unknown')}")

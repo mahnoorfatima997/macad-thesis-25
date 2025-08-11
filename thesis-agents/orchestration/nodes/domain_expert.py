@@ -47,8 +47,26 @@ def make_domain_expert_node(domain_expert, state_validator, state_monitor, logge
             analysis_result,
             routing_decision,
         )
-        if hasattr(domain_result, "response_text"):
-            domain_result = domain_result.to_dict()
+        
+        # Ensure domain_result is a dictionary, not an AgentResponse object
+        if hasattr(domain_result, 'to_dict'):
+            try:
+                domain_result = domain_result.to_dict()
+            except Exception as e:
+                logger.error(f"Failed to convert AgentResponse to dict: {e}")
+                # Fallback: create a basic dictionary
+                domain_result = {
+                    "response_text": str(domain_result),
+                    "response_type": "error",
+                    "error_message": f"Conversion failed: {e}"
+                }
+        elif not isinstance(domain_result, dict):
+            # If it's not a dict and doesn't have to_dict, convert to string
+            domain_result = {
+                "response_text": str(domain_result),
+                "response_type": "unknown",
+                "error_message": "Result was not an AgentResponse or dict"
+            }
 
         result_state = {**state, "domain_expert_result": domain_result}
 

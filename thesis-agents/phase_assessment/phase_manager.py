@@ -166,26 +166,82 @@ class PhaseAssessmentManager:
         # Analyze conversation content to determine phase
         recent_content = " ".join(user_messages[-3:]).lower()
         
-        # Phase detection keywords
-        materialization_keywords = ["material", "construction", "detail", "technical", "build", "cost", "feasibility"]
-        visualization_keywords = ["space", "form", "layout", "circulation", "organization", "diagram", "plan"]
-        
-        # Determine phase based on content
-        if any(keyword in recent_content for keyword in materialization_keywords):
+        # ENHANCED: More conservative phase detection with stronger keyword requirements
+        materialization_keywords = ["material", "construction", "detail", "technical", "build", "cost", "feasibility", "structure", "system", "method"]
+        visualization_keywords = ["space", "form", "layout", "circulation", "organization", "diagram", "plan", "spatial", "arrangement"]
+        ideation_keywords = ["concept", "idea", "approach", "strategy", "vision", "philosophy", "purpose", "goal", "need", "want"]
+
+        # Count keyword matches for more robust detection
+        mat_count = sum(1 for keyword in materialization_keywords if keyword in recent_content)
+        viz_count = sum(1 for keyword in visualization_keywords if keyword in recent_content)
+        idea_count = sum(1 for keyword in ideation_keywords if keyword in recent_content)
+
+        # Get total messages count first
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        total_messages = len(user_messages)
+
+        # MUCH MORE CONSERVATIVE: Require substantial evidence AND minimum messages for phase advancement
+        min_messages_for_viz = 6  # At least 6 user messages before considering visualization
+        min_messages_for_mat = 10  # At least 10 user messages before considering materialization
+
+        # Also require action-oriented language, not just conceptual discussion
+        has_design_actions = any(action in recent_content for action in [
+            "i'll place", "i will place", "i'm placing", "i'll put", "i will put",
+            "i'll locate", "i will locate", "i'll position", "i will position",
+            "i'll organize", "i will organize", "i'll arrange", "i will arrange"
+        ])
+
+        has_specific_proposals = any(proposal in recent_content for proposal in [
+            "my approach is", "my strategy is", "i propose", "i suggest",
+            "the plan is", "the idea is", "i'll start by", "first i'll"
+        ])
+
+        # MATERIALIZATION: Requires many messages + multiple material keywords + specific technical discussion
+        if (total_messages >= min_messages_for_mat and
+            mat_count >= 3 and
+            ("construction" in recent_content or "detail" in recent_content)):
             current_phase = DesignPhase.MATERIALIZATION
-        elif any(keyword in recent_content for keyword in visualization_keywords):
+
+        # VISUALIZATION: Requires several messages + multiple spatial keywords + actual design actions
+        elif (total_messages >= min_messages_for_viz and
+              viz_count >= 3 and
+              (has_design_actions or has_specific_proposals)):
             current_phase = DesignPhase.VISUALIZATION
+
         else:
+            # Stay in IDEATION much longer - this is where most of the learning happens
             current_phase = DesignPhase.IDEATION
         
-        # Determine Socratic step based on conversation length and content
-        total_messages = len(user_messages)
-        
-        if total_messages <= 2:
+        # ENHANCED: Determine Socratic step based on content depth, not just message count
+        # (total_messages already defined above)
+        recent_content = " ".join(user_messages[-3:]).lower()
+
+        # ENHANCED: Check for depth indicators in recent messages
+        has_detailed_analysis = any(indicator in recent_content for indicator in [
+            "because", "therefore", "however", "although", "considering", "given that",
+            "this means", "as a result", "on the other hand", "in contrast",
+            # ENHANCED: Add more architectural reasoning indicators
+            "this supports", "this responds to", "this enhances", "this allows",
+            "while still", "without undermining", "it leans toward", "i think this",
+            "who is", "what kind of", "how should", "if we can", "are we prioritizing"
+        ])
+
+        has_specific_examples = any(indicator in recent_content for indicator in [
+            "for example", "such as", "like", "similar to", "precedent", "case study",
+            "project", "building", "architect", "firm"
+        ])
+
+        has_implementation_details = any(indicator in recent_content for indicator in [
+            "material", "construction", "detail", "technical", "build", "cost",
+            "feasibility", "structure", "system", "method"
+        ])
+
+        # MUCH MORE CONSERVATIVE step progression - spend more time in each step
+        if total_messages <= 5 or not has_detailed_analysis:
             current_step = SocraticStep.INITIAL_CONTEXT_REASONING
-        elif total_messages <= 4:
+        elif total_messages <= 10 or not has_specific_examples:
             current_step = SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER
-        elif total_messages <= 6:
+        elif total_messages <= 15 or not has_implementation_details:
             current_step = SocraticStep.SOCRATIC_QUESTIONING
         else:
             current_step = SocraticStep.METACOGNITIVE_PROMPT

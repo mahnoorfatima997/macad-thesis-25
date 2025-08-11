@@ -38,15 +38,18 @@ from thesis_tests.data_models import InteractionData, TestPhase
 def get_cached_orchestrator():
     """Get cached orchestrator instance."""
     import sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), '../thesis-agents'))
+    import os
+    # Add thesis-agents to path
+    thesis_agents_path = os.path.join(os.path.dirname(__file__), '../thesis-agents')
+    if thesis_agents_path not in sys.path:
+        sys.path.insert(0, thesis_agents_path)
+
     try:
         from orchestration.langgraph_orchestrator import LangGraphOrchestrator
         return LangGraphOrchestrator(domain="architecture")
-    except ImportError:
-        # Fallback import path
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
-        from orchestration.langgraph_orchestrator import LangGraphOrchestrator
-        return LangGraphOrchestrator(domain="architecture")
+    except ImportError as e:
+        st.error(f"Failed to import LangGraphOrchestrator: {e}")
+        return None
 
 
 # Removed: get_cached_mentor - functionality integrated into dashboard
@@ -63,9 +66,8 @@ class UnifiedArchitecturalDashboard:
     
     def __init__(self):
         """Initialize the dashboard."""
-        # Configure Streamlit
-        st.set_page_config(**PAGE_CONFIG)
-        
+        # Note: set_page_config moved to run() method to avoid duplicate calls
+
         # Apply styles
         apply_dashboard_styles()
         
@@ -114,6 +116,9 @@ class UnifiedArchitecturalDashboard:
     
     def run(self):
         """Main run method for the dashboard."""
+        # Configure Streamlit (must be first Streamlit command)
+        st.set_page_config(**PAGE_CONFIG)
+
         # Render sidebar
         render_complete_sidebar(self.data_collector)
         

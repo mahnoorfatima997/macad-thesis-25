@@ -195,6 +195,10 @@ def get_dashboard_css() -> str:
         border: 1px solid rgba(0,0,0,0.06);
         word-wrap: break-word;
         white-space: pre-wrap;
+        text-align: left;
+        display: block;
+        width: 100%;
+        line-height: 1.4;
     }
     .chat-message.user {
         border-left: 5px solid var(--accent-coral);

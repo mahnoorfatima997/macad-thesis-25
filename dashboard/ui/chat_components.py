@@ -3,19 +3,58 @@ Chat components and message rendering for the dashboard.
 """
 
 import streamlit as st
-from typing import Dict, Any
+import re
+from html import escape
+from typing import Dict, Any, List
 from ..config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
+
+
+def safe_markdown_to_html(text: str) -> str:
+    """
+    Convert markdown formatting to HTML while safely escaping other content.
+    Handles **bold** formatting and preserves line breaks.
+    """
+    if text is None:
+        return ""
+
+    # Normalize newlines and preserve line breaks
+    normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
+
+    # Convert markdown bold (**text**) to HTML <strong> while safely escaping other content
+    html_parts: List[str] = []
+    last_idx = 0
+
+    for match in re.finditer(r"\*\*(.+?)\*\*", normalized, flags=re.DOTALL):
+        start, end = match.span()
+        inner = match.group(1)
+        # escape text before bold
+        html_parts.append(escape(normalized[last_idx:start]))
+        # add bold with escaped inner text
+        html_parts.append(f"<strong>{escape(inner)}</strong>")
+        last_idx = end
+
+    # Add remaining text
+    html_parts.append(escape(normalized[last_idx:]))
+    html = "".join(html_parts)
+
+    # Convert newlines to <br> tags for proper display
+    html = html.replace("\n", "<br>")
+
+    return html
 
 
 def render_chat_message(message: Dict[str, Any]):
     """Render a chat message with appropriate styling."""
-    
+
+    # Process content with markdown formatting
+    safe_content = safe_markdown_to_html(message["content"])
+
     if message["role"] == "user":
         st.markdown(
             f"""
         <div class="chat-message user">
             <strong>👤 You:</strong><br>
-            {message["content"]}
+            {safe_content}
         </div>
         """,
             unsafe_allow_html=True,
@@ -43,7 +82,7 @@ def render_chat_message(message: Dict[str, Any]):
             f"""
         <div class="chat-message assistant">
             <strong>{mentor_icon} {mentor_label}:</strong><br>
-            {message["content"]}
+            {safe_content}
         </div>
         """,
             unsafe_allow_html=True,

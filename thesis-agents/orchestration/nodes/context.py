@@ -60,36 +60,57 @@ def make_context_node(context_agent, progression_manager, first_response_generat
             return result_state
 
         # Ongoing conversation → use context agent comprehensive analysis
-        context_package = await context_agent.analyze_student_input(student_state, last_message)
+        agent_response = await context_agent.analyze_student_input(student_state, last_message)
 
-        if hasattr(context_package, "response_text"):
-            context_package = context_package.to_dict()
-
-        if isinstance(context_package, dict) and "metadata" in context_package:
-            original_data = context_package["metadata"]
-            core_classification = original_data.get("core_classification", {})
-            contextual_metadata = original_data.get("contextual_metadata", {})
-            conversation_patterns = original_data.get("conversation_patterns", {})
-            routing_suggestions = original_data.get("routing_suggestions", {})
-            agent_contexts = original_data.get("agent_contexts", {})
-        elif hasattr(context_package, "metadata"):
-            original_data = context_package.metadata
-            core_classification = original_data.get("core_classification", {})
-            contextual_metadata = original_data.get("contextual_metadata", {})
-            conversation_patterns = original_data.get("conversation_patterns", {})
-            routing_suggestions = original_data.get("routing_suggestions", {})
-            agent_contexts = original_data.get("agent_contexts", {})
+        # Extract data from AgentResponse
+        if hasattr(agent_response, "metadata") and agent_response.metadata:
+            # The ContextPackage is stored in the metadata field of AgentResponse
+            context_package_data = agent_response.metadata
+            core_classification = context_package_data.get("core_classification", {})
+            contextual_metadata = context_package_data.get("contextual_metadata", {})
+            conversation_patterns = context_package_data.get("conversation_patterns", {})
+            routing_suggestions = context_package_data.get("routing_suggestions", {})
+            agent_contexts = context_package_data.get("agent_contexts", {})
+            context_package = context_package_data
+        elif hasattr(agent_response, "to_dict"):
+            # Fallback: convert AgentResponse to dict
+            agent_response_dict = agent_response.to_dict()
+            context_package_data = agent_response_dict.get("metadata", {})
+            core_classification = context_package_data.get("core_classification", {})
+            contextual_metadata = context_package_data.get("contextual_metadata", {})
+            conversation_patterns = context_package_data.get("conversation_patterns", {})
+            routing_suggestions = context_package_data.get("routing_suggestions", {})
+            agent_contexts = context_package_data.get("agent_contexts", {})
+            context_package = context_package_data
         else:
-            core_classification = context_package.get("core_classification", {})
-            contextual_metadata = context_package.get("contextual_metadata", {})
-            conversation_patterns = context_package.get("conversation_patterns", {})
-            routing_suggestions = context_package.get("routing_suggestions", {})
-            agent_contexts = context_package.get("agent_contexts", {})
+            # Final fallback
+            core_classification = {}
+            contextual_metadata = {}
+            conversation_patterns = {}
+            routing_suggestions = {}
+            agent_contexts = {}
+            context_package = {}
+
+        # Convert CoreClassification object to dictionary for student_classification
+        classification_dict = {}
+
+        if isinstance(core_classification, dict):
+            classification_dict = core_classification.copy()
+        elif hasattr(core_classification, '__dict__'):
+            classification_dict = core_classification.__dict__.copy()
+        else:
+            # Fallback: extract key attributes
+            classification_dict = {
+                "interaction_type": getattr(core_classification, 'interaction_type', 'unknown'),
+                "understanding_level": getattr(core_classification, 'understanding_level', 'medium'),
+                "confidence_level": getattr(core_classification, 'confidence_level', 'confident'),
+                "engagement_level": getattr(core_classification, 'engagement_level', 'medium'),
+            }
 
         result_state = {
             **state,
             "last_message": last_message,
-            "student_classification": {**core_classification, "last_message": last_message},
+            "student_classification": {**classification_dict, "last_message": last_message},
             "context_analysis": context_package,
             "context_metadata": contextual_metadata,
             "conversation_patterns": conversation_patterns,
