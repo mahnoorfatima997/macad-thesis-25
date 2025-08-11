@@ -83,12 +83,32 @@ class ModeProcessor:
         result = await self.orchestrator.process_student_input(state)
         response = result.get("response", "I apologize, but I couldn't generate a response.")
         response_metadata = result.get("metadata", {})
-        
-        # Store metadata for display
+
+        # Store comprehensive metadata for display
         try:
+            # Store the full metadata including enhancement metrics and phase info
             st.session_state.last_response_metadata = response_metadata
-        except Exception:
-            pass
+
+            # Also store specific metrics for easy access
+            if "enhancement_metrics" in response_metadata:
+                st.session_state.enhancement_metrics = response_metadata["enhancement_metrics"]
+
+            if "phase_analysis" in response_metadata:
+                st.session_state.phase_analysis = response_metadata["phase_analysis"]
+
+            # Store processing info
+            agents_used = response_metadata.get("agents_used", [])
+            routing_path = response_metadata.get("routing_path", "unknown")
+
+            st.session_state.agents_used = agents_used
+            st.session_state.routing_path = routing_path
+
+            # Debug logging for routing
+            print(f"🎯 Dashboard: Routing path = {routing_path}")
+            print(f"🤖 Dashboard: Agents used = {agents_used}")
+
+        except Exception as e:
+            print(f"Warning: Could not store metadata: {e}")
         
         # Log interaction
         try:

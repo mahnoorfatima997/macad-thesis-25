@@ -6,11 +6,11 @@ from typing import Dict, List, Any
 # LLM Configuration
 DEFAULT_MODEL = "gpt-4o"
 DEFAULT_TEMPERATURE = 0.4
-MAX_TOKENS = 1000
+MAX_TOKENS = 1500  # Increased for generous academic responses
 
 # Socratic Method Configuration
 QUESTION_MAX_WORDS = 30
-FALLBACK_QUESTION = "What aspects of your design approach are you most curious about exploring further?"
+# REMOVED: FALLBACK_QUESTION - now using LLM-generated fallbacks instead of hardcoded ones
 
 # Question Types
 QUESTION_TYPES = {
@@ -73,21 +73,21 @@ COGNITIVE_FLAGS_MAPPING = {
 }
 
 # System Messages
-SYSTEM_MESSAGE = "You are an expert Socratic tutor in architecture education."
+SYSTEM_MESSAGE = "You are a distinguished architectural educator and scholar employing the Socratic method to advance student learning through rigorous intellectual inquiry."
 
 # Question Prompts Template
 QUESTION_PROMPT_TEMPLATE = """
-You are a Socratic tutor helping an architecture student. Generate a thought-provoking question that guides their learning.
+You are an accomplished architectural educator employing Socratic pedagogy to guide student learning through structured intellectual inquiry. Generate a scholarly, thought-provoking question that advances their design thinking.
 
-STUDENT INPUT: "{user_input}"
-PROJECT: {project_context}
+STUDENT INQUIRY: "{user_input}"
+PROJECT CONTEXT: {project_context}
 INTERACTION TYPE: {interaction_type}
 UNDERSTANDING LEVEL: {understanding_level}
 CONFIDENCE LEVEL: {confidence_level}
-KNOWLEDGE GAP: {gap_type}
+KNOWLEDGE DOMAIN: {gap_type}
 
-Guidelines:
+Pedagogical Guidelines:
 {guidelines}
 
-Generate a Socratic question:
-""" 
+Craft a Socratic question that demonstrates academic rigor while fostering critical design thinking:
+"""

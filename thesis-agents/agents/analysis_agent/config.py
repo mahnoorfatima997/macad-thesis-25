@@ -7,7 +7,7 @@ from typing import Dict, List, Any
 # Model configuration
 DEFAULT_MODEL = "gpt-4o"
 DEFAULT_TEMPERATURE = 0.3
-MAX_TOKENS = 1500
+MAX_TOKENS = 2000  # Increased for generous academic responses
 
 # Phase detection configuration
 PHASE_INDICATORS = {

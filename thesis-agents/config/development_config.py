@@ -20,13 +20,13 @@ class DevelopmentConfig:
             "mini": "gpt-4o-mini"           # Ultra cheap model
         }
         
-        # Token limits for development
+        # Token limits for development - Increased for generous responses
         self.token_limits = {
-            "analysis": 150,      # Instead of 300+
-            "socratic": 80,       # Instead of 150+
-            "domain": 120,        # Instead of 200+
-            "synthesis": 100,     # Instead of 250+
-            "classification": 50  # Instead of 100+
+            "analysis": 1200,     # Generous for detailed analysis
+            "socratic": 800,      # Generous for thoughtful questions
+            "domain": 1000,       # Generous for comprehensive knowledge
+            "synthesis": 1500,    # Generous for complete synthesis
+            "classification": 400 # Generous for detailed classification
         }
         
         # Enable/disable expensive features

@@ -13,16 +13,16 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Import configuration and utilities
-from .config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, INPUT_MODES, MENTOR_TYPES, get_api_key
-from .ui.styles import apply_dashboard_styles
-from .core.session_manager import initialize_session_state, ensure_session_started
-from .ui.chat_components import (
-    render_welcome_section, render_mode_configuration, render_chat_history, 
+from dashboard.config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, INPUT_MODES, MENTOR_TYPES, get_api_key
+from dashboard.ui.styles import apply_dashboard_styles
+from dashboard.core.session_manager import initialize_session_state, ensure_session_started
+from dashboard.ui.chat_components import (
+    render_welcome_section, render_mode_configuration, render_chat_history,
     get_chat_input, render_chat_message, response_contains_questions,
     render_input_mode_selection, render_mentor_type_selection, render_template_selection,
     render_skill_level_selection, render_project_description_input, render_file_upload, validate_input
 )
-from .ui.sidebar_components import render_complete_sidebar
+from dashboard.ui.sidebar_components import render_complete_sidebar
 from .ui.analysis_components import render_cognitive_analysis_dashboard, render_metrics_summary, render_phase_progress_section
 from .processors.mode_processors import ModeProcessor
 from .analysis.phase_analyzer import PhaseAnalyzer

@@ -721,4 +721,4 @@ class ConversationAnalysisProcessor:
             response_patterns={'response_detail_level': 'moderate'},
             conversation_metrics={'engagement_score': 0.5, 'depth_score': 0.5, 'progression_score': 0.5},
             pattern_confidence=0.3
-        ) 
+        )

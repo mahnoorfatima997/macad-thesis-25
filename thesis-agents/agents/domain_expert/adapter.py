@@ -64,48 +64,58 @@ class DomainExpertAgent:
     async def provide_knowledge(self, state: ArchMentorState, context_classification: Dict,
                               analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
         """
-        Main processing method - provides architectural knowledge and expertise.
+        Enhanced AI-powered knowledge provision with contextual, thinking-prompting responses.
         """
         self.telemetry.log_agent_start("provide_knowledge")
-        
+
         try:
-            # Step 1: Analyze conversation context
-            context_analysis = self.context_processor.analyze_conversation_context_internal(state)
-            
-            # Step 2: Extract topic from context
-            topic = self.context_processor.extract_topic_from_context(analysis_result, state)
-            
-            # Step 3: Search for knowledge
-            knowledge_data = await self.search_processor.search_web_for_knowledge(topic, state)
-            
-            # Step 4: Synthesize knowledge
-            synthesis_result = await self.synthesis_processor.synthesize_knowledge_internal(
-                topic, knowledge_data, context_analysis.__dict__, state
+            # Get user's actual question
+            user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+            user_input = user_messages[-1] if user_messages else ""
+
+            if not user_input:
+                return self._generate_fallback_response(state, context_classification, analysis_result, routing_decision)
+
+            # Extract building type and project context
+            building_type = self._extract_building_type_from_context(state)
+            project_context = state.current_design_brief or "architectural project"
+
+            # Determine knowledge gap type
+            gap_type = context_classification.get("primary_gap", "general_knowledge")
+
+            print(f"\n📚 {self.name} providing AI-powered knowledge for: {gap_type}")
+            print(f"   Building type: {building_type}")
+            print(f"   User question: {user_input[:100]}...")
+
+            # Generate AI-powered contextual response
+            ai_response = await self._generate_contextual_knowledge_response(
+                user_input, building_type, project_context, gap_type, state
             )
-            
-            # Step 5: Process and optimize content
-            optimized_content = self.content_processor.optimize_for_learning(
-                synthesis_result.get('educational_response', ''),
-                context_analysis.complexity_level
+
+            # Create response metadata
+            response_metadata = {
+                "agent": self.name,
+                "response_type": "thinking_prompt_knowledge",
+                "knowledge_gap_addressed": gap_type,
+                "building_type": building_type,
+                "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
+                "sources": [],
+                "processing_method": "ai_powered_contextual"
+            }
+
+            # Convert to AgentResponse
+            agent_response = ResponseBuilder.create_knowledge_response(
+                response_text=ai_response,
+                sources_used=[],
+                metadata=response_metadata
             )
-            synthesis_result['educational_response'] = optimized_content
-            
-            # Step 6: Finalize response
-            finalized_response = self.content_processor.finalize_knowledge_response(synthesis_result)
-            
-            # Step 7: Convert to AgentResponse
-            agent_response = self.response_processor.convert_to_agent_response(
-                finalized_response, state, context_classification, analysis_result, routing_decision
-            )
-            
-            # Step 8: Track usage
-            self.content_processor.track_knowledge_usage(
-                topic, len(knowledge_data), context_analysis.__dict__
-            )
-            
+
+            # Add cognitive flags manually
+            agent_response.cognitive_flags = [CognitiveFlag.ENCOURAGES_THINKING] if "?" in ai_response else []
+
             self.telemetry.log_agent_end("provide_knowledge")
             return agent_response
-            
+
         except Exception as e:
             self.telemetry.log_error(f"Knowledge provision failed: {str(e)}")
             return ResponseBuilder.create_error_response(
@@ -120,6 +130,28 @@ class DomainExpertAgent:
         """
         # For now, delegate to provide_knowledge
         return await self.provide_knowledge(state, context_classification, analysis_result, routing_decision)
+
+    async def provide_domain_knowledge(self, user_input: str, state: ArchMentorState) -> Dict[str, Any]:
+        """
+        Backward compatibility method for original API.
+        """
+        # Create minimal context for the new API
+        context_classification = {"primary_gap": "general_knowledge"}
+        analysis_result = {"cognitive_flags": ["needs_knowledge_guidance"]}
+        routing_decision = {"route": "domain_expert"}
+
+        # Call the new method
+        agent_response = await self.provide_knowledge(state, context_classification, analysis_result, routing_decision)
+
+        # Convert back to old format
+        if hasattr(agent_response, 'to_dict'):
+            return agent_response.to_dict()
+        else:
+            return {
+                "response_text": str(agent_response),
+                "agent": self.name,
+                "response_type": "knowledge_delivery"
+            }
     
     # Delegation methods for backward compatibility
     
@@ -325,7 +357,200 @@ class DomainExpertAgent:
                         key_points.append(sentence.strip())
                         break
         return key_points[:5]  # Return top 5 key points
-    
+
+    async def _generate_contextual_knowledge_response(self, user_input: str, building_type: str,
+                                                    project_context: str, gap_type: str, state: ArchMentorState) -> str:
+        """Generate AI-powered contextual knowledge response that encourages thinking."""
+
+        # Import OpenAI client
+        from openai import OpenAI
+        import os
+
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        prompt = f"""
+        You are a distinguished architectural scholar and mentor with expertise in design theory, building science, and critical practice. Your role is to provide academically rigorous knowledge that stimulates intellectual inquiry rather than passive consumption.
+
+        STUDENT INQUIRY: "{user_input}"
+        BUILDING TYPOLOGY: {building_type}
+        PROJECT CONTEXT: {project_context}
+        KNOWLEDGE DOMAIN: {gap_type}
+
+        Craft a complete scholarly response that:
+        1. PROVIDES PRACTICAL SOLUTION: Offer concrete, actionable guidance that directly addresses their question
+        2. GROUNDS IN THEORY: Reference architectural theory, design principles, or established methodologies
+        3. PRESENTS MULTIPLE APPROACHES: Show 2-3 different design strategies with their rationales
+        4. ENCOURAGES CRITICAL THINKING: Explain the implications and trade-offs of different approaches
+        5. CONTEXTUALIZES TO PROJECT: Make all guidance specific to their {building_type} project
+        6. MAINTAINS ACADEMIC RIGOR: Use scholarly language while remaining accessible
+        7. ENDS NATURALLY: Ensure the response concludes with a complete thought before any question
+
+        RESPONSE STRUCTURE:
+        - Start with direct acknowledgment of their question
+        - Provide 2-3 concrete approaches or solutions with theoretical grounding
+        - Explain practical implications for their specific building type
+        - End with a complete conclusion that synthesizes the guidance
+        - THEN ask ONE specific, thoughtful question that builds directly on the guidance provided
+
+        For example, if they ask about "sustainable materials":
+        "Your question about sustainable materials touches on a fundamental tension in contemporary practice between environmental responsibility and design performance. For your {building_type} project, I'd recommend considering three approaches:
+
+        First, bio-based materials like cross-laminated timber offer structural efficiency while sequestering carbon, though they require careful moisture detailing. Second, reclaimed materials provide embodied energy savings and unique aesthetic qualities, but need structural verification. Third, high-performance recycled materials like recycled steel or concrete with fly ash reduce environmental impact while maintaining familiar construction methods.
+
+        The choice depends on your project's priorities and local availability. Each approach has different implications for your design language, construction timeline, and long-term performance.
+
+        Given your {building_type} program, which aspect is most critical - minimizing environmental impact, achieving specific aesthetic goals, or optimizing construction efficiency?"
+
+        Write a complete, naturally-ending response (250-350 words) that provides real value:
+        """
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=500,  # Increased for complete responses
+                temperature=0.3
+            )
+
+            ai_response = response.choices[0].message.content.strip()
+
+            # Ensure response ends naturally (not mid-sentence)
+            if ai_response and not ai_response.endswith(('.', '?', '!')):
+                # Find the last complete sentence
+                sentences = ai_response.split('.')
+                if len(sentences) > 1:
+                    ai_response = '.'.join(sentences[:-1]) + '.'
+
+            print(f"📚 AI-generated contextual response: {ai_response[:100]}...")
+            return ai_response
+
+        except Exception as e:
+            print(f"⚠️ AI response generation failed: {e}")
+            return await self._generate_llm_fallback_knowledge_response(user_input, building_type, project_context, gap_type)
+
+    def _extract_building_type_from_context(self, state: ArchMentorState) -> str:
+        """Extract building type from conversation context."""
+
+        # Check current design brief first
+        if state.current_design_brief:
+            brief_lower = state.current_design_brief.lower()
+
+            # Common building types
+            building_types = {
+                "community center": ["community center", "community hall", "civic center"],
+                "office building": ["office", "workplace", "corporate"],
+                "residential": ["house", "home", "apartment", "residential"],
+                "school": ["school", "educational", "university", "college"],
+                "hospital": ["hospital", "medical", "healthcare", "clinic"],
+                "warehouse": ["warehouse", "industrial", "factory"],
+                "retail": ["retail", "shop", "store", "commercial"],
+                "mixed-use": ["mixed use", "mixed-use", "live work"]
+            }
+
+            for building_type, keywords in building_types.items():
+                if any(keyword in brief_lower for keyword in keywords):
+                    return building_type
+
+        # Check recent messages
+        if hasattr(state, 'messages') and state.messages:
+            recent_text = " ".join([msg.get('content', '') for msg in state.messages[-3:]])
+            recent_lower = recent_text.lower()
+
+            building_types = {
+                "community center": ["community center", "community hall", "civic center"],
+                "office building": ["office", "workplace", "corporate"],
+                "residential": ["house", "home", "apartment", "residential"],
+                "school": ["school", "educational", "university", "college"],
+                "hospital": ["hospital", "medical", "healthcare", "clinic"],
+                "warehouse": ["warehouse", "industrial", "factory"],
+                "retail": ["retail", "shop", "store", "commercial"]
+            }
+
+            for building_type, keywords in building_types.items():
+                if any(keyword in recent_lower for keyword in keywords):
+                    return building_type
+
+        return "architectural project"
+
+    async def _generate_llm_fallback_knowledge_response(self, user_input: str, building_type: str,
+                                                      project_context: str, gap_type: str) -> str:
+        """Generate LLM-based fallback response when AI fails."""
+
+        from openai import OpenAI
+        import os
+
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        prompt = f"""
+        You are an architectural domain expert. Your main LLM generation failed, so you need to provide a helpful fallback response.
+
+        STUDENT'S QUESTION: "{user_input}"
+        BUILDING TYPE: {building_type}
+        PROJECT CONTEXT: {project_context}
+        KNOWLEDGE DOMAIN: {gap_type}
+
+        Provide a helpful response that:
+        1. Acknowledges their specific question about {gap_type}
+        2. Offers 2-3 concrete principles or approaches they can consider
+        3. Relates specifically to their {building_type} project
+        4. Ends with a thoughtful question that builds on the guidance provided
+        5. Avoids saying you "don't have information" - instead provide what you can
+
+        Keep it educational and specific to their situation (150-200 words).
+        """
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.4
+            )
+
+            fallback_response = response.choices[0].message.content.strip()
+
+            # Ensure response ends naturally
+            if fallback_response and not fallback_response.endswith(('.', '?', '!')):
+                sentences = fallback_response.split('.')
+                if len(sentences) > 1:
+                    fallback_response = '.'.join(sentences[:-1]) + '.'
+
+            return fallback_response
+
+        except Exception as e:
+            print(f"⚠️ LLM fallback response generation failed: {e}")
+            # Only as last resort, use a contextual template
+            return f"Let me help you explore {gap_type.replace('_', ' ')} for your {building_type} project. This involves considering user needs, functional requirements, and design principles. What specific aspect of {gap_type.replace('_', ' ')} is most important for your project goals?"
+
+    def _generate_fallback_knowledge_response(self, user_input: str, building_type: str,
+                                            project_context: str, gap_type: str) -> str:
+        """Legacy fallback method - now calls LLM version."""
+        import asyncio
+        return asyncio.run(self._generate_llm_fallback_knowledge_response(user_input, building_type, project_context, gap_type))
+
+    def _generate_fallback_response(self, state: ArchMentorState, context_classification: Dict,
+                                  analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
+        """Generate fallback response when no user input is available."""
+
+        building_type = self._extract_building_type_from_context(state)
+
+        response_text = f"""I'm here to help you explore architectural knowledge for your {building_type} project.
+
+What specific aspect would you like to discuss? I can help you think through:
+- Design principles and strategies
+- Technical requirements and considerations
+- Material choices and their implications
+- Spatial organization and circulation
+- Environmental and sustainability factors
+
+What questions do you have about your design?"""
+
+        return ResponseBuilder.create_knowledge_response(
+            response_text=response_text,
+            sources_used=[],
+            metadata={"response_type": "fallback_prompt", "building_type": building_type}
+        )
+
     # Cleanup
     def __del__(self):
         """Cleanup method."""

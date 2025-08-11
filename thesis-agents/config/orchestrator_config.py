@@ -14,7 +14,7 @@ class OrchestratorConfig:
     
     # AI model settings
     AI_MODEL: str = "gpt-4o"
-    AI_MAX_TOKENS: int = 20
+    AI_MAX_TOKENS: int = 1500  # Increased for generous responses
     AI_TEMPERATURE: float = 0.3
     
     # Pattern matching lists
@@ -101,7 +101,7 @@ class OrchestratorConfig:
     
     # AI model settings
     AI_MODEL: str = "gpt-4o"
-    AI_MAX_TOKENS: int = 20
+    AI_MAX_TOKENS: int = 1500  # Increased for generous responses
     AI_TEMPERATURE: float = 0.3
     
     # Pattern matching lists

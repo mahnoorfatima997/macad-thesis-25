@@ -33,6 +33,10 @@ class CognitiveFlag(Enum):
     CONFUSION_DETECTED = "confusion_detected"
     READY_FOR_CHALLENGE = "ready_for_challenge"
     REQUIRES_SIMPLIFICATION = "requires_simplification"
+    # Additional flags for enhanced functionality
+    ENCOURAGES_THINKING = "encourages_thinking"
+    EXPLORATION_ENCOURAGED = "exploration_encouraged"
+    QUESTIONING_PROMOTED = "questioning_promoted"
     SHOWING_PROGRESS = "showing_progress"
     CREATIVE_THINKING = "creative_thinking"
     ANALYTICAL_MODE = "analytical_mode"

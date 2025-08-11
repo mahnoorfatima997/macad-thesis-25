@@ -2,6 +2,9 @@
 Input classification processing module for analyzing and classifying student input.
 """
 from typing import Dict, Any, List, Optional
+import re
+from openai import OpenAI
+import os
 from ..schemas import CoreClassification
 from ...common import TextProcessor, MetricsCalculator, AgentTelemetry
 from state_manager import ArchMentorState
@@ -16,21 +19,133 @@ class InputClassificationProcessor:
         self.telemetry = AgentTelemetry("input_classification")
         self.text_processor = TextProcessor()
         self.metrics_calculator = MetricsCalculator()
-        
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        # Initialize analysis patterns from original
+        self.analysis_patterns = self._initialize_analysis_patterns()
+
+    def _initialize_analysis_patterns(self) -> Dict[str, List[str]]:
+        """Initialize linguistic and behavioral analysis patterns from original"""
+
+        return {
+            # UNDERSTANDING LEVEL INDICATORS
+            "low_understanding": [
+                "what is", "how do", "i don't know", "can you explain",
+                "help me understand", "what does", "basic", "simple"
+            ],
+            "medium_understanding": [
+                "i think", "maybe", "could be", "seems like", "probably",
+                "how about", "what about", "similar to"
+            ],
+            "high_understanding": [
+                "considering", "analyzing", "evaluating", "comparing",
+                "implementing", "optimizing", "integrating", "synthesizing"
+            ],
+
+            # CONFIDENCE LEVEL INDICATORS
+            "uncertain": [
+                "not sure", "maybe", "i think", "possibly", "might be",
+                "uncertain", "confused", "unclear", "hesitant"
+            ],
+            "confident": [
+                "i believe", "i know", "definitely", "certainly", "sure",
+                "confident", "convinced", "positive"
+            ],
+            "overconfident": [
+                "obviously", "clearly", "definitely", "perfect", "optimal",
+                "best", "ideal", "no doubt", "certainly", "absolutely"
+            ],
+
+            # ENGAGEMENT LEVEL INDICATORS
+            "high_engagement": [
+                "interesting", "fascinating", "curious", "excited", "wonder",
+                "what if", "how about", "could we", "let's try"
+            ],
+            "low_engagement": [
+                "ok", "sure", "fine", "whatever", "i guess", "boring",
+                "don't care", "doesn't matter"
+            ],
+
+            # EMOTIONAL INDICATORS
+            "confusion": [
+                "confused", "lost", "unclear", "don't understand", "puzzled",
+                "bewildered", "perplexed", "mixed up"
+            ],
+            "frustration": [
+                "frustrated", "annoying", "difficult", "hard", "stuck",
+                "can't figure out", "giving up", "impossible"
+            ],
+            "enthusiasm": [
+                "excited", "love", "amazing", "awesome", "great", "fantastic",
+                "wonderful", "brilliant", "perfect"
+            ]
+        }
+
     async def perform_core_classification(self, input_text: str, state: ArchMentorState) -> CoreClassification:
         """
-        Perform comprehensive core classification of student input.
+        Enhanced AI-powered learning state detection with manual override for specific interaction types
         """
         self.telemetry.log_agent_start("perform_core_classification")
-        
+
         try:
-            input_lower = input_text.lower()
-            
-            # Classify different aspects of the input
-            interaction_type = self._classify_interaction_type(input_text, state)
-            understanding_level = self._detect_understanding_level(input_lower)
-            confidence_level = self._assess_confidence_level(input_lower)
-            engagement_level = self._detect_engagement_level(input_lower, input_text)
+            # FIRST: Check if this matches specific patterns using manual classification (context-aware)
+            manual_interaction_type = self._classify_interaction_type(input_text, state)
+
+            # Define interaction types that should use manual override (priority over AI)
+            manual_override_types = [
+                "confusion_expression", "direct_answer_request",
+                "knowledge_request", "implementation_request", "example_request",
+                "feedback_request", "technical_question", "improvement_seeking",
+                "general_question", "general_statement"
+            ]
+
+            # If it matches a specific pattern, prioritize this over AI classification
+            if manual_interaction_type in manual_override_types:
+                print(f"🎯 MANUAL OVERRIDE: Detected {manual_interaction_type}, bypassing AI classification")
+
+                # Use manual classification for interaction type, but get other metrics from AI
+                ai_classification = await self._get_ai_classification_for_other_metrics(input_text, state)
+
+                # Preserve question-response as thread context flag, not main type
+                is_q_response = self._is_response_to_previous_question(input_text, state)
+
+                # Ensure confusion takes precedence if present
+                input_lower = input_text.lower()
+                confusion_patterns = [
+                    "confused", "don't understand", "unclear", "not sure", "help", "lost", "stuck",
+                    "struggling", "difficult", "what does this mean", "i don't get it"
+                ]
+                shows_confusion = any(p in input_lower for p in confusion_patterns)
+                final_interaction_type = "confusion_expression" if shows_confusion else manual_interaction_type
+
+                classification_dict = {
+                    "interaction_type": final_interaction_type,  # Manual override with confusion priority
+                    "understanding_level": ai_classification.get("understanding_level", "medium"),
+                    "confidence_level": ai_classification.get("confidence_level", "confident"),
+                    "engagement_level": ai_classification.get("engagement_level", "medium"),
+                    "overconfidence_score": 2 if ai_classification.get("confidence_level") == "overconfident" else 0,
+                    "is_technical_question": final_interaction_type == "technical_question",
+                    "is_feedback_request": final_interaction_type == "feedback_request",
+                    "is_example_request": final_interaction_type == "example_request",
+                    "shows_confusion": shows_confusion or final_interaction_type == "confusion_expression",
+                    "requests_help": final_interaction_type in ["confusion_expression", "direct_answer_request"],
+                    "demonstrates_overconfidence": ai_classification.get("demonstrates_overconfidence", False),
+                    "seeks_validation": False,
+                    "classification": "question" if "?" in input_text else "statement",
+                    "ai_reasoning": f"Manual override for {final_interaction_type}",
+                    "manual_override": True,
+                    "is_question_response": is_q_response,
+                    "thread_context": "answering_previous_question" if is_q_response else "normal_turn"
+                }
+            else:
+                # OTHERWISE: Use AI classification as before
+                classification_dict = await self._get_ai_classification_for_other_metrics(input_text, state)
+
+            # Convert to CoreClassification object
+            interaction_type = classification_dict["interaction_type"]
+            understanding_level = classification_dict["understanding_level"]
+            confidence_level = classification_dict["confidence_level"]
+            engagement_level = classification_dict["engagement_level"]
             
             # Additional classification aspects
             is_response_to_previous = self._is_response_to_previous_question(input_text, state)
@@ -71,40 +186,167 @@ class InputClassificationProcessor:
             return self._get_fallback_classification()
     
     def _classify_interaction_type(self, input_text: str, state: ArchMentorState = None) -> str:
-        """Classify the type of interaction based on input patterns."""
-        try:
-            input_lower = input_text.lower()
-            
-            # Question patterns
-            question_indicators = ['what', 'how', 'why', 'when', 'where', 'which', 'who']
-            if any(indicator in input_lower for indicator in question_indicators) or input_text.endswith('?'):
-                # Determine question type
-                if any(word in input_lower for word in ['help', 'explain', 'show', 'teach']):
-                    return 'help_request'
-                elif any(word in input_lower for word in ['example', 'case', 'instance']):
-                    return 'example_request'
-                elif any(word in input_lower for word in ['compare', 'difference', 'versus']):
-                    return 'comparison_question'
-                else:
-                    return 'information_question'
-            
-            # Statement patterns
-            elif any(word in input_lower for word in ['i think', 'i believe', 'my idea', 'my approach']):
-                return 'idea_sharing'
-            elif any(word in input_lower for word in ['i understand', 'i see', 'makes sense', 'got it']):
-                return 'understanding_confirmation'
-            elif any(word in input_lower for word in ['i don\'t understand', 'confused', 'unclear']):
-                return 'confusion_expression'
-            elif any(word in input_lower for word in ['thanks', 'thank you', 'helpful']):
-                return 'acknowledgment'
-            elif any(word in input_lower for word in ['let me try', 'i will', 'i\'m going to']):
-                return 'action_intent'
+        """Enhanced interaction type classification with improved pattern matching and context awareness"""
+
+        input_lower = input_text.lower()
+
+        # Note: Do not return 'question_response' as primary type; this is handled as thread context flag elsewhere
+
+        # ENHANCED PATTERN SYSTEM - Level 1: High-Confidence Patterns
+
+        # 1. Direct Answer Request (Cognitive Offloading) - HIGH PRIORITY
+        direct_answer_patterns = [
+            "can you design", "design this for me", "do it for me",
+            "make it for me", "complete design", "full design", "finished design",
+            "design it for me", "what should I design"
+        ]
+        if any(pattern in input_lower for pattern in direct_answer_patterns):
+            return "direct_answer_request"
+
+        # 2. Example Request - HIGH PRIORITY
+        example_request_patterns = [
+            "show me examples", "can you give me examples", "provide me with examples",
+            "can you show me precedents", "I need some references", "give me some examples",
+            "can you provide", "precedent projects", "case studies", "examples of",
+            "can you give some examples", "can you give examples", "give me examples"
+        ]
+        if any(pattern in input_lower for pattern in example_request_patterns):
+            return "example_request"
+
+        # 3. Knowledge Request - HIGH PRIORITY
+        knowledge_request_patterns = [
+            "tell me about", "what are", "explain", "describe",
+            "I want to learn about", "can you explain"
+        ]
+        if any(pattern in input_lower for pattern in knowledge_request_patterns):
+            return "knowledge_request"
+
+        # ENHANCED PATTERN SYSTEM - Level 2: Context-Dependent Patterns
+
+        # 4. Enhanced example request detection with context awareness (HIGHER PRIORITY)
+        example_context_patterns = [
+            "I want to see case studies", "I'd like to see some", "Can I get references",
+            "I want to see precedents", "show me precedents", "I need references",
+            "I need some references", "precedent projects", "industrial buildings", "community centers"
+        ]
+        if any(pattern in input_lower for pattern in example_context_patterns):
+            return "example_request"
+
+        # 5. Enhanced knowledge request detection with context awareness (HIGHER PRIORITY)
+        knowledge_context_patterns = [
+            "I need to understand", "I want to learn about", "I want to know about",
+            "can you tell me about", "I'd like to learn"
+        ]
+        if any(pattern in input_lower for pattern in knowledge_context_patterns):
+            return "knowledge_request"
+
+        # 6. Enhanced direct answer request detection with context awareness (HIGHER PRIORITY)
+        direct_answer_context_patterns = [
+            "I need you to create", "Could you build", "I want you to make",
+            "Please design", "Show me how to", "I want you to design"
+        ]
+        if any(pattern in input_lower for pattern in direct_answer_context_patterns):
+            return "direct_answer_request"
+
+        # ENHANCED PATTERN SYSTEM - Level 3: Specific Pattern Disambiguation
+
+        # 7. Disambiguate "show me" patterns based on context
+        if "show me" in input_lower:
+            if any(word in input_lower for word in ["exactly", "precisely", "the answer", "the solution", "how to"]):
+                return "direct_answer_request"
+            elif any(word in input_lower for word in ["examples", "precedents", "case studies", "references"]):
+                return "example_request"
             else:
-                return 'general_statement'
-                
-        except Exception as e:
-            self.telemetry.log_error("_classify_interaction_type", str(e))
-            return 'general_statement'
+                # Let AI handle ambiguous "show me" cases
+                return "unknown"
+
+        # 7.5. Enhanced "can you provide" pattern disambiguation
+        if "can you provide" in input_lower:
+            if any(word in input_lower for word in ["examples", "precedents", "case studies", "references", "projects"]):
+                return "example_request"
+            elif any(word in input_lower for word in ["information", "details", "explanation", "help"]):
+                return "knowledge_request"
+            else:
+                # Let AI handle ambiguous "can you provide" cases
+                return "unknown"
+
+        # 8. Disambiguate "tell me" patterns based on context
+        if "tell me" in input_lower:
+            if any(word in input_lower for word in ["exactly", "precisely", "the answer", "the solution"]):
+                return "direct_answer_request"
+            elif any(word in input_lower for word in ["about", "more", "details", "information"]):
+                return "knowledge_request"
+            else:
+                # Let AI handle ambiguous "tell me" cases
+                return "unknown"
+
+        # 9. Disambiguate "what is" patterns
+        if "what is" in input_lower:
+            # Check if it's asking for technical information
+            technical_indicators = ["requirement", "standard", "code", "regulation", "specification", "technical"]
+            if any(indicator in input_lower for indicator in technical_indicators):
+                return "technical_question"
+            else:
+                return "knowledge_request"
+
+        # ENHANCED PATTERN SYSTEM - Level 4: Specific Interaction Types
+
+        # 10. Feedback request detection
+        feedback_patterns = [
+            "feedback", "review", "critique", "evaluate", "assess",
+            "what do you think", "how is this", "is this good", "am i on track"
+        ]
+        if any(pattern in input_lower for pattern in feedback_patterns):
+            return "feedback_request"
+
+        # 11. Technical question detection
+        technical_patterns = [
+            "how to", "technical", "specification", "requirement", "standard",
+            "code", "regulation", "material", "system", "structure"
+        ]
+        if any(pattern in input_lower for pattern in technical_patterns):
+            return "technical_question"
+
+        # 12. Confusion expression detection
+        confusion_patterns = [
+            "confused", "don't understand", "unclear", "not sure",
+            "help", "lost", "stuck", "struggling", "difficult",
+            "what does this mean", "i don't get it"
+        ]
+        if any(pattern in input_lower for pattern in confusion_patterns):
+            return "confusion_expression"
+
+        # 13. Improvement seeking detection
+        improvement_patterns = [
+            "improve", "better", "enhance", "optimize", "refine",
+            "make it better", "how can i", "what should i change"
+        ]
+        if any(pattern in input_lower for pattern in improvement_patterns):
+            return "improvement_seeking"
+
+        # 14. Implementation request detection (HIGHER PRIORITY)
+        implementation_patterns = [
+            "how do i", "how should i", "what steps", "how to implement",
+            "how to start", "how to begin", "what should i do", "what steps should i"
+        ]
+        if any(pattern in input_lower for pattern in implementation_patterns):
+            return "implementation_request"
+
+        # ENHANCED PATTERN SYSTEM - Level 5: General Classification
+
+        # 15. Enhanced general statement detection
+        statement_patterns = [
+            "i am", "i have", "i want", "i need", "i like", "i prefer",
+            "this is", "that is", "it is", "there is", "here is"
+        ]
+        if any(pattern in input_lower for pattern in statement_patterns):
+            return "general_statement"
+
+        # 16. Default based on question mark presence
+        if "?" in input_text:
+            return "general_question"
+        else:
+            return "general_statement"
     
     def _detect_understanding_level(self, input_lower: str) -> str:
         """Detect the student's understanding level from their input."""
@@ -533,4 +775,279 @@ class InputClassificationProcessor:
             
         except Exception as e:
             self.telemetry.log_error("get_classification_summary", str(e))
-            return "Classification summary unavailable." 
+            return "Classification summary unavailable."
+
+    async def _get_ai_classification_for_other_metrics(self, input_text: str, state: ArchMentorState) -> Dict[str, Any]:
+        """AI-powered classification for non-interaction-type metrics"""
+
+        # Get conversation context
+        recent_context = self._get_recent_context(state)
+
+        prompt = f"""
+        Analyze this student's architectural learning state to determine the best educational response:
+
+        CURRENT INPUT: "{input_text}"
+        CONVERSATION CONTEXT: {recent_context}
+        SKILL LEVEL: {state.student_profile.skill_level if hasattr(state, 'student_profile') else 'intermediate'}
+        PROJECT: {getattr(state, 'current_design_brief', 'No project set')}
+
+        Classify the student's input into these clear categories:
+
+        1. INTERACTION TYPE (most important for routing):
+        - example_request: ANY mention of "example", "examples", "project", "projects", "precedent", "case study", "show me", "can you provide", "real project", "built project"
+        - feedback_request: Asks for review, feedback, thoughts, critique, evaluation, "what do you think", "how does this look"
+        - technical_question: Asks about specific standards, requirements, codes, procedures, "what are the requirements", "how many", "what size"
+        - confusion_expression: Shows confusion, uncertainty, "I don't understand", "help me", "I'm lost", "unclear"
+        - improvement_seeking: Wants to improve, enhance, fix, "how can I", "ways to improve", "make it better"
+        - knowledge_seeking: Asks for information, explanations, "what is", "how do", "can you explain"
+        - general_statement: Standard conversation or comments
+
+        2. CONFIDENCE LEVEL:
+        - overconfident: Uses absolute terms ("obviously", "clearly", "perfect", "optimal", "best", "ideal", "definitely", "certainly")
+        - uncertain: Shows doubt, confusion, asks for help
+        - confident: Balanced confidence, thoughtful engagement
+
+        3. UNDERSTANDING LEVEL:
+        - low: Basic questions, confusion, misunderstands concepts
+        - medium: Partial understanding, makes some connections
+        - high: Uses architectural vocabulary correctly, demonstrates conceptual grasp
+
+        4. ENGAGEMENT LEVEL:
+        - low: Very short responses (under 5 words), passive language
+        - medium: Standard responses, follows prompts
+        - high: Detailed responses (15+ words), asks questions, shows curiosity
+
+        Respond in valid JSON format:
+        {{
+            "interaction_type": "example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|knowledge_seeking|general_statement",
+            "confidence_level": "overconfident|uncertain|confident",
+            "understanding_level": "low|medium|high",
+            "engagement_level": "low|medium|high",
+            "is_example_request": true/false,
+            "is_feedback_request": true/false,
+            "is_technical_question": true/false,
+            "shows_confusion": true/false,
+            "requests_help": true/false,
+            "demonstrates_overconfidence": true/false,
+            "reasoning": "brief explanation of classification"
+        }}
+        """
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=200,
+                temperature=0.2
+            )
+
+            classification_text = response.choices[0].message.content.strip()
+            classification = self._parse_ai_classification(classification_text)
+
+            print(f"🔍 AI Learning State Detection:")
+            print(f"   Type: {classification['interaction_type']}")
+            print(f"   Confidence: {classification['confidence_level']}")
+            print(f"   Understanding: {classification['understanding_level']}")
+            print(f"   Engagement: {classification['engagement_level']}")
+            print(f"   Is Example Request: {classification.get('is_example_request', False)}")
+            print(f"   Reasoning: {classification.get('reasoning', 'No reasoning')}")
+
+            return {
+                "interaction_type": classification["interaction_type"],
+                "understanding_level": classification["understanding_level"],
+                "confidence_level": classification["confidence_level"],
+                "engagement_level": classification["engagement_level"],
+                "overconfidence_score": 2 if classification["confidence_level"] == "overconfident" else 0,
+                "is_technical_question": classification["is_technical_question"],
+                "is_feedback_request": classification["is_feedback_request"],
+                "is_example_request": classification.get("is_example_request", False),
+                "shows_confusion": classification["shows_confusion"],
+                "requests_help": classification["requests_help"],
+                "demonstrates_overconfidence": classification["demonstrates_overconfidence"],
+                "seeks_validation": False,
+                "classification": "question" if "?" in input_text else "statement",
+                "ai_reasoning": classification.get("reasoning", ""),
+                "manual_override": False
+            }
+
+        except Exception as e:
+            print(f"⚠️ AI classification failed, using enhanced fallback: {e}")
+            return self._enhanced_fallback_detection(input_text)
+
+    def _get_recent_context(self, state: ArchMentorState) -> str:
+        """Get recent conversation context for AI analysis"""
+
+        recent_messages = []
+        if hasattr(state, 'messages') and state.messages:
+            for msg in state.messages[-3:]:  # Last 3 messages
+                role = msg.get('role', 'unknown')
+                content = msg.get('content', '')[:100]  # Truncate long messages
+                recent_messages.append(f"{role}: {content}")
+
+        return " | ".join(recent_messages) if recent_messages else "No previous conversation"
+
+    def _parse_ai_classification(self, text: str) -> Dict[str, Any]:
+        """Parse AI classification response with error handling"""
+        import json
+        try:
+            # Find JSON in response
+            start_idx = text.find('{')
+            end_idx = text.rfind('}') + 1
+            if start_idx >= 0 and end_idx > start_idx:
+                json_str = text[start_idx:end_idx]
+                parsed = json.loads(json_str)
+
+                # Validate required fields
+                required_fields = ["confidence_level", "understanding_level", "engagement_level", "interaction_type"]
+                for field in required_fields:
+                    if field not in parsed:
+                        print(f"⚠️ Missing field {field} in AI response")
+                        return self._default_classification()
+
+                return parsed
+        except json.JSONDecodeError as e:
+            print(f"⚠️ JSON parsing failed: {e}")
+        except Exception as e:
+            print(f"⚠️ Classification parsing error: {e}")
+
+        return self._default_classification()
+
+    def _enhanced_fallback_detection(self, input_text: str) -> Dict[str, Any]:
+        """Enhanced fallback that detects example requests reliably"""
+
+        input_lower = input_text.lower()
+        word_count = len(input_text.split())
+
+        # ENHANCED EXAMPLE REQUEST DETECTION - MORE PATTERNS
+        example_patterns = [
+            r"\bexample\b", r"\bexamples\b", r"\bproject\b", r"\bprojects\b",
+            r"\bprecedent\b", r"\bprecedents\b", r"\bcase study\b", r"\bcase studies\b",
+            r"\bshow me\b", r"\bcan you give\b", r"\bcan you provide\b", r"\bcan you show\b",
+            r"\breal project\b", r"\bbuilt project\b", r"\bactual project\b",
+            r"\breference\b", r"\breferences\b", r"\binspiration\b"
+        ]
+
+        is_example_request = any(re.search(pattern, input_lower) for pattern in example_patterns)
+
+        # OVERCONFIDENCE DETECTION (critical for cognitive enhancement)
+        overconfident_indicators = [
+            "obviously", "clearly", "definitely", "perfect", "optimal", "best",
+            "ideal", "certainly", "absolutely", "undoubtedly", "without question",
+            "simple", "easy", "straightforward", "should just", "just need to",
+            "only need", "all you do", "simply", "only way", "right way"
+        ]
+        overconfidence_score = sum(1 for word in overconfident_indicators if word in input_lower)
+
+        # CONFUSION DETECTION (critical for Socratic support)
+        confusion_indicators = [
+            "confused", "don't understand", "unclear", "help", "lost", "stuck",
+            "overwhelmed", "complicated", "difficult to understand"
+        ]
+        shows_confusion = any(indicator in input_lower for indicator in confusion_indicators)
+
+        # FEEDBACK REQUEST DETECTION (critical for multi-agent routing)
+        feedback_indicators = [
+            "review my", "feedback on", "thoughts on", "critique", "evaluate",
+            "what do you think", "how does this look", "can you review",
+            "analyze my", "assess my", "opinion on", "thoughts about"
+        ]
+        is_feedback_request = any(indicator in input_lower for indicator in feedback_indicators)
+
+        # TECHNICAL QUESTION DETECTION (critical for knowledge-only routing)
+        technical_indicators = [
+            "requirements for", "standards for", "code for", "regulation",
+            "ada requirements", "building codes", "specifications", "guidelines",
+            "what are the", "what is the requirement", "how many", "what size"
+        ]
+        is_technical_question = any(indicator in input_lower for indicator in technical_indicators)
+
+        # HELP REQUEST DETECTION
+        help_indicators = ["help me", "can you help", "need help", "assist me", "guidance"]
+        requests_help = any(indicator in input_lower for indicator in help_indicators)
+
+        # IMPROVEMENT SEEKING DETECTION
+        improvement_indicators = [
+            "improve", "better", "enhance", "optimize", "refine",
+            "make it better", "how can i", "what should i change"
+        ]
+        improvement_seeking = any(indicator in input_lower for indicator in improvement_indicators)
+
+        # DETERMINE INTERACTION TYPE - PRIORITIZE EXAMPLE REQUESTS
+        if is_example_request:
+            interaction_type = "example_request"
+        elif is_feedback_request:
+            interaction_type = "feedback_request"
+        elif is_technical_question:
+            interaction_type = "technical_question"
+        elif shows_confusion:
+            interaction_type = "confusion_expression"
+        elif overconfidence_score >= 1:
+            interaction_type = "overconfident_statement"
+        elif improvement_seeking:
+            interaction_type = "improvement_seeking"
+        elif requests_help or "?" in input_text:
+            interaction_type = "knowledge_seeking"
+        else:
+            interaction_type = "general_statement"
+
+        # DETERMINE CONFIDENCE LEVEL
+        if overconfidence_score >= 1:
+            confidence_level = "overconfident"
+        elif shows_confusion or requests_help:
+            confidence_level = "uncertain"
+        else:
+            confidence_level = "confident"
+
+        # DETERMINE ENGAGEMENT LEVEL
+        if word_count < 5 or any(word in input_lower for word in ["ok", "sure", "fine", "whatever"]):
+            engagement_level = "low"
+        elif word_count > 15 or "?" in input_text:
+            engagement_level = "high"
+        else:
+            engagement_level = "medium"
+
+        # DETERMINE UNDERSTANDING LEVEL (simple heuristic)
+        technical_terms = ["accessibility", "circulation", "program", "design", "architecture", "building"]
+        tech_usage = sum(1 for term in technical_terms if term in input_lower)
+
+        if shows_confusion or tech_usage == 0:
+            understanding_level = "low"
+        elif tech_usage >= 2:
+            understanding_level = "high"
+        else:
+            understanding_level = "medium"
+
+        return {
+            "interaction_type": interaction_type,
+            "understanding_level": understanding_level,
+            "confidence_level": confidence_level,
+            "engagement_level": engagement_level,
+            "overconfidence_score": overconfidence_score,
+            "is_technical_question": is_technical_question,
+            "is_feedback_request": is_feedback_request,
+            "is_example_request": is_example_request,  # ← THIS IS KEY
+            "shows_confusion": shows_confusion,
+            "requests_help": requests_help,
+            "demonstrates_overconfidence": overconfidence_score >= 1,
+            "seeks_validation": False,
+            "classification": "question" if "?" in input_text else "statement",
+            "ai_reasoning": "Enhanced fallback classification used"
+        }
+
+    def _default_classification(self) -> Dict[str, Any]:
+        """Safe default when all else fails"""
+        return {
+            "confidence_level": "confident",
+            "understanding_level": "medium",
+            "engagement_level": "medium",
+            "interaction_type": "general_statement",
+            "overconfidence_score": 0,
+            "is_technical_question": False,
+            "is_feedback_request": False,
+            "is_example_request": False,
+            "shows_confusion": False,
+            "requests_help": False,
+            "demonstrates_overconfidence": False,
+            "seeks_validation": False,
+            "reasoning": "Default classification"
+        }

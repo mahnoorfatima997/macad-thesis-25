@@ -352,13 +352,52 @@ class LangGraphOrchestrator:
         analysis_result = agent_results.get("analysis", {})
         cognitive_result = agent_results.get("cognitive", {})
         domain_result = agent_results.get("domain", {})
+        socratic_result = agent_results.get("socratic", {})
+
+        # Extract enhancement metrics from all agents
+        enhancement_metrics = {}
+
+        # Get metrics from cognitive enhancement agent
+        if cognitive_result and hasattr(cognitive_result, 'enhancement_metrics'):
+            metrics = cognitive_result.enhancement_metrics
+            enhancement_metrics.update({
+                "cognitive_offloading_prevention_score": getattr(metrics, 'cognitive_offloading_prevention_score', 0),
+                "deep_thinking_engagement_score": getattr(metrics, 'deep_thinking_engagement_score', 0),
+                "knowledge_integration_score": getattr(metrics, 'knowledge_integration_score', 0),
+                "scaffolding_effectiveness_score": getattr(metrics, 'scaffolding_effectiveness_score', 0),
+                "learning_progression_score": getattr(metrics, 'learning_progression_score', 0),
+                "metacognitive_awareness_score": getattr(metrics, 'metacognitive_awareness_score', 0),
+                "overall_cognitive_score": getattr(metrics, 'overall_cognitive_score', 0),
+                "scientific_confidence": getattr(metrics, 'scientific_confidence', 0)
+            })
+
+        # Get metrics from socratic tutor
+        if socratic_result and hasattr(socratic_result, 'enhancement_metrics'):
+            metrics = socratic_result.enhancement_metrics
+            enhancement_metrics.update({
+                "socratic_deep_thinking_score": getattr(metrics, 'deep_thinking_engagement_score', 0),
+                "socratic_scaffolding_score": getattr(metrics, 'scaffolding_effectiveness_score', 0),
+                "socratic_metacognitive_score": getattr(metrics, 'metacognitive_awareness_score', 0)
+            })
+
+        # Extract phase information
+        phase_info = {}
+        if analysis_result and hasattr(analysis_result, 'phase_assessment'):
+            phase_assessment = analysis_result.phase_assessment
+            phase_info = {
+                "current_phase": getattr(phase_assessment, 'current_phase', 'ideation'),
+                "phase_confidence": getattr(phase_assessment, 'phase_confidence', 0),
+                "progression_score": getattr(phase_assessment, 'progression_score', 0),
+                "next_phase": getattr(phase_assessment, 'next_phase', None)
+            }
 
         return {
             "response_type": response_type,
             "agents_used": agents_used,
             "routing_path": routing_decision.get("path", "unknown"),
             "ai_reasoning": routing_decision.get("reasoning", "No AI reasoning available"),
-            "phase_analysis": analysis_result.get("phase_analysis", {}),
+            "phase_analysis": phase_info,
+            "enhancement_metrics": enhancement_metrics,
             "scientific_metrics": cognitive_result.get("scientific_metrics", {}),
             "cognitive_state": cognitive_result.get("cognitive_state", {}),
             "analysis_result": analysis_result,
@@ -381,15 +420,24 @@ class LangGraphOrchestrator:
         import time
         start_time = time.time()
 
+        # Get user input first
+        user_messages = [m for m in student_state.messages if m.get("role") == "user"]
+        current_user_input = user_messages[-1]["content"] if user_messages else ""
+
+        print(f"\n🚀 ArchMentor Processing Pipeline Started")
+        print(f"   📝 User input: {current_user_input[:100]}..." if len(current_user_input) > 100 else f"   📝 User input: {current_user_input}")
+        print(f"   🏗️ Project: {getattr(student_state, 'current_design_brief', 'No brief set')}")
+        student_profile = getattr(student_state, 'student_profile', None)
+        skill_level = getattr(student_profile, 'skill_level', 'unknown') if student_profile else 'unknown'
+        print(f"   👤 Student profile: {skill_level} level")
+
         self.logger.info("Starting workflow...")
 
         # Ensure brief is placed if needed
         if hasattr(student_state, "ensure_brief_in_messages") and student_state.ensure_brief_in_messages():
             if not any(m.get("role") == "brief" for m in student_state.messages):
                 student_state.messages.insert(0, {"role": "brief", "content": getattr(student_state, "current_design_brief", "")})
-
-        user_messages = [m for m in student_state.messages if m.get("role") == "user"]
-        current_user_input = user_messages[-1]["content"] if user_messages else ""
+                print(f"   📋 Design brief added to conversation context")
 
         # Progression
         self.progression_manager.update_state(student_state)
@@ -417,9 +465,16 @@ class LangGraphOrchestrator:
             milestone_guidance=milestone_guidance,
         )
 
+        print(f"\n🔄 Processing through agent workflow...")
         final_state = await self.workflow.ainvoke(initial_state)
 
         processing_time = time.time() - start_time
+        self.logger.info(f"Workflow completed in {processing_time:.2f}s")
+
+        print(f"\n✅ Processing completed successfully in {processing_time:.2f}s")
+        print(f"   📊 Final response length: {len(final_state.get('final_response', ''))} characters")
+        print(f"   🎯 Route taken: {final_state.get('routing_decision', {}).get('path', 'unknown')}")
+
         if "response_metadata" in final_state:
             final_state["response_metadata"]["processing_time"] = f"{processing_time:.2f}s"
             final_state["response_metadata"]["conversation_progression"] = progression_analysis
@@ -461,6 +516,34 @@ class LangGraphOrchestrator:
         if final_state.get("domain_expert_result"): agents_used.append("Domain Expert")
         if final_state.get("socratic_result"): agents_used.append("Socratic Tutor")
         if final_state.get("cognitive_enhancement_result"): agents_used.append("Cognitive Enhancement")
+
+        print(f"🤖 Agents activated: {', '.join(agents_used) if agents_used else 'None'}")
+
+        # Show scientific metrics if available
+        if final_state.get("response_metadata", {}).get("enhancement_metrics"):
+            metrics = final_state["response_metadata"]["enhancement_metrics"]
+            print(f"\n📊 COGNITIVE ENHANCEMENT METRICS:")
+            print(f"   🧠 Critical Thinking Score: {metrics.get('critical_thinking_score', 0):.2f}")
+            print(f"   🏗️ Scaffolding Effectiveness: {metrics.get('scaffolding_effectiveness_score', 0):.2f}")
+            print(f"   💡 Engagement Maintenance: {metrics.get('engagement_maintenance_score', 0):.2f}")
+            print(f"   🎯 Metacognitive Awareness: {metrics.get('metacognitive_awareness_score', 0):.2f}")
+            print(f"   📈 Overall Cognitive Score: {metrics.get('overall_cognitive_score', 0):.2f}")
+            print(f"   🔬 Scientific Confidence: {metrics.get('scientific_confidence', 0):.2f}")
+
+        # Show conversation analysis if available
+        if final_state.get("analysis_result", {}).get("conversation_patterns"):
+            patterns = final_state["analysis_result"]["conversation_patterns"]
+            print(f"\n🔍 CONVERSATION ANALYSIS:")
+            print(f"   📈 Engagement Trend: {patterns.get('engagement_trend', 'unknown')}")
+            print(f"   🎓 Understanding Progression: {patterns.get('understanding_progression', 'unknown')}")
+            print(f"   🔄 Conversation Depth: {patterns.get('conversation_depth', {}).get('overall_depth', 'unknown')}")
+            print(f"   🎯 Recent Focus: {', '.join(patterns.get('recent_focus', [])[:3])}")
+
+        # Show data collection status
+        print(f"\n💾 DATA COLLECTION:")
+        print(f"   📝 Interaction logged for thesis analysis")
+        print(f"   📊 Scientific metrics captured")
+        print(f"   🔬 Benchmarking data available for export")
         print(f"   Agents used: {', '.join(agents_used) if agents_used else 'None'}")
         print(f"   Processing time: {final_state.get('response_metadata', {}).get('processing_time', 'N/A')}")
         print("─" * 50 + "\n")
