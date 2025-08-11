@@ -9,27 +9,14 @@ class ResponseLengthController:
     
     @staticmethod
     def truncate_response(response_text: str, agent_type: str = "default") -> str:
-        """Truncate response to meet length limits with enhanced formatting"""
-        
-        max_length = get_max_response_length(agent_type)
-        words = response_text.split()
-        
-        if len(words) <= max_length:
-            return response_text
-        
-        # Truncate to max length with smart cutoff
-        truncated_words = words[:max_length]
-        truncated_response = " ".join(truncated_words)
-        
-        # Add ellipsis if truncated
-        if len(words) > max_length:
-            truncated_response += "..."
-        
-        # Clean up formatting
-        truncated_response = re.sub(r'\n\s*\n\s*\n', '\n\n', truncated_response)
-        truncated_response = truncated_response.strip()
-        
-        return truncated_response
+        """Truncate response to meet length limits with enhanced formatting - DISABLED for complete responses"""
+
+        # DISABLED: No longer truncate responses to allow complete, natural responses
+        # Just clean up formatting without truncating
+        cleaned_response = re.sub(r'\n\s*\n\s*\n', '\n\n', response_text)
+        cleaned_response = cleaned_response.strip()
+
+        return cleaned_response
     
     @staticmethod
     def remove_metrics_from_response(response_text: str) -> str:
@@ -161,8 +148,8 @@ class ResponseLengthController:
         if not should_show_metrics("cognitive_summary"):
             response_text = ResponseLengthController.remove_metrics_from_response(response_text)
         
-        # Truncate if too long
-        response_text = ResponseLengthController.truncate_response(response_text, agent_type)
+        # DISABLED: No longer truncate responses to allow complete, natural responses
+        # response_text = ResponseLengthController.truncate_response(response_text, agent_type)
         
         # Format cognitive interventions
         if "🧠" in response_text or "cognitive" in response_text.lower():

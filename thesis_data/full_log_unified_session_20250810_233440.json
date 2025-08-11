@@ -1,0 +1,1384 @@
+[
+  {
+    "session_id": "unified_session_20250810_233440",
+    "timestamp": "2025-08-10T23:35:03.149330",
+    "interaction_number": 1,
+    "student_input": "I'm designing a residential complex that combines modern living with community spaces. The project includes apartments, shared amenities, and green spaces. I want to create a sense of community while maintaining privacy and sustainability.",
+    "input_length": 34,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "unknown",
+    "confidence_level": "unknown",
+    "engagement_level": "unknown",
+    "agent_response": "Your inquiry into designing a residential complex that harmonizes modern living with community spaces is a compelling exploration of contemporary architectural challenges.\n\nTo achieve a balance between community engagement, privacy, and sustainability, consider the following approaches:\n\nFirst, the concept of \"defensible space,\" as articulated by Oscar Newman, can guide the spatial organization of your complex.\n\nBy designing semi-public zones that transition from public to private, you can foste",
+    "response_length": 68,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "unknown",
+    "phase_confidence": 0.5,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 7,
+    "design_moves": [
+      {
+        "content": "I'm designing a residential complex that combines modern living with community spaces.",
+        "timestamp": "2025-08-10T23:35:03.148329",
+        "micro_timestamp": 1754886903.148329,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.075,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 86,
+          "has_question": false,
+          "word_count": 12,
+          "complexity_score": 0.625
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "The project includes apartments, shared amenities, and green spaces.",
+        "timestamp": "2025-08-10T23:35:03.248329",
+        "micro_timestamp": 1754886903.248329,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.07800000000000001,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 68,
+          "has_question": false,
+          "word_count": 9,
+          "complexity_score": 0.8666666666666667
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "I want to create a sense of community while maintaining privacy and sustainability.",
+        "timestamp": "2025-08-10T23:35:03.348329",
+        "micro_timestamp": 1754886903.348329,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.07100000000000001,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 83,
+          "has_question": false,
+          "word_count": 13,
+          "complexity_score": 0.5461538461538462
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Your inquiry into designing a residential complex that harmonizes modern living with community spaces is a compelling exploration of contemporary architectural challenges.",
+        "timestamp": "2025-08-10T23:35:03.448329",
+        "micro_timestamp": 1754886903.448329,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.15000000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 171,
+          "has_question": false,
+          "word_count": 22,
+          "complexity_score": 0.6818181818181819
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "To achieve a balance between community engagement, privacy, and sustainability, consider the following approaches:",
+        "timestamp": "2025-08-10T23:35:03.548329",
+        "micro_timestamp": 1754886903.548329,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.15400000000000003,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 114,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "First, the concept of \"defensible space,\" as articulated by Oscar Newman, can guide the spatial organization of your complex.",
+        "timestamp": "2025-08-10T23:35:03.648329",
+        "micro_timestamp": 1754886903.648329,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.16399999999999998,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 125,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.8631578947368421
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "By designing semi-public zones that transition from public to private, you can foste",
+        "timestamp": "2025-08-10T23:35:03.748329",
+        "micro_timestamp": 1754886903.748329,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.085,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 84,
+          "has_question": false,
+          "word_count": 13,
+          "complexity_score": 0.6538461538461539
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "last_message": "I'm designing a residential complex that combines modern living with community spaces. The project includes apartments, shared amenities, and green spaces. I want to create a sense of community while maintaining privacy and sustainability.",
+      "user_input": "I'm designing a residential complex that combines modern living with community spaces. The project includes apartments, shared amenities, and green spaces. I want to create a sense of community while maintaining privacy and sustainability.",
+      "primary_gap": "deep_thinking_encouraged"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your intermediate level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [
+          "deep_thinking_encouraged"
+        ],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "intermediate",
+              "confidence": 0.28,
+              "indicators": {
+                "beginner": 0,
+                "intermediate": 3,
+                "advanced": 0
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 11.333333333333334,
+                "word_count": 34,
+                "sentence_count": 3,
+                "complexity_score": 0.5666666666666667
+              },
+              "reasoning": "3 intermediate-level terms detected; assessed as intermediate"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "conversation_phase": "discovery",
+              "opening_strategy": {
+                "opening_message": "Welcome to exploring residential! This is a rich area of architectural design. Let's start by understanding the core purpose and user needs. I'm excited to explore this together!",
+                "primary_dimension": "functional",
+                "opening_questions": [
+                  "Who are the main users and what do they need?",
+                  "What activities will take place in this space?"
+                ],
+                "exploration_prompts": [
+                  "Let's explore how the program influences the spatial organization",
+                  "Consider how user needs might evolve over time",
+                  "Think about the relationship between function and form"
+                ],
+                "knowledge_gaps": [
+                  "programming",
+                  "user analysis",
+                  "functional relationships"
+                ],
+                "complexity_level": "intermediate",
+                "suggested_approach": "guided_exploration"
+              },
+              "relevant_dimensions": [
+                "functional",
+                "spatial",
+                "sustainable"
+              ],
+              "user_profile": {
+                "knowledge_level": "intermediate",
+                "learning_style": "balanced",
+                "interests": [
+                  "residential",
+                  "sustainability",
+                  "design_process"
+                ],
+                "strengths": [],
+                "gaps": [],
+                "engagement_patterns": [],
+                "conversation_preferences": [],
+                "milestone_progress": {}
+              },
+              "milestone": {
+                "milestone_type": "phase_entry",
+                "phase": "discovery",
+                "dimension": "functional",
+                "topic": "residential",
+                "user_understanding": "intermediate",
+                "confidence_level": "neutral",
+                "engagement_level": "medium",
+                "progress_percentage": 0.0,
+                "required_actions": [],
+                "success_criteria": [],
+                "timestamp": "2025-08-10T23:34:45.752391",
+                "metadata": {}
+              },
+              "next_steps": [
+                "Ask follow-up questions to deepen understanding",
+                "Explore related design space dimensions",
+                "Begin building foundational knowledge",
+                "Identify specific areas of interest"
+              ]
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250810_233440",
+    "timestamp": "2025-08-10T23:35:46.287817",
+    "interaction_number": 2,
+    "student_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+    "input_length": 15,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 2,
+    "design_moves": [
+      {
+        "content": "what direction should i concentrate my circulation for it to be responsive to natural lighting?",
+        "timestamp": "2025-08-10T23:35:46.287817",
+        "micro_timestamp": 1754886946.287817,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.08100000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 95,
+          "has_question": true,
+          "word_count": 15,
+          "complexity_score": 0.54
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-10T23:35:46.387817",
+        "micro_timestamp": 1754886946.387817,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250810_233440",
+    "timestamp": "2025-08-10T23:36:05.377868",
+    "interaction_number": 3,
+    "student_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+    "input_length": 15,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "unknown",
+    "confidence_level": "unknown",
+    "engagement_level": "unknown",
+    "agent_response": "Your inquiry into optimizing circulation for responsiveness to natural lighting is a crucial consideration in residential design, as it directly influences both the functional and experiential quality of the space.\n\nTo address your question, I propose three strategies grounded in architectural theory and design principles.\n\nFirst, consider the orientation of circulation paths to maximize exposure to natural light.\n\nAligning corridors and transitional spaces along the east-west axis can harness the dynamic qualities of sunlight throughout the day.\n\nThis approach is rooted in passive solar design principles, which advocate for the strategic use of natural light to enhance energy efficiency and occupant comfort.\n\nHowever, this may require careful consideration of shading devices to mitigate glare and overheating, particularly in warmer climates.\n\nSecond, integrating light wells or atriums into your circulation design can significantly enhance natural lighting.\n\nThis strategy draws from the concept of biophilic design, which emphasizes the psychological and physiological benefits of natural elements in architecture.\n\nBy introducing vertical shafts of light, you create focal points that not only illuminate but also animate the space.\n\nThe trade-off here involves potential spatial and structural complexities, as well as the need to maintain thermal performance.\n\nThird, employing reflective surfaces and materials along circulation paths can amplify natural light penetration.\n\nThis approach aligns with the principles of light diffusion and reflection, enhancing the perceived brightness and spaciousness of the interior.\n\nWhile this strategy is less dependent on orientation, it requires a careful selection of materials to avoid excessive glare and maintain visual comfort.\n\nIn the context of your residential project, these strategies offer distinct pathways to enhance natural lighting in circulation areas.\n\nEach approach carries implications for spatial organization, material selection, and environmental performance, necessitating a balance between aesthetic aspirations and functional requirements.\n\nIn synthesizing these insights, consider how your project's specific site conditions, climate, and programmatic needs might influence the optimal strategy.\n\nWhich aspect of natural lighting\u2014energy efficiency, aesthetic quality, or occupant well-being\u2014do you prioritize most in your design?\n\nHow does your spatial organization respond to the site's existing conditions and program requirements?",
+    "response_length": 70,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "unknown",
+    "phase_confidence": 0.5,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 5,
+    "design_moves": [
+      {
+        "content": "what direction should i concentrate my circulation for it to be responsive to natural lighting?",
+        "timestamp": "2025-08-10T23:36:05.377868",
+        "micro_timestamp": 1754886965.377868,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.08100000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 95,
+          "has_question": true,
+          "word_count": 15,
+          "complexity_score": 0.54
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Your inquiry into optimizing circulation for responsiveness to natural lighting is a crucial consideration in residential design, as it directly influences both the functional and experiential quality of the space.",
+        "timestamp": "2025-08-10T23:36:05.477868",
+        "micro_timestamp": 1754886965.477868,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.23650000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 214,
+          "has_question": false,
+          "word_count": 30,
+          "complexity_score": 0.7166666666666667
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 2
+      },
+      {
+        "content": "To address your question, I propose three strategies grounded in architectural theory and design principles.",
+        "timestamp": "2025-08-10T23:36:05.577868",
+        "micro_timestamp": 1754886965.577868,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.109,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 108,
+          "has_question": false,
+          "word_count": 15,
+          "complexity_score": 0.7266666666666667
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "First, consider the orientation of circulation paths to maximize exposure to natural light.",
+        "timestamp": "2025-08-10T23:36:05.677868",
+        "micro_timestamp": 1754886965.677868,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.10120000000000001,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 91,
+          "has_question": false,
+          "word_count": 13,
+          "complexity_score": 0.7076923076923076
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Aligning corridors and transitional spaces along the east-west axis can harness t",
+        "timestamp": "2025-08-10T23:36:05.777868",
+        "micro_timestamp": 1754886965.777868,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.06999999999999999,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 81,
+          "has_question": false,
+          "word_count": 12,
+          "complexity_score": 0.5833333333333333
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "analysis",
+      "general",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "last_message": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+      "user_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+      "primary_gap": "deep_thinking_encouraged"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your intermediate level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [
+          "deep_thinking_encouraged"
+        ],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "intermediate",
+              "confidence": 0.43,
+              "indicators": {
+                "beginner": 0,
+                "intermediate": 4,
+                "advanced": 0
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 12.25,
+                "word_count": 49,
+                "sentence_count": 4,
+                "complexity_score": 0.6125
+              },
+              "reasoning": "4 intermediate-level terms detected; assessed as intermediate"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "current_phase": "discovery",
+              "phase_transition": false,
+              "new_milestone": null,
+              "progression_guidance": {
+                "phase_objectives": [
+                  "Understand user's intent and interests",
+                  "Open relevant design space dimensions",
+                  "Establish learning baseline",
+                  "Build engagement and rapport"
+                ],
+                "suggested_approaches": [
+                  "Ask open-ended questions",
+                  "Listen actively and reflect back",
+                  "Validate user's interests and concerns",
+                  "Provide encouraging feedback"
+                ],
+                "success_indicators": [
+                  "User shows clear interests and intent",
+                  "Relevant design dimensions identified",
+                  "Engagement and rapport established",
+                  "Learning baseline established"
+                ],
+                "next_phase_preparation": [
+                  "Prepare exploration strategies",
+                  "Identify key concepts to introduce",
+                  "Plan knowledge gap addressing",
+                  "Design engagement activities"
+                ]
+              },
+              "conversation_summary": {
+                "total_milestones": 1,
+                "current_phase": "discovery",
+                "opened_dimensions": [],
+                "user_profile": {
+                  "knowledge_level": "intermediate",
+                  "learning_style": "balanced",
+                  "interests": [
+                    "residential",
+                    "sustainability",
+                    "design_process"
+                  ],
+                  "strengths": [],
+                  "gaps": [],
+                  "engagement_patterns": [],
+                  "conversation_preferences": [],
+                  "milestone_progress": {}
+                },
+                "learning_progress": {
+                  "status": "in_progress",
+                  "progress": 0.2,
+                  "phases_completed": 0,
+                  "current_phase_progress": 0.5
+                },
+                "conversation_quality": {
+                  "quality": "needs_improvement",
+                  "score": 0.0,
+                  "engagement_trend": "declining",
+                  "understanding_trend": "declining"
+                },
+                "project_context": {
+                  "building_type": "mixed_use",
+                  "complexity_level": "moderate"
+                },
+                "challenges": [
+                  "Understanding project scope",
+                  "Identifying key requirements"
+                ],
+                "opportunities": [
+                  "Exploring design possibilities",
+                  "Building foundational knowledge"
+                ]
+              }
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250810_233440",
+    "timestamp": "2025-08-10T23:36:05.377868",
+    "interaction_number": 4,
+    "student_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+    "input_length": 15,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "unknown",
+    "confidence_level": "unknown",
+    "engagement_level": "unknown",
+    "agent_response": "Your inquiry into optimizing circulation for responsiveness to natural lighting is a crucial consideration in residential design, as it directly influences both the functional and experiential quality of the space.\n\nTo address your question, I propose three strategies grounded in architectural theory and design principles.\n\nFirst, consider the orientation of circulation paths to maximize exposure to natural light.\n\nAligning corridors and transitional spaces along the east-west axis can harness t",
+    "response_length": 70,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "unknown",
+    "phase_confidence": 0.5,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 5,
+    "design_moves": [
+      {
+        "content": "what direction should i concentrate my circulation for it to be responsive to natural lighting?",
+        "timestamp": "2025-08-10T23:36:05.377868",
+        "micro_timestamp": 1754886965.377868,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.08100000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 95,
+          "has_question": true,
+          "word_count": 15,
+          "complexity_score": 0.54
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Your inquiry into optimizing circulation for responsiveness to natural lighting is a crucial consideration in residential design, as it directly influences both the functional and experiential quality of the space.",
+        "timestamp": "2025-08-10T23:36:05.477868",
+        "micro_timestamp": 1754886965.477868,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.23650000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 214,
+          "has_question": false,
+          "word_count": 30,
+          "complexity_score": 0.7166666666666667
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 2
+      },
+      {
+        "content": "To address your question, I propose three strategies grounded in architectural theory and design principles.",
+        "timestamp": "2025-08-10T23:36:05.577868",
+        "micro_timestamp": 1754886965.577868,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.109,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 108,
+          "has_question": false,
+          "word_count": 15,
+          "complexity_score": 0.7266666666666667
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "First, consider the orientation of circulation paths to maximize exposure to natural light.",
+        "timestamp": "2025-08-10T23:36:05.677868",
+        "micro_timestamp": 1754886965.677868,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.10120000000000001,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 91,
+          "has_question": false,
+          "word_count": 13,
+          "complexity_score": 0.7076923076923076
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Aligning corridors and transitional spaces along the east-west axis can harness t",
+        "timestamp": "2025-08-10T23:36:05.777868",
+        "micro_timestamp": 1754886965.777868,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.06999999999999999,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 81,
+          "has_question": false,
+          "word_count": 12,
+          "complexity_score": 0.5833333333333333
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "analysis",
+      "general",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "last_message": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+      "user_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+      "primary_gap": "deep_thinking_encouraged"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your intermediate level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [
+          "deep_thinking_encouraged"
+        ],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "intermediate",
+              "confidence": 0.43,
+              "indicators": {
+                "beginner": 0,
+                "intermediate": 4,
+                "advanced": 0
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 12.25,
+                "word_count": 49,
+                "sentence_count": 4,
+                "complexity_score": 0.6125
+              },
+              "reasoning": "4 intermediate-level terms detected; assessed as intermediate"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "current_phase": "discovery",
+              "phase_transition": false,
+              "new_milestone": null,
+              "progression_guidance": {
+                "phase_objectives": [
+                  "Understand user's intent and interests",
+                  "Open relevant design space dimensions",
+                  "Establish learning baseline",
+                  "Build engagement and rapport"
+                ],
+                "suggested_approaches": [
+                  "Ask open-ended questions",
+                  "Listen actively and reflect back",
+                  "Validate user's interests and concerns",
+                  "Provide encouraging feedback"
+                ],
+                "success_indicators": [
+                  "User shows clear interests and intent",
+                  "Relevant design dimensions identified",
+                  "Engagement and rapport established",
+                  "Learning baseline established"
+                ],
+                "next_phase_preparation": [
+                  "Prepare exploration strategies",
+                  "Identify key concepts to introduce",
+                  "Plan knowledge gap addressing",
+                  "Design engagement activities"
+                ]
+              },
+              "conversation_summary": {
+                "total_milestones": 1,
+                "current_phase": "discovery",
+                "opened_dimensions": [],
+                "user_profile": {
+                  "knowledge_level": "intermediate",
+                  "learning_style": "balanced",
+                  "interests": [
+                    "residential",
+                    "sustainability",
+                    "design_process"
+                  ],
+                  "strengths": [],
+                  "gaps": [],
+                  "engagement_patterns": [],
+                  "conversation_preferences": [],
+                  "milestone_progress": {}
+                },
+                "learning_progress": {
+                  "status": "in_progress",
+                  "progress": 0.2,
+                  "phases_completed": 0,
+                  "current_phase_progress": 0.5
+                },
+                "conversation_quality": {
+                  "quality": "needs_improvement",
+                  "score": 0.0,
+                  "engagement_trend": "declining",
+                  "understanding_trend": "declining"
+                },
+                "project_context": {
+                  "building_type": "mixed_use",
+                  "complexity_level": "moderate"
+                },
+                "challenges": [
+                  "Understanding project scope",
+                  "Identifying key requirements"
+                ],
+                "opportunities": [
+                  "Exploring design possibilities",
+                  "Building foundational knowledge"
+                ]
+              }
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  }
+]

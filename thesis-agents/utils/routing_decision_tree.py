@@ -328,15 +328,72 @@ class AdvancedRoutingDecisionTree:
                 "description": "Overconfident user - cognitive challenge",
                 "context_agent_override": False
             },
+            # Actual interaction types from context agent
+            "technical_question_route": {
+                "priority": 15.5,
+                "route": RouteType.KNOWLEDGE_ONLY,
+                "conditions": ["user_intent == 'technical_question'"],
+                "description": "Technical question - direct knowledge response",
+                "context_agent_override": False
+            },
+            "example_request_route": {
+                "priority": 16.5,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'example_request'"],
+                "description": "Example request - knowledge with Socratic follow-up",
+                "context_agent_override": False
+            },
+            "feedback_request_route": {
+                "priority": 17.5,
+                "route": RouteType.MULTI_AGENT_COMPREHENSIVE,
+                "conditions": ["user_intent == 'feedback_request'"],
+                "description": "Feedback request - comprehensive multi-agent response",
+                "context_agent_override": False
+            },
+            "confusion_expression_route": {
+                "priority": 18.5,
+                "route": RouteType.SUPPORTIVE_SCAFFOLDING,
+                "conditions": ["user_intent == 'confusion_expression'"],
+                "description": "Confusion expression - supportive scaffolding",
+                "context_agent_override": False
+            },
+            "improvement_seeking_route": {
+                "priority": 19.5,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'improvement_seeking'"],
+                "description": "Improvement seeking - Socratic exploration",
+                "context_agent_override": False
+            },
+            "knowledge_seeking_route": {
+                "priority": 20.5,
+                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "conditions": ["user_intent == 'knowledge_seeking'"],
+                "description": "Knowledge seeking - knowledge with challenge",
+                "context_agent_override": False
+            },
+            "overconfident_statement_route": {
+                "priority": 21.5,
+                "route": RouteType.COGNITIVE_CHALLENGE,
+                "conditions": ["user_intent == 'overconfident_statement'"],
+                "description": "Overconfident statement - cognitive challenge",
+                "context_agent_override": False
+            },
+            "general_statement_route": {
+                "priority": 22.5,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'general_statement'"],
+                "description": "General statement - Socratic exploration",
+                "context_agent_override": False
+            },
             "context_agent_high_confidence": {
-                "priority": 20,
+                "priority": 23,
                 "route": None,  # Dynamic based on mapping
                 "conditions": ["context_agent_confidence > 0.7"],
                 "description": "Use context agent suggestion with high confidence",
                 "context_agent_override": False
             },
             "default_balanced": {
-                "priority": 21,
+                "priority": 24,
                 "route": RouteType.BALANCED_GUIDANCE,
                 "conditions": ["default"],
                 "description": "Default balanced guidance",
@@ -546,6 +603,13 @@ class AdvancedRoutingDecisionTree:
                     logger.info(f"   Reason: {decision.reason}")
                     logger.info(f"   Confidence: {decision.confidence:.2f}")
                     logger.info(f"   Rule Applied: {rule_name}")
+
+                    # Additional debug logging
+                    print(f"🎯 ROUTING DEBUG: Selected route = {decision.route.value}")
+                    print(f"   User intent = {user_intent}")
+                    print(f"   Rule applied = {rule_name}")
+                    print(f"   Classification = {enhanced_classification}")
+
                     return decision
             
             # Fallback decision

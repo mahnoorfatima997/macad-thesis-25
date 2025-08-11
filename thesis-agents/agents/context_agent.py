@@ -6,7 +6,7 @@ from the new modular structure.
 """
 
 # Import the refactored ContextAgent from the modular package
-from .context_agent import ContextAgent
+from .context_agent.adapter import ContextAgent
 
 # Re-export for backward compatibility
 __all__ = ['ContextAgent']

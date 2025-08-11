@@ -7,7 +7,7 @@ from typing import Dict, List, Any
 # Model configuration
 DEFAULT_MODEL = "gpt-4o"
 DEFAULT_TEMPERATURE = 0.3
-MAX_TOKENS = 800
+MAX_TOKENS = 1200  # Increased for generous academic responses
 
 # Analysis patterns for different types of student input
 ANALYSIS_PATTERNS = {
