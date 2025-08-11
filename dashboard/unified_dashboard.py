@@ -13,16 +13,16 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Import configuration and utilities
-from dashboard.config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, INPUT_MODES, MENTOR_TYPES, get_api_key
-from dashboard.ui.styles import apply_dashboard_styles
-from dashboard.core.session_manager import initialize_session_state, ensure_session_started
-from dashboard.ui.chat_components import (
+from .config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, INPUT_MODES, MENTOR_TYPES, get_api_key
+from .ui.styles import apply_dashboard_styles
+from .core.session_manager import initialize_session_state, ensure_session_started
+from .ui.chat_components import (
     render_welcome_section, render_mode_configuration, render_chat_history,
     get_chat_input, render_chat_message, response_contains_questions,
     render_input_mode_selection, render_mentor_type_selection, render_template_selection,
     render_skill_level_selection, render_project_description_input, render_file_upload, validate_input
 )
-from dashboard.ui.sidebar_components import render_complete_sidebar
+from .ui.sidebar_components import render_complete_sidebar
 from .ui.analysis_components import render_cognitive_analysis_dashboard, render_metrics_summary, render_phase_progress_section
 from .processors.mode_processors import ModeProcessor
 from .analysis.phase_analyzer import PhaseAnalyzer
@@ -32,6 +32,9 @@ from phase_progression_system import PhaseProgressionSystem
 from thesis_tests.test_dashboard import TestDashboard
 from thesis_tests.data_models import InteractionData, TestPhase
 
+
+# Configure Streamlit (must be first Streamlit command)
+st.set_page_config(**PAGE_CONFIG)
 
 # Cached resources
 @st.cache_resource
@@ -116,9 +119,6 @@ class UnifiedArchitecturalDashboard:
     
     def run(self):
         """Main run method for the dashboard."""
-        # Configure Streamlit (must be first Streamlit command)
-        st.set_page_config(**PAGE_CONFIG)
-
         # Render sidebar
         render_complete_sidebar(self.data_collector)
         
@@ -134,43 +134,42 @@ class UnifiedArchitecturalDashboard:
         # Welcome section
         render_welcome_section()
         
-        # Mode configuration in center column
-        with st.columns([1, 2, 1])[1]:  # Center column
-            render_mode_configuration()
-            
-            # Input mode selection
-            input_mode = render_input_mode_selection()
-            st.session_state.input_mode = input_mode
-            
-            # Mentor type selection
-            mentor_type = render_mentor_type_selection()
-            st.session_state.mentor_type = mentor_type
-            st.session_state.current_mode = mentor_type  # Map to current_mode for compatibility
-            
-            # Template prompts
-            selected_template = render_template_selection()
-            
-            # Skill level selection
-            skill_level = render_skill_level_selection()
-            
-            # Project description input
-            template_text = TEMPLATE_PROMPTS.get(selected_template, "")
-            project_description = render_project_description_input(template_text, input_mode)
-            
-            # File upload based on input mode
-            uploaded_file = render_file_upload(input_mode)
-            
-            # Start analysis button
-            with st.form(key="start_form"):
-                start_clicked = st.form_submit_button("🚀 Start Analysis")
-            
-            if start_clicked:
-                # Validate input based on mode
-                is_valid, error_msg = validate_input(input_mode, project_description, uploaded_file)
-                if not is_valid:
-                    st.error(error_msg)
-                else:
-                    self._handle_start_analysis(project_description, uploaded_file, skill_level, mentor_type, input_mode)
+        # Mode configuration using full width
+        render_mode_configuration()
+        
+        # Input mode selection
+        input_mode = render_input_mode_selection()
+        st.session_state.input_mode = input_mode
+        
+        # Mentor type selection
+        mentor_type = render_mentor_type_selection()
+        st.session_state.mentor_type = mentor_type
+        st.session_state.current_mode = mentor_type  # Map to current_mode for compatibility
+        
+        # Template prompts
+        selected_template = render_template_selection()
+        
+        # Skill level selection
+        skill_level = render_skill_level_selection()
+        
+        # Project description input
+        template_text = TEMPLATE_PROMPTS.get(selected_template, "")
+        project_description = render_project_description_input(template_text, input_mode)
+        
+        # File upload based on input mode
+        uploaded_file = render_file_upload(input_mode)
+        
+        # Start analysis button
+        with st.form(key="start_form"):
+            start_clicked = st.form_submit_button("🚀 Start Analysis")
+        
+        if start_clicked:
+            # Validate input based on mode
+            is_valid, error_msg = validate_input(input_mode, project_description, uploaded_file)
+            if not is_valid:
+                st.error(error_msg)
+            else:
+                self._handle_start_analysis(project_description, uploaded_file, skill_level, mentor_type, input_mode)
         
         # Chat interface (after analysis)
         if st.session_state.analysis_complete:

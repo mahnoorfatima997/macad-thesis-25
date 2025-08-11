@@ -30,6 +30,34 @@ def get_dashboard_css() -> str:
         color: var(--primary-dark) !important;
     }
 
+    /* Ensure full width layout */
+    .main .block-container {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+
+    /* Full width for columns */
+    .row-widget.stHorizontal > div {
+        width: 100% !important;
+    }
+
+    /* Better spacing for form elements */
+    .stForm > div {
+        margin-bottom: 1rem !important;
+    }
+
+    /* Full width for text areas and inputs */
+    .stTextArea textarea,
+    .stTextInput input,
+    .stSelectbox > div {
+        width: 100% !important;
+    }
+
+    /* Better spacing between sections */
+    .element-container {
+        margin-bottom: 1.5rem !important;
+    }
+
     /* Sidebar styling */
     section[data-testid="stSidebar"] {
         display: block !important;
@@ -41,7 +69,7 @@ def get_dashboard_css() -> str:
     /* Main container card feel */
     .main .block-container {
         background: #ffffff !important;
-        max-width: 1200px;
+        max-width: none !important;
         padding-top: 1rem;
         padding-bottom: 2rem;
         margin-left: 0 !important;
