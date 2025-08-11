@@ -6,6 +6,8 @@ This adapter maintains backward compatibility while delegating to processor modu
 
 import sys
 import os
+import logging
+import re
 from typing import Dict, Any, List, Optional
 
 # Add path for imports
@@ -87,7 +89,24 @@ class DomainExpertAgent:
             print(f"   Building type: {building_type}")
             print(f"   User question: {user_input[:100]}...")
 
-            # Generate AI-powered contextual response
+            # DETECT KNOWLEDGE REQUEST PATTERNS
+            print(f"🔍 Analyzing knowledge request: '{user_input[:50]}...'")
+            knowledge_pattern = self._analyze_knowledge_request(user_input, gap_type, state)
+            print(f"🎯 Knowledge pattern detected: {knowledge_pattern['type']}")
+            
+            # Handle legitimate example requests properly
+            if knowledge_pattern["type"] == "legitimate_example_request":
+                print(f"📚 Legitimate example request detected - providing examples")
+                response_result = await self._provide_focused_examples(state, user_input, gap_type)
+                return self._convert_to_agent_response(response_result, state, context_classification, analysis_result, routing_decision)
+            
+            # Handle premature example requests (cognitive offloading protection)
+            if knowledge_pattern["type"] == "premature_example_request":
+                print(f"🛡️ Cognitive protection: Example request too early")
+                response_result = await self._generate_premature_example_response(user_input, building_type, project_context)
+                return self._convert_to_agent_response(response_result, state, context_classification, analysis_result, routing_decision)
+
+            # Generate AI-powered contextual response for standard requests
             ai_response = await self._generate_contextual_knowledge_response(
                 user_input, building_type, project_context, gap_type, state
             )
@@ -429,48 +448,93 @@ class DomainExpertAgent:
             return await self._generate_llm_fallback_knowledge_response(user_input, building_type, project_context, gap_type)
 
     def _extract_building_type_from_context(self, state: ArchMentorState) -> str:
-        """Extract building type from conversation context."""
+        """Robust building-type inference that prefers the declared project type and only changes on explicit signals.
 
-        # Check current design brief first
-        if state.current_design_brief:
-            brief_lower = state.current_design_brief.lower()
+        Rules:
+        - Prefer analysis_result.text_analysis.building_type if set and not 'unknown'.
+        - Establish a base_type from the initial brief + first user message.
+        - Mentions in later messages do NOT change the type unless an explicit switch phrase is detected.
+        - Avoid inferring 'museum' from generic words like 'exhibition' or 'cultural center'.
+        """
 
-            # Common building types
-            building_types = {
-                "community center": ["community center", "community hall", "civic center"],
-                "office building": ["office", "workplace", "corporate"],
-                "residential": ["house", "home", "apartment", "residential"],
-                "school": ["school", "educational", "university", "college"],
-                "hospital": ["hospital", "medical", "healthcare", "clinic"],
-                "warehouse": ["warehouse", "industrial", "factory"],
-                "retail": ["retail", "shop", "store", "commercial"],
-                "mixed-use": ["mixed use", "mixed-use", "live work"]
-            }
+        def detect_explicit(text: str, type_word: str) -> bool:
+            t = text.lower()
+            patterns = [
+                f"i am designing a {type_word}",
+                f"designing a {type_word}",
+                f"project is a {type_word}",
+                f"project type is {type_word}",
+                f"this is a {type_word}",
+            ]
+            return any(p in t for p in patterns)
 
-            for building_type, keywords in building_types.items():
-                if any(keyword in brief_lower for keyword in keywords):
-                    return building_type
+        def detect_switch(text: str, type_word: str) -> bool:
+            t = text.lower()
+            patterns = [
+                f"switch to {type_word}",
+                f"change to {type_word}",
+                f"make it a {type_word}",
+                f"let's make it a {type_word}",
+            ]
+            return any(p in t for p in patterns)
 
-        # Check recent messages
-        if hasattr(state, 'messages') and state.messages:
-            recent_text = " ".join([msg.get('content', '') for msg in state.messages[-3:]])
-            recent_lower = recent_text.lower()
+        canonical_types = [
+            "community center", "school", "office", "museum", "library", "hospital",
+            "residential", "restaurant", "retail", "industrial", "religious"
+        ]
 
-            building_types = {
-                "community center": ["community center", "community hall", "civic center"],
-                "office building": ["office", "workplace", "corporate"],
-                "residential": ["house", "home", "apartment", "residential"],
-                "school": ["school", "educational", "university", "college"],
-                "hospital": ["hospital", "medical", "healthcare", "clinic"],
-                "warehouse": ["warehouse", "industrial", "factory"],
-                "retail": ["retail", "shop", "store", "commercial"]
-            }
+        # 1) Prefer analyzer result if available
+        try:
+            analysis = getattr(state, 'analysis_result', None)
+            if isinstance(analysis, dict):
+                bt = analysis.get('text_analysis', {}).get('building_type')
+                if bt and bt != 'unknown':
+                    base_type = bt.lower()
+                else:
+                    base_type = None
+            else:
+                base_type = None
+        except Exception:
+            base_type = None
 
-            for building_type, keywords in building_types.items():
-                if any(keyword in recent_lower for keyword in keywords):
-                    return building_type
+        # 2) Establish base from initial brief and first user message (if not set)
+        initial_user_msgs = [m.get('content', '') for m in state.messages if m.get('role') == 'user']
+        first_user = initial_user_msgs[0].lower() if initial_user_msgs else ""
+        brief_lower = (getattr(state, 'current_design_brief', None) or "").lower()
 
-        return "architectural project"
+        if not base_type:
+            # Strong phrase-first detection across canonical types
+            for ct in canonical_types:
+                if detect_explicit(brief_lower, ct) or detect_explicit(first_user, ct):
+                    base_type = ct
+                    break
+        if not base_type:
+            # Keyword presence as a weak hint, pick first match in brief or first message
+            for ct in canonical_types:
+                if ct in brief_lower or ct in first_user:
+                    base_type = ct
+                    break
+
+        # Default fallback if still unknown
+        if not base_type:
+            base_type = "project"
+
+        # 3) Only change type later if explicit switch phrases are detected
+        recent_user_msgs = [m.get('content', '') for m in state.messages[-5:] if m.get('role') == 'user']
+        combined_recent = " \n".join(recent_user_msgs).lower()
+        for ct in canonical_types:
+            if detect_switch(combined_recent, ct) or detect_explicit(combined_recent, ct):
+                # Respect an explicit change
+                return ct
+
+        # 4) Avoid over-triggering 'museum' from generic terms
+        if base_type == "museum":
+            # Confirm 'museum' explicitly exists; ignore generic exhibition terms
+            if ("museum" not in brief_lower) and ("museum" not in first_user):
+                # Roll back to project unless explicitly switched later
+                base_type = "project"
+
+        return base_type
 
     async def _generate_llm_fallback_knowledge_response(self, user_input: str, building_type: str,
                                                       project_context: str, gap_type: str) -> str:
@@ -557,4 +621,366 @@ What questions do you have about your design?"""
         try:
             self.telemetry.log_agent_end("cleanup")
         except:
-            pass 
+            pass
+
+    def _analyze_knowledge_request(self, user_input: str, gap_type: str, state: ArchMentorState = None) -> Dict[str, Any]:
+        """Analyze the type of knowledge request to prevent cognitive offloading."""
+        
+        analysis = {
+            "type": "standard_knowledge_request",
+            "cognitive_risk": "low",
+            "indicators": []
+        }
+        
+        user_input_lower = user_input.lower()
+        
+        # ENHANCED: Better detection of legitimate example requests
+        example_request_keywords = [
+            "example", "examples", "precedent", "precedents", "case study", "case studies",
+            "project", "projects", "show me", "can you give", "can you provide", "provide",
+            "inspiration", "references", "similar projects", "ideas", "real project", "built project"
+        ]
+        
+        # Check if this is a legitimate example request
+        is_example_request = any(keyword in user_input_lower for keyword in example_request_keywords)
+        print(f"🔍 Example request check: {is_example_request} (keywords found: {[k for k in example_request_keywords if k in user_input_lower]})")
+        
+        if is_example_request:
+            # Check cognitive offloading protection (minimum 5 messages required)
+            if state and hasattr(state, 'messages'):
+                message_count = len([msg for msg in state.messages if msg.get('role') == 'user'])
+                if message_count < 5:
+                    analysis["type"] = "premature_example_request"
+                    analysis["cognitive_risk"] = "high"
+                    analysis["indicators"].append(f"Example request too early (only {message_count} messages, need 5+)")
+                    analysis["cognitive_protection"] = "active"
+                    return analysis
+            
+            # This is a legitimate example request - should provide examples
+            analysis["type"] = "legitimate_example_request"
+            analysis["cognitive_risk"] = "low"
+            analysis["indicators"].append("Legitimate example request detected")
+            return analysis
+        
+        # PATTERN 1: Direct answer seeking (but NOT example requests)
+        direct_patterns = [
+            "what is the", "what are the", "tell me the", 
+            "what should I", "what do I need", "the answer is", "the solution is"
+        ]
+        
+        if any(pattern in user_input_lower for pattern in direct_patterns):
+            analysis["type"] = "direct_answer_seeking"
+            analysis["cognitive_risk"] = "high"
+            analysis["indicators"].append("Direct answer seeking detected")
+        
+        # PATTERN 2: Passive acceptance indicators
+        passive_patterns = [
+            "okay", "sure", "fine", "whatever", "I guess",
+            "that works", "good enough"
+        ]
+        
+        if any(pattern in user_input_lower for pattern in passive_patterns):
+            analysis["type"] = "passive_acceptance"
+            analysis["cognitive_risk"] = "high"
+            analysis["indicators"].append("Passive acceptance detected")
+        
+        return analysis
+
+    async def _provide_focused_examples(self, state: ArchMentorState, user_input: str, gap_type: str) -> Dict[str, Any]:
+        """Provide focused examples based on user input and building type."""
+        print(f"🔄 Providing focused examples for: {user_input}")
+        
+        # Extract building type and topic
+        building_type = self._extract_building_type_from_context(state)
+        user_topic = self._extract_topic_from_user_input(user_input)
+        project_context = getattr(state, 'current_design_brief', '') or ''
+        
+        print(f"   🏗️  Building type: {building_type}")
+        print(f"   🎯 Topic: {user_topic}")
+        print(f"   📋 Context: {project_context}")
+        
+        # Search examples: local DB first, then web
+        try:
+            knowledge_results: List[Dict[str, Any]] = []
+            try:
+                from knowledge_base.knowledge_manager import KnowledgeManager
+                km = KnowledgeManager(domain="architecture")
+                
+                # Enhanced search query with quality modifiers
+                quality_modifiers = self._get_quality_modifiers(user_input, user_topic)
+                db_query = f"{quality_modifiers} {user_topic} {building_type} architecture case study precedent project example"
+                
+                print(f"   🗄️  DB search query: {db_query}")
+                db_results = km.search_knowledge(db_query, n_results=6)
+                for r in db_results:
+                    knowledge_results.append({
+                        "content": r.get("content", ""),
+                        "metadata": {
+                            "title": r.get("metadata", {}).get("title", "Untitled"),
+                            "url": r.get("metadata", {}).get("source_url", ""),
+                            "source": "local_db",
+                            "type": "db_result"
+                        },
+                        "discovery_method": "db"
+                    })
+            except Exception as e:
+                print(f"⚠️ Local DB search unavailable: {e}")
+
+            if len(knowledge_results) < 3:
+                # Create enhanced context-aware web search query
+                quality_modifiers = self._get_quality_modifiers(user_input, user_topic)
+                context_query = f"{quality_modifiers} {user_topic} {building_type} architecture case study precedent project"
+                print(f"   🌐 Web search query: {context_query}")
+                web_results = await self.search_processor.search_web_for_knowledge(context_query, state)
+                if web_results:
+                    knowledge_results.extend(web_results)
+
+            if knowledge_results:
+                # Check if results are relevant to the building type
+                relevant_results = []
+                for result in knowledge_results:
+                    content_lower = result.get('content', '').lower()
+                    title_lower = result.get('metadata', {}).get('title', '').lower()
+                    
+                    # Check if result mentions the building type or is clearly architectural
+                    if (building_type.lower() in content_lower or 
+                        building_type.lower() in title_lower or
+                        any(arch_term in content_lower for arch_term in ['museum', 'gallery', 'architecture', 'building', 'design'])):
+                        relevant_results.append(result)
+                
+                # If we have relevant results, use them; otherwise fall back to AI
+                if relevant_results:
+                    examples_text = await self._synthesize_examples_from_results(relevant_results, user_topic, building_type, project_context)
+                    return {
+                        "response_text": examples_text,
+                        "response_type": "focused_examples",
+                        "sources": relevant_results,
+                        "examples_provided": True
+                    }
+                else:
+                    print(f"   ⚠️ Search results not relevant to {building_type}, using AI examples")
+                    return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
+            else:
+                return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
+        except Exception as e:
+            print(f"⚠️ Example search failed: {e}")
+            return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
+
+    def _get_quality_modifiers(self, user_input: str, topic: str) -> str:
+        """Get quality modifiers to enhance search queries and get better examples."""
+        user_input_lower = user_input.lower()
+        topic_lower = topic.lower()
+        
+        # Extract quality indicators from user input
+        quality_words = []
+        
+        # Check for specific quality indicators
+        if any(word in user_input_lower for word in ["interesting", "innovative", "creative", "unique"]):
+            quality_words.extend(["interesting", "innovative"])
+        elif any(word in user_input_lower for word in ["famous", "renowned", "iconic", "landmark"]):
+            quality_words.extend(["famous", "renowned"])
+        elif any(word in user_input_lower for word in ["best", "excellent", "outstanding", "award-winning"]):
+            quality_words.extend(["best", "award-winning"])
+        elif any(word in user_input_lower for word in ["modern", "contemporary", "cutting-edge"]):
+            quality_words.extend(["modern", "contemporary"])
+        elif any(word in user_input_lower for word in ["sustainable", "green", "eco-friendly"]):
+            quality_words.extend(["sustainable", "innovative"])
+        
+        # Add topic-specific quality modifiers
+        if topic_lower == "circulation":
+            if not quality_words:
+                quality_words.extend(["innovative", "interesting"])
+        elif topic_lower == "lighting":
+            if not quality_words:
+                quality_words.extend(["excellent", "innovative"])
+        elif topic_lower == "materials":
+            if not quality_words:
+                quality_words.extend(["innovative", "sustainable"])
+        elif topic_lower == "sustainability":
+            if not quality_words:
+                quality_words.extend(["leading", "innovative"])
+        
+        # Default quality modifiers if none found
+        if not quality_words:
+            quality_words = ["innovative", "interesting"]
+        
+        # Return the first 2-3 quality modifiers
+        return " ".join(quality_words[:2])
+
+    def _extract_topic_from_user_input(self, user_input: str) -> str:
+        """Extract the main architectural topic from user input"""
+        
+        # Common architectural topics
+        topic_keywords = {
+            "flexible spaces": ["flexible", "flexibility", "adaptable", "multi-use"],
+            "lighting": ["light", "lighting", "daylight", "illumination"],
+            "circulation": ["circulation", "flow", "movement", "path"],
+            "accessibility": ["access", "accessible", "universal design"],
+            "sustainability": ["sustainable", "green", "environmental", "eco"],
+            "materials": ["material", "finish", "texture", "surface"],
+            "structure": ["structure", "structural", "support", "frame"],
+            "acoustics": ["acoustic", "sound", "noise", "audio"],
+            "ventilation": ["ventilation", "air", "breathing", "fresh air"],
+            "shading": ["shade", "shading", "sun protection", "overhang"],
+            "community spaces": ["community", "social", "gathering", "public"],
+            "office design": ["office", "workplace", "work", "desk"],
+            "open plan": ["open plan", "open space", "open office"],
+            "private spaces": ["private", "quiet", "focus", "individual"],
+            "adaptive reuse": ["adaptive reuse", "adaptive", "reuse", "renovation", "retrofit", "conversion", "repurposing"],
+            "energy efficiency": ["energy", "efficient", "efficiency", "thermal", "insulation"],
+            "natural ventilation": ["natural ventilation", "cross ventilation", "passive cooling"],
+            "daylighting": ["daylighting", "daylight", "natural light", "sunlight"],
+            "passive design": ["passive", "passive design", "passive solar"],
+            "biophilic design": ["biophilic", "nature", "natural elements", "green walls"],
+            "universal design": ["universal design", "inclusive design", "accessibility"],
+            "modular design": ["modular", "modular design", "prefabricated", "prefab"],
+            "smart building": ["smart", "intelligent", "automation", "technology"],
+            "historic preservation": ["historic", "preservation", "heritage", "conservation"],
+            "urban design": ["urban", "city", "street", "public space"],
+            "landscape architecture": ["landscape", "garden", "outdoor", "green space"],
+            "interior design": ["interior", "furniture", "furnishings", "spatial design"],
+            "parametric design": ["parametric", "algorithmic", "computational", "digital fabrication"],
+            "prefabrication": ["prefabrication", "prefab", "modular construction", "off-site"],
+            "mass timber": ["mass timber", "cross laminated timber", "clt", "wood construction"],
+            "net zero": ["net zero", "zero energy", "carbon neutral", "sustainable"],
+            "green building": ["green building", "leed", "sustainable building", "eco-friendly"]
+        }
+        
+        user_input_lower = user_input.lower()
+        
+        # Find the most specific topic match (prioritize longer/more specific terms first)
+        # Sort topics by specificity (longer topic names first)
+        sorted_topics = sorted(topic_keywords.items(), key=lambda x: len(x[0]), reverse=True)
+        
+        # Check all topics for matches
+        for topic, keywords in sorted_topics:
+            if any(keyword in user_input_lower for keyword in keywords):
+                return topic
+        
+        # If no specific topic found, extract from user input
+        words = user_input_lower.split()
+        # Look for architectural terms
+        architectural_terms = ["space", "design", "building", "room", "area", "zone", "layout"]
+        for word in words:
+            if word in architectural_terms:
+                return f"{word} design"
+        
+        # Default to the gap_type if nothing specific found
+        return "design approach"
+
+    async def _synthesize_examples_from_results(self, knowledge_results: List[Dict], user_topic: str, building_type: str, project_context: str) -> str:
+        """Synthesize examples with titles and links; avoid truncation and ellipses; use how-phrasing."""
+
+        bt = (building_type or "project").replace("architectural project", "project")
+        header = f"Here are strong precedent examples showing how {bt} {user_topic} is handled:\n\n"
+        lines: List[str] = [header]
+
+        for i, result in enumerate(knowledge_results[:3], 1):
+            meta = result.get('metadata', {})
+            title = meta.get('title') or f'Example {i}'
+            url = meta.get('url') or ''
+            content = (result.get('content') or '').strip()
+            
+            # Extract full content without truncation - take first 2-3 sentences
+            summary = ''
+            if content:
+                # Split into sentences and take first 2-3 for better context
+                sentences = re.split(r'[.!?]+', content)
+                valid_sentences = [s.strip() for s in sentences if len(s.strip()) > 15]  # Only substantial sentences
+                
+                if valid_sentences:
+                    if len(valid_sentences) >= 2:
+                        # Take first 2 sentences for better context
+                        summary = valid_sentences[0] + '. ' + valid_sentences[1] + '.'
+                    else:
+                        # Take first sentence if only one substantial sentence
+                        summary = valid_sentences[0] + '.'
+                else:
+                    # Fallback: take first sentence even if short
+                    summary = sentences[0].strip() + '.' if sentences else ''
+            
+            # Format with clickable link if available
+            if url:
+                lines.append(f"{i}. **{title}**\n   🔗 {url}\n   {summary}\n")
+            else:
+                lines.append(f"{i}. **{title}**\n   {summary}\n")
+
+        # End with a question about the examples
+        lines.append(f"Which of these examples best fits how you want to approach {user_topic} in your {bt}?")
+        return "\n".join(lines)
+
+    async def _generate_ai_examples(self, user_input: str, building_type: str, project_context: str, user_topic: str) -> Dict[str, Any]:
+        """Generate AI-powered examples when search fails."""
+        
+        examples_text = f"Based on your request for {user_topic} examples in {building_type} architecture, here are some key projects to consider:\n\n"
+        
+        # Generate contextual examples based on building type and topic
+        if building_type == "museum" and "circulation" in user_topic.lower():
+            examples_text += "**1. Guggenheim Museum, New York** - Famous spiral circulation that creates a continuous journey through the art, eliminating the need for backtracking\n"
+            examples_text += "**2. Centre Pompidou, Paris** - Innovative circulation with exposed escalators and multiple access points, making movement itself an architectural feature\n"
+            examples_text += "**3. Tate Modern, London** - Adaptive reuse with clear circulation zones and flexible gallery spaces, creating intuitive visitor flow\n\n"
+        elif building_type == "museum":
+            examples_text += "**1. Louvre Pyramid, Paris** - Central circulation hub connecting multiple wings, creating a clear spatial hierarchy\n"
+            examples_text += "**2. Museum of Modern Art, New York** - Grid-based circulation with flexible gallery arrangements, allowing multiple viewing paths\n"
+            examples_text += "**3. Bilbao Guggenheim, Spain** - Organic circulation responding to urban context, with fluid transitions between spaces\n\n"
+        elif building_type == "school" and "circulation" in user_topic.lower():
+            examples_text += "**1. Orestad Gymnasium, Copenhagen** - Innovative circulation with learning streets and flexible movement zones\n"
+            examples_text += "**2. Green School, Bali** - Natural circulation paths that integrate with the landscape and learning environment\n"
+            examples_text += "**3. Ørestad College, Denmark** - Open circulation that promotes collaboration and chance encounters\n\n"
+        elif building_type == "office" and "circulation" in user_topic.lower():
+            examples_text += "**1. Google Campus, Mountain View** - Circulation as social space with multiple pathways and gathering areas\n"
+            examples_text += "**2. Bloomberg HQ, London** - Innovative circulation with ramps and open staircases promoting interaction\n"
+            examples_text += "**3. Apple Park, Cupertino** - Circular circulation that creates continuous flow and connection\n\n"
+        elif building_type == "residential" and "circulation" in user_topic.lower():
+            examples_text += "**1. Villa Savoye, France** - Promenade architecturale with circulation as architectural journey\n"
+            examples_text += "**2. Fallingwater, Pennsylvania** - Circulation that responds to natural topography and views\n"
+            examples_text += "**3. Casa da Música, Portugal** - Innovative circulation that creates spatial drama and flow\n\n"
+        else:
+            examples_text += "**1. High Line, New York** - Elevated circulation as public space and urban connector\n"
+            examples_text += "**2. Pompidou Center, Paris** - Exposed circulation as architectural expression and urban theater\n"
+            examples_text += "**3. Tate Modern, London** - Adaptive circulation for cultural programming and visitor experience\n\n"
+        
+        examples_text += f"These examples show how {user_topic} can enhance the user experience in {building_type} projects. "
+        examples_text += f"What specific aspects would you like to explore for your {project_context}?"
+        
+        return {
+            "response_text": examples_text,
+            "response_type": "ai_generated_examples",
+            "sources": [],
+            "examples_provided": True
+        }
+
+    async def _generate_premature_example_response(self, user_input: str, building_type: str, project_context: str) -> Dict[str, Any]:
+        """Generate response for premature example requests (cognitive offloading protection)."""
+        
+        response_text = f"I understand you're interested in {user_input.lower()} for your {building_type} project! "
+        response_text += f"However, let's first explore the fundamental principles together. "
+        response_text += f"What specific aspects of {user_input.lower()} are you most curious about? "
+        response_text += f"This will help us identify the most relevant examples for your {project_context}."
+        
+        return {
+            "response_text": response_text,
+            "response_type": "premature_example_guidance",
+            "sources": [],
+            "examples_provided": False
+        }
+
+    def _convert_to_agent_response(self, response_result: Dict[str, Any], state: ArchMentorState, 
+                                 context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
+        """Convert response result to AgentResponse format."""
+        
+        response_metadata = {
+            "agent": self.name,
+            "response_type": response_result.get("response_type", "knowledge_delivery"),
+            "knowledge_gap_addressed": context_classification.get("primary_gap", "general"),
+            "building_type": self._extract_building_type_from_context(state),
+            "user_input_addressed": "example_request" if response_result.get("examples_provided") else "knowledge_request",
+            "sources": response_result.get("sources", []),
+            "processing_method": "example_detection" if response_result.get("examples_provided") else "standard_knowledge"
+        }
+        
+        return ResponseBuilder.create_knowledge_response(
+            response_text=response_result.get("response_text", ""),
+            sources_used=response_result.get("sources", []),
+            metadata=response_metadata
+        ) 

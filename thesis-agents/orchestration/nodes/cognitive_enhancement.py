@@ -19,8 +19,26 @@ def make_cognitive_enhancement_node(cognitive_agent, state_validator, state_moni
         enhancement_result = await cognitive_agent.provide_challenge(
             student_state, context_classification, analysis_result, routing_decision
         )
-        if hasattr(enhancement_result, "response_text"):
-            enhancement_result = enhancement_result.to_dict()
+        
+        # Ensure enhancement_result is a dictionary, not an AgentResponse object
+        if hasattr(enhancement_result, 'to_dict'):
+            try:
+                enhancement_result = enhancement_result.to_dict()
+            except Exception as e:
+                logger.error(f"Failed to convert AgentResponse to dict: {e}")
+                # Fallback: create a basic dictionary
+                enhancement_result = {
+                    "response_text": str(enhancement_result),
+                    "response_type": "error",
+                    "error_message": f"Conversion failed: {e}"
+                }
+        elif not isinstance(enhancement_result, dict):
+            # If it's not a dict and doesn't have to_dict, convert to string
+            enhancement_result = {
+                "response_text": str(enhancement_result),
+                "response_type": "unknown",
+                "error_message": "Result was not an AgentResponse or dict"
+            }
 
         result_state = {**state, "cognitive_enhancement_result": enhancement_result}
 

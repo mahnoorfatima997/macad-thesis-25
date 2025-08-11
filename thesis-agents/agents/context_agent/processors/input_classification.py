@@ -186,13 +186,11 @@ class InputClassificationProcessor:
             return self._get_fallback_classification()
     
     def _classify_interaction_type(self, input_text: str, state: ArchMentorState = None) -> str:
-        """Enhanced interaction type classification with improved pattern matching and context awareness"""
+        """Enhanced interaction type classification from FROMOLDREPO - WORKING VERSION"""
 
         input_lower = input_text.lower()
 
-        # Note: Do not return 'question_response' as primary type; this is handled as thread context flag elsewhere
-
-        # ENHANCED PATTERN SYSTEM - Level 1: High-Confidence Patterns
+        # FROMOLDREPO PATTERN SYSTEM - Level 1: High-Confidence Patterns
 
         # 1. Direct Answer Request (Cognitive Offloading) - HIGH PRIORITY
         direct_answer_patterns = [
@@ -203,12 +201,19 @@ class InputClassificationProcessor:
         if any(pattern in input_lower for pattern in direct_answer_patterns):
             return "direct_answer_request"
 
+        # FROMOLDREPO: Check if this is a response to a previous question FIRST
+        if self._is_response_to_previous_question(input_text, state):
+            # If it's a response, classify based on response content
+            return self._classify_response_content(input_text, state)
+
         # 2. Example Request - HIGH PRIORITY
         example_request_patterns = [
             "show me examples", "can you give me examples", "provide me with examples",
             "can you show me precedents", "I need some references", "give me some examples",
             "can you provide", "precedent projects", "case studies", "examples of",
-            "can you give some examples", "can you give examples", "give me examples"
+            "can you give some examples", "can you give examples", "give me examples",
+            "example project", "example projects", "example building", "example buildings",
+            "museum examples", "building examples", "project examples", "design examples"
         ]
         if any(pattern in input_lower for pattern in example_request_patterns):
             return "example_request"
@@ -227,7 +232,9 @@ class InputClassificationProcessor:
         example_context_patterns = [
             "I want to see case studies", "I'd like to see some", "Can I get references",
             "I want to see precedents", "show me precedents", "I need references",
-            "I need some references", "precedent projects", "industrial buildings", "community centers"
+            "I need some references", "precedent projects", "industrial buildings", "community centers",
+            "for museums", "for residential", "for commercial", "for office", "for schools",
+            "museum project", "residential project", "commercial project", "office project"
         ]
         if any(pattern in input_lower for pattern in example_context_patterns):
             return "example_request"
@@ -262,7 +269,7 @@ class InputClassificationProcessor:
 
         # 7.5. Enhanced "can you provide" pattern disambiguation
         if "can you provide" in input_lower:
-            if any(word in input_lower for word in ["examples", "precedents", "case studies", "references", "projects"]):
+            if any(word in input_lower for word in ["examples", "precedents", "case studies", "references", "projects", "project", "example"]):
                 return "example_request"
             elif any(word in input_lower for word in ["information", "details", "explanation", "help"]):
                 return "knowledge_request"
@@ -280,10 +287,10 @@ class InputClassificationProcessor:
                 # Let AI handle ambiguous "tell me" cases
                 return "unknown"
 
-        # 9. Disambiguate "what is" patterns
-        if "what is" in input_lower:
+        # 9. Disambiguate "what is/are" patterns - ENHANCED: Added "what are" support
+        if "what is" in input_lower or "what are" in input_lower:
             # Check if it's asking for technical information
-            technical_indicators = ["requirement", "standard", "code", "regulation", "specification", "technical"]
+            technical_indicators = ["requirement", "requirements", "standard", "standards", "code", "codes", "regulation", "regulations", "specification", "specifications", "technical", "ada", "ibc", "building code"]
             if any(indicator in input_lower for indicator in technical_indicators):
                 return "technical_question"
             else:
@@ -294,7 +301,9 @@ class InputClassificationProcessor:
         # 10. Feedback request detection
         feedback_patterns = [
             "feedback", "review", "critique", "evaluate", "assess",
-            "what do you think", "how is this", "is this good", "am i on track"
+            "what do you think", "how is this", "is this good", "am i on track",
+            "what's your take", "your thoughts", "should we", "should i",
+            "would you", "do you think", "your opinion", "feedback on"
         ]
         if any(pattern in input_lower for pattern in feedback_patterns):
             return "feedback_request"
@@ -324,10 +333,18 @@ class InputClassificationProcessor:
         if any(pattern in input_lower for pattern in improvement_patterns):
             return "improvement_seeking"
 
-        # 14. Implementation request detection (HIGHER PRIORITY)
+        # 14. Implementation request detection (ENHANCED PATTERNS)
         implementation_patterns = [
             "how do i", "how should i", "what steps", "how to implement",
-            "how to start", "how to begin", "what should i do", "what steps should i"
+            "how to start", "how to begin", "what should i do", "what steps should i",
+            # ENHANCED: Add design action patterns that indicate user is taking action
+            "i'll try", "i will try", "i'm going to", "i plan to",
+            "let me try", "i want to try", "i think i'll",
+            "first i'll", "next i'll", "then i'll",
+            "i'll start by", "i'll begin with", "my approach is",
+            "i'm thinking of", "i'd like to test", "i want to explore",
+            "shifting the", "moving the", "changing the", "testing a change",
+            "trying a different", "experimenting with", "i think the first thing"
         ]
         if any(pattern in input_lower for pattern in implementation_patterns):
             return "implementation_request"
@@ -345,6 +362,102 @@ class InputClassificationProcessor:
         # 16. Default based on question mark presence
         if "?" in input_text:
             return "general_question"
+        else:
+            return "general_statement"
+
+    def _is_response_to_previous_question(self, current_input: str, state: ArchMentorState) -> bool:
+        """Check if the current input is a response to a previous question from the assistant (FROM FROMOLDREPO)"""
+
+        if not state or not hasattr(state, 'messages') or not state.messages or len(state.messages) < 2:
+            return False
+
+        # Get the last assistant message (should be the most recent message)
+        last_assistant_message = None
+        for message in reversed(state.messages):
+            if message.get("role") == "assistant":
+                last_assistant_message = message.get("content", "")
+                break
+
+        if not last_assistant_message:
+            return False
+
+        # Check if the last assistant message contains a question
+        assistant_message_lower = last_assistant_message.lower()
+
+        # More precise question detection - check for actual question patterns
+        has_question_mark = "?" in last_assistant_message
+
+        # Question words that typically start questions (more specific)
+        question_starters = [
+            "how", "what", "why", "when", "where", "which", "who",
+            "can you", "could you", "would you", "do you", "are you",
+            "think about", "consider", "imagine", "suppose", "what if",
+            "how might", "what might", "why might", "when might"
+        ]
+
+        # Check if any question starter appears at the beginning of a sentence or after punctuation
+        has_question_starter = False
+        for starter in question_starters:
+            # Check if it appears at the start of the message or after sentence-ending punctuation
+            if (assistant_message_lower.startswith(starter) or
+                f". {starter}" in assistant_message_lower or
+                f"? {starter}" in assistant_message_lower or
+                f"! {starter}" in assistant_message_lower or
+                f": {starter}" in assistant_message_lower):
+                has_question_starter = True
+                break
+
+        assistant_asked_question = has_question_mark or has_question_starter
+
+        # Now check if the current user input looks like a response
+        current_input_lower = current_input.lower()
+
+        # Response indicators in user's message (FROM FROMOLDREPO)
+        response_indicators = [
+            "i would", "i will", "i think", "i believe", "i feel", "i see",
+            "i understand", "i know", "i can", "i should", "i might",
+            "yes", "no", "because", "since", "as", "therefore", "however",
+            "i would keep", "i would use", "i would add", "i would create",
+            "i would highlight", "i would maintain", "i would preserve",
+            "i would combine", "i would balance", "i would integrate",
+            "interests me the most", "i am most interested in", "i would choose",
+            "it's going to be", "it will be", "we've got", "they'll need",
+            "it should be", "i like that", "plus it's", "figuring out how to"
+        ]
+
+        # Check if user input contains response indicators
+        user_gave_response = any(indicator in current_input_lower for indicator in response_indicators)
+
+        return assistant_asked_question and user_gave_response
+
+    def _classify_response_content(self, input_text: str, state: ArchMentorState) -> str:
+        """Classify the content of a response to a previous question (FROM FROMOLDREPO)"""
+
+        input_lower = input_text.lower()
+
+        # Enhanced response detection: Check if user is describing their project/ideas
+        project_description_indicators = [
+            "it's going to be", "it will be", "we've got", "they'll need",
+            "it should be", "i like that", "plus it's", "figuring out how to",
+            "the main purpose", "the users will be", "the space needs to",
+            "i am considering", "i am working on", "my project is",
+            "i will place", "i would place", "i'd place", "i'll place",
+            "i will organize", "i would organize", "i'd organize", "i'll organize",
+            "i will design", "i would design", "i'd design", "i'll design"
+        ]
+
+        describing_project = any(indicator in input_lower for indicator in project_description_indicators)
+
+        if describing_project:
+            return "design_problem"  # User is describing their design approach
+
+        # Check for other response types
+        if any(word in input_lower for word in ["confused", "don't understand", "unclear", "help"]):
+            return "confusion_expression"
+        elif any(word in input_lower for word in ["example", "examples", "precedent", "case study"]):
+            return "example_request"
+        elif any(word in input_lower for word in ["what is", "how does", "tell me about"]):
+            return "knowledge_request"
         else:
             return "general_statement"
     
@@ -794,11 +907,13 @@ class InputClassificationProcessor:
         Classify the student's input into these clear categories:
 
         1. INTERACTION TYPE (most important for routing):
+        - design_problem: Describing design actions/decisions: "I'm designing", "I will place", "I would organize", "My approach is", "I'd design", "I'll create", "I plan to"
         - example_request: ANY mention of "example", "examples", "project", "projects", "precedent", "case study", "show me", "can you provide", "real project", "built project"
         - feedback_request: Asks for review, feedback, thoughts, critique, evaluation, "what do you think", "how does this look"
-        - technical_question: Asks about specific standards, requirements, codes, procedures, "what are the requirements", "how many", "what size"
-        - confusion_expression: Shows confusion, uncertainty, "I don't understand", "help me", "I'm lost", "unclear"
+        - technical_question: Asks about specific standards, requirements, codes, procedures, "what are the requirements", "how many", "what size", "how do I calculate"
+        - confusion_expression: Shows confusion, uncertainty, "I don't understand", "help me", "I'm lost", "unclear", "I don't know how"
         - improvement_seeking: Wants to improve, enhance, fix, "how can I", "ways to improve", "make it better"
+        - direct_answer_request: Asking for solutions: "design this for me", "tell me what to do", "give me the answer", "solve this"
         - knowledge_seeking: Asks for information, explanations, "what is", "how do", "can you explain"
         - general_statement: Standard conversation or comments
 
@@ -819,13 +934,14 @@ class InputClassificationProcessor:
 
         Respond in valid JSON format:
         {{
-            "interaction_type": "example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|knowledge_seeking|general_statement",
+            "interaction_type": "design_problem|example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|direct_answer_request|knowledge_seeking|general_statement",
             "confidence_level": "overconfident|uncertain|confident",
             "understanding_level": "low|medium|high",
             "engagement_level": "low|medium|high",
             "is_example_request": true/false,
             "is_feedback_request": true/false,
             "is_technical_question": true/false,
+            "is_design_problem": true/false,
             "shows_confusion": true/false,
             "requests_help": true/false,
             "demonstrates_overconfidence": true/false,
@@ -972,8 +1088,19 @@ class InputClassificationProcessor:
         ]
         improvement_seeking = any(indicator in input_lower for indicator in improvement_indicators)
 
-        # DETERMINE INTERACTION TYPE - PRIORITIZE EXAMPLE REQUESTS
-        if is_example_request:
+        # Check for design problem patterns (FROMOLDREPO style)
+        design_problem_indicators = [
+            "i'm designing", "i will place", "i would place", "i'd place", "i'll place",
+            "i will organize", "i would organize", "i'd organize", "i'll organize",
+            "i will design", "i would design", "i'd design", "i'll design",
+            "my approach is", "my strategy is", "my plan is", "i plan to"
+        ]
+        is_design_problem = any(indicator in input_lower for indicator in design_problem_indicators)
+
+        # DETERMINE INTERACTION TYPE - PRIORITIZE DESIGN PROBLEMS
+        if is_design_problem:
+            interaction_type = "design_problem"
+        elif is_example_request:
             interaction_type = "example_request"
         elif is_feedback_request:
             interaction_type = "feedback_request"
@@ -1025,7 +1152,8 @@ class InputClassificationProcessor:
             "overconfidence_score": overconfidence_score,
             "is_technical_question": is_technical_question,
             "is_feedback_request": is_feedback_request,
-            "is_example_request": is_example_request,  # ← THIS IS KEY
+            "is_example_request": is_example_request,
+            "is_design_problem": is_design_problem,  # ← ADDED THIS
             "shows_confusion": shows_confusion,
             "requests_help": requests_help,
             "demonstrates_overconfidence": overconfidence_score >= 1,

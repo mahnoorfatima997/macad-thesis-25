@@ -4,8 +4,8 @@ Configuration constants and settings for the Domain Expert Agent.
 
 from typing import Dict, List, Any
 
-# Model configuration
-DEFAULT_MODEL = "gpt-4o"
+# Model configuration - ENHANCED: Updated to GPT-4o-mini per FROMOLDREPO
+DEFAULT_MODEL = "gpt-4o-mini"
 DEFAULT_TEMPERATURE = 0.7
 MAX_TOKENS = 1500  # Increased for generous academic responses
 
