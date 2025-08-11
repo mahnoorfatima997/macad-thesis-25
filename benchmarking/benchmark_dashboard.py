@@ -39,6 +39,8 @@ try:
     from linkography_visualization import LinkographVisualizer
     from linkography_enhanced import EnhancedLinkographVisualizer, create_breakthrough_detection_chart
     from linkography_types import LinkographSession
+    from linkography_session_insights import LinkographyInsightExtractor
+    from integrated_conclusion_analyzer import IntegratedConclusionAnalyzer, HolisticConclusion
     LINKOGRAPHY_AVAILABLE = True
 except ImportError as e:
     LINKOGRAPHY_AVAILABLE = False
@@ -3276,6 +3278,789 @@ class BenchmarkDashboard:
             analyzer.save_linkography_results(linkograph_sessions)
             st.success("Linkography data exported to results/linkography_analysis/")
     
+    def render_integrated_conclusions(self):
+        """Render integrated conclusions that synthesize insights across all analytical domains"""
+        st.markdown('<h2 class="sub-header">Integrated Session Conclusions</h2>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        This section provides holistic conclusions by synthesizing insights from all analytical domains:
+        Linkography, Cognitive Metrics, Agent Effectiveness, Learning Progression, Proficiency Analysis, 
+        and Anthropomorphism Detection.
+        """)
+        
+        if not LINKOGRAPHY_AVAILABLE:
+            st.warning("Integrated conclusions require linkography modules to be available.")
+            return
+        
+        # Initialize analyzers
+        conclusion_analyzer = IntegratedConclusionAnalyzer()
+        insight_extractor = LinkographyInsightExtractor()
+        
+        # Session selector
+        st.markdown("### Select Session for Detailed Analysis")
+        
+        session_ids = list(self.evaluation_reports.keys())
+        if not session_ids:
+            st.warning("No evaluation sessions found.")
+            return
+        
+        selected_session = st.selectbox(
+            "Choose a session to analyze:",
+            session_ids,
+            format_func=lambda x: f"Session {x[:8]}..." if len(x) > 8 else f"Session {x}"
+        )
+        
+        # Generate holistic conclusion for selected session
+        with st.spinner("Analyzing session across all domains..."):
+            # Gather data from different sources
+            linkography_data = None
+            cognitive_data = None
+            agent_data = None
+            learning_data = None
+            proficiency_data = None
+            anthropomorphism_data = None
+            
+            # Extract data for the selected session
+            if selected_session in self.evaluation_reports:
+                report = self.evaluation_reports[selected_session]
+                session_metrics = report.get('session_metrics', {})
+                
+                # Extract cognitive metrics
+                cognitive_data = {
+                    'cognitive_offloading_prevention': session_metrics.get('cognitive_offloading_prevention', {}).get('overall_rate', 0),
+                    'deep_thinking_engagement': session_metrics.get('deep_thinking_engagement', {}).get('overall_rate', 0),
+                    'knowledge_integration': session_metrics.get('knowledge_integration', {}).get('integration_rate', 0),
+                    'scaffolding_effectiveness': session_metrics.get('scaffolding_effectiveness', {}).get('overall_rate', 0)
+                }
+                
+                # Extract agent effectiveness
+                agent_data = {
+                    'agent_coordination_score': session_metrics.get('agent_coordination_score', 0),
+                    'response_quality': session_metrics.get('response_quality', {}).get('overall_score', 0),
+                    'routing_appropriateness': session_metrics.get('routing_appropriateness', {}).get('accuracy', 0)
+                }
+                
+                # Extract learning progression
+                learning_data = {
+                    'learning_progression': session_metrics.get('learning_progression', {}).get('overall_progress', 0),
+                    'metacognitive_awareness': session_metrics.get('metacognitive_awareness', {}).get('awareness_score', 0)
+                }
+                
+                # Extract proficiency data
+                proficiency_data = {
+                    'proficiency_level': report.get('proficiency_level', 'intermediate'),
+                    'classification_confidence': 0.75  # Default confidence
+                }
+                
+                # Extract anthropomorphism data if available
+                if 'anthropomorphism_metrics' in session_metrics:
+                    anthropomorphism_data = {
+                        'cognitive_autonomy_index': session_metrics['anthropomorphism_metrics'].get('cognitive_autonomy_index', 0.5),
+                        'anthropomorphism_score': session_metrics['anthropomorphism_metrics'].get('anthropomorphism_dependency_score', 0.5)
+                    }
+            
+            # Try to get linkography data from the aggregated report
+            try:
+                with open('benchmarking/results/aggregated_linkography_report.json', 'r') as f:
+                    linkography_report = json.load(f)
+                    if selected_session in linkography_report.get('session_details', {}):
+                        linkography_data = linkography_report['session_details'][selected_session]
+            except:
+                pass
+            
+            # Generate holistic conclusion
+            conclusion = conclusion_analyzer.analyze_session(
+                session_id=selected_session,
+                linkography_data=linkography_data,
+                cognitive_data=cognitive_data,
+                agent_data=agent_data,
+                learning_data=learning_data,
+                proficiency_data=proficiency_data,
+                anthropomorphism_data=anthropomorphism_data
+            )
+        
+        # Display results in multiple formats
+        
+        # Display session group information from master metrics
+        session_group = "Unknown"
+        if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+            session_data = self.master_session_metrics[self.master_session_metrics['session_id'] == selected_session]
+            if not session_data.empty and 'test_group' in session_data.columns:
+                session_group = session_data['test_group'].iloc[0]
+        
+        # Style the group label with appropriate color
+        group_color = {
+            'MENTOR': THESIS_COLORS['primary_dark'],
+            'GENERIC_AI': THESIS_COLORS['primary_violet'],
+            'NON_AI': THESIS_COLORS['accent_coral']
+        }.get(session_group, THESIS_COLORS['neutral_warm'])
+        
+        st.markdown(f"**Selected Session:** {selected_session[:8]}... | **Group:** <span style='color:{group_color}; font-weight:bold'>{session_group}</span>", unsafe_allow_html=True)
+        
+        # 1. Executive Summary Card
+        st.markdown("### Executive Summary")
+        
+        col1, col2, col3 = st.columns([2, 1, 1])
+        with col1:
+            st.markdown(conclusion.executive_summary)
+        with col2:
+            effectiveness_label = (
+                "HIGH" if conclusion.overall_effectiveness >= 0.7 else
+                "MODERATE" if conclusion.overall_effectiveness >= 0.4 else
+                "LOW"
+            )
+            st.metric(
+                "Overall Effectiveness",
+                f"{effectiveness_label}: {conclusion.overall_effectiveness:.1%}",
+                delta=None
+            )
+        with col3:
+            confidence_label = (
+                "HIGH" if conclusion.confidence_score >= 0.8 else
+                "MODERATE" if conclusion.confidence_score >= 0.6 else
+                "LOW"
+            )
+            st.metric(
+                "Confidence Score",
+                f"{confidence_label}: {conclusion.confidence_score:.1%}",
+                delta=None
+            )
+        
+        # 2. Session Performance Visualizations
+        st.markdown("### Session Performance Visualizations")
+        
+        # Create columns for visualizations
+        viz_col1, viz_col2 = st.columns(2)
+        
+        with viz_col1:
+            # Radar chart for multi-domain performance
+            radar_fig = conclusion_analyzer.create_session_radar_chart(conclusion)
+            st.plotly_chart(radar_fig, use_container_width=True)
+        
+        with viz_col2:
+            # Domain comparison bar chart
+            comparison_fig = conclusion_analyzer.create_domain_comparison_chart(conclusion)
+            st.plotly_chart(comparison_fig, use_container_width=True)
+        
+        # 3. Domain Breakdown Table
+        st.markdown("### Detailed Domain Analysis")
+        
+        if conclusion.domain_insights:
+            breakdown_fig = conclusion_analyzer.create_session_breakdown_table(conclusion)
+            st.plotly_chart(breakdown_fig, use_container_width=True)
+        
+        # 4. Hierarchical Performance Sunburst
+        st.markdown("### Hierarchical Performance Breakdown")
+        sunburst_fig = conclusion_analyzer.create_pattern_sunburst(conclusion)
+        st.plotly_chart(sunburst_fig, use_container_width=True)
+        
+        # Additional Session-Specific Visualizations
+        st.markdown("---")
+        st.markdown("## Session-Specific Analysis from All Domains")
+        
+        # Extract session metrics from master data
+        session_metrics_dict = {}
+        if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+            session_data = self.master_session_metrics[self.master_session_metrics['session_id'] == selected_session]
+            if not session_data.empty:
+                session_metrics_dict = session_data.iloc[0].to_dict()
+        
+        # Tab-based organization for different analysis domains
+        tab1, tab2, tab3, tab4 = st.tabs([
+            "Cognitive Patterns",
+            "Learning Progression", 
+            "Proficiency Analysis",
+            "Anthropomorphism"
+        ])
+        
+        with tab1:
+            st.markdown("### Cognitive Patterns Analysis")
+            
+            # Get session report data
+            if selected_session in self.evaluation_reports:
+                session_report = self.evaluation_reports[selected_session]
+                session_metrics = session_report.get('session_metrics', {})
+                
+                # Display the same visualizations as in Cognitive Metrics section
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Cognitive metrics radar chart
+                    categories = ['Offloading Prevention', 'Deep Thinking', 'Scaffolding', 
+                                 'Knowledge Integration', 'Sustained Engagement']
+                    
+                    values = [
+                        session_metrics.get('cognitive_offloading_prevention', {}).get('overall_rate', 0),
+                        session_metrics.get('deep_thinking_engagement', {}).get('overall_rate', 0),
+                        session_metrics.get('scaffolding_effectiveness', {}).get('overall_rate', 0),
+                        session_metrics.get('knowledge_integration', {}).get('integration_rate', 0),
+                        session_metrics.get('sustained_engagement', {}).get('overall_rate', 0)
+                    ]
+                    
+                    fig_radar = go.Figure()
+                    fig_radar.add_trace(go.Scatterpolar(
+                        r=values + [values[0]],  # Close the polygon
+                        theta=categories + [categories[0]],
+                        fill='toself',
+                        name='Current Session',
+                        fillcolor='rgba(92, 79, 115, 0.3)',
+                        line=dict(color=THESIS_COLORS['primary_purple'], width=2)
+                    ))
+                    
+                    fig_radar.update_layout(
+                        polar=dict(
+                            radialaxis=dict(visible=True, range=[0, 1])
+                        ),
+                        title="Cognitive Metrics Performance",
+                        height=400
+                    )
+                    st.plotly_chart(fig_radar, use_container_width=True)
+                
+                with col2:
+                    # Routing appropriateness breakdown
+                    routing_data = session_metrics.get('routing_appropriateness', {})
+                    
+                    if routing_data:
+                        fig_routing = go.Figure(go.Bar(
+                            x=['Overall', 'Improvement', 'General'],
+                            y=[
+                                routing_data.get('overall_appropriateness', 0),
+                                routing_data.get('by_context', {}).get('improvement_seeking', 0),
+                                routing_data.get('by_context', {}).get('general_statement', 0)
+                            ],
+                            marker_color=[THESIS_COLORS['primary_dark'], THESIS_COLORS['primary_purple'], THESIS_COLORS['primary_violet']],
+                            text=[f"{v:.1%}" for v in [
+                                routing_data.get('overall_appropriateness', 0),
+                                routing_data.get('by_context', {}).get('improvement_seeking', 0),
+                                routing_data.get('by_context', {}).get('general_statement', 0)
+                            ]],
+                            textposition='outside'
+                        ))
+                        
+                        fig_routing.update_layout(
+                            title="Agent Routing Appropriateness",
+                            yaxis=dict(range=[0, 1], tickformat='.0%'),
+                            height=400
+                        )
+                        st.plotly_chart(fig_routing, use_container_width=True)
+        
+        with tab2:
+            st.markdown("### Learning Progression Analysis")
+            
+            # Display session-specific learning progression data
+            if selected_session in self.evaluation_reports:
+                session_report = self.evaluation_reports[selected_session]
+                session_metrics = session_report.get('session_metrics', {})
+                
+                # Create learning progression timeline for this specific session
+                improvement_data = session_report.get('comparative_analysis', {}).get('vs_baseline', {})
+                
+                # Display key metrics
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    overall_improvement = improvement_data.get('overall_improvement', 0)
+                    st.metric("Overall Improvement", f"{overall_improvement:.1f}%")
+                with col2:
+                    deep_thinking_improvement = improvement_data.get('deep_thinking_engagement_improvement', 0)
+                    st.metric("Deep Thinking Progress", f"{deep_thinking_improvement:.1f}%")
+                with col3:
+                    knowledge_retention = improvement_data.get('knowledge_retention_improvement', 0)
+                    st.metric("Knowledge Retention", f"{knowledge_retention:.1f}%")
+                with col4:
+                    critical_thinking = improvement_data.get('critical_thinking_development_improvement', 0)
+                    st.metric("Critical Thinking", f"{critical_thinking:.1f}%")
+                
+                # Create improvement breakdown chart
+                improvements = {
+                    'Cognitive Offloading': improvement_data.get('cognitive_offloading_rate_improvement', 0),
+                    'Deep Thinking': improvement_data.get('deep_thinking_engagement_improvement', 0),
+                    'Knowledge Retention': improvement_data.get('knowledge_retention_improvement', 0),
+                    'Metacognitive Awareness': improvement_data.get('metacognitive_awareness_improvement', 0),
+                    'Creative Problem Solving': improvement_data.get('creative_problem_solving_improvement', 0),
+                    'Critical Thinking': improvement_data.get('critical_thinking_development_improvement', 0)
+                }
+                
+                fig_improvement = go.Figure(go.Bar(
+                    x=list(improvements.keys()),
+                    y=list(improvements.values()),
+                    marker_color=[
+                        THESIS_COLORS['primary_dark'] if v > 0 else THESIS_COLORS['accent_coral']
+                        for v in improvements.values()
+                    ],
+                    text=[f"{v:.1f}%" for v in improvements.values()],
+                    textposition='outside'
+                ))
+                
+                fig_improvement.update_layout(
+                    title="Improvement Over Baseline by Dimension",
+                    yaxis=dict(title="Improvement (%)", range=[-120, 120]),
+                    height=400
+                )
+                st.plotly_chart(fig_improvement, use_container_width=True)
+                
+                # Skill progression visualization
+                skill_progression = session_metrics.get('skill_progression', {})
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("#### Skill Level Progression")
+                    st.markdown(f"**Initial Level:** {skill_progression.get('initial_level', 'intermediate').upper()}")
+                    st.markdown(f"**Final Level:** {skill_progression.get('final_level', 'intermediate').upper()}")
+                    st.markdown(f"**Progression Score:** {skill_progression.get('progression_score', 0):.1%}")
+                    st.markdown(f"**Stability:** {skill_progression.get('stability', 0):.1%}")
+                
+                with col2:
+                    # Conceptual understanding breakdown
+                    conceptual = session_metrics.get('conceptual_understanding', {})
+                    indicators = conceptual.get('indicator_distribution', {})
+                    
+                    if indicators:
+                        fig_concept = go.Figure(go.Bar(
+                            x=list(indicators.keys()),
+                            y=list(indicators.values()),
+                            marker_color=CHART_COLORS['bar_chart'][:len(indicators)],
+                            text=[f"{v}" for v in indicators.values()],
+                            textposition='outside'
+                        ))
+                        
+                        fig_concept.update_layout(
+                            title="Conceptual Understanding Indicators",
+                            yaxis=dict(title="Count"),
+                            height=300
+                        )
+                        st.plotly_chart(fig_concept, use_container_width=True)
+        
+        with tab3:
+            st.markdown("### Proficiency Analysis")
+            
+            # Get session-specific proficiency data
+            if selected_session in self.evaluation_reports:
+                session_report = self.evaluation_reports[selected_session]
+                session_metrics = session_report.get('session_metrics', {})
+                
+                # Get proficiency level from master metrics if available
+                proficiency_level = 'intermediate'
+                if self.master_session_metrics is not None and not self.master_session_metrics.empty:
+                    session_data = self.master_session_metrics[self.master_session_metrics['session_id'] == selected_session]
+                    if not session_data.empty and 'proficiency_level' in session_data.columns:
+                        proficiency_level = session_data['proficiency_level'].iloc[0]
+                
+                # Display proficiency level with color coding
+                prof_color = get_proficiency_color(proficiency_level)
+                st.markdown(f"**Proficiency Level:** <span style='color:{prof_color}; font-weight:bold'>{proficiency_level.upper()}</span>", unsafe_allow_html=True)
+                
+                # Create two columns for visualizations
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Question quality and reflection depth
+                    question_metrics = session_metrics.get('question_quality', {})
+                    reflection_metrics = session_metrics.get('reflection_depth', {})
+                    
+                    quality_score = question_metrics.get('quality_score', 0) if isinstance(question_metrics, dict) else question_metrics
+                    depth_score = reflection_metrics.get('depth_score', 0) if isinstance(reflection_metrics, dict) else reflection_metrics
+                    
+                    fig_quality = go.Figure()
+                    
+                    # Add quality gauge
+                    fig_quality.add_trace(go.Indicator(
+                        mode="gauge+number",
+                        value=quality_score * 100,
+                        title={'text': "Question Quality"},
+                        domain={'x': [0, 0.45], 'y': [0, 1]},
+                        gauge={
+                            'axis': {'range': [None, 100]},
+                            'bar': {'color': THESIS_COLORS['primary_purple']},
+                            'steps': [
+                                {'range': [0, 50], 'color': THESIS_COLORS['neutral_light']},
+                                {'range': [50, 80], 'color': THESIS_COLORS['primary_pink']},
+                                {'range': [80, 100], 'color': THESIS_COLORS['primary_violet']}
+                            ],
+                            'threshold': {
+                                'line': {'color': THESIS_COLORS['primary_dark'], 'width': 4},
+                                'thickness': 0.75,
+                                'value': 70
+                            }
+                        }
+                    ))
+                    
+                    # Add depth gauge
+                    fig_quality.add_trace(go.Indicator(
+                        mode="gauge+number",
+                        value=depth_score * 100,
+                        title={'text': "Reflection Depth"},
+                        domain={'x': [0.55, 1], 'y': [0, 1]},
+                        gauge={
+                            'axis': {'range': [None, 100]},
+                            'bar': {'color': THESIS_COLORS['primary_violet']},
+                            'steps': [
+                                {'range': [0, 50], 'color': THESIS_COLORS['neutral_light']},
+                                {'range': [50, 80], 'color': THESIS_COLORS['primary_pink']},
+                                {'range': [80, 100], 'color': THESIS_COLORS['primary_purple']}
+                            ],
+                            'threshold': {
+                                'line': {'color': THESIS_COLORS['primary_dark'], 'width': 4},
+                                'thickness': 0.75,
+                                'value': 70
+                            }
+                        }
+                    ))
+                    
+                    fig_quality.update_layout(height=300)
+                    st.plotly_chart(fig_quality, use_container_width=True)
+                
+                with col2:
+                    # Metacognitive development metrics
+                    metacognitive = session_metrics.get('metacognitive_development', {})
+                    
+                    fig_meta = go.Figure()
+                    
+                    categories = ['Reflection Rate', 'Confidence', 'Self-Awareness']
+                    values = [
+                        metacognitive.get('reflection_rate', 0),
+                        abs(metacognitive.get('confidence_progression', 0)),  # Use absolute value
+                        metacognitive.get('self_awareness_score', 0)
+                    ]
+                    
+                    fig_meta.add_trace(go.Scatterpolar(
+                        r=values + [values[0]],
+                        theta=categories + [categories[0]],
+                        fill='toself',
+                        fillcolor='rgba(184, 113, 137, 0.3)',
+                        line=dict(color=THESIS_COLORS['primary_rose'], width=2),
+                        marker=dict(size=8, color=THESIS_COLORS['primary_dark'])
+                    ))
+                    
+                    fig_meta.update_layout(
+                        polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+                        title="Metacognitive Development",
+                        height=300
+                    )
+                    st.plotly_chart(fig_meta, use_container_width=True)
+        
+        with tab4:
+            st.markdown("### Anthropomorphism Analysis")
+            
+            # Get session-specific data
+            if selected_session in self.evaluation_reports:
+                session_report = self.evaluation_reports[selected_session]
+                session_metrics = session_report.get('session_metrics', {})
+                
+                # Extract or generate anthropomorphism metrics
+                if 'anthropomorphism_metrics' in session_metrics:
+                    anthro_metrics = session_metrics['anthropomorphism_metrics']
+                else:
+                    # Generate from available metrics
+                    prevention_rate = session_metrics.get('cognitive_offloading_prevention', {}).get('overall_rate', 0.5)
+                    deep_thinking = session_metrics.get('deep_thinking_engagement', {}).get('overall_rate', 0.5)
+                    
+                    anthro_metrics = {
+                        'cognitive_autonomy_index': prevention_rate,
+                        'anthropomorphism_dependency_score': 1 - prevention_rate,
+                        'neural_engagement_score': deep_thinking,
+                        'professional_boundary_index': 0.85  # Default professional boundary
+                    }
+                
+                # Display key metrics
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    cai = anthro_metrics.get('cognitive_autonomy_index', 0.5)
+                    st.metric(
+                        "Cognitive Autonomy",
+                        f"{cai:.1%}",
+                        delta=f"{(cai - 0.6) * 100:.1f}%" if cai != 0.5 else None
+                    )
+                
+                with col2:
+                    ads = anthro_metrics.get('anthropomorphism_dependency_score', 0.5)
+                    st.metric(
+                        "AI Dependency",
+                        f"{ads:.1%}",
+                        delta=f"{(ads - 0.3) * 100:.1f}%" if ads != 0.5 else None,
+                        delta_color="inverse"
+                    )
+                
+                with col3:
+                    nes = anthro_metrics.get('neural_engagement_score', 0.5)
+                    st.metric(
+                        "Neural Engagement",
+                        f"{nes:.1%}",
+                        delta=f"{(nes - 0.5) * 100:.1f}%" if nes != 0.5 else None
+                    )
+                
+                with col4:
+                    pbi = anthro_metrics.get('professional_boundary_index', 0.85)
+                    st.metric(
+                        "Professional Boundary",
+                        f"{pbi:.1%}",
+                        delta=f"{(pbi - 0.85) * 100:.1f}%" if pbi != 0.85 else None
+                    )
+                
+                # Create visualizations
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Dependency risk quadrant
+                    fig_risk = go.Figure()
+                    
+                    # Add quadrant backgrounds
+                    fig_risk.add_shape(type="rect", x0=0, x1=0.5, y0=0, y1=0.5,
+                                      fillcolor='rgba(205, 118, 109, 0.2)')  # High risk
+                    fig_risk.add_shape(type="rect", x0=0.5, x1=1, y0=0, y1=0.5,
+                                      fillcolor='rgba(217, 156, 102, 0.2)')  # Moderate risk
+                    fig_risk.add_shape(type="rect", x0=0, x1=0.5, y0=0.5, y1=1,
+                                      fillcolor='rgba(120, 76, 128, 0.2)')  # Moderate risk
+                    fig_risk.add_shape(type="rect", x0=0.5, x1=1, y0=0.5, y1=1,
+                                      fillcolor='rgba(79, 58, 62, 0.2)')  # Optimal
+                    
+                    # Add current session point
+                    fig_risk.add_trace(go.Scatter(
+                        x=[cai],
+                        y=[1 - ads],
+                        mode='markers+text',
+                        marker=dict(
+                            size=20,
+                            color=THESIS_COLORS['primary_purple'],
+                            line=dict(color=THESIS_COLORS['primary_dark'], width=3)
+                        ),
+                        text=['Current'],
+                        textposition='top center',
+                        showlegend=False
+                    ))
+                    
+                    # Add labels
+                    fig_risk.add_annotation(x=0.25, y=0.25, text="HIGH RISK",
+                                           showarrow=False, font=dict(size=10, color=THESIS_COLORS['accent_coral']))
+                    fig_risk.add_annotation(x=0.75, y=0.75, text="OPTIMAL",
+                                           showarrow=False, font=dict(size=10, color=THESIS_COLORS['primary_dark']))
+                    
+                    fig_risk.update_layout(
+                        title="Dependency Risk Assessment",
+                        xaxis=dict(title="Cognitive Autonomy", range=[0, 1], tickformat='.0%'),
+                        yaxis=dict(title="Independence", range=[0, 1], tickformat='.0%'),
+                        height=400,
+                        plot_bgcolor='white'
+                    )
+                    st.plotly_chart(fig_risk, use_container_width=True)
+                
+                with col2:
+                    # Multi-dimensional radar
+                    categories = ['Autonomy', 'Independence', 'Neural Engagement', 
+                                 'Professional Boundary', 'Critical Thinking']
+                    
+                    values = [
+                        cai,
+                        1 - ads,
+                        nes,
+                        pbi,
+                        session_metrics.get('deep_thinking_engagement', {}).get('sustained_rate', 0.5)
+                    ]
+                    
+                    fig_radar = go.Figure()
+                    
+                    # Add target profile
+                    fig_radar.add_trace(go.Scatterpolar(
+                        r=[0.7, 0.7, 0.6, 0.85, 0.7, 0.7],
+                        theta=categories + [categories[0]],
+                        fill='toself',
+                        fillcolor='rgba(224, 206, 181, 0.2)',
+                        line=dict(color=THESIS_COLORS['neutral_warm'], width=1, dash='dash'),
+                        name='Target Profile'
+                    ))
+                    
+                    # Add current session
+                    fig_radar.add_trace(go.Scatterpolar(
+                        r=values + [values[0]],
+                        theta=categories + [categories[0]],
+                        fill='toself',
+                        fillcolor='rgba(92, 79, 115, 0.3)',
+                        line=dict(color=THESIS_COLORS['primary_purple'], width=2),
+                        name='Current Session'
+                    ))
+                    
+                    fig_radar.update_layout(
+                        polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+                        title="Anthropomorphism Risk Profile",
+                        height=400,
+                        showlegend=True
+                    )
+                    st.plotly_chart(fig_radar, use_container_width=True)
+        
+        # 5. Cross-Domain Patterns and Contradictions
+        st.markdown("### Cross-Domain Analysis")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### Cross-Domain Patterns")
+            if conclusion.cross_domain_patterns:
+                for pattern in conclusion.cross_domain_patterns:
+                    st.markdown(f"- {pattern}")
+            else:
+                st.markdown("No significant cross-domain patterns detected")
+        
+        with col2:
+            st.markdown("#### Contradictions & Anomalies")
+            if conclusion.contradictions:
+                for contradiction in conclusion.contradictions:
+                    st.markdown(f"- {contradiction}")
+            else:
+                st.markdown("No contradictions detected - consistent performance")
+        
+        # 6. Priority Recommendations
+        st.markdown("### Priority Recommendations")
+        
+        if conclusion.priority_recommendations:
+            for i, rec in enumerate(conclusion.priority_recommendations, 1):
+                st.markdown(f"**{i}.** {rec}")
+        else:
+            st.info("No specific recommendations at this time")
+        
+        # 7. Detailed Narrative Analysis
+        st.markdown("### Detailed Narrative Analysis")
+        st.markdown(conclusion.detailed_narrative)
+        
+        # 8. Aggregate Analysis Across All Sessions
+        st.markdown("---")
+        st.markdown("### Aggregate Analysis Across All Sessions")
+        
+        # Analyze all sessions
+        all_conclusions = []
+        for session_id in session_ids[:10]:  # Limit to first 10 for performance
+            try:
+                # Quick analysis for each session
+                report = self.evaluation_reports.get(session_id, {})
+                session_metrics = report.get('session_metrics', {})
+                
+                quick_conclusion = conclusion_analyzer.analyze_session(
+                    session_id=session_id,
+                    cognitive_data={
+                        'cognitive_offloading_prevention': session_metrics.get('cognitive_offloading_prevention', {}).get('overall_rate', 0),
+                        'deep_thinking_engagement': session_metrics.get('deep_thinking_engagement', {}).get('overall_rate', 0),
+                        'knowledge_integration': session_metrics.get('knowledge_integration', {}).get('integration_rate', 0),
+                        'scaffolding_effectiveness': session_metrics.get('scaffolding_effectiveness', {}).get('overall_rate', 0)
+                    }
+                )
+                all_conclusions.append(quick_conclusion)
+            except:
+                continue
+        
+        if all_conclusions:
+            # Calculate aggregate statistics
+            avg_effectiveness = np.mean([c.overall_effectiveness for c in all_conclusions])
+            avg_confidence = np.mean([c.confidence_score for c in all_conclusions])
+            
+            performance_distribution = {}
+            for c in all_conclusions:
+                cat = c.performance_category
+                performance_distribution[cat] = performance_distribution.get(cat, 0) + 1
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric(
+                    "Average Effectiveness",
+                    f"{avg_effectiveness:.1%}",
+                    delta=f"{avg_effectiveness - 0.5:.1%} vs baseline"
+                )
+            
+            with col2:
+                st.metric(
+                    "Average Confidence",
+                    f"{avg_confidence:.1%}",
+                    delta=None
+                )
+            
+            with col3:
+                st.metric(
+                    "Sessions Analyzed",
+                    len(all_conclusions),
+                    delta=None
+                )
+            
+            # Performance distribution
+            st.markdown("#### Performance Distribution")
+            
+            dist_text = " | ".join([f"{cat}: {count}" for cat, count in performance_distribution.items()])
+            st.markdown(f"**Distribution:** {dist_text}")
+            
+            # Add timeline visualization for all sessions
+            st.markdown("#### Performance Timeline Across Sessions")
+            timeline_fig = conclusion_analyzer.create_effectiveness_timeline(all_conclusions)
+            st.plotly_chart(timeline_fig, use_container_width=True)
+            
+            # Common patterns across all sessions
+            all_patterns = []
+            all_contradictions = []
+            all_recommendations = []
+            
+            for c in all_conclusions:
+                all_patterns.extend(c.cross_domain_patterns)
+                all_contradictions.extend(c.contradictions)
+                all_recommendations.extend(c.priority_recommendations)
+            
+            # Most common patterns
+            if all_patterns:
+                st.markdown("#### Most Common Cross-Domain Patterns")
+                pattern_counts = {}
+                for p in all_patterns:
+                    pattern_counts[p] = pattern_counts.get(p, 0) + 1
+                
+                top_patterns = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+                for pattern, count in top_patterns:
+                    st.markdown(f"- **{pattern}** (found in {count} sessions)")
+            
+            # Most common recommendations
+            if all_recommendations:
+                st.markdown("#### Top System-Wide Recommendations")
+                rec_counts = {}
+                for r in all_recommendations:
+                    rec_counts[r] = rec_counts.get(r, 0) + 1
+                
+                top_recs = sorted(rec_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+                for rec, count in top_recs:
+                    st.markdown(f"- **{rec}** (recommended for {count} sessions)")
+        
+        # Export integrated conclusions
+        if st.button("Export Integrated Conclusions Report"):
+            # Prepare export data
+            export_data = {
+                'generated_at': datetime.now().isoformat(),
+                'selected_session': {
+                    'session_id': conclusion.session_id,
+                    'executive_summary': conclusion.executive_summary,
+                    'overall_effectiveness': conclusion.overall_effectiveness,
+                    'confidence_score': conclusion.confidence_score,
+                    'performance_category': conclusion.performance_category,
+                    'cross_domain_patterns': conclusion.cross_domain_patterns,
+                    'contradictions': conclusion.contradictions,
+                    'priority_recommendations': conclusion.priority_recommendations,
+                    'detailed_narrative': conclusion.detailed_narrative,
+                    'domain_insights': [
+                        {
+                            'domain': di.domain_name,
+                            'primary_finding': di.primary_finding,
+                            'confidence': di.confidence_level,
+                            'key_metrics': di.key_metrics
+                        }
+                        for di in conclusion.domain_insights
+                    ]
+                },
+                'aggregate_analysis': {
+                    'sessions_analyzed': len(all_conclusions) if 'all_conclusions' in locals() else 0,
+                    'average_effectiveness': avg_effectiveness if 'avg_effectiveness' in locals() else 0,
+                    'average_confidence': avg_confidence if 'avg_confidence' in locals() else 0,
+                    'performance_distribution': performance_distribution if 'performance_distribution' in locals() else {}
+                }
+            }
+            
+            # Save to file
+            output_path = 'benchmarking/results/integrated_conclusions_report.json'
+            with open(output_path, 'w') as f:
+                json.dump(export_data, f, indent=2)
+            
+            st.success(f"Integrated conclusions exported to {output_path}")
+    
     def render_recommendations(self):
         """Render recommendations and insights"""
         st.markdown('<h2 class="sub-header">Recommendations & Insights</h2>', unsafe_allow_html=True)
@@ -5576,6 +6361,7 @@ class BenchmarkDashboard:
             "Comparative Analysis",
             "Anthropomorphism Analysis",
             "Linkography Analysis",
+            "Integrated Conclusions",
             "Graph ML Analysis",
             "Technical Details",
             "Export Options"
@@ -5604,6 +6390,8 @@ class BenchmarkDashboard:
                 self.render_anthropomorphism_analysis()
             elif selected_section == "Linkography Analysis":
                 self.render_linkography_analysis()
+            elif selected_section == "Integrated Conclusions":
+                self.render_integrated_conclusions()
             elif selected_section == "Graph ML Analysis":
                 self.render_graph_ml_visualizations()
             elif selected_section == "Technical Details":
