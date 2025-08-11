@@ -37,11 +37,12 @@ except ImportError:
 try:
     from linkography_analyzer import LinkographySessionAnalyzer
     from linkography_visualization import LinkographVisualizer
+    from linkography_enhanced import EnhancedLinkographVisualizer, create_breakthrough_detection_chart
     from linkography_types import LinkographSession
     LINKOGRAPHY_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     LINKOGRAPHY_AVAILABLE = False
-    print("Warning: Linkography modules not available")
+    print(f"Warning: Linkography modules not available - {e}")
 
 # Import anthropomorphism components
 try:
@@ -2945,6 +2946,7 @@ class BenchmarkDashboard:
         # Initialize linkography analyzer
         analyzer = LinkographySessionAnalyzer()
         visualizer = LinkographVisualizer()
+        enhanced_visualizer = EnhancedLinkographVisualizer()
         
         # Analyze all sessions
         with st.spinner("Analyzing design sessions for linkographic patterns..."):
@@ -2991,33 +2993,59 @@ class BenchmarkDashboard:
         overall_linkograph = session.linkographs[0] if session.linkographs else None
         
         if overall_linkograph:
-            # Section 1: Interactive Linkograph Visualization
-            st.markdown("### Interactive Linkograph Visualization")
+            # Section 1: Enhanced Interactive Linkograph Visualization
+            st.markdown("### Enhanced Interactive Linkograph Visualization")
             st.markdown("""
-            The triangular linkograph shows design moves (dots) arranged temporally with links 
-            (arcs) indicating conceptual connections. Larger dots have more connections.
+            The enhanced triangular linkograph shows design moves arranged temporally with links 
+            indicating conceptual connections. This visualization includes intersection nodes where 
+            links cross, critical move identification, and pattern overlays.
             """)
             
-            fig_linkograph = visualizer.create_triangular_linkograph(
-                overall_linkograph,
-                highlight_patterns=session.patterns_detected[:3]  # Highlight top 3 patterns
-            )
+            # Add visualization options - all OFF by default for faster loading
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                show_intersections = st.checkbox("Show Intersection Nodes", value=False)
+            with col2:
+                show_critical = st.checkbox("Highlight Critical Moves", value=False)
+            with col3:
+                show_patterns = st.checkbox("Show Pattern Overlays", value=False)
+            with col4:
+                use_enhanced = st.checkbox("Use Enhanced Visualization", value=False)
+            
+            if use_enhanced:
+                # Pass patterns from session to enhanced visualizer
+                patterns_to_show = session.patterns_detected[:3] if show_patterns else None
+                fig_linkograph = enhanced_visualizer.create_enhanced_linkograph(
+                    overall_linkograph,
+                    show_intersections=show_intersections,
+                    show_critical_moves=show_critical,
+                    show_patterns=show_patterns,
+                    patterns=patterns_to_show,
+                    interactive=True
+                )
+            else:
+                fig_linkograph = visualizer.create_triangular_linkograph(
+                    overall_linkograph,
+                    highlight_patterns=session.patterns_detected[:3] if show_patterns else None
+                )
             st.plotly_chart(fig_linkograph, use_container_width=True)
             
             # Add legend for linkograph
             st.markdown("#### Linkograph Legend")
             
             # Create legend in an info box for better visibility
-            with st.expander("Understanding the Linkograph Visualization", expanded=True):
-                legend_col1, legend_col2, legend_col3 = st.columns(3)
+            with st.expander("Understanding the Enhanced Linkograph Visualization", expanded=True):
+                legend_col1, legend_col2, legend_col3, legend_col4 = st.columns(4)
                 
                 with legend_col1:
                     st.markdown("""
-                    **Nodes (Design Moves):**
-                    - Each numbered circle = one design move
-                    - Larger circles = more connections
-                    - Position = temporal sequence
-                    - Hover to see move details
+                    **Design Moves:**
+                    - All moves are circles
+                    - Larger size = critical move
+                    - Border width indicates criticality
+                    - Border color shows critical type
+                    - Size reflects connectivity
+                    - Number = temporal sequence
                     """)
                 
                 with legend_col2:
@@ -3030,12 +3058,23 @@ class BenchmarkDashboard:
                 
                 with legend_col3:
                     st.markdown("""
-                    **Links (Connections):**
-                    - Curved lines = conceptual relationships
-                    - Arc depth = time between moves
+                    **Links & Intersections:**
+                    - Curved arcs = conceptual links
+                    - Arc depth = temporal distance
                     - Line thickness = link strength
-                    - Darker color = stronger connection
+                    - 8-level color gradient for strength
+                    - ◆ Diamond = intersection node
+                    - Node size = intersection complexity
                     """)
+                    
+                with legend_col4:
+                    st.markdown("""
+                    **Critical Move Borders:**
+                    - <span style='color: #cf436f; font-weight: bold'>⬤</span> Bidirectional (thick magenta)
+                    - <span style='color: #4f3a3e; font-weight: bold'>⬤</span> Forward (thick dark)
+                    - <span style='color: #5c4f73; font-weight: bold'>⬤</span> Backward (thick purple)
+                    - Regular moves have thin borders
+                    """, unsafe_allow_html=True)
                 
                 # Add pattern highlight explanation if patterns are detected
                 if session.patterns_detected and len(session.patterns_detected) > 0:
@@ -3138,6 +3177,15 @@ class BenchmarkDashboard:
             if patterns:
                 fig_patterns = visualizer.create_pattern_analysis_chart(patterns)
                 st.plotly_chart(fig_patterns, use_container_width=True)
+            
+            # Breakthrough Detection
+            st.markdown("#### Breakthrough Moment Detection")
+            st.markdown("""
+            Breakthrough moments are identified by sudden increases in link density, 
+            indicating "aha moments" or cognitive integration points in the design process.
+            """)
+            fig_breakthrough = create_breakthrough_detection_chart(overall_linkograph)
+            st.plotly_chart(fig_breakthrough, use_container_width=True)
             
             st.markdown("---")  # Add separator
             
