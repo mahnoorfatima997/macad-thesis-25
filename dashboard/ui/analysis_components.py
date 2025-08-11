@@ -107,11 +107,16 @@ def _render_current_phase_section(analysis_result: Dict[str, Any]):
     """Render the current design phase section."""
     st.markdown("**🎯 Current Design Phase**")
     
-    # Use conversation progression if available, otherwise fall back to analysis
+    # Prefer engine-driven phase status if available
+    engine_status = safe_get_nested_dict(analysis_result, 'phase_engine_status') or {}
     conversation_progression = analysis_result.get('conversation_progression', {})
     phase_analysis = safe_get_nested_dict(analysis_result, 'phase_analysis') or {}
-    
-    if conversation_progression:
+
+    if engine_status:
+        current_phase = engine_status.get('current_phase', 'unknown')
+        phase_completion = engine_status.get('completion_percent', 0)
+        phase_confidence = engine_status.get('phase_confidence', 0)
+    elif conversation_progression:
         current_phase = conversation_progression.get('conversation_phase', 'unknown')
         phase_completion = conversation_progression.get('phase_progress', 0) * 100
         phase_confidence = conversation_progression.get('confidence', 0)
@@ -250,9 +255,16 @@ def _render_recommendations_section(analysis_result: Dict[str, Any]):
 def _render_progress_summary(analysis_result: Dict[str, Any]):
     """Render the overall progress summary."""
     phase_analysis = safe_get_nested_dict(analysis_result, 'phase_analysis') or {}
+    engine_status = safe_get_nested_dict(analysis_result, 'phase_engine_status') or {}
     
-    if phase_analysis:
-        # Show phase-based progress
+    if engine_status:
+        phase_completion = engine_status.get('completion_percent', 0)
+        st.markdown("---")
+        st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
+        progress_ratio = phase_completion / 100
+        st.progress(progress_ratio)
+    elif phase_analysis:
+        # Show phase-based progress (legacy)
         phase_completion = phase_analysis.get('progression_score', 0) * 100
         st.markdown("---")
         st.markdown(f"**📊 Phase Progress: {phase_completion:.0f}% complete**")
@@ -299,10 +311,14 @@ def render_metrics_summary(analysis_result: Dict[str, Any]):
 
 def _render_current_phase_metric(analysis_result: Dict[str, Any]):
     """Render current phase metric."""
+    engine_status = safe_get_nested_dict(analysis_result, 'phase_engine_status') or {}
     conversation_progression = analysis_result.get('conversation_progression', {})
     phase_analysis = safe_get_nested_dict(analysis_result, 'phase_analysis') or {}
     
-    if conversation_progression:
+    if engine_status:
+        current_phase = engine_status.get('current_phase', 'unknown')
+        phase_completion = engine_status.get('completion_percent', 0)
+    elif conversation_progression:
         current_phase = conversation_progression.get('current_phase', 'unknown')
         phase_completion = conversation_progression.get('phase_progress', 0) * 100
     elif phase_analysis:
@@ -376,10 +392,17 @@ def _render_learning_balance_metric(analysis_result: Dict[str, Any]):
 def _render_phase_progress_metric(analysis_result: Dict[str, Any]):
     """Render phase progress metric."""
     phase_analysis = safe_get_nested_dict(analysis_result, 'phase_analysis') or {}
+    engine_status = safe_get_nested_dict(analysis_result, 'phase_engine_status') or {}
     
-    completed_phases = phase_analysis.get('completed_phases', 0)
-    total_phases = phase_analysis.get('total_phases', 0)
-    phase_progress = (completed_phases / total_phases) * 100 if total_phases > 0 else 0
+    if engine_status:
+        # Prefer engine-driven percent when available
+        completed_phases = engine_status.get('completed_phases', 0)
+        total_phases = engine_status.get('total_phases', 3)
+        phase_progress = engine_status.get('completion_percent', 0)
+    else:
+        completed_phases = phase_analysis.get('completed_phases', 0)
+        total_phases = phase_analysis.get('total_phases', 0)
+        phase_progress = (completed_phases / total_phases) * 100 if total_phases > 0 else 0
     
     if total_phases > 0:
         if completed_phases > 0:
@@ -417,7 +440,7 @@ def _render_phase_progress_metric(analysis_result: Dict[str, Any]):
                 """, unsafe_allow_html=True)
     else:
         # Show phase-based progress instead
-        phase_completion = phase_analysis.get('progression_score', 0) * 100
+        phase_completion = engine_status.get('completion_percent', 0) if engine_status else phase_analysis.get('progression_score', 0) * 100
         st.markdown(f"""
             <div style='text-align: center;'>
                 <h5 style='margin-bottom: 0.2rem;'>Phase Progress</h5>

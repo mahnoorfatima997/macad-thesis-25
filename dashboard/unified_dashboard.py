@@ -591,8 +591,23 @@ class UnifiedArchitecturalDashboard:
                 # Create session data from chat messages
                 chat_interactions = self._create_chat_interactions_data()
                 
-                # Analyze phase progression
-                current_phase, phase_progress = self.phase_analyzer.calculate_conversation_progress(chat_interactions)
+                # Prefer engine-driven progress for display
+                engine_phase = None
+                engine_percent = 0.0
+                try:
+                    summary = self.phase_system.get_session_summary(st.session_state.phase_session_id)
+                    engine_phase = summary.get('current_phase')
+                    phase_summaries = summary.get('phase_summaries', {})
+                    if engine_phase in phase_summaries:
+                        engine_percent = phase_summaries[engine_phase].get('completion_percent', 0.0)
+                except Exception:
+                    pass
+
+                # Fallback lightweight phase guess (percent shown only if engine unavailable)
+                current_phase, heuristic_progress = self.phase_analyzer.calculate_conversation_progress(chat_interactions)
+                phase_progress = engine_percent if engine_phase else heuristic_progress
+                if engine_phase:
+                    current_phase = engine_phase
                 
                 # Display phase progression
                 col1, col2 = st.columns(2)
@@ -612,7 +627,7 @@ class UnifiedArchitecturalDashboard:
                             st.markdown(f"⏳ {phase}")
                 
                 with col2:
-                    # Analyze and display challenges and learning points
+                    # Analyze and display challenges and learning points (qualitative)
                     analysis = self.phase_analyzer.analyze_phase_progression(chat_interactions)
                     
                     st.markdown("**🎯 Key Challenges Identified**")
@@ -650,6 +665,27 @@ class UnifiedArchitecturalDashboard:
             # Import the conversion function
             from .ui.analysis_components import convert_agent_response_to_dict
             analysis_results = convert_agent_response_to_dict(analysis_results)
+        
+        # Inject engine-driven phase status for UI components that consume it
+        try:
+            summary = self.phase_system.get_session_summary(st.session_state.phase_session_id)
+            current_phase = summary.get('current_phase')
+            phase_summaries = summary.get('phase_summaries', {})
+            completion_percent = 0.0
+            completed_phases = sum(1 for p in phase_summaries.values() if p.get('completed'))
+            total_phases = len(phase_summaries) if phase_summaries else 3
+            if current_phase in phase_summaries:
+                completion_percent = phase_summaries[current_phase].get('completion_percent', 0.0)
+            analysis_results['phase_engine_status'] = {
+                'current_phase': current_phase,
+                'completion_percent': completion_percent,
+                'completed_phases': completed_phases,
+                'total_phases': total_phases,
+                # Optional confidence; not computed here
+                'phase_confidence': 0.0,
+            }
+        except Exception:
+            pass
             
         with st.columns([1, 2, 1])[1]:  # Center column
             st.markdown("---")
