@@ -316,13 +316,58 @@ class InputClassificationProcessor:
         if any(pattern in input_lower for pattern in technical_patterns):
             return "technical_question"
 
-        # 12. Confusion expression detection
+        # 12. Project description detection - HIGH PRIORITY: Detect clear project descriptions (CHECK FIRST)
+        project_description_patterns = [
+            "i am designing", "i'm designing", "i am working on", "i'm working on",
+            "i am creating", "i'm creating", "i am building", "i'm building",
+            "my project is", "my design is", "i want to create", "i want to design",
+            "i want to build", "i plan to", "i'm planning to", "my goal is",
+            "i have a project", "i'm working on a", "this is my project"
+        ]
+        if any(pattern in input_lower for pattern in project_description_patterns):
+            print(f"Input classification: Detected project_description pattern in: {input_text[:100]}...")
+            return "project_description"
+
+        # 12.5. Design guidance request detection - HIGH PRIORITY: Detect requests for design help (CHECK SECOND)
+        design_guidance_patterns = [
+            "can you help me", "could you help me", "i need help with",
+            "i want help with", "can you guide me", "could you guide me",
+            "i need guidance", "i want guidance", "can you advise me",
+            "could you advise me", "i need advice", "i want advice",
+            "can you suggest", "could you suggest", "i need suggestions",
+            "i want suggestions", "what should i", "how should i",
+            # ENHANCED: More flexible patterns to catch variations
+            "what should my", "how should my", "what should we", "how should we",
+            "what approach should", "how approach should", "what strategy should",
+            "how strategy should", "what method should", "how method should",
+            "curious how", "wondering how", "thinking about how",
+            "not sure how", "unsure how", "confused about how",
+            "need help organizing", "want help organizing", "help me organize",
+            "guidance on", "advice on", "suggestions for", "help with",
+            # ENHANCED: More specific patterns for approach/strategy questions
+            "what should my approach", "how should my approach",
+            "what approach should i", "how approach should i",
+            "what is my approach", "how is my approach",
+            "what would be my approach", "how would be my approach",
+            "what do you think my approach", "how do you think my approach",
+            "approach should", "strategy should", "method should",
+            "organize my", "organize the", "organize spaces",
+            "organize around", "organize courtyards", "organize gardens"
+        ]
+        if any(pattern in input_lower for pattern in design_guidance_patterns):
+            print(f"Input classification: Detected design_guidance_request pattern in: {input_text[:100]}...")
+            return "design_guidance_request"
+
+        # 12.6. Confusion expression detection - ENHANCED: More specific patterns (CHECK LAST)
         confusion_patterns = [
             "confused", "don't understand", "unclear", "not sure",
-            "help", "lost", "stuck", "struggling", "difficult",
-            "what does this mean", "i don't get it"
+            "lost", "stuck", "struggling", "difficult",
+            "what does this mean", "i don't get it", "i'm confused",
+            "this doesn't make sense", "i'm lost", "i'm stuck",
+            "this is confusing", "i'm struggling", "this is difficult"
         ]
         if any(pattern in input_lower for pattern in confusion_patterns):
+            print(f"Input classification: Detected confusion_expression pattern in: {input_text[:100]}...")
             return "confusion_expression"
 
         # 13. Improvement seeking detection
@@ -351,7 +396,7 @@ class InputClassificationProcessor:
 
         # ENHANCED PATTERN SYSTEM - Level 5: General Classification
 
-        # 15. Enhanced general statement detection
+        # 15. Enhanced general statement detection - MOVED TO LOWER PRIORITY
         statement_patterns = [
             "i am", "i have", "i want", "i need", "i like", "i prefer",
             "this is", "that is", "it is", "there is", "here is"
@@ -1093,7 +1138,12 @@ class InputClassificationProcessor:
             "i'm designing", "i will place", "i would place", "i'd place", "i'll place",
             "i will organize", "i would organize", "i'd organize", "i'll organize",
             "i will design", "i would design", "i'd design", "i'll design",
-            "my approach is", "my strategy is", "my plan is", "i plan to"
+            "my approach is", "my strategy is", "my plan is", "i plan to",
+            # Enhanced patterns for spatial organization and design decisions
+            "spatial organization", "organize", "arrangement", "layout",
+            "what can i do", "what else can i", "how can i", "how should i",
+            "decide about", "decisions about", "choices for", "options for",
+            "placement", "positioning", "circulation", "flow"
         ]
         is_design_problem = any(indicator in input_lower for indicator in design_problem_indicators)
 
@@ -1179,3 +1229,12 @@ class InputClassificationProcessor:
             "seeks_validation": False,
             "reasoning": "Default classification"
         }
+
+    def _extract_building_type_from_text(self, input_text: str) -> str:
+        """
+        Get building type from state - NO MORE DETECTION, just retrieval.
+        Building type is now centrally managed in conversation_progression.py
+        """
+        # This method is now deprecated - building type detection is centralized
+        # Return unknown to force use of centrally managed building type
+        return "unknown"

@@ -14,15 +14,15 @@ def render_api_status():
     """Render API key status."""
     api_key = get_api_key()
     if api_key:
-        st.success("✅ API Key: Configured")
+        st.success("API Key: Configured")
     else:
-        st.error("❌ API Key: Missing")
+        st.error("API Key: Missing")
     return bool(api_key)
 
 
 def render_participant_info():
     """Render participant information section."""
-    st.markdown("### 👤 Participant")
+    st.markdown("### Participant")
     
     # Get current values
     current_pid = st.session_state.get('participant_id', 'unified_user')
@@ -39,7 +39,7 @@ def render_participant_info():
 
 def render_session_info():
     """Render session information section."""
-    st.markdown("### 🕒 Session")
+    st.markdown("### Session")
     
     session_info = get_session_info()
     
@@ -55,7 +55,7 @@ def render_session_info():
 
 def render_system_status():
     """Render system status section."""
-    st.markdown("### 🔧 System Status")
+    st.markdown("### System Status")
     st.info("**Vision**: GPT Vision Available")
     st.info("**Agents**: Multi-Agent System Ready")
     
@@ -66,29 +66,29 @@ def render_system_status():
 def render_current_session_status():
     """Render current session status if analysis is complete."""
     if st.session_state.get('analysis_complete', False):
-        st.markdown("### 📊 Current Session")
+        st.markdown("### Current Session")
         current_mode = st.session_state.get('current_mode', 'MENTOR')
         
         if current_mode == "MENTOR":
-            st.success(f"**Mode**: {current_mode} 🤖")
+            st.success(f"**Mode**: {current_mode}")
         elif current_mode == "GENERIC_AI":
-            st.warning(f"**Mode**: {current_mode} 🤖")
+            st.warning(f"**Mode**: {current_mode}")
         else:
-            st.info(f"**Mode**: {current_mode} 🎯")
+            st.info(f"**Mode**: {current_mode}")
 
 
 def render_session_management(data_collector=None):
     """Render session management section."""
-    st.markdown("### 📊 Session Management")
+    st.markdown("### Session Management")
     
     # Reset session button
-    if st.button("🔄 Reset Session"):
+    if st.button("Reset Session"):
         reset_session()
         st.success("Session reset successfully!")
         st.rerun()
     
     # Reset data collector button
-    if data_collector and st.button("🔄 Reset Data Collector"):
+    if data_collector and st.button("Reset Data Collector"):
         import sys
         import os
         sys.path.append(os.path.join(os.path.dirname(__file__), '../../thesis-agents'))

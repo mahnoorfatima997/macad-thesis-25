@@ -510,11 +510,65 @@ class ConversationProgressionManager:
     def _create_opening_message(self, intent_analysis: Dict, 
                               primary_dimension: DesignSpaceDimension,
                               knowledge_level: str) -> str:
-        """Create personalized opening message"""
+        """Create personalized opening message using LLM instead of hardcoded templates"""
         
-        intent = intent_analysis.get("primary_intent", "general_inquiry")
-        topic = intent_analysis.get("primary_topic", "architecture")
-        engagement = intent_analysis.get("engagement", "medium")
+        try:
+            # Import OpenAI client for dynamic response generation
+            from openai import OpenAI
+            import os
+            
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            
+            intent = intent_analysis.get("primary_intent", "general_inquiry")
+            topic = intent_analysis.get("primary_topic", "architecture")
+            engagement = intent_analysis.get("engagement", "medium")
+            
+            # Create dynamic prompt for LLM-based opening message
+            prompt = f"""
+            You are an expert architectural mentor helping a student explore {topic}. 
+            
+            CONTEXT:
+            - Student intent: {intent}
+            - Primary dimension: {primary_dimension.value}
+            - Knowledge level: {knowledge_level}
+            - Engagement level: {engagement}
+            
+            TASK: Generate a personalized, engaging opening message (2-3 sentences) that:
+            1. Acknowledges their specific interest in {topic}
+            2. Connects to the {primary_dimension.value} dimension of architectural thinking
+            3. Matches their {knowledge_level} knowledge level
+            4. Encourages their {engagement} engagement level
+            5. Sounds natural and conversational, not like a template
+            
+            RESPONSE: Write only the opening message, no explanations or formatting.
+            """
+            
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=150,
+                temperature=0.7
+            )
+            
+            ai_generated_message = response.choices[0].message.content.strip()
+            
+            # Fallback to template if LLM fails
+            if not ai_generated_message or len(ai_generated_message) < 20:
+                return self._generate_fallback_opening_message(intent, topic, primary_dimension, engagement)
+            
+            return ai_generated_message
+            
+        except Exception as e:
+            # Fallback to template-based generation if LLM fails
+            intent = intent_analysis.get("primary_intent", "general_inquiry")
+            topic = intent_analysis.get("primary_topic", "architecture")
+            engagement = intent_analysis.get("engagement", "medium")
+            return self._generate_fallback_opening_message(intent, topic, primary_dimension, engagement)
+    
+    def _generate_fallback_opening_message(self, intent: str, topic: str, 
+                                        primary_dimension: DesignSpaceDimension,
+                                        engagement: str) -> str:
+        """Fallback method for generating opening messages when LLM is unavailable"""
         
         # Base opening messages by intent
         intent_openings = {
@@ -1057,31 +1111,34 @@ class ConversationProgressionManager:
         # Extract project context from state if available
         project_context = {}
         if hasattr(self, 'current_state') and self.current_state:
-            # Try to extract building type from design brief
-            design_brief = getattr(self.current_state, 'current_design_brief', '')
-            if design_brief:
-                # Simple extraction of building type from brief
-                brief_lower = design_brief.lower()
-                if 'community' in brief_lower and 'center' in brief_lower:
-                    project_context['building_type'] = 'community_center'
-                elif 'residential' in brief_lower or 'house' in brief_lower or 'home' in brief_lower:
-                    project_context['building_type'] = 'residential'
-                elif 'office' in brief_lower or 'commercial' in brief_lower:
-                    project_context['building_type'] = 'commercial'
-                elif 'museum' in brief_lower or 'cultural' in brief_lower:
-                    project_context['building_type'] = 'cultural'
-                elif 'school' in brief_lower or 'educational' in brief_lower:
-                    project_context['building_type'] = 'educational'
-                else:
-                    project_context['building_type'] = 'mixed_use'
-                
+            # PRIORITY 1: Use the state's building_type if already set
+            if hasattr(self.current_state, 'building_type') and self.current_state.building_type and self.current_state.building_type != "unknown":
+                project_context['building_type'] = self.current_state.building_type
+                logger.info(f"🏗️ Using state building_type: {self.current_state.building_type}")
+            else:
+                # PRIORITY 2: Try to extract building type from design brief
+                design_brief = getattr(self.current_state, 'current_design_brief', '')
+                if design_brief:
+                    # Comprehensive building type detection using enhanced patterns
+                    project_context['building_type'] = self._extract_building_type_from_text(design_brief)
+                    
+                    # Also check recent messages if no design brief
+                    if hasattr(self.current_state, 'messages') and self.current_state.messages:
+                        for msg in reversed(self.current_state.messages):
+                            if msg.get('role') == 'user':
+                                user_building_type = self._extract_building_type_from_text(msg['content'])
+                                if user_building_type != "mixed_use":
+                                    project_context['building_type'] = user_building_type
+                                    break
+        
                 # Assess complexity based on brief content
+                brief_lower = design_brief.lower()
                 if any(word in brief_lower for word in ['sustainable', 'complex', 'advanced', 'innovative']):
                     project_context['complexity_level'] = 'high'
                 elif any(word in brief_lower for word in ['simple', 'basic', 'standard']):
-                    project_context['complexity_level'] = 'low'
-                else:
                     project_context['complexity_level'] = 'moderate'
+                else:
+                    project_context['complexity_level'] = 'low'
         
         # Generate challenges and opportunities based on current phase
         challenges = []
@@ -1451,17 +1508,17 @@ class ConversationProgressionManager:
         return criteria_map.get(milestone_type, [])
     
     def _get_milestone_guidance(self, milestone: ConversationMilestone) -> str:
-        """Get guidance for the current milestone"""
+        """Get dynamic guidance for the current milestone that encourages LLM-based responses"""
         guidance_map = {
-            MilestoneType.PHASE_ENTRY: f"Welcome to the {milestone.phase.value} phase! Let's explore {milestone.topic or 'your design interests'} together.",
-            MilestoneType.KNOWLEDGE_ACQUISITION: f"Let's deepen your understanding of {milestone.topic or 'key concepts'}. What specific aspects would you like to explore?",
-            MilestoneType.SKILL_DEMONSTRATION: f"Great! Now let's apply what you've learned about {milestone.topic or 'these concepts'}. How would you approach a specific problem?",
-            MilestoneType.INSIGHT_FORMATION: f"Excellent! Let's connect the ideas you've learned. What patterns or relationships do you see in {milestone.topic or 'your understanding'}?",
-            MilestoneType.PROBLEM_SOLVING: f"Perfect! Let's tackle a specific problem related to {milestone.topic or 'your design'}. What challenges are you facing?",
-            MilestoneType.REFLECTION_POINT: f"Let's reflect on your progress with {milestone.topic or 'your learning'}. What have you learned and what's next?",
-            MilestoneType.READINESS_ASSESSMENT: f"Let's assess your readiness to advance. How confident do you feel about {milestone.topic or 'your current understanding'}?"
+            MilestoneType.PHASE_ENTRY: f"Welcome to the {milestone.phase.value} phase! Focus on exploring {milestone.topic or 'your design interests'} through active inquiry and discovery.",
+            MilestoneType.KNOWLEDGE_ACQUISITION: f"Deepen your understanding of {milestone.topic or 'key concepts'} by asking specific questions and seeking examples that resonate with your project.",
+            MilestoneType.SKILL_DEMONSTRATION: f"Apply what you've learned about {milestone.topic or 'these concepts'} by describing how you would approach a specific design challenge.",
+            MilestoneType.INSIGHT_FORMATION: f"Connect the ideas you've learned by identifying patterns or relationships in {milestone.topic or 'your understanding'} that could inform your design decisions.",
+            MilestoneType.PROBLEM_SOLVING: f"Tackle a specific problem related to {milestone.topic or 'your design'} by breaking it down into manageable components and exploring multiple solutions.",
+            MilestoneType.REFLECTION_POINT: f"Reflect on your progress with {milestone.topic or 'your learning'} by evaluating what you've discovered and identifying areas for further exploration.",
+            MilestoneType.READINESS_ASSESSMENT: f"Assess your readiness to advance by considering how confident you feel about {milestone.topic or 'your current understanding'} and what additional support you might need."
         }
-        return guidance_map.get(milestone.milestone_type, "Continue exploring and learning!")
+        return guidance_map.get(milestone.milestone_type, "Continue exploring and learning through active inquiry!")
     
     def _assess_phase_transition(self, user_input: str, state: Any) -> Dict[str, Any]:
         """Assess if ready to transition to next phase"""
@@ -1562,4 +1619,155 @@ class ConversationProgressionManager:
             "focus_areas": ["general support"],
             "milestone_context": f"Current milestone: {milestone.milestone_type.value}",
             "guidance": "Support the current milestone objectives"
-        }) 
+        })
+    
+    def _extract_building_type_from_text(self, text: str) -> str:
+        """
+        Enhanced building type detection - SINGLE SOURCE OF TRUTH.
+        This method is called once and the result persists throughout the conversation.
+        """
+        if not text:
+            return "unknown"
+        
+        text_lower = text.lower()
+        
+        # Enhanced building type detection patterns (SINGLE SOURCE OF TRUTH)
+        detection_patterns = [
+            # High Priority - Specific building types
+            ("learning_center", ["learning center", "education center", "learning hub", "training center", "skill center", "study center", "workshop center", "kindergarten"], 10),
+            ("community_center", ["community center", "community facility", "civic center", "public center", "social hub", "gathering place", "neighborhood center", "town hall", "community center for sports", "community sports center"], 10),
+            ("sports_center", ["sports center", "fitness center", "gym", "athletic center", "sports facility", "fitness facility", "athletic facility", "sports complex", "recreation center", "activity center"], 10),
+            ("cultural_institution", ["museum", "gallery", "theater", "cultural center", "arts center", "performance center", "exhibition center", "cultural hub", "heritage center"], 10),
+            ("library", ["library", "librarian", "reading room", "study space", "research center", "information center", "book center"], 10),
+            ("research_facility", ["research facility", "laboratory", "lab", "research center", "innovation center", "development center", "testing facility"], 10),
+            
+            # High Priority - Healthcare
+            ("hospital", ["hospital", "medical center", "health center", "clinic", "medical facility", "healthcare facility", "treatment center"], 9),
+            ("specialized_clinic", ["specialized clinic", "specialty clinic", "medical clinic", "health clinic", "outpatient clinic", "diagnostic center"], 9),
+            ("wellness_center", ["wellness center", "health center", "medical spa", "holistic center", "alternative medicine", "wellness facility"], 9),
+            ("rehabilitation_center", ["rehabilitation center", "rehab center", "recovery center", "therapy center", "treatment facility"], 9),
+            
+            # High Priority - Educational
+            ("educational", ["school", "university", "college", "classroom", "educational", "learning", "academy", "institute"], 9),
+            
+            # Medium Priority - Residential
+            ("residential", ["house", "home", "apartment", "residential", "housing", "dwelling", "residence", "domestic"], 8),
+            ("multi_family", ["multi-family", "apartment building", "condominium", "townhouse", "duplex", "triplex", "residential complex"], 8),
+            ("senior_housing", ["senior housing", "elderly housing", "retirement community", "assisted living", "nursing home", "care facility"], 8),
+            ("student_housing", ["student housing", "dormitory", "student residence", "college housing", "university housing"], 8),
+            
+            # Medium Priority - Commercial
+            ("office", ["office", "workplace", "corporate", "business", "commercial", "workspace", "professional", "executive"], 7),
+            ("retail", ["store", "shop", "retail", "commercial", "market", "shopping", "merchant", "boutique"], 7),
+            ("restaurant", ["restaurant", "cafe", "dining", "eatery", "bistro", "food service", "culinary", "dining establishment"], 7),
+            ("hotel", ["hotel", "lodging", "accommodation", "inn", "resort", "guesthouse", "hostel", "bed and breakfast"], 7),
+            
+            # Medium Priority - Community & Recreation
+            ("recreation_center", ["recreation center", "leisure center", "entertainment center"], 7),
+            ("senior_center", ["senior center", "elderly center", "aging center", "retirement center", "adult center", "mature center"], 7),
+            ("youth_center", ["youth center", "teen center", "adolescent center", "young center", "teenager center"], 7),
+            
+            # Medium Priority - Industrial
+            ("industrial", ["factory", "warehouse", "industrial", "manufacturing", "production", "industrial facility", "manufacturing plant"], 6),
+            ("logistics_center", ["logistics center", "distribution center", "fulfillment center", "storage facility", "warehouse facility"], 6),
+            ("research_industrial", ["research and development", "R&D facility", "innovation center", "technology center", "development facility"], 6),
+            
+            # Medium Priority - Transportation
+            ("transportation_hub", ["transportation hub", "transit center", "transport hub", "mobility center", "travel center"], 6),
+            ("parking_facility", ["parking facility", "parking garage", "parking structure", "parking center", "car park"], 6),
+            ("maintenance_facility", ["maintenance facility", "service center", "repair facility", "maintenance center"], 6),
+            
+            # Lower Priority - Religious & Spiritual
+            ("religious", ["church", "temple", "mosque", "synagogue", "religious", "worship", "spiritual", "sacred", "faith center"], 5),
+            ("meditation_center", ["meditation center", "spiritual center", "zen center", "mindfulness center", "contemplation center"], 5),
+            
+            # Lower Priority - Agricultural & Environmental
+            ("agricultural", ["farm", "agricultural", "greenhouse", "nursery", "agricultural facility", "farming center"], 4),
+            ("environmental_center", ["environmental center", "nature center", "conservation center", "ecology center", "sustainability center"], 4),
+            
+            # Lower Priority - Specialized
+            ("conference_center", ["conference center", "convention center", "meeting center", "event center", "summit center"], 4),
+            ("innovation_hub", ["innovation hub", "startup center", "entrepreneurial center", "business incubator", "tech hub"], 4),
+            ("creative_workspace", ["creative workspace", "artist studio", "design studio", "creative center", "artistic space"], 4),
+            
+            # Lower Priority - Government & Public
+            ("government", ["government building", "civic building", "public building", "administrative center", "public service"], 3),
+            ("emergency_services", ["fire station", "police station", "emergency center", "public safety", "emergency facility"], 3),
+            ("utility_facility", ["utility facility", "power plant", "water treatment", "energy center", "infrastructure facility"], 3),
+            
+            # Lowest Priority - Mixed Use (only if no specific type detected)
+            ("mixed_use", ["mixed use", "multi-use", "combined use", "integrated", "hybrid", "versatile", "flexible"], 2)
+        ]
+        
+        # Score each building type based on keyword matches
+        building_scores = {}
+        for building_type, keywords, base_priority in detection_patterns:
+            score = 0
+            for keyword in keywords:
+                if keyword in text_lower:
+                    score += base_priority
+                    # Bonus for exact matches
+                    if keyword == text_lower.strip():
+                        score += 5
+                    # Bonus for longer, more specific keywords
+                    if len(keyword.split()) > 1:
+                        score += 2
+                    # Bonus for multiple keyword matches
+                    if text_lower.count(keyword) > 1:
+                        score += 1
+            
+            if score > 0:
+                building_scores[building_type] = score
+        
+        # Return the highest scoring building type, or unknown as fallback (no more mixed_use default!)
+        if building_scores:
+            best_match = max(building_scores, key=building_scores.get)
+            # Only return specific types if score is high enough
+            if building_scores[best_match] >= 5:
+                logger.info(f"🏗️ Building type detected from text: {best_match} (confidence: {building_scores[best_match]})")
+                return best_match
+        
+        logger.info("🏗️ No specific building type detected, returning 'unknown'")
+        return "unknown"
+
+    def _assess_conversation_analysis_data(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Assess conversation analysis data and extract key insights.
+        This is where building type is detected ONCE and persists.
+        """
+        if not analysis_data:
+            return {}
+        
+        # PRIORITY 1: Use existing building type from state if available
+        if hasattr(self.current_state, 'building_type') and self.current_state.building_type and self.current_state.building_type != "unknown":
+            building_type = self.current_state.building_type
+            logger.info(f"🏗️ Using existing building_type from state: {building_type}")
+        else:
+            # PRIORITY 2: Extract building type from text analysis
+            text_analysis = analysis_data.get("text_analysis", {})
+            user_building_type = text_analysis.get("building_type", "unknown")
+            
+            if user_building_type and user_building_type != "unknown":
+                building_type = user_building_type
+                logger.info(f"🏗️ Using building_type from text analysis: {building_type}")
+            else:
+                # PRIORITY 3: Extract from user input text
+                user_input = analysis_data.get("user_input", "")
+                if user_input:
+                    building_type = self._extract_building_type_from_text(user_input)
+                    logger.info(f"🏗️ Extracted building_type from user input: {building_type}")
+                else:
+                    building_type = "unknown"
+                    logger.info("🏗️ No user input available, building_type set to 'unknown'")
+        
+        # CRITICAL: Update the state with the detected building type
+        if building_type != "unknown":
+            self.current_state.building_type = building_type
+            logger.info(f"🏗️ Updated current_state.building_type to: {building_type}")
+        
+        # Return the building type for use in other parts of the system
+        return {
+            "building_type": building_type,
+            "building_type_source": "conversation_progression_single_source",
+            "building_type_persistent": True
+        }

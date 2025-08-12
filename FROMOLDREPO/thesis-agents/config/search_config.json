@@ -1,0 +1,20 @@
+{
+  "architectural_keywords": {
+    "building_types": {
+      "community": ["community center", "cultural center", "civic center", "recreation center"],
+      "commercial": ["warehouse", "factory", "industrial", "office", "retail"],
+      "institutional": ["library", "museum", "university", "school"],
+      "residential": ["house", "apartment", "residence"]
+    },
+    "building_elements": ["building", "structure", "facility", "center", "conversion", "adaptive reuse", "renovation"],
+    "landscape_types": ["park", "garden", "public space", "plaza"],
+    "urban_elements": ["urban", "district", "neighborhood"]
+  },
+  "query_modifiers": {
+    "building": {"include": "building architecture", "exclude": "-landscape -park -urban -garden -outdoor -plaza"},
+    "landscape": {"include": "landscape architecture", "exclude": ""},
+    "default": {"include": "architecture", "exclude": ""}
+  }
+}
+
+

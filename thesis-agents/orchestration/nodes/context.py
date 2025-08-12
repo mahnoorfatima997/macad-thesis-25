@@ -18,19 +18,63 @@ def make_context_node(context_agent, progression_manager, first_response_generat
         student_state = state["student_state"]
         last_message = state["last_message"]
 
-        # Detect first-message progressive path using the same heuristic
+        # Detect first-message progressive path using improved heuristic
         user_messages = [m["content"] for m in student_state.messages if m.get("role") == "user"]
-        is_first_message = len(user_messages) == 0 or (
-            len(user_messages) == 2 and getattr(student_state, "current_design_brief", None) and
-            last_message != getattr(student_state, "current_design_brief", None) and
-            len([m for m in student_state.messages if m.get("role") == "assistant"]) == 0
+        assistant_messages = [m for m in student_state.messages if m.get("role") == "assistant"]
+        
+        logger.info(f"Context node: user_messages count: {len(user_messages)}, assistant_messages count: {len(assistant_messages)}")
+        logger.info(f"Context node: last_message: {last_message[:100]}...")
+        
+        # Check if this is truly the first meaningful interaction
+        is_first_message = (
+            len(user_messages) <= 1 or  # First or only user message
+            (len(user_messages) == 1 and len(assistant_messages) == 0) or  # First user message, no assistant response yet
+            (len(user_messages) == 2 and len(assistant_messages) == 0)  # Second user message but no assistant response
         )
+        
+        # Additional check: if the message contains clear project description patterns, treat as first message
+        if not is_first_message and last_message:
+            project_description_patterns = [
+                "i am designing", "i'm designing", "i am working on", "i'm working on",
+                "i am creating", "i'm creating", "i am building", "i'm building",
+                "my project is", "my design is", "i want to create", "i want to design",
+                "i want to build", "i plan to", "i'm planning to", "my goal is",
+                "i have a project", "i'm working on a", "this is my project"
+            ]
+            if any(pattern in last_message.lower() for pattern in project_description_patterns):
+                is_first_message = True
+                logger.info("Context node: Detected project description pattern, treating as first message")
+        
+        # 1208-If still not first message, try to get input classification to see if it's a project description
+        if not is_first_message and last_message:
+            try:
+                # Import and use the input classification processor to check if this is a project description
+                from ...agents.context_agent.processors.input_classification import InputClassificationProcessor
+                classifier = InputClassificationProcessor()
+                # Create a minimal state for classification
+                temp_state = type('TempState', (), {'messages': []})()
+                classification = await classifier.perform_core_classification(last_message, temp_state)
+                if hasattr(classification, 'interaction_type') and classification.interaction_type == 'project_description':
+                    is_first_message = True
+                    logger.info("Context node: Input classification detected project_description, treating as first message")
+            except Exception as e:
+                logger.warning(f"Context node: Could not perform input classification check: {e}")
+        
+        logger.info(f"Context node: is_first_message determined as: {is_first_message}")
 
         if is_first_message:
             first_response_result = await first_response_generator.generate_first_response(last_message, student_state)
             progression_analysis = first_response_result.get("progression_analysis", {})
+            building_type = first_response_result.get("metadata", {}).get("building_type", "unknown")
+            
+            # Update the student state with the detected building type
+            if building_type != "unknown":
+                student_state.building_type = building_type
+                print(f"🔍 DEBUG: Updated student_state.building_type to: {student_state.building_type}")
+            
             result_state: WorkflowState = {
                 **state,
+                "student_state": student_state,  # Ensure the updated state is referenced
                 "last_message": last_message,
                 "student_classification": {
                     "interaction_type": "first_message",
@@ -38,15 +82,17 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                     "confidence_level": "neutral",
                     "engagement_level": "medium",
                     "is_first_message": True,
+                    "building_type": building_type,
                 },
                 "context_analysis": {
                     "progression_analysis": progression_analysis,
                     "opening_strategy": first_response_result.get("opening_strategy", {}),
                     "conversation_phase": "discovery",
+                    "building_type": building_type,
                 },
                 "routing_decision": {
                     "path": "progressive_opening",
-                    "reasoning": "First message - using progressive conversation system",
+                    "reasoning": f"First message - using progressive conversation system for {building_type} project",
                 },
                 "final_response": first_response_result.get("response_text", ""),
                 "response_metadata": first_response_result.get("metadata", {}),
@@ -111,7 +157,10 @@ def make_context_node(context_agent, progression_manager, first_response_generat
             **state,
             "last_message": last_message,
             "student_classification": {**classification_dict, "last_message": last_message},
-            "context_analysis": context_package,
+            "context_analysis": {
+                **context_package,
+                "building_type": student_state.building_type,  # Always include building type
+            },
             "context_metadata": contextual_metadata,
             "conversation_patterns": conversation_patterns,
             "routing_suggestions": routing_suggestions,

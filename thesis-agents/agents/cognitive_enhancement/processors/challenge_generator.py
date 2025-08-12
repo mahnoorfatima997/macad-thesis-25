@@ -238,28 +238,47 @@ class ChallengeGeneratorProcessor:
         }
     
     async def _contextualize_challenge(self, base_challenge: str, state: ArchMentorState, challenge_type: str, subtype: str) -> str:
-        """Contextualize challenge to the current project."""
+        """Contextualize challenge to the current project and user's specific question."""
         try:
             project_context = getattr(state, 'current_design_brief', 'architectural project')
             
+            # Get user's last question to make the challenge relevant
+            user_messages = getattr(state, 'messages', [])
+            user_input = ""
+            if user_messages:
+                for msg in reversed(user_messages):
+                    if msg.get('role') == 'user':
+                        user_input = msg.get('content', '')
+                        break
+            
+            # Extract key context from user's question
+            user_context = self._extract_user_context(user_input)
+            
             prompt = f"""
-            Adapt this cognitive challenge for an architecture student's specific project:
+            Adapt this cognitive challenge for an architecture student's specific project and question:
             
             BASE CHALLENGE: {base_challenge}
             STUDENT'S PROJECT: {project_context}
+            STUDENT'S QUESTION: {user_input[:200] if user_input else "No specific question provided"}
             CHALLENGE TYPE: {challenge_type} - {subtype}
+            USER CONTEXT: {user_context}
             
             Make the challenge:
-            1. Specific to their architectural project
-            2. Thought-provoking and engaging
-            3. Appropriate for their skill level
-            4. Clear and actionable
+            1. DIRECTLY RELEVANT to what they're asking about
+            2. Specific to their architectural project
+            3. Thought-provoking and engaging
+            4. Appropriate for their skill level
+            5. Clear and actionable
             
-            Keep it under 100 words and end with a specific question.
+            IMPORTANT: The challenge must relate to their specific question, not be generic.
+            If they're asking about outdoor area placement, focus on that.
+            If they're asking about material choices, focus on that.
+            
+            Keep it under 100 words and end with a specific question that builds on their inquiry.
             """
             
             response = await self.client.generate_completion([
-                self.client.create_system_message("You are an expert in architectural pedagogy."),
+                self.client.create_system_message("You are an expert in architectural pedagogy who creates relevant, contextual challenges."),
                 self.client.create_user_message(prompt)
             ])
             
@@ -269,8 +288,48 @@ class ChallengeGeneratorProcessor:
         except Exception as e:
             self.telemetry.log_error(f"Challenge contextualization failed: {e}")
         
-        # Fallback to base challenge
-        return base_challenge
+        # Fallback to context-aware challenge
+        return self._generate_context_aware_fallback(user_input, project_context, challenge_type)
+    
+    def _extract_user_context(self, user_input: str) -> str:
+        """Extract key context from user's question to make challenges relevant."""
+        if not user_input:
+            return "general architectural inquiry"
+        
+        user_input_lower = user_input.lower()
+        
+        # Check for specific architectural elements
+        if any(word in user_input_lower for word in ["outdoor", "garden", "courtyard", "landscape"]):
+            return "outdoor space design and placement"
+        elif any(word in user_input_lower for word in ["classroom", "room", "space", "area"]):
+            return "interior space organization and layout"
+        elif any(word in user_input_lower for word in ["material", "construction", "building"]):
+            return "material selection and construction methods"
+        elif any(word in user_input_lower for word in ["light", "sunlight", "natural light"]):
+            return "lighting and environmental factors"
+        elif any(word in user_input_lower for word in ["organize", "layout", "arrange", "place"]):
+            return "spatial organization and arrangement"
+        elif any(word in user_input_lower for word in ["approach", "strategy", "method"]):
+            return "design approach and methodology"
+        else:
+            return "general design inquiry"
+    
+    def _generate_context_aware_fallback(self, user_input: str, project_context: str, challenge_type: str) -> str:
+        """Generate a context-aware fallback challenge when LLM fails."""
+        if not user_input:
+            return f"Consider how users will experience your {project_context} at different times and conditions."
+        
+        user_input_lower = user_input.lower()
+        
+        # Generate relevant fallback based on user's question
+        if any(word in user_input_lower for word in ["outdoor", "garden", "courtyard"]):
+            return f"Think about how the placement of outdoor areas in your {project_context} affects the flow and experience of users throughout the day and seasons."
+        elif any(word in user_input_lower for word in ["classroom", "room", "space"]):
+            return f"Consider how the organization of spaces in your {project_context} influences user movement, interaction, and learning outcomes."
+        elif any(word in user_input_lower for word in ["organize", "layout", "arrange"]):
+            return f"Reflect on how your spatial organization choices in this {project_context} will impact user experience and project success."
+        else:
+            return f"Consider how your design decisions for this {project_context} will be experienced by different users and in various conditions."
     
     def _get_pedagogical_intent(self, strategy: str, cognitive_state: Dict) -> str:
         """Get pedagogical intent for the strategy."""

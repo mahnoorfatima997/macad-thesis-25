@@ -138,7 +138,7 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
         return f"{base}\n\n{clarifiers[0]}\n{clarifiers[1]}"
 
     # Multi-agent synthesis shaping
-    if path in {"multi_agent_comprehensive", "balanced_guidance"}:
+    if path in {"multi_agent_comprehensive", "balanced_guidance", "knowledge_with_challenge"}:
         header = "Synthesis:"
 
         def _first_sentence(s: str, max_len: int = 400) -> str:
@@ -178,6 +178,47 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
 
             return insight
 
+        def _generate_contextual_question(user_input: str, domain_text: str) -> str:
+            """Generate a contextual question based on what the user actually asked."""
+            user_input_lower = user_input.lower()
+            
+            # Check if user is asking about placement/organization
+            if any(word in user_input_lower for word in ["place", "organize", "layout", "arrange", "position", "where"]):
+                if "outdoor" in user_input_lower or "garden" in user_input_lower or "courtyard" in user_input_lower:
+                    return "Which of these placement strategies feels most aligned with your vision for the learning environment?"
+                else:
+                    return "How do you envision the relationship between these different spaces?"
+            
+            # Check if user is asking about approach/strategy
+            elif any(word in user_input_lower for word in ["approach", "strategy", "method", "how", "what should"]):
+                return "What aspect of this approach resonates most with your design goals?"
+            
+            # Check if user is asking about examples/references
+            elif any(word in user_input_lower for word in ["example", "reference", "precedent", "case study"]):
+                return "Which of these examples best fits your project's context and requirements?"
+            
+            # Default contextual question
+            return "How does this information help you move forward with your design?"
+
+        def _generate_building_type_specific_watch(building_type: str) -> str:
+            """Generate building-type specific watch items instead of generic fallbacks."""
+            building_type_lower = building_type.lower()
+            
+            if "community" in building_type_lower or "sports" in building_type_lower:
+                return "Consider circulation patterns, user flow, and how spaces can adapt between different activities and times of day"
+            elif "learning" in building_type_lower or "educational" in building_type_lower:
+                return "Consider how the learning environment supports different teaching methods and student needs"
+            elif "residential" in building_type_lower:
+                return "Consider how the space supports daily living patterns and personal comfort"
+            elif "cultural" in building_type_lower or "museum" in building_type_lower:
+                return "Consider how the space enhances visitor experience and showcases exhibits effectively"
+            elif "healthcare" in building_type_lower or "medical" in building_type_lower:
+                return "Consider patient comfort, staff efficiency, and infection control requirements"
+            elif "office" in building_type_lower or "commercial" in building_type_lower:
+                return "Consider workflow efficiency, collaboration opportunities, and professional atmosphere"
+            else:
+                return "Consider how users will experience your architectural project at different times of the day and year"
+
         items = []
         if domain_text:
             insight = _sanitize(_extract_insight(domain_text))
@@ -192,15 +233,19 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
         if cognitive_text:
             watch = _sanitize(_extract_insight(cognitive_text, max_len=600))  # Use extract_insight for Watch too
         else:
-            # ENHANCED: Use context-aware fallback based on conversation content
-            watch = "Consider how users will experience your architectural project at different times of the day and year"
+            # ENHANCED: Use building-type specific fallback instead of generic one
+            building_type = context_analysis.get("building_type", "mixed_use")
+            watch = _generate_building_type_specific_watch(building_type)
         if watch:
             items.append(f"- Watch: {watch}")
         items = [it for it in items if it][:3]
         body = header + ("\n" + "\n".join(items) if items else "\n" + _first_sentence(text))
-        next_action = "Next: test one concrete change and tell me what you notice."
-        question = "What will you try first?"
-        return f"{body}\n\n{next_action} {question}"
+        
+        # ENHANCED: Generate contextual question instead of hardcoded generic ones
+        user_input = classification.get("user_input", "") if classification else ""
+        contextual_question = _generate_contextual_question(user_input, domain_text)
+        
+        return f"{body}\n\n{contextual_question}"
 
     # Default: return text as-is
     return text

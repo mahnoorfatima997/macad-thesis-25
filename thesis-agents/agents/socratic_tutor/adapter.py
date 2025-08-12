@@ -6,7 +6,10 @@ This adapter maintains backward compatibility while delegating to processor modu
 
 import sys
 import os
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from phase_assessment import PhaseAssessmentManager, DesignPhase, SocraticStep
 
 # Add path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,7 +39,7 @@ class SocraticTutorAgent:
     This streamlined adapter delegates to specialized processor modules.
     """
     
-    def __init__(self, domain="architecture"):
+    def __init__(self, domain: str = "architecture") -> None:
         """Initialize the Socratic Tutor Agent with modular processors."""
         self.telemetry = AgentTelemetry("socratic_tutor")
         self.telemetry.log_agent_start("__init__", domain=domain)
@@ -59,10 +62,11 @@ class SocraticTutorAgent:
 
         # Initialize phase assessment system if available
         if PHASE_ASSESSMENT_AVAILABLE:
-            self.phase_manager = PhaseAssessmentManager()
+            from phase_assessment import PhaseAssessmentManager
+            self.phase_manager: Optional['PhaseAssessmentManager'] = PhaseAssessmentManager()
             print(f"   📋 Phase-based assessment system enabled")
         else:
-            self.phase_manager = None
+            self.phase_manager: Optional['PhaseAssessmentManager'] = None
             print(f"   ⚠️ Phase-based assessment system disabled")
 
         self.telemetry.log_agent_end("__init__")
@@ -116,6 +120,14 @@ class SocraticTutorAgent:
         Returns:
             AgentResponse with Socratic question and guidance
         """
+        print(f"🔍 DEBUG: Socratic tutor received state.building_type: {getattr(state, 'building_type', 'NOT_SET')}")
+        print(f"🔍 DEBUG: Socratic tutor received state.messages count: {len(getattr(state, 'messages', []))}")
+        print(f"🔍 DEBUG: Socratic tutor received state.current_design_brief: {getattr(state, 'current_design_brief', 'NOT_SET')}")
+        
+        # Check if we have routing information to determine response type
+        routing_path = context_classification.get("routing_path", "unknown")
+        print(f"🔍 DEBUG: Routing path detected: {routing_path}")
+        
         self.telemetry.log_agent_start("provide_guidance")
         
         try:
@@ -126,33 +138,70 @@ class SocraticTutorAgent:
             user_input = user_messages[-1] if user_messages else ""
 
             if not user_input:
-                return self._generate_fallback_response(state, context_classification, analysis_result, gap_type)
+                return await self._generate_fallback_response(state, analysis_result, gap_type)
 
-            # Check if phase-based assessment is available and should be used
-            if self.phase_manager and self._should_use_phase_based_approach(state, context_classification):
-                print(f"   🎯 Using phase-based Socratic assessment")
-                response_result = self._generate_phase_based_response(state, context_classification, analysis_result, gap_type)
+            # ENHANCED ROUTE-AWARE RESPONSE GENERATION WITH GAMIFICATION
+            if routing_path == "supportive_scaffolding":
+                print(f"   🆘 Using SUPPORTIVE SCAFFOLDING approach")
+                response_result = await self._generate_supportive_scaffolding_response(state, context_classification, analysis_result, gap_type)
+            elif routing_path == "knowledge_only":
+                print(f"   📚 Using KNOWLEDGE ONLY approach")
+                response_result = await self._generate_knowledge_only_response(state, context_classification, analysis_result, gap_type)
+            elif routing_path == "balanced_guidance":
+                print(f"   ⚖️ Using BALANCED GUIDANCE approach")
+                response_result = await self._generate_balanced_guidance_response(state, context_classification, analysis_result, gap_type)
+            elif routing_path == "socratic_exploration":
+                print(f"   ❓ Using SOCRATIC EXPLORATION approach")
+                # Check for gamified behavior enhancement
+                gamified_behavior = context_classification.get("gamified_behavior", "")
+                if gamified_behavior == "visual_choice_reasoning":
+                    print(f"   🎮 Using GAMIFIED visual choice reasoning")
+                    response_result = await self._generate_visual_choice_response(state, context_classification, analysis_result, gap_type)
+                elif self.phase_manager and self._should_use_phase_based_approach(state, context_classification):
+                    print(f"   🎯 Using phase-based Socratic assessment")
+                    response_result = await self._generate_phase_based_response(state, context_classification, analysis_result, gap_type)
+                else:
+                    print(f"   🔄 Using default adaptive approach for route: {routing_path}")
+                    # Analyze student state and conversation progression
+                    student_analysis = self._analyze_student_state(state, analysis_result, context_classification)
+                    conversation_progression = self._analyze_conversation_progression(state, user_input)
+
+                    # Determine response strategy
+                    response_strategy = self._determine_response_strategy(student_analysis, conversation_progression)
+
+                    print(f"   Strategy: {response_strategy}")
+                    print(f"   Student confidence: {student_analysis.get('confidence_level', 'unknown')}")
+                    print(f"   Conversation stage: {conversation_progression.get('stage', 'unknown')}")
+
+                    # Generate response based on strategy
+                    response_result = await self._generate_response_by_strategy(
+                        response_strategy, state, student_analysis, conversation_progression, analysis_result
+                    )
+            elif routing_path == "cognitive_challenge":
+                print(f"   ⚡ Using COGNITIVE CHALLENGE approach")
+                gamified_behavior = context_classification.get("gamified_behavior", "")
+                if gamified_behavior == "constraint_storm_challenge":
+                    print(f"   🌩️ Using CONSTRAINT STORM challenge")
+                    response_result = await self._generate_constraint_challenge_response(state, context_classification, analysis_result, gap_type)
+                else:
+                    response_result = await self._generate_cognitive_challenge_response(state, context_classification, analysis_result, gap_type)
             else:
-                print(f"   🔄 Using adaptive Socratic approach")
-                # Analyze student state and conversation progression
-                student_analysis = self._analyze_student_state(state, analysis_result, context_classification)
-                conversation_progression = self._analyze_conversation_progression(state, user_input)
-
-                # Determine response strategy
-                response_strategy = self._determine_response_strategy(student_analysis, conversation_progression)
-
-                print(f"   Strategy: {response_strategy}")
-                print(f"   Student confidence: {student_analysis.get('confidence_level', 'unknown')}")
-                print(f"   Conversation stage: {conversation_progression.get('stage', 'unknown')}")
-
-                # Generate response based on strategy
-                response_result = await self._generate_response_by_strategy(
-                    response_strategy, state, student_analysis, conversation_progression, analysis_result
-                )
+                print(f"   🔄 Using default adaptive approach for route: {routing_path}")
+                response_result = await self._generate_adaptive_socratic_response(state, context_classification, analysis_result, gap_type)
 
             # Add cognitive flags
             cognitive_flags = self._extract_cognitive_flags(response_result, state)
-            response_result["cognitive_flags"] = cognitive_flags
+
+            # Handle both Dict and AgentResponse types for adding cognitive flags
+            if isinstance(response_result, AgentResponse):
+                # If it's already an AgentResponse, we don't need to add flags here
+                # They will be handled in the conversion process
+                pass
+            elif isinstance(response_result, dict):
+                response_result["cognitive_flags"] = cognitive_flags
+            else:
+                # Convert to dict if it's neither
+                response_result = {"response_text": str(response_result), "cognitive_flags": cognitive_flags}
 
             # Convert to AgentResponse
             agent_response = self._convert_to_agent_response(
@@ -168,6 +217,154 @@ class SocraticTutorAgent:
                 f"Guidance provision failed: {str(e)}",
                 agent_name=self.name
             )
+
+    # GAMIFIED RESPONSE GENERATION METHODS
+
+    async def _generate_visual_choice_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate gamified visual choice response for Socratic exploration."""
+        try:
+            user_input = context_classification.get("user_input", "")
+            building_type = self._extract_building_type_from_context(state)
+
+            # Extract topic from user input
+            topic = self._extract_main_topic(user_input)
+
+            # Generate enhanced visual choice prompt for spatial organization
+            prompt = f"""
+            Create an engaging Socratic exploration response using visual choices for a {building_type} design project.
+
+            User's input: "{user_input}"
+            Main topic: {topic}
+            Building type: {building_type}
+
+            SPECIFIC GUIDANCE FOR SPATIAL ORGANIZATION:
+            - Focus on spatial relationships, circulation patterns, and functional zones
+            - Present 3 distinct organizational approaches with clear visual metaphors
+            - Connect choices to the specific needs of a {building_type}
+            - Use architectural terminology appropriately
+
+            Follow this structure:
+            1. Acknowledge their spatial thinking with enthusiasm
+            2. Present 3 spatial organization approaches:
+               🌿 A) [Organic/flowing approach with description]
+               🏛️ B) [Structured/zoned approach with description]
+               🌟 C) [Hybrid/flexible approach with description]
+            3. Ask them to choose and explain their reasoning
+            4. Follow up with deeper questions about their choice
+
+            Make it engaging and gamified but educationally meaningful.
+            Keep the tone collaborative and curious, not childish.
+            Focus on spatial design principles and user experience.
+            """
+
+            response = await self._generate_llm_response(prompt, state, analysis_result)
+
+            return {
+                "response_text": response,
+                "response_strategy": "visual_choice_reasoning",
+                "educational_intent": "spatial_reasoning_development",
+                "gamified_behavior": "visual_choice_reasoning",
+                "cognitive_flags": ["choice_based_learning", "visual_thinking", "reasoning_development"]
+            }
+
+        except Exception as e:
+            self.telemetry.log_error(f"Visual choice response generation failed: {str(e)}")
+            return await self._generate_fallback_response(state, analysis_result, gap_type)
+
+    async def _generate_constraint_challenge_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate gamified constraint storm challenge response."""
+        try:
+            user_input = context_classification.get("user_input", "")
+            building_type = self._extract_building_type_from_context(state)
+
+            # Generate constraint challenge
+            prompt = f"""
+            Create an engaging constraint challenge for a {building_type} design project.
+
+            User's input: "{user_input}"
+
+            Follow this structure:
+            1. Acknowledge their current thinking positively
+            2. Introduce a surprising but realistic constraint (budget cut, site change, new requirement)
+            3. Present 3-4 creative response options (A, B, C, D format with emojis)
+            4. Ask for their gut reaction and reasoning
+            5. Set up exploration of the implications
+
+            Make the constraint challenging but not discouraging. Focus on creative problem-solving.
+            Use emojis for visual appeal but keep the tone professional and engaging.
+            """
+
+            response = await self._generate_llm_response(prompt, state, analysis_result)
+
+            return {
+                "response_text": response,
+                "response_strategy": "constraint_storm_challenge",
+                "educational_intent": "adaptive_thinking_development",
+                "gamified_behavior": "constraint_storm_challenge",
+                "cognitive_flags": ["constraint_thinking", "creative_problem_solving", "adaptive_reasoning"]
+            }
+
+        except Exception as e:
+            self.telemetry.log_error(f"Constraint challenge response generation failed: {str(e)}")
+            return self._generate_fallback_dict_response(state, gap_type)
+
+    async def _generate_cognitive_challenge_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate cognitive challenge response for low engagement."""
+        try:
+            user_input = context_classification.get("user_input", "")
+            building_type = self._extract_building_type_from_context(state)
+
+            prompt = f"""
+            Create a cognitive challenge response for a student showing low engagement or overconfidence.
+
+            User's input: "{user_input}"
+            Building type: {building_type}
+
+            The student needs intellectual stimulation. Create a response that:
+            1. Acknowledges their current position
+            2. Introduces a thought-provoking challenge or perspective shift
+            3. Engages them with choices or scenarios
+            4. Pushes them to think more deeply
+
+            Make it challenging but supportive. Use engaging language and strategic emojis.
+            """
+
+            response = await self._generate_llm_response(prompt, state, analysis_result)
+
+            return {
+                "response_text": response,
+                "response_strategy": "cognitive_challenge",
+                "educational_intent": "engagement_stimulation",
+                "cognitive_flags": ["challenge_thinking", "engagement_boost", "depth_development"]
+            }
+
+        except Exception as e:
+            self.telemetry.log_error(f"Cognitive challenge response generation failed: {str(e)}")
+            return self._generate_fallback_dict_response(state, gap_type)
+
+    def _extract_main_topic(self, user_input: str) -> str:
+        """Extract main architectural topic from user input."""
+        user_input_lower = user_input.lower()
+
+        # Topic patterns for architecture
+        topic_patterns = {
+            "circulation": ["circulation", "movement", "flow", "wayfinding", "navigation"],
+            "lighting": ["lighting", "daylight", "natural light", "illumination"],
+            "materials": ["materials", "material", "concrete", "steel", "wood", "glass"],
+            "sustainability": ["sustainability", "sustainable", "green", "environmental", "energy"],
+            "community": ["community", "social", "gathering", "interaction", "public"],
+            "healing": ["healing", "therapeutic", "wellness", "health", "recovery"],
+            "structure": ["structure", "structural", "columns", "beams", "foundation"],
+            "space": ["space", "spatial", "room", "area", "zone", "layout"],
+            "courtyards": ["courtyard", "outdoor", "garden", "landscape", "nature"],
+            "accessibility": ["accessibility", "accessible", "universal", "inclusive"]
+        }
+
+        for topic, keywords in topic_patterns.items():
+            if any(keyword in user_input_lower for keyword in keywords):
+                return topic
+
+        return "design"  # Default topic
     
     # Delegation methods for backward compatibility
     
@@ -470,13 +667,13 @@ class SocraticTutorAgent:
         # ENHANCEMENT: Check for technical questions first
         if self._looks_technical(last_message):
             # If we have domain expert results, generate technical followup
-            domain_expert_result = state.get("domain_expert_result", {})
+            domain_expert_result = getattr(state, "domain_expert_result", {})
             if domain_expert_result and domain_expert_result.get("response_text", ""):
                 return await self._generate_technical_followup(state, domain_expert_result)
 
         # ENHANCEMENT: Check for design guidance requests
         if self._looks_design_guidance(last_message):
-            domain_expert_result = state.get("domain_expert_result", {})
+            domain_expert_result = getattr(state, "domain_expert_result", {})
             return await self._generate_design_guidance_synthesis(state, analysis_result, domain_expert_result)
 
         # Original strategy-based routing
@@ -501,14 +698,21 @@ class SocraticTutorAgent:
         # Use AI to generate contextual clarifying guidance
         response_text = await self._generate_ai_clarifying_response(last_message, building_type, state)
 
-        return {
-            "agent": self.name,
-            "response_text": response_text,
+        metadata = {
             "response_type": "clarifying_guidance",
             "response_strategy": "clarifying_guidance",
             "educational_intent": "build_understanding",
             "student_analysis": student_analysis,
             "conversation_progression": conversation_progression
+        }
+
+        return {
+            "response_text": response_text,
+            "response_type": "challenging_question",
+            "response_strategy": "challenging_question",
+            "educational_intent": "Challenge overconfident thinking",
+            "building_type": building_type,
+            "cognitive_flags": ["deep_thinking_encouraged", "overconfidence_addressed"]
         }
 
     async def _generate_challenging_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
@@ -521,14 +725,21 @@ class SocraticTutorAgent:
         # Use AI to generate challenging question
         response_text = await self._generate_ai_challenging_question(last_message, building_type, state)
 
-        return {
-            "agent": self.name,
-            "response_text": response_text,
+        metadata = {
             "response_type": "challenging_question",
             "response_strategy": "challenging_question",
             "educational_intent": "challenge_assumptions",
             "student_analysis": student_analysis,
             "conversation_progression": conversation_progression
+        }
+
+        return {
+            "response_text": response_text,
+            "response_type": "challenging_question",
+            "response_strategy": "challenging_question",
+            "educational_intent": "Challenge and deepen thinking",
+            "building_type": building_type,
+            "cognitive_flags": ["deep_thinking_encouraged", "challenge_presented"]
         }
 
     async def _generate_foundational_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
@@ -562,14 +773,21 @@ Consider: Who will use this space? What activities need to happen here? What mak
         # Use AI to generate exploratory question
         response_text = await self._generate_ai_exploratory_question(last_message, building_type, state)
 
-        return {
-            "agent": self.name,
-            "response_text": response_text,
+        metadata = {
             "response_type": "exploratory_question",
             "response_strategy": "exploratory_question",
             "educational_intent": "encourage_exploration",
             "student_analysis": student_analysis,
             "conversation_progression": conversation_progression
+        }
+
+        return {
+            "response_text": response_text,
+            "response_type": "exploratory_question",
+            "response_strategy": "exploratory_question",
+            "educational_intent": "Encourage exploration and investigation",
+            "building_type": building_type,
+            "cognitive_flags": ["exploration_encouraged", "curiosity_stimulated"]
         }
 
     async def _generate_adaptive_question(self, state: ArchMentorState, student_analysis: Dict, conversation_progression: Dict) -> Dict[str, Any]:
@@ -582,14 +800,21 @@ Consider: Who will use this space? What activities need to happen here? What mak
         # Use AI to generate adaptive question
         response_text = await self._generate_ai_adaptive_question(last_message, building_type, state)
 
-        return {
-            "agent": self.name,
-            "response_text": response_text,
+        metadata = {
             "response_type": "adaptive_question",
             "response_strategy": "adaptive_question",
             "educational_intent": "adaptive_guidance",
             "student_analysis": student_analysis,
             "conversation_progression": conversation_progression
+        }
+
+        return {
+            "response_text": response_text,
+            "response_type": "adaptive_question",
+            "response_strategy": "adaptive_question",
+            "educational_intent": "Adapt to current context and needs",
+            "building_type": building_type,
+            "cognitive_flags": ["adaptive_guidance", "context_responsive"]
         }
 
     # Utility methods
@@ -630,113 +855,101 @@ Consider: Who will use this space? What activities need to happen here? What mak
             "topic_count": len(set(topics))
         }
 
-    def _extract_building_type_from_context(self, state: ArchMentorState) -> str:
-        """Extract building type from the current design brief."""
-        if not state.current_design_brief:
-            return "project"
+    def _extract_building_type_from_context(self, state) -> str:
+        """
+        Get building type from state - NO MORE DETECTION, just retrieval.
+        Building type is now centrally managed in conversation_progression.py
+        """
+        # PRIORITY 1: Use state.building_type if available
+        if hasattr(state, 'building_type') and state.building_type and state.building_type != "unknown":
+            return state.building_type
+        
+        # PRIORITY 2: Use state.building_type from student_state if available
+        if hasattr(state, 'student_state') and hasattr(state.student_state, 'building_type'):
+            if state.student_state.building_type and state.student_state.building_type != "unknown":
+                return state.student_state.building_type
+        
+        # PRIORITY 3: Use building_type from context_analysis if available
+        if hasattr(state, 'context_analysis') and state.context_analysis:
+            context_analysis = state.context_analysis
+            if isinstance(context_analysis, dict) and context_analysis.get('building_type'):
+                building_type = context_analysis['building_type']
+                if building_type != "unknown":
+                    return building_type
+        
+        # FALLBACK: Return unknown instead of mixed_use
+        return "unknown"
 
-        # ENHANCED: Look for building type in the brief with more comprehensive list
-        brief_lower = state.current_design_brief.lower()
-        building_types = ["museum", "library", "community center", "office", "house", "school", "hospital", "warehouse", "retail"]
-
-        for building_type in building_types:
-            if building_type in brief_lower:
-                return building_type
-
-        # Also check messages if no design brief
-        for msg in state.messages:
-            if msg.get('role') == 'user':
-                content_lower = msg['content'].lower()
-                for building_type in building_types:
-                    if building_type in content_lower:
-                        return building_type
-
-        return "project"
-
-    def _generate_contextual_followup(self, user_response: str, base_question: 'SocraticQuestion',
+    async def _generate_contextual_followup(self, user_response: str, base_question: 'SocraticQuestion',
                                     current_phase: 'DesignPhase', building_type: str) -> str:
-        """Generate a contextual follow-up that actually responds to what the user said."""
+        """Generate a contextual follow-up using LLM instead of hardcoded templates."""
 
-        user_lower = user_response.lower()
+        print(f"🔍 DEBUG: Generating contextual followup for building_type: {building_type}")
+        print(f"🔍 DEBUG: User response: {user_response[:100]}...")
+        print(f"🔍 DEBUG: Current phase: {current_phase.value}")
 
-        # Analyze what the user actually talked about
-        mentioned_concepts = []
-        if "public programs" in user_lower or "café" in user_lower or "shop" in user_lower:
-            mentioned_concepts.append("public programming")
-        if "lobby" in user_lower or "entrance" in user_lower:
-            mentioned_concepts.append("entrance strategy")
-        if "plaza" in user_lower or "civic" in user_lower:
-            mentioned_concepts.append("urban connection")
-        if ("galleries" in user_lower and ("protect" in user_lower or "deeper" in user_lower)) or ("art" in user_lower and "sequence" in user_lower):
-            mentioned_concepts.append("gallery organization")
-        if "circulation" in user_lower or "flow" in user_lower:
-            mentioned_concepts.append("circulation design")
-        if "light" in user_lower or "sunlit" in user_lower:
-            mentioned_concepts.append("daylighting")
-        if "flexible" in user_lower or "adaptable" in user_lower or "evolve" in user_lower or "changing" in user_lower:
-            mentioned_concepts.append("flexibility")
-        if "community" in user_lower or "engagement" in user_lower or "dialogue" in user_lower:
-            mentioned_concepts.append("community engagement")
-        if "cultural hub" in user_lower or "cultural" in user_lower:
-            mentioned_concepts.append("cultural programming")
+        try:
+            # Build context for AI generation
+            context = f"""
+You are an expert architectural mentor using the Socratic method to guide a student through their design project.
 
-        # Generate contextual follow-ups based on what they mentioned
-        if "public programming" in mentioned_concepts:
-            return f"That's an interesting approach to blurring the boundary between public and museum space. How might this programming strategy affect the visitor's journey from arrival to encountering the art?"
+STUDENT'S RESPONSE: "{user_response}"
 
-        elif "entrance strategy" in mentioned_concepts and "urban connection" in mentioned_concepts:
-            return f"I see you're thinking about the {building_type} as part of the urban fabric. What specific site conditions are driving this civic-facing approach?"
+CURRENT PHASE: {current_phase.value}
+BUILDING TYPE: {building_type}
+BASE QUESTION: {base_question.question_text}
 
-        elif "gallery organization" in mentioned_concepts:
-            return f"You mention protecting the galleries deeper inside - what kind of spatial sequence are you imagining for visitors moving from public programs to the art?"
+YOUR TASK:
+Generate a thoughtful, contextual response that:
+1. ACKNOWLEDGES what the student just said (be specific about their points)
+2. BUILDS ON their specific response (reference their exact words and ideas)
+3. CONNECTS to their {building_type} project context
+4. ENCOURAGES deeper thinking about what they've shared
+5. RELATES to the current design phase
 
-        elif "circulation design" in mentioned_concepts:
-            # Generate varied responses for circulation design
-            circulation_responses = [
-                f"This circulation strategy creates interesting choices for visitors. What design elements will help people understand these different pathways intuitively?",
-                f"A choice-based circulation system is sophisticated. How will the architecture itself communicate these different routes to visitors?",
-                f"You're designing for different levels of engagement. What spatial cues will guide casual browsers versus dedicated art enthusiasts?",
-                f"This layered circulation approach is thoughtful. How does the physical design of these pathways reflect the different visitor experiences you want to create?"
-            ]
-            import random
-            return random.choice(circulation_responses)
+IMPORTANT: 
+- Reference specific details from their response (age range, specific needs, challenges mentioned)
+- Build on their exact ideas (e.g., "Your focus on Copenhagen's wind and rain protection...")
+- Don't ask generic questions - engage with what they said
+- Make it relevant to their {building_type} project
+- Keep it conversational and encouraging
+- Make it 2-3 sentences that show you understand their input
 
-        elif "daylighting" in mentioned_concepts:
-            return f"Light placement is crucial for {building_type} design. How are you balancing natural light for public spaces with the controlled lighting needs of the galleries?"
+Generate a contextual response that builds on their input:
+"""
+            
+            print(f"🔍 DEBUG: Attempting LLM generation with context length: {len(context)}")
+            
+            # Generate response using AI
+            response = await self.client.generate_completion([
+                {"role": "user", "content": context}
+            ], max_tokens=150, temperature=0.7)
+            
+            print(f"🔍 DEBUG: LLM response received: {response}")
+            
+            ai_generated_response = response.get("content", "").strip()
+            if not ai_generated_response or len(ai_generated_response) < 20:
+                print(f"🔍 DEBUG: LLM response too short, using fallback")
+                # Fallback to a generic but building-type-appropriate question
+                return self._generate_fallback_contextual_followup(user_response, building_type, current_phase)
+            
+            print(f"🔍 DEBUG: Using LLM-generated response: {ai_generated_response}")
+            return ai_generated_response
+            
+        except Exception as e:
+            print(f"🔍 DEBUG: AI generation failed in contextual followup: {e}")
+            print(f"🔍 DEBUG: Exception type: {type(e)}")
+            # Fallback to generic but appropriate response
+            return self._generate_fallback_contextual_followup(user_response, building_type, current_phase)
+    
+    def _generate_fallback_contextual_followup(self, user_response: str, building_type: str, current_phase: 'DesignPhase') -> str:
+        """Generate a fallback contextual followup that's truly generic and flexible."""
+        
+        # Truly generic fallback that works for any building type and any user response
+        # No hardcoded assumptions about specific content, age ranges, locations, etc.
+        return f"Your response shows thoughtful consideration of your {building_type} project. I can see you've thought through important aspects of your design. What specific element from what you've described would you like to explore further or develop in more detail?"
 
-        elif "flexibility" in mentioned_concepts:
-            return f"You emphasize flexibility and adaptability - what specific design strategies could allow your {building_type} to evolve with changing art forms and community needs?"
-
-        elif "community engagement" in mentioned_concepts:
-            return f"Creating a cultural hub for community engagement is ambitious. How might the architecture itself foster dialogue and connection between different user groups?"
-
-        elif "cultural programming" in mentioned_concepts:
-            return f"You envision this as a cultural hub beyond just displaying art. What kinds of spaces and relationships between spaces would support this broader cultural mission?"
-
-        elif "circulation design" in mentioned_concepts:
-            return f"Your circulation strategy sounds thoughtful. How does this flow pattern support different types of visitors - from casual browsers to serious art enthusiasts?"
-        elif "entrance strategy" in mentioned_concepts:
-            return f"The entrance sequence is crucial for first impressions. How do you want visitors to feel as they transition from the street into your {building_type}?"
-        elif "urban connection" in mentioned_concepts:
-            return f"Connecting to the urban fabric is important. What role should your {building_type} play in the broader neighborhood context?"
-        elif "gallery organization" in mentioned_concepts:
-            return f"Gallery sequencing affects the art experience. How do you envision visitors moving through and engaging with the collection?"
-        elif "daylighting" in mentioned_concepts:
-            return f"Natural light can transform spaces. How might you balance daylight for ambiance with conservation needs for the artwork?"
-        elif "flexibility" in mentioned_concepts:
-            return f"Flexibility is valuable but challenging. What specific aspects of your {building_type} need to adapt, and what should remain constant?"
-        elif "community engagement" in mentioned_concepts:
-            return f"Community engagement through architecture is powerful. What design strategies could encourage different groups to interact and connect?"
-        elif "cultural programming" in mentioned_concepts:
-            return f"Cultural programming shapes how spaces are used. How might the architecture itself support and enhance these cultural activities?"
-        else:
-            # If we can't identify specific concepts, acknowledge their thinking and probe deeper
-            if len(user_response.split()) > 20:  # Detailed response
-                return f"You've outlined a clear spatial strategy. What's driving your decision to prioritize this particular organization over other possible approaches?"
-            else:
-                return f"Can you elaborate on how this approach specifically serves your {building_type}'s goals?"
-
-    def _get_next_step(self, current_step):
+    def _get_next_step(self, current_step: Any) -> Any:
         """Get the next Socratic step in sequence."""
         try:
             from phase_assessment.phase_manager import SocraticStep
@@ -759,11 +972,21 @@ Consider: Who will use this space? What activities need to happen here? What mak
         except ImportError:
             return current_step
 
-    def _extract_cognitive_flags(self, response_result: Dict, state: ArchMentorState) -> List[str]:
+    def _extract_cognitive_flags(self, response_result: Union[Dict, AgentResponse], state: ArchMentorState) -> List[str]:
         """Extract cognitive flags from the response and student state."""
 
         flags = []
-        response_strategy = response_result.get("response_strategy", "")
+
+        # Handle both Dict and AgentResponse types
+        if isinstance(response_result, AgentResponse):
+            response_strategy = response_result.metadata.get("response_strategy", "")
+            response_text = response_result.response_text
+        elif isinstance(response_result, dict):
+            response_strategy = response_result.get("response_strategy", "")
+            response_text = response_result.get("response_text", "")
+        else:
+            response_strategy = ""
+            response_text = str(response_result)
 
         # Add flags based on strategy
         if response_strategy == "challenging_question":
@@ -774,7 +997,6 @@ Consider: Who will use this space? What activities need to happen here? What mak
             flags.append("exploration_encouraged")
 
         # Check if response contains questions
-        response_text = response_result.get("response_text", "")
         if "?" in response_text:
             flags.append("questioning_promoted")
 
@@ -785,9 +1007,26 @@ Consider: Who will use this space? What activities need to happen here? What mak
 
         return flags
 
-    def _convert_to_agent_response(self, response_result: Dict, state: ArchMentorState,
+    def _convert_to_agent_response(self, response_result: Union[Dict, AgentResponse], state: ArchMentorState,
                                  analysis_result: Dict, context_classification: Dict, gap_type: str) -> AgentResponse:
         """Convert the response result to AgentResponse format."""
+
+        # If already an AgentResponse, return it
+        if isinstance(response_result, AgentResponse):
+            return response_result
+
+        # Ensure response_result is a dict
+        if not isinstance(response_result, dict):
+            response_result = {"response_text": str(response_result), "response_type": "fallback"}
+
+        # Handle both dict and AgentResponse types
+        if isinstance(response_result, AgentResponse):
+            # If already an AgentResponse, return it directly
+            return response_result
+
+        # Ensure response_result is a dictionary
+        if not isinstance(response_result, dict):
+            response_result = {"response_text": str(response_result), "response_type": "fallback"}
 
         # Calculate enhancement metrics
         enhancement_metrics = self._calculate_enhancement_metrics(response_result, state, analysis_result)
@@ -904,25 +1143,23 @@ Consider: Who will use this space? What activities need to happen here? What mak
         """
 
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,  # Increased for complete responses
-                temperature=0.3
-            )
-
-            ai_response = response.choices[0].message.content.strip()
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=200, temperature=0.7)
+            
+            ai_generated_response = response.get("content", "").strip()
 
             # Ensure response ends naturally (not mid-sentence)
-            if ai_response and not ai_response.endswith(('.', '?', '!')):
+            if ai_generated_response and not ai_generated_response.endswith(('.', '?', '!')):
                 # Find the last complete sentence
-                sentences = ai_response.split('.')
+                sentences = ai_generated_response.split('.')
                 if len(sentences) > 1:
-                    ai_response = '.'.join(sentences[:-1]) + '.'
+                    ai_generated_response = '.'.join(sentences[:-1]) + '.'
 
-            return ai_response
+            return ai_generated_response
         except Exception as e:
             # Generate LLM-based fallback question instead of hardcoded
+            self.telemetry.log_error(f"AI challenging question generation failed: {str(e)}")
             return await self._generate_llm_fallback_question(last_message, building_type, state)
 
     async def _generate_ai_challenging_question(self, last_message: str, building_type: str, state: ArchMentorState) -> str:
@@ -958,25 +1195,23 @@ Consider: Who will use this space? What activities need to happen here? What mak
         """
 
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,  # Increased for complete responses
-                temperature=0.4
-            )
-
-            ai_response = response.choices[0].message.content.strip()
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=200, temperature=0.7)
+            
+            ai_generated_response = response.get("content", "").strip()
 
             # Ensure response ends naturally (not mid-sentence)
-            if ai_response and not ai_response.endswith(('.', '?', '!')):
+            if ai_generated_response and not ai_generated_response.endswith(('.', '?', '!')):
                 # Find the last complete sentence
-                sentences = ai_response.split('.')
+                sentences = ai_generated_response.split('.')
                 if len(sentences) > 1:
-                    ai_response = '.'.join(sentences[:-1]) + '.'
+                    ai_generated_response = '.'.join(sentences[:-1]) + '.'
 
-            return ai_response
+            return ai_generated_response
         except Exception as e:
             # Generate LLM-based fallback question instead of hardcoded
+            self.telemetry.log_error(f"AI exploratory question generation failed: {str(e)}")
             return await self._generate_llm_fallback_question(last_message, building_type, state)
 
     async def _generate_ai_exploratory_question(self, last_message: str, building_type: str, state: ArchMentorState) -> str:
@@ -1003,15 +1238,13 @@ Consider: Who will use this space? What activities need to happen here? What mak
         """
 
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
-                temperature=0.5
-            )
-            return response.choices[0].message.content.strip()
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=150, temperature=0.7)
+            return response.get("content", "").strip()
         except Exception as e:
             # Generate LLM-based fallback question instead of hardcoded
+            self.telemetry.log_error(f"AI adaptive question generation failed: {str(e)}")
             return await self._generate_llm_fallback_question(last_message, building_type, state)
 
     async def _generate_ai_adaptive_question(self, last_message: str, building_type: str, state: ArchMentorState) -> str:
@@ -1039,13 +1272,10 @@ Consider: Who will use this space? What activities need to happen here? What mak
         """
 
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
-                temperature=0.4
-            )
-            return response.choices[0].message.content.strip()
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=150, temperature=0.7)
+            return response.get("content", "").strip()
         except Exception as e:
             # Generate LLM-based fallback question instead of hardcoded
             return await self._generate_llm_fallback_question(last_message, building_type, state)
@@ -1082,14 +1312,11 @@ Consider: Who will use this space? What activities need to happen here? What mak
         """
 
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=100,
-                temperature=0.6
-            )
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=100, temperature=0.7)
 
-            fallback_question = response.choices[0].message.content.strip()
+            fallback_question = response.get("content", "").strip()
 
             if not fallback_question.endswith('?'):
                 fallback_question += '?'
@@ -1101,17 +1328,47 @@ Consider: Who will use this space? What activities need to happen here? What mak
             # Only as last resort, use a contextual template
             return f"What specific aspect of {user_input.lower() if user_input else 'your design'} would be most important to consider for your {building_type}?"
 
-    def _generate_fallback_response(self, state: ArchMentorState, context_classification: Dict,
+    async def _generate_fallback_response(self, state: ArchMentorState, 
                                   analysis_result: Dict, gap_type: str) -> AgentResponse:
-        """Generate fallback response when no user input is available."""
+        """Generate fallback response when no user input is available using LLM instead of hardcoded template."""
 
         building_type = self._extract_building_type_from_context(state)
 
-        response_text = f"""Let's explore your {building_type} project together through some thoughtful questions.
-
-What aspects of your design are you most excited about? What challenges are you anticipating?
-
-I'm here to help you think through the complexities and discover insights through questioning."""
+        try:
+            # Generate dynamic fallback response using LLM
+            prompt = f"""
+            You are an expert architectural mentor helping a student with their {building_type} project.
+            
+            CONTEXT:
+            - Building type: {building_type}
+            - Gap type: {gap_type}
+            - This is a fallback response when no specific user input is available
+            
+            TASK: Generate an engaging, encouraging opening message that:
+            1. Welcomes the student to explore their {building_type} project
+            2. Asks thoughtful, open-ended questions to get them thinking
+            3. Shows enthusiasm for their architectural journey
+            4. Encourages them to share their thoughts and challenges
+            5. Sounds natural and conversational, not like a template
+            
+            RESPONSE: Write a welcoming message with 2-3 thoughtful questions (2-3 sentences total).
+            """
+            
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=200, temperature=0.7)
+            
+            ai_generated_response = response.get("content", "").strip()
+            
+            # Fallback to template if LLM fails
+            if not ai_generated_response or len(ai_generated_response) < 30:
+                response_text = f"Let's explore your {building_type} project. What would you like to focus on next?"
+            else:
+                response_text = ai_generated_response
+                
+        except Exception as e:
+            # Fallback to template if LLM fails
+            response_text = f"Let's explore your {building_type} project. What would you like to focus on next?"
 
         return ResponseBuilder.create_socratic_response(
             response_text=response_text,
@@ -1163,10 +1420,17 @@ I'm here to help you think through the complexities and discover insights throug
         """Generate response using phase-based Socratic assessment."""
 
         # Detect current phase and step
+        if not self.phase_manager:
+            raise ValueError("Phase manager not available")
         current_phase, current_step = self.phase_manager.detect_current_phase(state)
 
         # Extract building type
         building_type = self._extract_building_type_from_context(state)
+
+        print(f"🔍 DEBUG: Building type extracted: {building_type}")
+        print(f"🔍 DEBUG: State building_type: {getattr(state, 'building_type', 'NOT_SET')}")
+        print(f"🔍 DEBUG: State current_design_brief: {getattr(state, 'current_design_brief', 'NOT_SET')}")
+        print(f"🔍 DEBUG: State messages count: {len(getattr(state, 'messages', []))}")
 
         print(f"   📋 Current phase: {current_phase.value}")
         print(f"   📋 Current step: {current_step.value}")
@@ -1179,7 +1443,7 @@ I'm here to help you think through the complexities and discover insights throug
             "difficulty_level": context_classification.get("understanding_level", "moderate")
         }
 
-        socratic_question = self.phase_manager.generate_socratic_question(
+        socratic_question = await self.phase_manager.generate_socratic_question(
             current_phase, current_step, building_type, context
         )
 
@@ -1191,39 +1455,453 @@ I'm here to help you think through the complexities and discover insights throug
 
             # Check if user provided substantial response (indicates step completion)
             if len(user_response.split()) > 15:  # Detailed response
-                # Try to advance to next step for more varied questions
-                next_step = self._get_next_step(current_step)
-                if next_step != current_step:
-                    next_question = self.phase_manager.generate_socratic_question(
-                        current_phase, next_step, building_type, context
-                    )
-                    print(f"   🔄 Advancing to next step: {next_step.value}")
-                    socratic_question = next_question
-
-            # Generate a contextual follow-up that builds on their response
-            response_text = self._generate_contextual_followup(
-                user_response, socratic_question, current_phase, building_type
-            )
+                print(f"   🔍 User provided substantial response, focusing on building on their input")
+                # Generate a contextual response that builds on their specific input
+                response_text = await self._generate_contextual_followup(
+                    user_response, socratic_question, current_phase, building_type
+                )
+            else:
+                # Shorter response - use phase-based question but make it contextual
+                response_text = await self._generate_contextual_followup(
+                    user_response, socratic_question, current_phase, building_type
+                )
         else:
             # First question in the phase
             response_text = socratic_question.question_text
 
-        # Return dictionary (not AgentResponse) as expected by the method signature
+        # Return dictionary for consistency with other response generation methods
         return {
             "response_text": response_text,
             "response_type": "phase_based_socratic",
             "response_strategy": f"phase_{current_phase.value}_step_{current_step.value}",
             "educational_intent": f"Guide through {current_phase.value} phase using Socratic method",
-            "metadata": {
-                "phase_info": {
-                    "current_phase": current_phase.value,
-                    "current_step": current_step.value,
-                    "assessment_criteria": socratic_question.assessment_criteria,
-                    "expected_elements": socratic_question.expected_elements
-                },
-                "building_type": building_type,
-                "socratic_question": socratic_question.__dict__
+            "phase_info": {
+                "current_phase": current_phase.value,
+                "current_step": current_step.value,
+                "expected_elements": socratic_question.expected_elements
+            },
+            "building_type": building_type,
+            "socratic_question": socratic_question.__dict__,
+            "cognitive_flags": ["phase_based_learning", "socratic_questioning", "guided_exploration"]
+        }
+
+    # ENHANCEMENT: Technical followup generation ported from FROMOLDREPO
+    async def _generate_technical_followup(self, state: ArchMentorState, domain_expert_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Produce 1–2 concise application probes referencing DomainExpert key points.
+
+        Ported from FROMOLDREPO lines 640-672.
+        """
+        building_type = self._extract_building_type_from_context(state)
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+
+        # Try to extract short labels from DomainExpert response
+        text = (domain_expert_result or {}).get("response_text", "").strip()
+        labels = []
+        if text:
+            import re
+            bullets = re.findall(r"^\s*[-•]\s*(.+)$", text, flags=re.MULTILINE)
+            for b in bullets[:3]:
+                # Use first 4 words as a short label
+                words = b.split()
+                labels.append(" ".join(words[:4]))
+
+        topic = self._extract_main_topic(last_message) if last_message else "your focus"
+        if not labels:
+            labels = [f"{topic} detail", f"{topic} compliance"]
+
+        q1 = f"Given {labels[0]}, where in your {building_type} does this most affect the layout or user flow?"
+        q2 = f"How will you verify {labels[1]} meets your project's constraints?"
+
+        response_text = f"Apply these points in context:\n{q1}\n{q2}"
+
+        return {
+            "response_text": response_text,
+            "response_type": "technical_followup",
+        }
+
+    async def _generate_design_guidance_synthesis(self, state: ArchMentorState, analysis_result: Dict[str, Any], domain_expert_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate design guidance synthesis with Insight/Direction/Watch format.
+
+        Ported from FROMOLDREPO lines 673-715.
+        """
+        building_type = self._extract_building_type_from_context(state)
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+
+        topic = self._extract_main_topic(last_message) if last_message else "design approach"
+
+        items = []
+
+        # Insight from domain expert or analysis - ENHANCED: Use multiple sentences
+        domain_text = (domain_expert_result or {}).get("response_text", "")
+        if domain_text:
+            # Extract first 2-3 meaningful sentences for richer insight
+            sentences = [s.strip() for s in domain_text.split('.') if s.strip()]
+            if len(sentences) >= 3:
+                insight = '. '.join(sentences[:3]) + '.'
+            elif len(sentences) >= 2:
+                insight = '. '.join(sentences[:2]) + '.'
+            elif sentences:
+                insight = sentences[0] + '.'
+            else:
+                insight = domain_text[:200]
+
+            # Limit length but preserve complete sentences
+            if len(insight) > 600:
+                insight = insight[:600].rstrip()
+                last_period = insight.rfind('.')
+                if last_period > 400:  # Keep if we have substantial content
+                    insight = insight[:last_period + 1]
+
+            items.append(f"- Insight: {insight}")
+
+        # Direction question
+        direction_q = f"Which approach to {topic} best supports your {building_type} goals?"
+        items.append(f"- Direction: {direction_q}")
+
+        # Watch line
+        watch_line = f"- Watch: Check implications for circulation/daylight/acoustics."
+        items.append(watch_line)
+
+        header = "Synthesis:"
+        next_probe = "Next: test one concrete change and tell me what you notice. What will you try first?"
+        response_text = header + "\n" + "\n".join(items) + "\n\n" + next_probe
+
+        return {
+            "response_text": response_text,
+            "response_type": "design_guidance",
+        }
+
+    def _extract_main_topic(self, text: str) -> str:
+        """Extract main topic from user text."""
+        if not text:
+            return "design"
+
+        # Simple keyword extraction
+        keywords = ["circulation", "lighting", "structure", "materials", "layout", "space", "design"]
+        text_lower = text.lower()
+
+        for keyword in keywords:
+            if keyword in text_lower:
+                return keyword
+
+        return "design approach"
+
+
+
+    # Route-specific response generation methods
+    
+    async def _generate_supportive_scaffolding_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate supportive scaffolding response - provides guidance and explanations instead of questions."""
+        
+        building_type = self._extract_building_type_from_context(state)
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        user_input = user_messages[-1] if user_messages else ""
+        
+        print(f"🔍 DEBUG: Generating supportive scaffolding for building_type: {building_type}")
+        print(f"🔍 DEBUG: User input: {user_input[:100]}...")
+        
+        try:
+            # Build context for supportive guidance generation
+            context = f"""
+You are an expert architectural mentor providing SUPPORTIVE GUIDANCE to help a student understand concepts they're struggling with.
+
+STUDENT'S INPUT: "{user_input}"
+BUILDING TYPE: {building_type}
+GAP TYPE: {gap_type}
+
+YOUR TASK: Provide SUPPORTIVE GUIDANCE that:
+1. ACKNOWLEDGES their confusion/struggle
+2. EXPLAINS the concepts they're unclear about
+3. GIVES SPECIFIC EXAMPLES relevant to their {building_type} project
+4. BREAKS DOWN complex ideas into understandable parts
+5. PROVIDES PRACTICAL GUIDANCE for moving forward
+
+IMPORTANT: 
+- DO NOT ask more questions (they're already confused!)
+- DO provide clear explanations and examples
+- DO give specific guidance for their {building_type} project
+- DO help them understand what they're struggling with
+- Keep it encouraging and supportive
+
+Generate supportive guidance (2-3 sentences):
+"""
+            
+            print(f"🔍 DEBUG: Attempting LLM generation for supportive guidance")
+            
+            # Generate supportive guidance using AI
+            response = await self.client.generate_completion([
+                {"role": "user", "content": context}
+            ], max_tokens=200, temperature=0.7)
+            
+            print(f"🔍 DEBUG: LLM response received: {response}")
+            
+            ai_generated_response = response.get("content", "").strip()
+            if not ai_generated_response or len(ai_generated_response) < 30:
+                print(f"🔍 DEBUG: LLM response too short, using fallback")
+                # Fallback to supportive guidance
+                return self._generate_fallback_supportive_response(user_input, building_type, gap_type)
+            
+            print(f"🔍 DEBUG: Using LLM-generated supportive guidance: {ai_generated_response}")
+            
+            return {
+                "response_text": ai_generated_response,
+                "response_type": "supportive_scaffolding",
+                "response_strategy": "supportive_guidance",
+                "educational_intent": "Provide supportive guidance and explanations",
+                "metadata": {
+                    "building_type": building_type,
+                    "gap_type": gap_type,
+                    "response_approach": "supportive_guidance"
+                }
             }
+            
+        except Exception as e:
+            print(f"🔍 DEBUG: AI generation failed in supportive scaffolding: {e}")
+            return self._generate_fallback_supportive_response(user_input, building_type, gap_type)
+    
+    def _generate_fallback_supportive_response(self, user_input: str, building_type: str, gap_type: str) -> Dict[str, Any]:
+        """Generate fallback supportive response when LLM fails."""
+        
+        # Generic but supportive fallback
+        if "seasonal" in user_input.lower() or "winter" in user_input.lower():
+            return {
+                "response_text": f"Let me help you understand seasonal design for your {building_type}. Seasonal changes can be challenging, but they're also opportunities to create year-round appeal. For winter gardens, consider elements like evergreen plants, sheltered seating areas, and warm materials that make the space inviting even in cold weather. The key is creating a sense of warmth and protection while maintaining the connection to nature.",
+                "response_type": "supportive_scaffolding",
+                "response_strategy": "supportive_guidance",
+                "educational_intent": "Explain seasonal design concepts",
+                "metadata": {
+                    "building_type": building_type,
+                    "gap_type": gap_type,
+                    "response_approach": "fallback_supportive"
+                }
+            }
+        else:
+            return {
+                "response_text": f"I understand this can be challenging! Let me help you with your {building_type} project. The key is to break down complex concepts into manageable parts. Start with what you do understand, and we can build from there. What specific aspect would you like me to explain first?",
+                "response_type": "supportive_scaffolding",
+                "response_strategy": "supportive_guidance",
+                "educational_intent": "Provide general supportive guidance",
+                "metadata": {
+                    "building_type": building_type,
+                    "gap_type": gap_type,
+                    "response_approach": "fallback_supportive"
+                }
+            }
+    
+    async def _generate_knowledge_only_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate knowledge-only response - provides direct answers without follow-up questions."""
+        
+        building_type = self._extract_building_type_from_context(state)
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        user_input = user_messages[-1] if user_messages else ""
+        
+        print(f"🔍 DEBUG: Generating knowledge-only response for building_type: {building_type}")
+        
+        try:
+            # Build context for knowledge generation
+            context = f"""
+You are an expert architectural mentor providing DIRECT KNOWLEDGE to answer a student's question.
+
+STUDENT'S QUESTION: "{user_input}"
+BUILDING TYPE: {building_type}
+
+YOUR TASK: Provide a COMPREHENSIVE ANSWER that:
+1. Directly answers their question
+2. Gives specific examples relevant to {building_type}
+3. Explains the concepts clearly
+4. Provides practical information they can use
+5. Does NOT ask follow-up questions
+
+IMPORTANT: 
+- Give a complete, helpful answer
+- Include relevant examples for {building_type}
+- Be specific and actionable
+- Don't ask questions back
+
+Generate a comprehensive answer (3-4 sentences):
+"""
+            
+            # Generate knowledge response using AI
+            response = await self.client.generate_completion([
+                {"role": "user", "content": context}
+            ], max_tokens=250, temperature=0.7)
+            
+            ai_generated_response = response.get("content", "").strip()
+            if not ai_generated_response or len(ai_generated_response) < 50:
+                return self._generate_fallback_knowledge_response(user_input, building_type)
+            
+            return {
+                "response_text": ai_generated_response,
+                "response_type": "knowledge_only",
+                "response_strategy": "direct_knowledge",
+                "educational_intent": "Provide comprehensive knowledge and answers",
+                "metadata": {
+                    "building_type": building_type,
+                    "response_approach": "knowledge_provision"
+                }
+            }
+            
+        except Exception as e:
+            print(f"🔍 DEBUG: AI generation failed in knowledge-only: {e}")
+            return self._generate_fallback_knowledge_response(user_input, building_type)
+    
+    def _generate_fallback_knowledge_response(self, user_input: str, building_type: str) -> Dict[str, Any]:
+        """Generate fallback knowledge response when LLM fails."""
+        
+        return {
+            "response_text": f"I'd be happy to help you with your {building_type} project. Your question touches on important architectural concepts. Let me provide you with some key information that should help clarify things for you.",
+            "response_type": "knowledge_only",
+            "response_strategy": "fallback_knowledge",
+            "educational_intent": "Provide basic knowledge guidance",
+            "metadata": {
+                "building_type": building_type,
+                "response_approach": "fallback_knowledge"
+            }
+        }
+    
+    async def _generate_adaptive_socratic_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate adaptive Socratic response - the original adaptive approach."""
+        
+        # Analyze student state and conversation progression
+        student_analysis = self._analyze_student_state(state, analysis_result, context_classification)
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        user_input = user_messages[-1] if user_messages else ""
+        conversation_progression = self._analyze_conversation_progression(state, user_input)
+
+        # Determine response strategy
+        response_strategy = self._determine_response_strategy(student_analysis, conversation_progression)
+
+        print(f"   Strategy: {response_strategy}")
+        print(f"   Student confidence: {student_analysis.get('confidence_level', 'unknown')}")
+        print(f"   Conversation stage: {conversation_progression.get('stage', 'unknown')}")
+
+        # Generate response based on strategy
+        response_result = await self._generate_response_by_strategy(
+            response_strategy, state, student_analysis, conversation_progression, analysis_result
+        )
+        
+        return response_result
+
+    async def _generate_balanced_guidance_response(
+        self, 
+        state: ArchMentorState, 
+        context_classification: Dict, 
+        analysis_result: Dict, 
+        gap_type: str
+    ) -> Dict[str, Any]:
+        """
+        Generate balanced guidance response that combines helpful advice with gentle exploration.
+        This is for design_guidance_request routes where users want guidance but also benefit from thinking.
+        """
+        try:
+            # Extract building type and context
+            building_type = self._extract_building_type_from_context(state)
+            user_input = context_classification.get("user_input", "")
+            
+            # Generate contextual guidance using LLM
+            prompt = f"""
+            You are an architectural mentor helping with a {building_type} project. The user is asking for guidance on: "{user_input}"
+
+            Provide a BALANCED response that includes:
+            1. HELPFUL GUIDANCE: Give specific, actionable advice and suggestions
+            2. GENTLE EXPLORATION: Ask ONE thoughtful question that builds on your guidance
+            3. ENCOURAGEMENT: Support their design thinking process
+
+            Focus on being helpful and practical while encouraging their own thinking.
+            Keep the response conversational and supportive.
+            """
+            
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=200, temperature=0.7)
+            
+            if response and response.get("content"):
+                return {
+                    "response_text": response["content"],
+                    "response_type": "balanced_guidance",
+                    "guidance_type": "design_guidance",
+                    "building_type": building_type,
+                    "confidence": 0.9
+                }
+            else:
+                # Fallback to generic but helpful guidance
+                return self._generate_fallback_balanced_guidance(building_type, user_input)
+                
+        except Exception as e:
+            print(f"🔍 DEBUG: LLM generation failed for balanced_guidance: {e}")
+            # Fallback to generic but helpful guidance
+            building_type = self._extract_building_type_from_context(state)
+            user_input = context_classification.get("user_input", "")
+            return self._generate_fallback_balanced_guidance(building_type, user_input)
+    
+    def _generate_fallback_balanced_guidance(self, building_type: str, user_input: str) -> Dict[str, Any]:
+        """Generate fallback balanced guidance when LLM fails."""
+        building_type = building_type if building_type != "unknown" else "architectural"
+        
+        # Provide helpful guidance with gentle exploration
+        guidance_text = f"""
+        Based on your {building_type} project, here's some helpful guidance for organizing your spaces:
+
+        **Practical Approach:**
+        • Start by mapping the flow between indoor and outdoor areas
+        • Consider how different age groups will use each space
+        • Think about seasonal changes and weather protection
+        • Plan for flexible, adaptable spaces that can serve multiple purposes
+
+        **Design Strategy:**
+        • Create clear visual connections between classrooms and outdoor areas
+        • Use materials and colors that complement the natural environment
+        • Design circulation paths that encourage exploration
+        • Include both active and quiet outdoor spaces
+
+        **Next Steps:**
+        • Sketch a basic layout showing the relationship between indoor and outdoor areas
+        • Consider how the spaces will change throughout the day and seasons
+        • Think about what specific activities each space will support
+
+        What aspect of this organization strategy feels most important to you right now?
+        """
+        
+        return {
+            "response_text": guidance_text.strip(),
+            "response_type": "balanced_guidance",
+            "guidance_type": "design_guidance",
+            "building_type": building_type,
+            "confidence": 0.8
+        }
+
+    async def _generate_llm_response(self, prompt: str, state: ArchMentorState, analysis_result: Dict) -> str:
+        """Generate LLM response using the client."""
+        try:
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=300, temperature=0.7)
+
+            return response.get("content", "").strip()
+        except Exception as e:
+            # Fallback response
+            building_type = self._extract_building_type_from_context(state)
+            return f"Let's explore your {building_type} project further. What specific aspect would you like to focus on?"
+
+    def _generate_fallback_dict_response(self, state: ArchMentorState, gap_type: str) -> Dict[str, Any]:
+        """Generate fallback response as dictionary for gamified methods."""
+        building_type = self._extract_building_type_from_context(state)
+        return {
+            "response_text": f"Let's explore your {building_type} project further. What specific aspect would you like to focus on?",
+            "response_type": "fallback",
+            "response_strategy": "fallback_guidance",
+            "educational_intent": "continued_exploration",
+            "gap_type": gap_type,
+            "building_type": building_type,
+            "cognitive_flags": ["continued_engagement"]
         }
 
     # ENHANCEMENT: Technical followup generation ported from FROMOLDREPO
@@ -1446,7 +2124,7 @@ I'm here to help you think through the complexities and discover insights throug
         return "building project"
 
     # Cleanup
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleanup method."""
         try:
             self.telemetry.log_agent_end("cleanup")
