@@ -16,8 +16,7 @@ if os.path.exists(_ROOT_ENV):
 
 # Streamlit page configuration
 PAGE_CONFIG = {
-    "page_title": "🏗️ Unified Architectural Dashboard",
-    "page_icon": "🏗️",
+    "page_title": "Unified Architectural Dashboard",
     "layout": "wide",
     "initial_sidebar_state": "expanded"
 }

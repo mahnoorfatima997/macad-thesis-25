@@ -98,13 +98,13 @@ class DomainExpertAgent:
             if knowledge_pattern["type"] == "legitimate_example_request":
                 print(f"📚 Legitimate example request detected - providing examples")
                 response_result = await self._provide_focused_examples(state, user_input, gap_type)
-                return self._convert_to_agent_response(response_result, state, context_classification, analysis_result, routing_decision)
+                return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
             
             # Handle premature example requests (cognitive offloading protection)
             if knowledge_pattern["type"] == "premature_example_request":
                 print(f"🛡️ Cognitive protection: Example request too early")
                 response_result = await self._generate_premature_example_response(user_input, building_type, project_context)
-                return self._convert_to_agent_response(response_result, state, context_classification, analysis_result, routing_decision)
+                return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
 
             # Generate AI-powered contextual response for standard requests
             ai_response = await self._generate_contextual_knowledge_response(
@@ -141,6 +141,52 @@ class DomainExpertAgent:
                 f"Knowledge provision failed: {str(e)}",
                 agent_name=self.name
             )
+
+    async def _generate_gamified_knowledge_challenge_response(self, user_input: str, state: ArchMentorState,
+                                                           context_classification: Dict, analysis_result: Dict, gap_type: str):
+        """Generate gamified knowledge response with application challenge."""
+        try:
+            building_type = self._extract_building_type_from_context(state)
+            project_context = state.current_design_brief or "architectural project"
+
+            # Create gamified knowledge prompt
+            prompt = f"""
+            Provide rich, contextual knowledge about the user's question, then create an engaging application challenge.
+
+            User's question: "{user_input}"
+            Building type: {building_type}
+            Project context: {project_context}
+
+            Structure your response as:
+            1. Rich knowledge explanation with real-world relevance
+            2. Connect directly to their project context
+            3. Quick application challenge with 3-4 options (A, B, C, D format with emojis)
+            4. Ask for their choice and reasoning
+            5. Set up exploration of implications
+
+            Make the knowledge engaging and the challenge thought-provoking.
+            Use emojis strategically for visual appeal but maintain professional depth.
+            Include research backing or examples where relevant.
+            """
+
+            response = await self._generate_llm_response(prompt, state, analysis_result)
+
+            return {
+                "response_text": response,
+                "response_strategy": "knowledge_with_application_challenge",
+                "educational_intent": "knowledge_application",
+                "gamified_behavior": "knowledge_with_application_challenge",
+                "sources": [],
+                "metadata": {
+                    "knowledge_type": gap_type,
+                    "building_type": building_type,
+                    "challenge_included": True
+                }
+            }
+
+        except Exception as e:
+            self.telemetry.log_error(f"Gamified knowledge challenge response failed: {str(e)}")
+            return await self._generate_fallback_knowledge_response(state, analysis_result, gap_type)
     
     async def discover_knowledge(self, state: ArchMentorState, context_classification: Dict,
                                analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
@@ -395,6 +441,8 @@ class DomainExpertAgent:
         PROJECT CONTEXT: {project_context}
         KNOWLEDGE DOMAIN: {gap_type}
 
+        CRITICAL REQUIREMENT: You MUST provide EXACTLY the number of strategies you promise. If you say "three strategies," you MUST provide THREE complete strategies.
+
         Craft a complete scholarly response that:
         1. PROVIDES PRACTICAL SOLUTION: Offer concrete, actionable guidance that directly addresses their question
         2. GROUNDS IN THEORY: Reference architectural theory, design principles, or established methodologies
@@ -406,21 +454,31 @@ class DomainExpertAgent:
 
         RESPONSE STRUCTURE:
         - Start with direct acknowledgment of their question
-        - Provide 2-3 concrete approaches or solutions with theoretical grounding
+        - If you mention "three strategies," you MUST provide THREE numbered strategies (1., 2., 3.)
+        - If you mention "two approaches," you MUST provide TWO numbered approaches (1., 2.)
+        - Each strategy/approach must be complete with explanation and rationale
         - Explain practical implications for their specific building type
         - End with a complete conclusion that synthesizes the guidance
         - THEN ask ONE specific, thoughtful question that builds directly on the guidance provided
 
+        STRATEGY COMPLETENESS RULE: 
+        - If you say "Here are three strategies," you MUST provide:
+          1. First strategy with full explanation
+          2. Second strategy with full explanation  
+          3. Third strategy with full explanation
+        - Do NOT promise more strategies than you deliver
+        - Each strategy must be substantial and complete
+
         For example, if they ask about "sustainable materials":
         "Your question about sustainable materials touches on a fundamental tension in contemporary practice between environmental responsibility and design performance. For your {building_type} project, I'd recommend considering three approaches:
 
-        First, bio-based materials like cross-laminated timber offer structural efficiency while sequestering carbon, though they require careful moisture detailing. Second, reclaimed materials provide embodied energy savings and unique aesthetic qualities, but need structural verification. Third, high-performance recycled materials like recycled steel or concrete with fly ash reduce environmental impact while maintaining familiar construction methods.
+        1. Bio-based materials like cross-laminated timber offer structural efficiency while sequestering carbon, though they require careful moisture detailing. Second, reclaimed materials provide embodied energy savings and unique aesthetic qualities, but need structural verification. Third, high-performance recycled materials like recycled steel or concrete with fly ash reduce environmental impact while maintaining familiar construction methods.
 
         The choice depends on your project's priorities and local availability. Each approach has different implications for your design language, construction timeline, and long-term performance.
 
         Given your {building_type} program, which aspect is most critical - minimizing environmental impact, achieving specific aesthetic goals, or optimizing construction efficiency?"
 
-        Write a complete, naturally-ending response (250-350 words) that provides real value:
+        Write a complete, naturally-ending response (250-350 words) that provides real value and follows the strategy completeness rule:
         """
 
         try:
@@ -687,7 +745,7 @@ What questions do you have about your design?"""
         return analysis
 
     async def _provide_focused_examples(self, state: ArchMentorState, user_input: str, gap_type: str) -> Dict[str, Any]:
-        """Provide focused examples based on user input and building type."""
+        """Provide focused examples using database and web search - completely topic-agnostic."""
         print(f"🔄 Providing focused examples for: {user_input}")
         
         # Extract building type and topic
@@ -702,69 +760,101 @@ What questions do you have about your design?"""
         # Search examples: local DB first, then web
         try:
             knowledge_results: List[Dict[str, Any]] = []
+            
+            # Try local database first
             try:
                 from knowledge_base.knowledge_manager import KnowledgeManager
                 km = KnowledgeManager(domain="architecture")
                 
-                # Enhanced search query with quality modifiers
-                quality_modifiers = self._get_quality_modifiers(user_input, user_topic)
-                db_query = f"{quality_modifiers} {user_topic} {building_type} architecture case study precedent project example"
+                # Create flexible, topic-agnostic search query
+                db_query = f"{user_topic} {building_type} architecture case study precedent project example"
                 
                 print(f"   🗄️  DB search query: {db_query}")
-                db_results = km.search_knowledge(db_query, n_results=6)
+                db_results = km.search_knowledge(db_query, n_results=8)
+                
+                # Convert DB results to the format expected by synthesis processor
                 for r in db_results:
                     knowledge_results.append({
+                        "title": r.get("metadata", {}).get("title", "Untitled"),
+                        "url": r.get("metadata", {}).get("source_url", ""),
+                        "snippet": r.get("content", "")[:200] + "..." if len(r.get("content", "")) > 200 else r.get("content", ""),
                         "content": r.get("content", ""),
-                        "metadata": {
-                            "title": r.get("metadata", {}).get("title", "Untitled"),
-                            "url": r.get("metadata", {}).get("source_url", ""),
-                            "source": "local_db",
-                            "type": "db_result"
-                        },
-                        "discovery_method": "db"
+                        "source": "local_db"
                     })
+                    
+                print(f"   ✅ Found {len(knowledge_results)} database results")
+                
             except Exception as e:
                 print(f"⚠️ Local DB search unavailable: {e}")
 
+            # If we don't have enough results, try web search
             if len(knowledge_results) < 3:
-                # Create enhanced context-aware web search query
-                quality_modifiers = self._get_quality_modifiers(user_input, user_topic)
-                context_query = f"{quality_modifiers} {user_topic} {building_type} architecture case study precedent project"
-                print(f"   🌐 Web search query: {context_query}")
-                web_results = await self.search_processor.search_web_for_knowledge(context_query, state)
-                if web_results:
-                    knowledge_results.extend(web_results)
-
-            if knowledge_results:
-                # Check if results are relevant to the building type
-                relevant_results = []
-                for result in knowledge_results:
-                    content_lower = result.get('content', '').lower()
-                    title_lower = result.get('metadata', {}).get('title', '').lower()
+                try:
+                    # Create flexible web search query
+                    context_query = f"{user_topic} {building_type} architecture case study precedent project"
+                    print(f"   🌐 Web search query: {context_query}")
                     
-                    # Check if result mentions the building type or is clearly architectural
-                    if (building_type.lower() in content_lower or 
-                        building_type.lower() in title_lower or
-                        any(arch_term in content_lower for arch_term in ['museum', 'gallery', 'architecture', 'building', 'design'])):
-                        relevant_results.append(result)
+                    web_results = await self.search_processor.search_web_for_knowledge(context_query, state)
+                    if web_results:
+                        # Convert web results to the format expected by synthesis processor
+                        for r in web_results:
+                            # Extract from metadata structure that web search actually returns
+                            title = r.get("metadata", {}).get("title", "Untitled")
+                            url = r.get("metadata", {}).get("url", "")
+                            content = r.get("content", "")
+                            snippet = content[:200] + "..." if len(content) > 200 else content
+                            
+                            knowledge_results.append({
+                                "title": title,
+                                "url": url,
+                                "snippet": snippet,
+                                "content": content,
+                                "source": "web_search",
+                                # Add metadata structure for compatibility
+                                "metadata": {
+                                    "title": title,
+                                    "url": url,
+                                    "source_url": url
+                                }
+                            })
+                        
+                        print(f"   ✅ Found {len([r for r in knowledge_results if r['source'] == 'web_search'])} web results")
+                        
+                except Exception as e:
+                    print(f"⚠️ Web search failed: {e}")
+
+            # Use the knowledge synthesis processor to create properly formatted examples
+            # This processor handles relevance filtering and formatting dynamically
+            if knowledge_results:
+                # Use the simple, working approach from the old repository
+                # Let the LLM intelligently process all results instead of pre-filtering
+                examples_text = await self._synthesize_examples_with_llm(
+                    user_topic, knowledge_results, building_type
+                )
                 
-                # If we have relevant results, use them; otherwise fall back to AI
-                if relevant_results:
-                    examples_text = await self._synthesize_examples_from_results(relevant_results, user_topic, building_type, project_context)
-                    return {
-                        "response_text": examples_text,
-                        "response_type": "focused_examples",
-                        "sources": relevant_results,
-                        "examples_provided": True
-                    }
-                else:
-                    print(f"   ⚠️ Search results not relevant to {building_type}, using AI examples")
-                    return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
+                return {
+                    "response_text": examples_text,
+                    "response_type": "focused_examples",
+                    "sources": knowledge_results,
+                    "examples_provided": True
+                }
             else:
-                return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
+                # If no results at all, provide a helpful message about the topic
+                return {
+                    "response_text": f"I'd be happy to help you find examples of {user_topic} in {building_type} architecture. This is an interesting area that could benefit from case studies and precedents. Would you like me to search for specific aspects of this topic, or do you have particular examples in mind?",
+                    "response_type": "no_examples_found",
+                    "sources": [],
+                    "examples_provided": False
+                }
+                
         except Exception as e:
             print(f"⚠️ Example search failed: {e}")
-            return await self._generate_ai_examples(user_input, building_type, project_context, user_topic)
+            return {
+                "response_text": f"I encountered an issue while searching for examples of {user_topic} in {building_type} architecture. This could be due to technical limitations or the specific nature of your question. Would you like to rephrase your question or focus on a different aspect of {user_topic}?",
+                "response_type": "search_error",
+                "sources": [],
+                "examples_provided": False
+            }
 
     def _get_quality_modifiers(self, user_input: str, topic: str) -> str:
         """Get quality modifiers to enhance search queries and get better examples."""
@@ -965,10 +1055,14 @@ What questions do you have about your design?"""
             "examples_provided": False
         }
 
-    def _convert_to_agent_response(self, response_result: Dict[str, Any], state: ArchMentorState, 
-                                 context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
-        """Convert response result to AgentResponse format."""
-        
+    def _convert_to_agent_response_internal(self, response_result: Dict[str, Any], state: ArchMentorState,
+                                          context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
+        """Convert response result to AgentResponse format - internal method."""
+
+        # Ensure response_result is a dictionary
+        if not isinstance(response_result, dict):
+            response_result = {"response_text": str(response_result), "response_type": "fallback"}
+
         response_metadata = {
             "agent": self.name,
             "response_type": response_result.get("response_type", "knowledge_delivery"),
@@ -978,9 +1072,109 @@ What questions do you have about your design?"""
             "sources": response_result.get("sources", []),
             "processing_method": "example_detection" if response_result.get("examples_provided") else "standard_knowledge"
         }
-        
         return ResponseBuilder.create_knowledge_response(
             response_text=response_result.get("response_text", ""),
             sources_used=response_result.get("sources", []),
             metadata=response_metadata
-        ) 
+        )
+
+    async def _synthesize_examples_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
+        """Use the simple, working approach from the old repository - let LLM intelligently process all results."""
+        
+        # Extract URLs for clickable links
+        urls = []
+        for result in knowledge_results:
+            if result.get('url'):
+                urls.append({
+                    'title': result.get('title', 'Source'),
+                    'url': result.get('url')
+                })
+        
+        # Combine knowledge content for LLM processing
+        combined_knowledge = "\n\n---\n\n".join([
+            f"Source: {r.get('title', 'Unknown')}\nContent: {r.get('content', r.get('snippet', ''))}" 
+            for r in knowledge_results
+        ])
+        
+        # Use the working prompt from the old repository
+        synthesis_prompt = f"""
+        The student is asking for specific examples and knowledge about {user_topic}.
+        
+        AVAILABLE KNOWLEDGE: {combined_knowledge}
+        
+        AVAILABLE URLS FOR LINKS: {urls}
+        
+        CRITICAL REQUIREMENT: You MUST include clickable markdown links for each example.
+        
+        Create a response that:
+        1. Provides specific, concrete examples from the knowledge sources
+        2. Includes project names, locations, and brief descriptions where available
+        3. Explains the key approaches and strategies used
+        4. Makes the content directly relevant to the student's specific context
+        5. Varies the response style and approach based on the content available
+        6. Keeps it informative and factual
+        7. ALWAYS include the web links when available - they are crucial for credibility
+        
+        RESPONSE FORMAT REQUIREMENT:
+        You MUST format each example exactly like this:
+        1. **[Project Name](URL)**: Brief description of the project...
+        2. **[Project Name](URL)**: Brief description of the project...
+        3. **[Project Name](URL)**: Brief description of the project...
+        
+        CRITICAL INSTRUCTIONS:
+        - You MUST format each example with clickable markdown links: [Project Name](URL)
+        - Example format: "1. **[Project Name](URL)**: Brief description of the project..."
+        - Keep response under 200 words to avoid cut-off
+        - Focus on providing actual information, not questions
+        - Make sure to vary the examples and not repeat the same projects
+        - Present 2-3 specific examples with brief explanations
+        - Address the student's specific question directly
+        - ALWAYS use the exact URLs provided in AVAILABLE URLS FOR LINKS
+        - DO NOT skip the markdown links - they are required!
+        """
+        
+        try:
+            # Use OpenAI client directly like the old repository
+            from openai import OpenAI
+            import os
+            
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": synthesis_prompt}],
+                max_tokens=250,
+                temperature=0.4
+            )
+            
+            synthesized_text = response.choices[0].message.content.strip()
+            return synthesized_text
+            
+        except Exception as e:
+            print(f"⚠️ LLM synthesis failed: {e}")
+            # Fallback to simple examples
+            return self._create_simple_examples_fallback(knowledge_results, user_topic, urls)
+    
+    def _create_simple_examples_fallback(self, knowledge_results: List[Dict], user_topic: str, urls: List[Dict]) -> str:
+        """Create simple examples when LLM fails."""
+        lines = [f"Here are examples of {user_topic}:"]
+        lines.append("")
+        
+        for i, result in enumerate(knowledge_results[:3], 1):
+            title = result.get('title', f'Example {i}')
+            url = result.get('url', '')
+            content = result.get('content', result.get('snippet', ''))
+            
+            if url:
+                lines.append(f"{i}. [{title}]({url})")
+            else:
+                lines.append(f"{i}. {title}")
+            
+            # Add brief description
+            if content:
+                snippet = content[:100] + "..." if len(content) > 100 else content
+                lines.append(f"   {snippet}")
+            lines.append("")
+        
+        lines.append("How could these approaches inform your design process?")
+        return "\n".join(lines) 

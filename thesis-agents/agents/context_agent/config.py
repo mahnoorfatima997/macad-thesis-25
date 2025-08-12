@@ -4,8 +4,8 @@ Configuration constants and settings for the Context Agent.
 
 from typing import Dict, List, Any
 
-# Model configuration - ENHANCED: Updated to GPT-4o-mini per FROMOLDREPO
-DEFAULT_MODEL = "gpt-4o-mini"
+# Model configuration - ENHANCED: Updated to GPT-4o for better response quality
+DEFAULT_MODEL = "gpt-4o"
 DEFAULT_TEMPERATURE = 0.3
 MAX_TOKENS = 1200  # Increased for generous academic responses
 

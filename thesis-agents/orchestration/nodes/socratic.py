@@ -19,6 +19,27 @@ def make_socratic_node(socratic_agent, state_validator, state_monitor, logger) -
         analysis_result = state.get("analysis_result", {})
         context_classification = state.get("student_classification", {})
         domain_expert_result = state.get("domain_expert_result", {})
+        
+        # Add routing path and gamified behavior to context classification so Socratic tutor knows which route to use
+        routing_decision = state.get("routing_decision", {})
+        detailed_routing_decision = state.get("detailed_routing_decision", {})
+        routing_path = routing_decision.get("path", "unknown")
+        context_classification["routing_path"] = routing_path
+
+        # Extract gamified behavior from detailed routing decision
+        if detailed_routing_decision and hasattr(detailed_routing_decision, 'metadata'):
+            gamified_behavior = detailed_routing_decision.metadata.get("gamified_behavior", "")
+        elif isinstance(detailed_routing_decision, dict):
+            gamified_behavior = detailed_routing_decision.get("gamified_behavior", "")
+        else:
+            gamified_behavior = ""
+
+        if gamified_behavior:
+            context_classification["gamified_behavior"] = gamified_behavior
+            print(f"🎮 DEBUG: Socratic node - gamified_behavior: {gamified_behavior}")
+        
+        print(f"🔍 DEBUG: Socratic node - routing_path: {routing_path}")
+        print(f"🔍 DEBUG: Socratic node - context_classification keys: {list(context_classification.keys())}")
 
         if current_milestone:
             analysis_result["milestone_context"] = {

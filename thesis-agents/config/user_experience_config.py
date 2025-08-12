@@ -28,7 +28,7 @@ class UserExperienceConfig:
     
     # CONVERSATION SETTINGS
     CONVERSATION_DEPTH_THRESHOLD = 2  # Minimum messages before feedback
-    EXAMPLE_REQUEST_THRESHOLD = 5  # Minimum messages before examples
+    EXAMPLE_REQUEST_THRESHOLD = 4  # Minimum messages before examples
     MAX_CONSECUTIVE_QUESTIONS = 2  # Maximum consecutive questions from agent
     
     # PHASE DETECTION SETTINGS

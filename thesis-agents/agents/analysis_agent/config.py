@@ -4,8 +4,8 @@ Configuration constants and settings for the Analysis Agent.
 
 from typing import Dict, List, Any
 
-# Model configuration - ENHANCED: Updated to GPT-4o-mini per FROMOLDREPO
-DEFAULT_MODEL = "gpt-4o-mini"
+# Model configuration - ENHANCED: Updated to GPT-4o for better response quality
+DEFAULT_MODEL = "gpt-4o"
 DEFAULT_TEMPERATURE = 0.3
 MAX_TOKENS = 2000  # Increased for generous academic responses
 
@@ -139,16 +139,67 @@ PHASE_PROGRESSION_THRESHOLDS = {
     "temporal_decay": 0.1  # How much older messages matter less
 }
 
-# Building type detection patterns
+# Building type detection patterns - Enhanced comprehensive classification
 BUILDING_TYPE_PATTERNS = {
-    "office": ["office", "workplace", "corporate", "business", "commercial", "workspace"],
-    "residential": ["house", "home", "apartment", "residential", "housing", "dwelling"],
-    "educational": ["school", "university", "college", "classroom", "educational", "learning"],
-    "cultural": ["museum", "gallery", "theater", "cultural", "arts", "performance"],
-    "healthcare": ["hospital", "clinic", "medical", "healthcare", "health"],
-    "retail": ["store", "shop", "retail", "commercial", "market"],
-    "mixed_use": ["mixed", "multi", "combined", "various", "multiple"],
-    "community": ["community", "civic", "public", "social", "gathering"]
+    # Educational & Learning
+    "educational": ["school", "university", "college", "classroom", "educational", "learning", "academy", "institute"],
+    "learning_center": ["learning center", "education center", "learning hub", "training center", "skill center", "knowledge center", "study center", "workshop center"],
+    "library": ["library", "librarian", "reading room", "study space", "research center", "information center", "book center"],
+    "research_facility": ["research facility", "laboratory", "lab", "research center", "innovation center", "development center", "testing facility"],
+    
+    # Community & Civic
+    "community_center": ["community center", "community facility", "civic center", "public center", "social hub", "gathering place", "neighborhood center", "town hall"],
+    "cultural_institution": ["museum", "gallery", "theater", "cultural center", "arts center", "performance center", "exhibition center", "cultural hub", "heritage center"],
+    "recreation_center": ["recreation center", "sports center", "fitness center", "wellness center", "activity center", "leisure center", "entertainment center"],
+    "senior_center": ["senior center", "elderly center", "aging center", "retirement center", "adult center", "mature center"],
+    "youth_center": ["youth center", "teen center", "adolescent center", "young center", "teenager center"],
+    
+    # Healthcare & Wellness
+    "hospital": ["hospital", "medical center", "health center", "clinic", "medical facility", "healthcare facility", "treatment center"],
+    "specialized_clinic": ["specialized clinic", "specialty clinic", "medical clinic", "health clinic", "outpatient clinic", "diagnostic center"],
+    "wellness_center": ["wellness center", "health center", "medical spa", "holistic center", "alternative medicine", "wellness facility"],
+    "rehabilitation_center": ["rehabilitation center", "rehab center", "recovery center", "therapy center", "treatment facility"],
+    
+    # Commercial & Business
+    "office": ["office", "workplace", "corporate", "business", "commercial", "workspace", "professional", "executive"],
+    "retail": ["store", "shop", "retail", "commercial", "market", "shopping", "merchant", "boutique"],
+    "restaurant": ["restaurant", "cafe", "dining", "eatery", "bistro", "food service", "culinary", "dining establishment"],
+    "hotel": ["hotel", "lodging", "accommodation", "inn", "resort", "guesthouse", "hostel", "bed and breakfast"],
+    
+    # Residential
+    "residential": ["house", "home", "apartment", "residential", "housing", "dwelling", "residence", "domestic"],
+    "multi_family": ["multi-family", "apartment building", "condominium", "townhouse", "duplex", "triplex", "residential complex"],
+    "senior_housing": ["senior housing", "elderly housing", "retirement community", "assisted living", "nursing home", "care facility"],
+    "student_housing": ["student housing", "dormitory", "student residence", "college housing", "university housing"],
+    
+    # Industrial & Manufacturing
+    "industrial": ["factory", "warehouse", "industrial", "manufacturing", "production", "industrial facility", "manufacturing plant"],
+    "logistics_center": ["logistics center", "distribution center", "fulfillment center", "storage facility", "warehouse facility"],
+    "research_industrial": ["research and development", "R&D facility", "innovation center", "technology center", "development facility"],
+    
+    # Transportation & Infrastructure
+    "transportation_hub": ["transportation hub", "transit center", "transport hub", "mobility center", "travel center"],
+    "parking_facility": ["parking facility", "parking garage", "parking structure", "parking center", "car park"],
+    "maintenance_facility": ["maintenance facility", "service center", "repair facility", "maintenance center"],
+    
+    # Religious & Spiritual
+    "religious": ["church", "temple", "mosque", "synagogue", "religious", "worship", "spiritual", "sacred", "faith center"],
+    "meditation_center": ["meditation center", "spiritual center", "zen center", "mindfulness center", "contemplation center"],
+    
+    # Agricultural & Environmental
+    "agricultural": ["farm", "agricultural", "greenhouse", "nursery", "agricultural facility", "farming center"],
+    "environmental_center": ["environmental center", "nature center", "conservation center", "ecology center", "sustainability center"],
+    
+    # Mixed-Use & Specialized
+    "mixed_use": ["mixed use", "multi-use", "combined use", "integrated", "hybrid", "versatile", "flexible"],
+    "conference_center": ["conference center", "convention center", "meeting center", "event center", "summit center"],
+    "innovation_hub": ["innovation hub", "startup center", "entrepreneurial center", "business incubator", "tech hub"],
+    "creative_workspace": ["creative workspace", "artist studio", "design studio", "creative center", "artistic space"],
+    
+    # Government & Public
+    "government": ["government building", "civic building", "public building", "administrative center", "public service"],
+    "emergency_services": ["fire station", "police station", "emergency center", "public safety", "emergency facility"],
+    "utility_facility": ["utility facility", "power plant", "water treatment", "energy center", "infrastructure facility"]
 }
 
 # Detail level detection patterns for briefs

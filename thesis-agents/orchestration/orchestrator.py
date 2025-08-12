@@ -115,6 +115,11 @@ class LangGraphOrchestrator:
         except Exception:
             pass
 
+        # Get conversation continuity context
+        continuity_context = {}
+        if student_state:
+            continuity_context = student_state.get_conversation_continuity_context()
+
         routing_context = RoutingContext(
             classification=classification,
             context_analysis=context_analysis,
@@ -123,10 +128,37 @@ class LangGraphOrchestrator:
             conversation_history=student_state.messages if student_state else [],
             current_phase=student_state.design_phase.value if student_state else "ideation",
             phase_progress=0.0,
+            # Conversation continuity context
+            conversation_continuity=continuity_context,
+            is_continuing_conversation=student_state.is_continuing_conversation() if student_state else False,
+            current_topic=continuity_context.get("current_topic", ""),
+            last_route_used=continuity_context.get("last_route_used", ""),
+            topic_history=continuity_context.get("topic_history", []),
+            route_history=continuity_context.get("route_history", []),
+            detected_building_type=continuity_context.get("detected_building_type", ""),
+            building_type_confidence=continuity_context.get("building_type_confidence", 0.0),
+            design_phase_detected=continuity_context.get("design_phase_detected", ""),
+            phase_confidence=continuity_context.get("phase_confidence", 0.0),
         )
 
         decision = self.routing_decision_tree.decide_route(routing_context)
         self.last_routing_decision = decision  # for reasoning access
+
+        # Update conversation context with routing decision
+        if student_state:
+            user_input = state.get("last_message", "")
+            detected_topic = classification.get("topic", "") or classification.get("building_type", "")
+            student_state.update_conversation_context(user_input, decision.route.value, detected_topic)
+
+            # Update building type and design phase context if detected
+            # IMPORTANT: Only update building type from brief or first message, not every message
+            if classification.get("building_type") and len(student_state.messages) <= 2:  # Only for first interaction
+                confidence = classification.get("building_type_confidence", 0.5)
+                student_state.update_building_type_context(classification["building_type"], confidence)
+
+            if classification.get("design_phase"):
+                confidence = classification.get("design_phase_confidence", 0.5)
+                student_state.update_design_phase_context(classification["design_phase"], confidence)
 
         # Store detailed decision in state for later use
         state["detailed_routing_decision"] = {
@@ -141,6 +173,15 @@ class LangGraphOrchestrator:
             "classification": decision.classification,
             "metadata": decision.metadata,
         }
+        
+        # CRITICAL FIX: Store the routing decision path in the main routing_decision field
+        # This is what the synthesis method actually uses
+        if "routing_decision" not in state:
+            state["routing_decision"] = {}
+        state["routing_decision"]["path"] = decision.route.value
+        state["routing_decision"]["reasoning"] = decision.reason
+        state["routing_decision"]["confidence"] = decision.confidence
+        state["routing_decision"]["rule_applied"] = decision.rule_applied
 
         return decision.route.value
 
@@ -234,43 +275,50 @@ class LangGraphOrchestrator:
         classification: Dict[str, Any],
         state: WorkflowState,
     ) -> tuple[str, str]:
+        """Enhanced synthesis method aligned with gamified routing system"""
+
+        # Conversation management routes
         if routing_path in ["progressive_opening", "topic_transition"]:
             final_response = state.get("final_response", "")
             if final_response:
-                return final_response, "progressive_opening"
+                return final_response, routing_path
             return self._synthesize_default_response(agent_results)
+
+        # Core learning routes
         if routing_path == "knowledge_only":
             return self._synthesize_knowledge_only_response(agent_results, user_input, classification)
-        if routing_path == "socratic_exploration":
+        elif routing_path == "socratic_exploration":
             return self._synthesize_socratic_exploration_response(agent_results)
-        if routing_path == "cognitive_intervention":
+        elif routing_path == "cognitive_challenge":
+            return self._synthesize_cognitive_challenge_response(agent_results)
+        elif routing_path == "multi_agent_comprehensive":
+            return self._synthesize_multi_agent_comprehensive_response(agent_results, user_input, classification)
+
+        # Support and scaffolding routes
+        elif routing_path == "socratic_clarification":
+            return self._synthesize_socratic_clarification_response(agent_results, user_input, classification)
+        elif routing_path == "supportive_scaffolding":
+            return self._synthesize_supportive_scaffolding_response(agent_results, user_input, classification)
+        elif routing_path == "foundational_building":
+            return self._synthesize_foundational_building_response(agent_results, user_input, classification)
+        elif routing_path == "knowledge_with_challenge":
+            return self._synthesize_knowledge_with_challenge_response(agent_results, user_input, classification)
+        elif routing_path == "balanced_guidance":
+            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification)
+
+        # Intervention routes
+        elif routing_path == "cognitive_intervention":
             return self._synthesize_cognitive_intervention_response(agent_results)
-        if routing_path == "technical_question":
-            domain_result = agent_results.get("domain", {})
-            # Safety check: ensure result is a dictionary
-            if hasattr(domain_result, 'to_dict'):
-                domain_result = domain_result.to_dict()
-            return self._synthesize_technical_response(domain_result, user_input, classification), "technical_question"
-        if routing_path == "feedback_request":
-            socratic_result = agent_results.get("socratic", {})
-            domain_result = agent_results.get("domain", {})
-            # Safety check: ensure results are dictionaries
-            if hasattr(socratic_result, 'to_dict'):
-                socratic_result = socratic_result.to_dict()
-            if hasattr(domain_result, 'to_dict'):
-                domain_result = domain_result.to_dict()
-            return self._synthesize_feedback_response(socratic_result, domain_result, user_input, classification), "feedback_request"
-        if routing_path == "design_guidance":
-            return self._synthesize_design_guidance_response(agent_results, user_input, classification), "design_guidance"
-        if routing_path == "supportive_scaffolding":
-            socratic_result = agent_results.get("socratic", {})
-            domain_result = agent_results.get("domain", {})
-            # Safety check: ensure results are dictionaries
-            if hasattr(socratic_result, 'to_dict'):
-                socratic_result = socratic_result.to_dict()
-            if hasattr(domain_result, 'to_dict'):
-                domain_result = domain_result.to_dict()
-            return self._synthesize_clarification_response(socratic_result, domain_result, user_input, classification), "supportive_scaffolding"
+
+        # Legacy route handling for backward compatibility
+        elif routing_path == "technical_question":
+            return self._synthesize_knowledge_only_response(agent_results, user_input, classification)
+        elif routing_path == "feedback_request":
+            return self._synthesize_multi_agent_comprehensive_response(agent_results, user_input, classification)
+        elif routing_path == "design_guidance":
+            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification)
+
+        # Fallback
         return self._synthesize_default_response(agent_results)
 
     def _synthesize_knowledge_only_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
@@ -352,30 +400,45 @@ class LangGraphOrchestrator:
         )
 
     def _extract_building_type_from_context(self, state) -> str:
-        try:
-            if hasattr(state, "analysis_result") and state.analysis_result:
-                analysis_result = state.analysis_result
-                if isinstance(analysis_result, dict):
-                    text_analysis = analysis_result.get("text_analysis", {})
-                    building_type = text_analysis.get("building_type", "project")
-                    return building_type if building_type != "unknown" else "project"
-            if hasattr(state, "current_design_brief") and state.current_design_brief:
-                brief_lower = state.current_design_brief.lower()
-                building_types = [
-                    "residential",
-                    "commercial",
-                    "educational",
-                    "healthcare",
-                    "cultural",
-                    "office",
-                    "retail",
-                ]
-                for b in building_types:
-                    if b in brief_lower:
-                        return b
-            return "project"
-        except Exception:
-            return "project"
+        """
+        Get building type from centralized conversation continuity context.
+        Uses the enhanced conversation context to avoid multiple detections.
+        """
+        # PRIORITY 1: Use conversation continuity context (highest confidence)
+        if hasattr(state, "student_state") and hasattr(state.student_state, 'conversation_context'):
+            continuity_context = state.student_state.conversation_context
+            if continuity_context.detected_building_type and continuity_context.building_type_confidence > 0.7:
+                return continuity_context.detected_building_type
+
+        # PRIORITY 2: Use state.building_type if available and not unknown
+        if hasattr(state, "building_type") and state.building_type and state.building_type != "unknown":
+            return state.building_type
+
+        # PRIORITY 3: Use student_state.building_type if available and not unknown
+        if hasattr(state, "student_state") and hasattr(state.student_state, 'building_type'):
+            if state.student_state.building_type and state.student_state.building_type != "unknown":
+                return state.student_state.building_type
+
+        # PRIORITY 4: Use conversation continuity context even with lower confidence
+        if hasattr(state, "student_state") and hasattr(state.student_state, 'conversation_context'):
+            continuity_context = state.student_state.conversation_context
+            if continuity_context.detected_building_type and continuity_context.building_type_confidence > 0.3:
+                return continuity_context.detected_building_type
+
+        # FALLBACK: Return unknown (no more local detection)
+        return "unknown"
+
+    def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
+        """Extract student state from agent results for phase detection."""
+        # Try to get student state from various sources
+        for agent_name, result in agent_results.items():
+            if result and hasattr(result, 'student_state'):
+                return result.student_state
+            elif result and isinstance(result, dict) and 'student_state' in result:
+                return result['student_state']
+        
+        # If no student state found, return None
+        return None
 
     def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
         """Extract student state from agent results for phase detection."""
@@ -464,6 +527,165 @@ class LangGraphOrchestrator:
         if domain_result and domain_result.get("response_text"):
             return domain_result.get("response_text", "")
         return "That's a great design question! What specific aspects are you trying to optimize?"
+
+    # ------------- Enhanced synthesis methods for new routing system -------------
+
+    def _synthesize_cognitive_challenge_response(self, agent_results: Dict[str, Any]) -> tuple[str, str]:
+        """Synthesize cognitive challenge response"""
+        cognitive_result = agent_results.get("cognitive", {})
+
+        # Safety check: ensure result is a dictionary
+        if hasattr(cognitive_result, 'to_dict'):
+            cognitive_result = cognitive_result.to_dict()
+
+        if cognitive_result and cognitive_result.get("response_text"):
+            return cognitive_result.get("response_text", ""), "cognitive_challenge"
+        return (
+            "Let me challenge your thinking on this. What assumptions are you making that we could question?",
+            "cognitive_challenge",
+        )
+
+    def _synthesize_multi_agent_comprehensive_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+        """Synthesize comprehensive multi-agent response"""
+        domain_result = agent_results.get("domain", {})
+        socratic_result = agent_results.get("socratic", {})
+        cognitive_result = agent_results.get("cognitive", {})
+        analysis_result = agent_results.get("analysis", {})
+
+        # Safety check: ensure all results are dictionaries
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(cognitive_result, 'to_dict'):
+            cognitive_result = cognitive_result.to_dict()
+        if hasattr(analysis_result, 'to_dict'):
+            analysis_result = analysis_result.to_dict()
+
+        # Prioritize socratic for comprehensive analysis
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result.get("response_text", ""), "multi_agent_comprehensive"
+        elif domain_result and domain_result.get("response_text"):
+            return domain_result.get("response_text", ""), "multi_agent_comprehensive"
+        elif cognitive_result and cognitive_result.get("response_text"):
+            return cognitive_result.get("response_text", ""), "multi_agent_comprehensive"
+        return (
+            "I'd be happy to provide comprehensive feedback on your project. What specific aspects would you like me to focus on?",
+            "multi_agent_comprehensive",
+        )
+
+    def _synthesize_socratic_clarification_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+        """Synthesize Socratic clarification response"""
+        socratic_result = agent_results.get("socratic", {})
+        domain_result = agent_results.get("domain", {})
+
+        # Safety check: ensure results are dictionaries
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result.get("response_text", ""), "socratic_clarification"
+        elif domain_result and domain_result.get("response_text"):
+            return domain_result.get("response_text", ""), "socratic_clarification"
+        return (
+            "Let me help clarify this concept. What part would you like me to explain in more detail?",
+            "socratic_clarification",
+        )
+
+    def _synthesize_supportive_scaffolding_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+        """Synthesize supportive scaffolding response"""
+        socratic_result = agent_results.get("socratic", {})
+        domain_result = agent_results.get("domain", {})
+
+        # Safety check: ensure results are dictionaries
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result.get("response_text", ""), "supportive_scaffolding"
+        elif domain_result and domain_result.get("response_text"):
+            return domain_result.get("response_text", ""), "supportive_scaffolding"
+        return (
+            "I understand this can feel overwhelming. Let's break it down step by step. What's the first thing you'd like to tackle?",
+            "supportive_scaffolding",
+        )
+
+    def _synthesize_foundational_building_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+        """Synthesize foundational building response"""
+        socratic_result = agent_results.get("socratic", {})
+        domain_result = agent_results.get("domain", {})
+
+        # Safety check: ensure results are dictionaries
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result.get("response_text", ""), "foundational_building"
+        elif domain_result and domain_result.get("response_text"):
+            return domain_result.get("response_text", ""), "foundational_building"
+        return (
+            "Let's start with the fundamentals. What basic concepts would help you understand this better?",
+            "foundational_building",
+        )
+
+    def _synthesize_knowledge_with_challenge_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+        """Synthesize knowledge with challenge response"""
+        domain_result = agent_results.get("domain", {})
+        socratic_result = agent_results.get("socratic", {})
+
+        # Safety check: ensure results are dictionaries
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+
+        # Combine knowledge with challenge
+        if domain_result and socratic_result:
+            domain_text = domain_result.get("response_text", "")
+            socratic_text = socratic_result.get("response_text", "")
+            if domain_text and socratic_text:
+                return f"{domain_text}\n\n{socratic_text}", "knowledge_with_challenge"
+
+        if domain_result and domain_result.get("response_text"):
+            return domain_result.get("response_text", ""), "knowledge_with_challenge"
+        elif socratic_result and socratic_result.get("response_text"):
+            return socratic_result.get("response_text", ""), "knowledge_with_challenge"
+        return (
+            "Here's the information you need, but let me challenge you to think deeper about how to apply it.",
+            "knowledge_with_challenge",
+        )
+
+    def _synthesize_balanced_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+        """Synthesize balanced guidance response"""
+        domain_result = agent_results.get("domain", {})
+        socratic_result = agent_results.get("socratic", {})
+        cognitive_result = agent_results.get("cognitive", {})
+
+        # Safety check: ensure all results are dictionaries
+        if hasattr(domain_result, 'to_dict'):
+            domain_result = domain_result.to_dict()
+        if hasattr(socratic_result, 'to_dict'):
+            socratic_result = socratic_result.to_dict()
+        if hasattr(cognitive_result, 'to_dict'):
+            cognitive_result = cognitive_result.to_dict()
+
+        # Use the best available response
+        if socratic_result and socratic_result.get("response_text"):
+            return socratic_result.get("response_text", ""), "balanced_guidance"
+        elif domain_result and domain_result.get("response_text"):
+            return domain_result.get("response_text", ""), "balanced_guidance"
+        elif cognitive_result and cognitive_result.get("response_text"):
+            return cognitive_result.get("response_text", ""), "balanced_guidance"
+        return (
+            "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?",
+            "balanced_guidance",
+        )
 
     # ------------- Metadata helpers (ported minimally) -------------
 
