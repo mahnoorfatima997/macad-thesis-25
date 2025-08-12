@@ -37,8 +37,26 @@ def make_socratic_node(socratic_agent, state_validator, state_monitor, logger) -
             analysis_result,
             gap_type,
         )
-        if hasattr(socratic_result, "response_text"):
-            socratic_result = socratic_result.to_dict()
+        
+        # Ensure socratic_result is a dictionary, not an AgentResponse object
+        if hasattr(socratic_result, 'to_dict'):
+            try:
+                socratic_result = socratic_result.to_dict()
+            except Exception as e:
+                logger.error(f"Failed to convert AgentResponse to dict: {e}")
+                # Fallback: create a basic dictionary
+                socratic_result = {
+                    "response_text": str(socratic_result),
+                    "response_type": "error",
+                    "error_message": f"Conversion failed: {e}"
+                }
+        elif not isinstance(socratic_result, dict):
+            # If it's not a dict and doesn't have to_dict, convert to string
+            socratic_result = {
+                "response_text": str(socratic_result),
+                "response_type": "unknown",
+                "error_message": "Result was not an AgentResponse or dict"
+            }
 
         result_state = {**state, "socratic_result": socratic_result}
 

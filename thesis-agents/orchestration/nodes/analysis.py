@@ -17,8 +17,55 @@ def make_analysis_node(analysis_agent, state_validator, state_monitor, logger, p
 
         progression_integration = analysis_agent.integrate_conversation_progression(student_state, last_message, "")
         analysis_result = await analysis_agent.process(student_state, context_package)
-        if hasattr(analysis_result, "response_text"):
-            analysis_result = analysis_result.to_dict()
+        
+        # Ensure analysis_result is a dictionary, not an AgentResponse object
+        if hasattr(analysis_result, 'to_dict'):
+            try:
+                analysis_result = analysis_result.to_dict()
+            except Exception as e:
+                logger.error(f"Failed to convert AgentResponse to dict: {e}")
+                # Fallback: create a basic dictionary
+                analysis_result = {
+                    "response_text": str(analysis_result),
+                    "response_type": "error",
+                    "error_message": f"Conversion failed: {e}"
+                }
+        elif not isinstance(analysis_result, dict):
+            # If it's not a dict and doesn't have to_dict, convert to string
+            analysis_result = {
+                "response_text": str(analysis_result),
+                "response_type": "unknown",
+                "error_message": "Result was not an AgentResponse or dict"
+            }
+
+        # 1108 tracking: Phase detection (real tracking): compute early and attach to analysis_result
+        try:
+            from phase_assessment.phase_manager import PhaseAssessmentManager
+            phase_manager = PhaseAssessmentManager()
+            current_phase, current_step = phase_manager.detect_current_phase(student_state)
+
+            step_progress_map = {
+                "initial_context_reasoning": 0.25,
+                "knowledge_synthesis_trigger": 0.5,
+                "socratic_questioning": 0.75,
+                "metacognitive_prompt": 1.0,
+            }
+            prog = step_progress_map.get(getattr(current_step, 'value', ''), 0.25)
+            user_msg_count = len([m for m in getattr(student_state, 'messages', []) if m.get('role') == 'user'])
+            confidence = max(0.5, min(0.95, 0.5 + (user_msg_count / 20.0) + (prog - 0.25) / 2))
+
+            analysis_result["phase_analysis"] = {
+                "phase": current_phase.value,
+                "step": current_step.value,
+                "confidence": confidence,
+                "progression_score": prog,
+                # back-compat keys
+                "current_phase": current_phase.value,
+                "current_step": current_step.value,
+                "phase_confidence": confidence,
+            }
+        except Exception:
+            pass
 
         analysis_result.update({
             "conversation_progression": progression_integration.get("conversation_progression", {}),

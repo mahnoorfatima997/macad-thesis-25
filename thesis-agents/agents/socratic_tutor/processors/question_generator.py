@@ -135,10 +135,10 @@ class QuestionGeneratorProcessor:
     def _get_fallback_question_result(self) -> QuestionResult:
         """
         Return fallback question when generation fails.
-        Uses the exact fallback from the original adapter.
+        Now uses a contextual fallback instead of hardcoded text.
         """
         return QuestionResult(
-            question_text=FALLBACK_QUESTION,
+            question_text="What specific aspect of your design would you like to explore further?",
             question_type="fallback",
             pedagogical_intent="Encourage exploration and curiosity",
             generation_confidence=0.6

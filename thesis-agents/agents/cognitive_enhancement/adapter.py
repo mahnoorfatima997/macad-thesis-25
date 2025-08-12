@@ -266,4 +266,187 @@ class CognitiveEnhancementAgent:
     
     def _initialize_challenge_templates(self) -> Dict[str, Dict[str, List[str]]]:
         """Initialize challenge templates (for backward compatibility)."""
-        return CHALLENGE_TEMPLATES 
+        return CHALLENGE_TEMPLATES
+
+    def _detect_cognitive_offloading_patterns(self, input_text: str, state) -> Dict[str, Any]:
+        """Detect patterns indicating cognitive offloading from original implementation"""
+
+        input_lower = input_text.lower()
+
+        # Direct answer seeking patterns
+        direct_answer_patterns = [
+            "tell me the answer", "what should i do", "give me the solution",
+            "what is the right answer", "just tell me", "can you do it for me",
+            "design it for me", "make it for me", "complete design"
+        ]
+
+        # Minimal effort patterns
+        minimal_effort_patterns = [
+            "quick answer", "simple answer", "easy way", "shortcut",
+            "fastest way", "just give me", "don't want to think"
+        ]
+
+        # Dependency patterns
+        dependency_patterns = [
+            "you decide", "you choose", "whatever you think", "up to you",
+            "you know best", "i trust you", "you're the expert"
+        ]
+
+        direct_seeking = sum(1 for pattern in direct_answer_patterns if pattern in input_lower)
+        minimal_effort = sum(1 for pattern in minimal_effort_patterns if pattern in input_lower)
+        dependency = sum(1 for pattern in dependency_patterns if pattern in input_lower)
+
+        total_score = direct_seeking + minimal_effort + dependency
+
+        return {
+            "direct_answer_seeking": direct_seeking > 0,
+            "minimal_effort_seeking": minimal_effort > 0,
+            "shows_dependency": dependency > 0,
+            "offloading_score": total_score,
+            "offloading_level": "high" if total_score >= 2 else "medium" if total_score == 1 else "low"
+        }
+
+    def _assess_engagement_indicators(self, input_text: str, state) -> Dict[str, Any]:
+        """Assess engagement level indicators from original implementation"""
+
+        input_lower = input_text.lower()
+        word_count = len(input_text.split())
+
+        # High engagement indicators
+        high_engagement = [
+            "interesting", "fascinating", "curious", "excited", "wonder",
+            "what if", "how about", "could we", "let's try", "i'm thinking",
+            "i noticed", "i'm wondering", "this makes me think"
+        ]
+
+        # Low engagement indicators
+        low_engagement = [
+            "ok", "sure", "fine", "whatever", "i guess", "boring",
+            "don't care", "doesn't matter", "not interested"
+        ]
+
+        # Question asking (engagement indicator)
+        question_count = input_text.count('?')
+
+        high_score = sum(1 for indicator in high_engagement if indicator in input_lower)
+        low_score = sum(1 for indicator in low_engagement if indicator in input_lower)
+
+        # Determine engagement level
+        if low_score > 0 or word_count < 5:
+            engagement_level = "low"
+        elif high_score > 0 or question_count > 0 or word_count > 15:
+            engagement_level = "high"
+        else:
+            engagement_level = "medium"
+
+        return {
+            "engagement_level": engagement_level,
+            "high_engagement_indicators": high_score,
+            "low_engagement_indicators": low_score,
+            "question_count": question_count,
+            "word_count": word_count,
+            "shows_curiosity": high_score > 0 or question_count > 0
+        }
+
+    def _assess_cognitive_load_indicators(self, input_text: str, state) -> Dict[str, Any]:
+        """Assess cognitive load indicators from original implementation"""
+
+        input_lower = input_text.lower()
+
+        # High cognitive load indicators
+        overload_indicators = [
+            "overwhelmed", "too much", "confused", "lost", "stuck",
+            "can't handle", "too complicated", "too difficult", "brain hurts",
+            "information overload", "too many options"
+        ]
+
+        # Low cognitive load indicators
+        underload_indicators = [
+            "easy", "simple", "boring", "too basic", "already know",
+            "obvious", "straightforward", "no challenge", "too simple"
+        ]
+
+        # Optimal load indicators
+        optimal_indicators = [
+            "challenging but manageable", "interesting challenge", "good difficulty",
+            "making progress", "learning", "understanding better"
+        ]
+
+        overload_score = sum(1 for indicator in overload_indicators if indicator in input_lower)
+        underload_score = sum(1 for indicator in underload_indicators if indicator in input_lower)
+        optimal_score = sum(1 for indicator in optimal_indicators if indicator in input_lower)
+
+        # Determine cognitive load level
+        if overload_score > 0:
+            load_level = "high"
+        elif underload_score > 0:
+            load_level = "low"
+        elif optimal_score > 0:
+            load_level = "optimal"
+        else:
+            load_level = "medium"
+
+        return {
+            "cognitive_load_level": load_level,
+            "overload_indicators": overload_score,
+            "underload_indicators": underload_score,
+            "optimal_indicators": optimal_score,
+            "shows_overwhelm": overload_score > 0,
+            "shows_boredom": underload_score > 0
+        }
+
+    def _assess_metacognitive_awareness(self, input_text: str, state) -> Dict[str, Any]:
+        """Assess metacognitive awareness from original implementation"""
+
+        input_lower = input_text.lower()
+
+        # Metacognitive awareness indicators
+        awareness_indicators = [
+            "i think", "i believe", "i'm not sure", "i wonder",
+            "i realize", "i understand", "i don't understand",
+            "i'm learning", "i need to think about", "let me think",
+            "i'm confused about", "i'm clear on", "i know that i don't know"
+        ]
+
+        # Self-regulation indicators
+        regulation_indicators = [
+            "let me try again", "i should", "i need to", "i will",
+            "my approach", "my strategy", "i'm going to", "i plan to",
+            "i should focus on", "i need to improve"
+        ]
+
+        # Reflection indicators
+        reflection_indicators = [
+            "looking back", "in retrospect", "i learned", "i discovered",
+            "i realized", "now i see", "i understand now", "this helps me see"
+        ]
+
+        awareness_score = sum(1 for indicator in awareness_indicators if indicator in input_lower)
+        regulation_score = sum(1 for indicator in regulation_indicators if indicator in input_lower)
+        reflection_score = sum(1 for indicator in reflection_indicators if indicator in input_lower)
+
+        total_score = awareness_score + regulation_score + reflection_score
+
+        # Determine metacognitive level
+        if total_score >= 3:
+            metacognitive_level = "high"
+        elif total_score >= 1:
+            metacognitive_level = "medium"
+        else:
+            metacognitive_level = "low"
+
+        return {
+            "metacognitive_level": metacognitive_level,
+            "awareness_indicators": awareness_score,
+            "regulation_indicators": regulation_score,
+            "reflection_indicators": reflection_score,
+            "total_metacognitive_score": total_score,
+            "shows_self_awareness": awareness_score > 0,
+            "shows_self_regulation": regulation_score > 0,
+            "shows_reflection": reflection_score > 0
+        }
+
+    def cleanup(self):
+        """Clean up resources."""
+        self.telemetry.log_agent_end("cognitive_enhancement")
+        self.telemetry.cleanup()

@@ -65,6 +65,7 @@ class PhaseProgress:
     responses: Dict[str, str] = field(default_factory=dict)  # question_id -> response
     grades: Dict[str, GradingResult] = field(default_factory=dict)  # question_id -> grade
     average_score: float = 0.0
+    completion_percent: float = 0.0
     is_complete: bool = False
     start_time: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
@@ -542,6 +543,9 @@ class PhaseProgressionSystem:
         # Recalculate average score
         scores = [g.overall_score for g in current_phase_progress.grades.values()]
         current_phase_progress.average_score = sum(scores) / len(scores) if scores else 0.0
+
+        # Recalculate completion percent for the current phase
+        current_phase_progress.completion_percent = self._compute_phase_completion_percent(session, current_phase_progress)
         
         # Check if phase is complete
         self._check_phase_completion(session, current_phase_progress)
@@ -585,6 +589,47 @@ class PhaseProgressionSystem:
             "session_complete": self._is_session_complete(session)
         }
     
+    def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
+        """Compute a stable completion percent (0-100) for the current phase.
+
+        Combines three signals:
+        - Socratic steps completion (60%)
+        - Required checklist items for the current phase (30%)
+        - Score readiness vs. threshold (10%)
+        """
+        # Steps completion ratio
+        total_steps = 4
+        steps_completed = len(phase_progress.completed_steps)
+        steps_ratio = steps_completed / total_steps if total_steps > 0 else 0.0
+
+        # Checklist completion ratio for the current phase
+        items = self.phase_checklist_items.get(session.current_phase, [])
+        required_items = [i for i in items if i.get('required')]
+        total_required = len(required_items)
+        phase_key = session.current_phase.value
+        completed_required = 0
+        if total_required > 0:
+            for item in required_items:
+                item_id = item.get('id')
+                if not item_id:
+                    continue
+                state = session.checklist_state.get(phase_key, {}).get(item_id, {})
+                if state.get('status') == 'completed':
+                    completed_required += 1
+        checklist_ratio = (completed_required / total_required) if total_required > 0 else 0.0
+
+        # Score readiness ratio
+        threshold = self.phase_thresholds.get(session.current_phase, 3.0)
+        score_ratio = min(phase_progress.average_score / threshold, 1.0) if threshold > 0 else 0.0
+
+        percent = 100.0 * (0.6 * steps_ratio + 0.3 * checklist_ratio + 0.1 * score_ratio)
+        # Clamp to [0, 100]
+        if percent < 0.0:
+            percent = 0.0
+        elif percent > 100.0:
+            percent = 100.0
+        return percent
+
     def _check_phase_completion(self, session: SessionState, phase_progress: PhaseProgress):
         """Check if the current phase is complete"""
         threshold = self.phase_thresholds.get(session.current_phase, 3.0)
@@ -592,8 +637,11 @@ class PhaseProgressionSystem:
         # Check if all Socratic steps are completed and average score meets threshold
         all_steps_completed = len(phase_progress.completed_steps) == 4
         score_meets_threshold = phase_progress.average_score >= threshold
-        
-        if all_steps_completed and score_meets_threshold:
+
+        # Add stabilization by requiring high completion percent
+        has_sufficient_completion = phase_progress.completion_percent >= 95.0
+
+        if all_steps_completed and score_meets_threshold and has_sufficient_completion:
             phase_progress.is_complete = True
             self._advance_to_next_phase(session)
     
@@ -606,7 +654,10 @@ class PhaseProgressionSystem:
             if current_index < len(phase_order) - 1:
                 next_phase = phase_order[current_index + 1]
                 session.current_phase = next_phase
-                session.phase_progress[next_phase] = PhaseProgress(phase=next_phase)
+                session.phase_progress[next_phase] = PhaseProgress(
+                    phase=next_phase,
+                    current_step=SocraticStep.INITIAL_CONTEXT_REASONING
+                )
                 logger.info(f"Advanced to phase: {next_phase.value}")
         except ValueError:
             logger.error(f"Invalid phase: {session.current_phase}")
@@ -639,7 +690,8 @@ class PhaseProgressionSystem:
                 "completed": phase_progress.is_complete,
                 "average_score": sum(phase_scores) / len(phase_scores) if phase_scores else 0.0,
                 "completed_steps": len(phase_progress.completed_steps),
-                "total_steps": 4
+                "total_steps": 4,
+                "completion_percent": phase_progress.completion_percent
             }
         
         return {
@@ -695,6 +747,10 @@ class PhaseProgressionSystem:
             'ts': datetime.now().isoformat(),
             'current_phase': session.current_phase.value,
         }
+        # Include current phase completion percent from engine
+        current_progress = session.phase_progress.get(session.current_phase)
+        if current_progress:
+            timeline_entry['current_phase_completion_percent'] = current_progress.completion_percent
         completed_items = []
         pending_required = []
         for phase, items in self.phase_checklist_items.items():
@@ -761,6 +817,7 @@ class PhaseProgressionSystem:
                     for qid, grade in progress.grades.items()
                 },
                 "average_score": progress.average_score,
+                "completion_percent": progress.completion_percent,
                 "is_complete": progress.is_complete,
                 "start_time": progress.start_time.isoformat(),
                 "last_updated": progress.last_updated.isoformat()

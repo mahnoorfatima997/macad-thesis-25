@@ -4,10 +4,102 @@ Knowledge search processing module for web search and knowledge retrieval.
 import os
 import json
 import asyncio
+import re
+import unicodedata
+import logging
 from typing import Dict, Any, List, Optional
+from urllib.parse import urlparse
 from ..config import WEB_SEARCH_CONFIG, SEARCH_ENGINES, KNOWLEDGE_DOMAINS
 from ...common import TextProcessor, MetricsCalculator, AgentTelemetry, LLMClient
 from state_manager import ArchMentorState
+
+
+# ENHANCED: Preferred architectural domains for Tavily search filtering
+ARCHITECTURAL_SOURCES = [
+    "site:archdaily.com",
+    "site:dezeen.com",
+    "site:architecturalrecord.com",
+    "site:architecturaldigest.com",
+    "site:archpaper.com",
+    "site:e-architect.com",
+    "site:metropolismag.com",
+    "site:domusweb.it",
+    "site:frameweb.com",
+    "site:world-architects.com"
+]
+
+def get_preferred_architecture_domains() -> List[str]:
+    """Return a whitelist of preferred architecture domains from ARCHITECTURAL_SOURCES."""
+    cleaned: List[str] = []
+    for source in ARCHITECTURAL_SOURCES:
+        domain = source.replace("site:", "").strip()
+        if domain and domain not in cleaned:
+            cleaned.append(domain)
+    return cleaned
+
+
+def generate_alternate_search_query(query: str) -> str:
+    """Create an alternate query to fetch case-study oriented results if the first query is too broad."""
+    q = (query or '').strip()
+    q_lower = q.lower()
+    if any(k in q_lower for k in [
+        'case study', 'case studies', 'example', 'examples', 'project', 'precedent'
+    ]):
+        return q
+    alt = f"{q} architectural case studies project examples"
+    alt = re.sub(r"\s+", " ", alt).strip()
+    return alt[:200]
+
+
+def generate_context_aware_search_query(topic: str, context: Dict[str, Any]) -> str:
+    """Generate a robust, sanitized search query from topic + context."""
+
+    def _norm(s: str) -> str:
+        return unicodedata.normalize('NFKD', s or '').encode('ascii', 'ignore').decode('ascii')
+
+    raw = _norm((topic or '').strip())
+
+    # Remove conversational fillers/questions
+    fillers = [
+        r"\bi don'?t know\b", r"\bcan you\b", r"\bcould you\b", r"\bplease\b",
+        r"\bgive me\b", r"\bsome of them\b", r"\bshow me\b", r"\bprovide\b",
+        r"\bwhat is\b", r"\bwhat are\b", r"\bhow (do|to|can)\b", r"\bhelp\b"
+    ]
+    lowered = raw.lower()
+    for f in fillers:
+        lowered = re.sub(f, " ", lowered)
+
+    # Keep only words, spaces and dashes; collapse spaces
+    cleaned = re.sub(r"[^\w\s-]", " ", lowered)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+    parts = []
+    if cleaned:
+        parts.append(cleaned)
+
+    bt = context.get('building_type')
+    if bt and bt != 'general':
+        parts.append(_norm(bt).replace('_', ' '))
+
+    elems = context.get('specific_elements') or []
+    if elems:
+        parts.extend(_norm(e) for e in elems[:2])
+
+    parts.append('architecture')
+
+    # Add intent-based boosters for better results
+    intent_boosters = []
+    topic_lower = (topic or '').lower()
+    if any(k in topic_lower for k in ['example', 'examples', 'project', 'case study', 'case studies', 'precedent', 'built project']):
+        intent_boosters.extend(['case study', 'project example', 'architectural precedent'])
+
+    if intent_boosters:
+        parts.extend(intent_boosters)
+
+    query = " ".join(p for p in parts if p).strip()
+    if len(query) > 150:
+        query = query[:150]
+    return query
 
 
 class KnowledgeSearchProcessor:
@@ -30,143 +122,234 @@ class KnowledgeSearchProcessor:
             "frameweb.com", "world-architects.com", "aia.org", "riba.org", "architecture.com"
         ])
         
-        # Initialize search configurations
-        self.google_api_key = os.getenv('GOOGLE_API_KEY')
-        self.google_cse_id = os.getenv('GOOGLE_CSE_ID')
-        self.serp_api_key = os.getenv('SERP_API_KEY')
+        # ENHANCED: Initialize Tavily API configuration (sole web search provider)
+        self.tavily_api_key = os.getenv('TAVILY_API_KEY')
+
+        # ENHANCED: Simple in-memory cache for web search results (reduces API calls)
+        self._web_cache: Dict[str, List[Dict]] = {}
+        self._web_cache_max_entries: int = 64
         
     async def search_web_for_knowledge(self, topic: str, state: ArchMentorState = None) -> List[Dict]:
-        """
-        Comprehensive web search for architectural knowledge.
-        """
-        self.telemetry.log_agent_start("search_web_for_knowledge")
-        
+        """Web search using only Tavily, with contextual queries, caching, and safe fallback."""
+
+        logger = logging.getLogger(__name__)
         try:
-            # Determine search modifiers based on context
-            modifiers = self.get_search_query_modifiers(topic, state)
-            
-            # Create optimized search query
-            search_query = self._create_web_search_query(topic, modifiers)
-            
-            # Try multiple search engines
-            results = []
-            
-            # Try Google Custom Search first
-            if self.google_api_key and self.google_cse_id:
-                google_results = await self._try_google_search(search_query)
-                if google_results:
-                    results.extend(google_results)
-            
-            # Try SerpAPI if Google fails or for additional results
-            if len(results) < 5 and self.serp_api_key:
-                serp_results = await self._try_serp_search(search_query)
-                if serp_results:
-                    results.extend(serp_results)
-            
-            # Try enhanced DuckDuckGo as fallback
-            if len(results) < 3:
-                ddg_results = await self._try_enhanced_duckduckgo(search_query)
-                if ddg_results:
-                    results.extend(ddg_results)
-            
-            # If all searches fail, provide fallback knowledge
+            # Analyze conversation context for better search queries
+            context = {}
+            if state:
+                context = self.analyze_conversation_context_for_search(state)
+                logger.debug("Web search context: %s", context)
+
+            # Generate context-aware search query
+            search_query = generate_context_aware_search_query(topic, context)
+            logger.info("Tavily search query: %s", search_query)
+
+            # Cache key incorporates query and key context fields
+            cache_key = f"{search_query}::bt={context.get('building_type','')}"
+            if cache_key in self._web_cache:
+                logger.debug("Using cached web results for query")
+                return self._web_cache[cache_key]
+
+            # Use Tavily as the sole web search provider
+            results: List[Dict] = []
+            tavily_results = await self._try_tavily_search(search_query, context)
+            if tavily_results:
+                results.extend(tavily_results)
+                logger.info("Tavily search returned %d results", len(tavily_results))
+
+            # If no results, try an alternate, case-study-focused query with Tavily
             if not results:
+                alt_query = generate_alternate_search_query(search_query)
+                if alt_query != search_query:
+                    logger.debug("Retrying tavily with alternate query: %s", alt_query)
+                    tavily_alt_results = await self._try_tavily_search(alt_query, context)
+                    if tavily_alt_results:
+                        results.extend(tavily_alt_results)
+                        logger.info("Alternate Tavily search returned %d results", len(tavily_alt_results))
+
+            # Fallback to architectural knowledge base
+            if not results:
+                logger.warning("No Tavily results found, using architectural knowledge fallback")
                 results = self._get_architectural_knowledge_fallback(topic)
-            
-            # Process and enhance results
-            processed_results = self._process_search_results(results, topic)
-            
-            # Validate search quality
-            quality_score = self._validate_search_quality(processed_results)
-            
-            # Track usage for optimization
-            self._track_knowledge_usage(topic, len(processed_results))
-            
-            self.telemetry.log_agent_end("search_web_for_knowledge")
-            return processed_results
-            
+
+            # Store in cache (simple bound)
+            if len(self._web_cache) >= self._web_cache_max_entries:
+                # remove an arbitrary item (FIFO-ish)
+                oldest_key = next(iter(self._web_cache))
+                del self._web_cache[oldest_key]
+
+            self._web_cache[cache_key] = results
+
+            return results
+
         except Exception as e:
-            self.telemetry.log_error("search_web_for_knowledge", str(e))
+            logger.error("Tavily web search failed: %s", e)
             return self._get_architectural_knowledge_fallback(topic)
     
-    async def _try_google_search(self, query: str) -> List[Dict]:
-        """Try Google Custom Search API."""
+    # REMOVED: Old Google search method - replaced with Tavily
+    
+    # REMOVED: Old SerpAPI search method - replaced with Tavily
+
+    async def _try_tavily_search(self, query: str, context: Dict[str, Any] = None) -> List[Dict]:
+        """Use Tavily API for web search, constrained to preferred architecture domains."""
+        logger = logging.getLogger(__name__)
+
+        # Check cache first
+        cache_key = f"tavily:{query}"
+        if cache_key in self._web_cache:
+            logger.debug(f"Using cached Tavily results for: {query}")
+            return self._web_cache[cache_key]
+
         try:
             import requests
-            
-            url = "https://www.googleapis.com/customsearch/v1"
-            params = {
-                'key': self.google_api_key,
-                'cx': self.google_cse_id,
-                'q': query,
-                'num': 8,
-                'safe': 'active'
+
+            if not self.tavily_api_key:
+                logger.debug("TAVILY_API_KEY missing; skipping Tavily search")
+                return []
+
+            include_domains = get_preferred_architecture_domains()
+
+            payload = {
+                'api_key': self.tavily_api_key,
+                'query': query,
+                'search_depth': 'advanced',
+                'max_results': 8,
+                'include_answer': False,
+                'include_raw_content': False,
+                'include_images': False,
             }
-            
-            response = requests.get(url, params=params, timeout=10)
-            
+
+            # Always restrict to domain whitelist to avoid irrelevant sources
+            if include_domains:
+                payload['include_domains'] = include_domains
+
+            url = 'https://api.tavily.com/search'
+            response = requests.post(url, json=payload, timeout=20)
+
             if response.status_code == 200:
                 data = response.json()
-                results = []
-                
-                for item in data.get('items', []):
-                    results.append({
-                        'title': item.get('title', ''),
-                        'snippet': item.get('snippet', ''),
-                        'url': item.get('link', ''),
-                        'source': 'google'
+                items: List[Dict] = []
+                allowed = set(include_domains)
+
+                for r in data.get('results', [])[:12]:
+                    title = r.get('title', '')
+                    snippet = r.get('content') or r.get('snippet', '')
+                    url_result = r.get('url', '')
+
+                    # Final filtering by hostname just in case
+                    try:
+                        host = urlparse(url_result).netloc
+                        if allowed and not any(host.endswith(dom) for dom in allowed):
+                            continue
+                    except Exception:
+                        pass
+
+                    items.append({
+                        'content': snippet,
+                        'metadata': {
+                            'title': title,
+                            'url': url_result,
+                            'source': 'tavily',
+                            'type': 'web_result'
+                        },
+                        'discovery_method': 'web'
                     })
-                
-                return results
-                
+
+                # Cache results
+                if len(self._web_cache) >= self._web_cache_max_entries:
+                    # Remove oldest entry
+                    oldest_key = next(iter(self._web_cache))
+                    del self._web_cache[oldest_key]
+                self._web_cache[cache_key] = items
+
+                logger.debug(f"Tavily search returned {len(items)} results for: {query}")
+                return items
+
         except Exception as e:
-            self.telemetry.log_error("_try_google_search", str(e))
-            return []
-    
-    async def _try_serp_search(self, query: str) -> List[Dict]:
-        """Try SerpAPI search."""
+            logger.error(f"Tavily search failed: {e}")
+
+        return []
+
+    # REMOVED: Old DuckDuckGo search method - replaced with Tavily
+        """Use Tavily API for web search, constrained to preferred architecture domains."""
+        logger = logging.getLogger(__name__)
+
+        # Check cache first
+        cache_key = f"tavily:{query}"
+        if cache_key in self._web_cache:
+            logger.debug(f"Using cached Tavily results for: {query}")
+            return self._web_cache[cache_key]
+
         try:
             import requests
-            
-            url = "https://serpapi.com/search"
-            params = {
-                'api_key': self.serp_api_key,
-                'q': query,
-                'engine': 'google',
-                'num': 8,
-                'safe': 'active'
+
+            if not self.tavily_api_key:
+                logger.debug("TAVILY_API_KEY missing; skipping Tavily search")
+                return []
+
+            include_domains = get_preferred_architecture_domains()
+
+            payload = {
+                'api_key': self.tavily_api_key,
+                'query': query,
+                'search_depth': 'advanced',
+                'max_results': 8,
+                'include_answer': False,
+                'include_raw_content': False,
+                'include_images': False,
             }
-            
-            response = requests.get(url, params=params, timeout=10)
-            
+
+            # Always restrict to domain whitelist to avoid irrelevant sources
+            if include_domains:
+                payload['include_domains'] = include_domains
+
+            url = 'https://api.tavily.com/search'
+            response = requests.post(url, json=payload, timeout=20)
+
             if response.status_code == 200:
                 data = response.json()
-                results = []
-                
-                for item in data.get('organic_results', []):
-                    results.append({
-                        'title': item.get('title', ''),
-                        'snippet': item.get('snippet', ''),
-                        'url': item.get('link', ''),
-                        'source': 'serpapi'
+                items: List[Dict] = []
+                allowed = set(include_domains)
+
+                for r in data.get('results', [])[:12]:
+                    title = r.get('title', '')
+                    snippet = r.get('content') or r.get('snippet', '')
+                    url_result = r.get('url', '')
+
+                    # Final filtering by hostname just in case
+                    try:
+                        host = urlparse(url_result).netloc
+                        if allowed and not any(host.endswith(dom) for dom in allowed):
+                            continue
+                    except Exception:
+                        pass
+
+                    items.append({
+                        'content': snippet,
+                        'metadata': {
+                            'title': title,
+                            'url': url_result,
+                            'source': 'tavily',
+                            'type': 'web_result'
+                        },
+                        'discovery_method': 'web'
                     })
-                
-                return results
-                
+
+                # Cache results
+                if len(self._web_cache) >= self._web_cache_max_entries:
+                    # Remove oldest entry
+                    oldest_key = next(iter(self._web_cache))
+                    del self._web_cache[oldest_key]
+                self._web_cache[cache_key] = items
+
+                logger.debug(f"Tavily search returned {len(items)} results for: {query}")
+                return items
+
         except Exception as e:
-            self.telemetry.log_error("_try_serp_search", str(e))
-            return []
-    
-    async def _try_enhanced_duckduckgo(self, query: str) -> List[Dict]:
-        """Try enhanced DuckDuckGo search with architectural focus."""
-        try:
-            # Disable synthetic DDG fallback to avoid low-quality generic snippets
-            return []
-            
-        except Exception as e:
-            self.telemetry.log_error("_try_enhanced_duckduckgo", str(e))
-            return []
-    
+            logger.error(f"Tavily search failed: {e}")
+
+        return []
+
     def _get_architectural_knowledge_fallback(self, topic: str) -> List[Dict]:
         """Provide fallback architectural knowledge when searches fail."""
         return self._create_enhanced_fallback_knowledge(topic)
@@ -262,11 +445,12 @@ class KnowledgeSearchProcessor:
             
             context = {}
             
-            # Detect building type
+            # ENHANCED: Detect building type with more comprehensive keywords
             building_types = {
-                'residential': ['house', 'home', 'apartment', 'residential'],
-                'commercial': ['office', 'retail', 'commercial', 'store'],
-                'institutional': ['school', 'hospital', 'library', 'museum'],
+                'residential': ['house', 'home', 'apartment', 'residential', 'condo', 'townhouse', 'villa'],
+                'commercial': ['office', 'retail', 'commercial', 'store', 'mall', 'restaurant', 'hotel'],
+                'institutional': ['school', 'hospital', 'library', 'museum', 'university', 'college', 'clinic'],
+                'community': ['community center', 'cultural center', 'civic center', 'recreation center'],
                 'industrial': ['factory', 'warehouse', 'industrial']
             }
             
@@ -288,7 +472,22 @@ class KnowledgeSearchProcessor:
                 if any(keyword in recent_text for keyword in keywords):
                     context['focus_area'] = focus
                     break
-            
+
+            # ENHANCED: Extract specific architectural elements mentioned
+            specific_elements = []
+            architectural_elements = [
+                'atrium', 'courtyard', 'facade', 'entrance', 'lobby', 'circulation',
+                'lighting', 'ventilation', 'roof', 'foundation', 'stairs', 'elevator',
+                'balcony', 'terrace', 'window', 'door', 'wall', 'column', 'beam'
+            ]
+
+            for element in architectural_elements:
+                if element in recent_text:
+                    specific_elements.append(element)
+
+            if specific_elements:
+                context['specific_elements'] = specific_elements[:3]  # Limit to top 3
+
             return context
             
         except Exception as e:

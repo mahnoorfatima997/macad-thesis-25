@@ -4,10 +4,10 @@ Configuration constants and settings for the Analysis Agent.
 
 from typing import Dict, List, Any
 
-# Model configuration
-DEFAULT_MODEL = "gpt-4o"
+# Model configuration - ENHANCED: Updated to GPT-4o-mini per FROMOLDREPO
+DEFAULT_MODEL = "gpt-4o-mini"
 DEFAULT_TEMPERATURE = 0.3
-MAX_TOKENS = 1500
+MAX_TOKENS = 2000  # Increased for generous academic responses
 
 # Phase detection configuration
 PHASE_INDICATORS = {

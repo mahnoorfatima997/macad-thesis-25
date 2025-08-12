@@ -4,10 +4,10 @@ Configuration constants and settings for the Cognitive Enhancement Agent.
 
 from typing import Dict, List, Any
 
-# Model configuration
-DEFAULT_MODEL = "gpt-4o"
+# Model configuration - ENHANCED: Updated to GPT-4o-mini per FROMOLDREPO
+DEFAULT_MODEL = "gpt-4o-mini"
 DEFAULT_TEMPERATURE = 0.6
-MAX_TOKENS = 600
+MAX_TOKENS = 1200  # Increased for generous academic responses
 
 # Cognitive metrics thresholds
 COGNITIVE_THRESHOLDS = {

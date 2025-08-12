@@ -127,6 +127,11 @@ class AdvancedRoutingDecisionTree:
                 r"guide me", r"help me", r"advice", r"suggestions?",
                 r"recommendations?", r"tips?", r"strategies?"
             ],
+            "feedback_request": [
+                r"what do you think", r"your take", r"your thoughts", r"your opinion",
+                r"feedback", r"review", r"critique", r"evaluate", r"assess",
+                r"what's your", r"how does this", r"thoughts on", r"opinion on"
+            ],
             "design_problem": [
                 r"problem", r"issue", r"challenge", r"difficulty",
                 r"stuck", r"confused", r"not sure", r"uncertain",
@@ -292,16 +297,16 @@ class AdvancedRoutingDecisionTree:
                 "description": "Knowledge request with guidance needed",
                 "context_agent_override": False
             },
-            # Example requests routing
+            # Example requests routing - HIGHER PRIORITY
             "example_pure_knowledge": {
-                "priority": 16.5,
+                "priority": 15.5,  # Higher priority than other routes
                 "route": RouteType.KNOWLEDGE_ONLY,
                 "conditions": ["user_intent == 'example_request'", "is_pure_knowledge_request == True"],
                 "description": "Pure example/precedent request - knowledge only",
                 "context_agent_override": False
             },
             "example_with_guidance": {
-                "priority": 16.6,
+                "priority": 15.6,  # Higher priority than other routes
                 "route": RouteType.SOCRATIC_EXPLORATION,
                 "conditions": ["user_intent == 'example_request'", "is_pure_knowledge_request == False"],
                 "description": "Example request with integration guidance - Socratic exploration",
@@ -328,15 +333,73 @@ class AdvancedRoutingDecisionTree:
                 "description": "Overconfident user - cognitive challenge",
                 "context_agent_override": False
             },
+            # Actual interaction types from context agent
+            "technical_question_route": {
+                "priority": 15.5,
+                "route": RouteType.KNOWLEDGE_ONLY,
+                "conditions": ["user_intent == 'technical_question'"],
+                "description": "Technical question - direct knowledge response",
+                "context_agent_override": False
+            },
+            # REMOVED: example_request_route conflicts with higher priority example rules
+            # "example_request_route": {
+            #     "priority": 16.5,
+            #     "route": RouteType.SOCRATIC_EXPLORATION,
+            #     "conditions": ["user_intent == 'example_request'"],
+            #     "description": "Example request - knowledge with Socratic follow-up",
+            #     "context_agent_override": False
+            # },
+            "feedback_request_route": {
+                "priority": 17.5,
+                "route": RouteType.MULTI_AGENT_COMPREHENSIVE,
+                "conditions": ["user_intent == 'feedback_request'"],
+                "description": "Feedback request - comprehensive multi-agent response",
+                "context_agent_override": False
+            },
+            "confusion_expression_route": {
+                "priority": 18.5,
+                "route": RouteType.SUPPORTIVE_SCAFFOLDING,
+                "conditions": ["user_intent == 'confusion_expression'"],
+                "description": "Confusion expression - supportive scaffolding",
+                "context_agent_override": False
+            },
+            "improvement_seeking_route": {
+                "priority": 19.5,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'improvement_seeking'"],
+                "description": "Improvement seeking - Socratic exploration",
+                "context_agent_override": False
+            },
+            "knowledge_seeking_route": {
+                "priority": 20.5,
+                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "conditions": ["user_intent == 'knowledge_seeking'"],
+                "description": "Knowledge seeking - knowledge with challenge",
+                "context_agent_override": False
+            },
+            "overconfident_statement_route": {
+                "priority": 21.5,
+                "route": RouteType.COGNITIVE_CHALLENGE,
+                "conditions": ["user_intent == 'overconfident_statement'"],
+                "description": "Overconfident statement - cognitive challenge",
+                "context_agent_override": False
+            },
+            "general_statement_route": {
+                "priority": 22.5,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'general_statement'"],
+                "description": "General statement - Socratic exploration",
+                "context_agent_override": False
+            },
             "context_agent_high_confidence": {
-                "priority": 20,
+                "priority": 23,
                 "route": None,  # Dynamic based on mapping
                 "conditions": ["context_agent_confidence > 0.7"],
                 "description": "Use context agent suggestion with high confidence",
                 "context_agent_override": False
             },
             "default_balanced": {
-                "priority": 21,
+                "priority": 24,
                 "route": RouteType.BALANCED_GUIDANCE,
                 "conditions": ["default"],
                 "description": "Default balanced guidance",
@@ -447,11 +510,18 @@ class AdvancedRoutingDecisionTree:
             "how should", "what should", "guide me", "help me", "advice",
             "suggestions", "recommendations", "tips", "strategies"
         ]
+
+        # ENHANCEMENT: Check for feedback request indicators (which would make it not pure knowledge)
+        feedback_indicators = [
+            "your take", "what do you think", "your thoughts", "your opinion",
+            "feedback", "review", "critique", "evaluate", "assess"
+        ]
         
         has_pure_knowledge = any(indicator in user_input for indicator in pure_knowledge_indicators)
         has_guidance = any(indicator in user_input for indicator in guidance_indicators)
-        
-        return has_pure_knowledge and not has_guidance
+        has_feedback = any(indicator in user_input for indicator in feedback_indicators)
+
+        return has_pure_knowledge and not has_guidance and not has_feedback
     
     def _extract_context_keywords(self, user_input: str) -> Dict[str, List[str]]:
         """Extract context keywords from user input"""
@@ -516,7 +586,75 @@ class AdvancedRoutingDecisionTree:
                 "context_agent_confidence": routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0
             }
             
-            # Apply decision rules in priority order
+            # SMART ROUTING: Handle example requests with proper logic (from FROMOLDREPO)
+            if user_intent == "example_request":
+                # Get the actual user input for analysis
+                last_message = user_input.lower()
+                
+                # --- PURE EXAMPLE/PROJECT REQUEST DETECTION (knowledge_only) ---
+                pure_example_keywords = [
+                    "example", "examples", "project", "projects", "precedent", "precedents",
+                    "case study", "case studies", "show me", "can you give", "can you provide",
+                    "can you show", "real project", "built project", "actual project"
+                ]
+                
+                # Check if it's ONLY asking for examples (no design guidance)
+                is_pure_example_request = (
+                    any(keyword in last_message for keyword in pure_example_keywords) and
+                    not any(word in last_message for word in ["how can i", "how do i", "how to", "how might", "incorporate", "integrate", "implement", "apply"])
+                )
+                
+                if is_pure_example_request:
+                    decision = RoutingDecision(
+                        route=RouteType.KNOWLEDGE_ONLY,
+                        reason="Pure example/project request without design guidance needed",
+                        confidence=0.95,
+                        rule_applied="smart_example_request",
+                        context_agent_override=False,
+                        cognitive_offloading_detected=cognitive_offloading["detected"],
+                        cognitive_offloading_type=cognitive_offloading["type"],
+                        context_agent_confidence=routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0,
+                        classification=enhanced_classification,
+                        user_intent=user_intent,
+                        metadata={
+                            "cognitive_offloading_indicators": cognitive_offloading["indicators"],
+                            "context_agent_primary_route": routing_suggestions.get("primary_route") if routing_suggestions else None,
+                            "is_pure_knowledge_request": True,  # Pure example requests are pure knowledge
+                            "intent_classification": user_intent,
+                            "context_keywords": self._extract_context_keywords(user_input)
+                        }
+                    )
+                    
+                    logger.info(f"🎯 SMART ROUTING: Pure example request → KNOWLEDGE_ONLY")
+                    print(f"🎯 SMART ROUTING: Pure example request → KNOWLEDGE_ONLY")
+                    return decision
+                else:
+                    # Example request WITH design guidance needed → Socratic exploration
+                    decision = RoutingDecision(
+                        route=RouteType.SOCRATIC_EXPLORATION,
+                        reason="Example request with design guidance needed - Socratic exploration",
+                        confidence=0.85,
+                        rule_applied="smart_example_with_guidance",
+                        context_agent_override=False,
+                        cognitive_offloading_detected=cognitive_offloading["detected"],
+                        cognitive_offloading_type=cognitive_offloading["type"],
+                        context_agent_confidence=routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0,
+                        classification=enhanced_classification,
+                        user_intent=user_intent,
+                        metadata={
+                            "cognitive_offloading_indicators": cognitive_offloading["indicators"],
+                            "context_agent_primary_route": routing_suggestions.get("primary_route") if routing_suggestions else None,
+                            "is_pure_knowledge_request": False,  # Example requests with guidance need Socratic
+                            "intent_classification": user_intent,
+                            "context_keywords": self._extract_context_keywords(user_input)
+                        }
+                    )
+                    
+                    logger.info(f"🎯 SMART ROUTING: Example request with guidance → SOCRATIC_EXPLORATION")
+                    print(f"🎯 SMART ROUTING: Example request with guidance → SOCRATIC_EXPLORATION")
+                    return decision
+            
+            # Apply decision rules in priority order for other cases
             for rule_name, rule in sorted(self.decision_rules.items(), key=lambda x: x[1]["priority"]):
                 if self._evaluate_rule(rule, enhanced_classification, context):
                     route = self._determine_route(rule, enhanced_classification, context)
@@ -546,6 +684,13 @@ class AdvancedRoutingDecisionTree:
                     logger.info(f"   Reason: {decision.reason}")
                     logger.info(f"   Confidence: {decision.confidence:.2f}")
                     logger.info(f"   Rule Applied: {rule_name}")
+
+                    # Additional debug logging
+                    print(f"🎯 ROUTING DEBUG: Selected route = {decision.route.value}")
+                    print(f"   User intent = {user_intent}")
+                    print(f"   Rule applied = {rule_name}")
+                    print(f"   Classification = {enhanced_classification}")
+
                     return decision
             
             # Fallback decision
@@ -755,7 +900,14 @@ class AdvancedRoutingDecisionTree:
     
     def _is_pure_example_request(self, classification: Dict[str, Any], context: RoutingContext) -> bool:
         """Determine if this is a pure example request"""
-        message = classification.get("last_message", "").lower()
+        # Get message from multiple possible sources
+        message = (
+            classification.get("last_message", "") or 
+            classification.get("user_input", "") or 
+            classification.get("input_text", "") or 
+            ""
+        ).lower()
+        
         interaction_type = classification.get("interaction_type", "")
         
         if interaction_type != "example_request":
@@ -764,12 +916,13 @@ class AdvancedRoutingDecisionTree:
         pure_example_keywords = [
             "example", "examples", "project", "projects", "precedent", "precedents",
             "case study", "case studies", "show me", "can you give", "can you provide",
-            "can you show", "real project", "built project", "actual project"
+            "can you show", "real project", "built project", "actual project",
+            "museum examples", "building examples", "design examples"
         ]
         
         guidance_keywords = [
             "how can i", "how do i", "how to", "how might", "incorporate", 
-            "integrate", "implement", "apply", "use", "adapt"
+            "integrate", "implement", "apply", "use", "adapt", "serve", "goals"
         ]
         
         has_pure_keywords = any(keyword in message for keyword in pure_example_keywords)

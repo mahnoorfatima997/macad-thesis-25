@@ -35,15 +35,41 @@ class ResponseBuilderProcessor:
             # Calculate enhancement metrics
             enhancement_metrics = self._calculate_enhancement_metrics(context_package)
             
+            # Convert CoreClassification object to dictionary for compatibility
+            core_classification_dict = {}
+            if hasattr(context_package.core_classification, '__dict__'):
+                core_classification_dict = context_package.core_classification.__dict__.copy()
+            else:
+                # Fallback: extract key attributes
+                core_classification_dict = {
+                    "interaction_type": getattr(context_package.core_classification, 'interaction_type', 'unknown'),
+                    "understanding_level": getattr(context_package.core_classification, 'understanding_level', 'medium'),
+                    "confidence_level": getattr(context_package.core_classification, 'confidence_level', 'confident'),
+                    "engagement_level": getattr(context_package.core_classification, 'engagement_level', 'medium'),
+                    "is_response_to_question": getattr(context_package.core_classification, 'is_response_to_question', False),
+                    "is_technical_question": getattr(context_package.core_classification, 'is_technical_question', False),
+                    "is_feedback_request": getattr(context_package.core_classification, 'is_feedback_request', False),
+                    "classification_confidence": getattr(context_package.core_classification, 'classification_confidence', 0.5),
+                }
+
+            # Build complete context package dictionary (like FROMOLDREPO)
+            complete_context_package = {
+                "core_classification": core_classification_dict,
+                "content_analysis": context_package.content_analysis.__dict__ if hasattr(context_package.content_analysis, '__dict__') else context_package.content_analysis,
+                "conversation_patterns": context_package.conversation_patterns.__dict__ if hasattr(context_package.conversation_patterns, '__dict__') else context_package.conversation_patterns,
+                "contextual_metadata": context_package.contextual_metadata.__dict__ if hasattr(context_package.contextual_metadata, '__dict__') else context_package.contextual_metadata,
+                "routing_suggestions": context_package.routing_suggestions,
+                "agent_contexts": context_package.agent_contexts,
+                "context_quality": context_package.context_quality,
+                "timestamp": context_package.package_timestamp
+            }
+
             # Build the agent response
             agent_response = ResponseBuilder.create_context_analysis_response(
                 response_text,
                 cognitive_flags=cognitive_flags,
                 enhancement_metrics=enhancement_metrics,
-                metadata={
-                    "context_confidence": getattr(context_package.core_classification, 'classification_confidence', 0.5),
-                    "routing_suggestions": context_package.routing_suggestions
-                }
+                metadata=complete_context_package  # Store complete context package like FROMOLDREPO
             )
             
             self.telemetry.log_agent_end("convert_to_agent_response")

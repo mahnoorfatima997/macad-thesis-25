@@ -90,12 +90,16 @@ class ContentAnalysis:
 @dataclass
 class ConversationPatterns:
     """Analysis of conversation patterns."""
-    repetitive_topics: bool = False
-    topic_jumping: bool = False
+    has_repetitive_topics: bool = False
+    has_topic_jumping: bool = False
     engagement_trend: str = "stable"
     understanding_progression: str = "stable"
     recent_focus: List[str] = field(default_factory=list)
-    conversation_depth: int = 0
+    conversation_depth: Dict[str, Any] = field(default_factory=dict)
+    question_patterns: Dict[str, Any] = field(default_factory=dict)
+    response_patterns: Dict[str, Any] = field(default_factory=dict)
+    conversation_metrics: Dict[str, Any] = field(default_factory=dict)
+    pattern_confidence: float = 0.0
 
 
 @dataclass
@@ -106,7 +110,15 @@ class ContextualMetadata:
     pedagogical_opportunity: str = "none"
     continuation_cues: List[str] = field(default_factory=list)
     difficulty_adjustment: str = "maintain"
-    timestamp: str = ""
+    learning_context: Dict[str, Any] = field(default_factory=dict)
+    challenge_readiness: str = "moderate"
+    explanation_need: str = "moderate"
+    information_gaps: List[str] = field(default_factory=list)
+    analysis_focus_areas: List[str] = field(default_factory=list)
+    engagement_recommendations: List[str] = field(default_factory=list)
+    metadata_confidence: float = 0.5
+    generation_timestamp: str = ""
+    timestamp: str = ""  # Keep for backward compatibility
 
 
 @dataclass
@@ -139,6 +151,7 @@ class ContextPackage:
     agent_contexts: AgentContexts
     context_quality: float = 0.0
     analysis_timestamp: str = ""
+    package_timestamp: str = ""  # Added missing field
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary format for compatibility."""
@@ -162,12 +175,16 @@ class ContextPackage:
                 "sentence_count": self.content_analysis.sentence_count
             },
             "conversation_patterns": {
-                "repetitive_topics": self.conversation_patterns.repetitive_topics,
-                "topic_jumping": self.conversation_patterns.topic_jumping,
+                "has_repetitive_topics": self.conversation_patterns.has_repetitive_topics,
+                "has_topic_jumping": self.conversation_patterns.has_topic_jumping,
                 "engagement_trend": self.conversation_patterns.engagement_trend,
                 "understanding_progression": self.conversation_patterns.understanding_progression,
                 "recent_focus": self.conversation_patterns.recent_focus,
-                "conversation_depth": self.conversation_patterns.conversation_depth
+                "conversation_depth": self.conversation_patterns.conversation_depth,
+                "question_patterns": self.conversation_patterns.question_patterns,
+                "response_patterns": self.conversation_patterns.response_patterns,
+                "conversation_metrics": self.conversation_patterns.conversation_metrics,
+                "pattern_confidence": self.conversation_patterns.pattern_confidence
             },
             "contextual_metadata": {
                 "complexity_appropriateness": self.contextual_metadata.complexity_appropriateness,
@@ -175,6 +192,14 @@ class ContextPackage:
                 "pedagogical_opportunity": self.contextual_metadata.pedagogical_opportunity,
                 "continuation_cues": self.contextual_metadata.continuation_cues,
                 "difficulty_adjustment": self.contextual_metadata.difficulty_adjustment,
+                "learning_context": self.contextual_metadata.learning_context,
+                "challenge_readiness": self.contextual_metadata.challenge_readiness,
+                "explanation_need": self.contextual_metadata.explanation_need,
+                "information_gaps": self.contextual_metadata.information_gaps,
+                "analysis_focus_areas": self.contextual_metadata.analysis_focus_areas,
+                "engagement_recommendations": self.contextual_metadata.engagement_recommendations,
+                "metadata_confidence": self.contextual_metadata.metadata_confidence,
+                "generation_timestamp": self.contextual_metadata.generation_timestamp,
                 "timestamp": self.contextual_metadata.timestamp
             },
             "routing_suggestions": {

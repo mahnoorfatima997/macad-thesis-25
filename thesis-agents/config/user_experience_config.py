@@ -3,11 +3,11 @@
 class UserExperienceConfig:
     """Configuration for user experience settings"""
     
-    # RESPONSE LENGTH SETTINGS
-    MAX_RESPONSE_LENGTH = 140  # tighter default limit for readability
-    MAX_COGNITIVE_INTERVENTION_LENGTH = 110
-    MAX_SOCRATIC_RESPONSE_LENGTH = 120
-    MAX_DOMAIN_EXPERT_RESPONSE_LENGTH = 500
+    # RESPONSE LENGTH SETTINGS - Increased for complete responses
+    MAX_RESPONSE_LENGTH = 400  # Generous limit for complete responses
+    MAX_COGNITIVE_INTERVENTION_LENGTH = 350
+    MAX_SOCRATIC_RESPONSE_LENGTH = 400  # Increased for complete Socratic responses
+    MAX_DOMAIN_EXPERT_RESPONSE_LENGTH = 600  # Increased for comprehensive knowledge
     
     # METRICS DISPLAY SETTINGS
     SHOW_SCIENTIFIC_METRICS = True  # Hide verbose metrics from user
