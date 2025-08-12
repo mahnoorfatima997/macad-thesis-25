@@ -1072,7 +1072,6 @@ What questions do you have about your design?"""
             "sources": response_result.get("sources", []),
             "processing_method": "example_detection" if response_result.get("examples_provided") else "standard_knowledge"
         }
-
         return ResponseBuilder.create_knowledge_response(
             response_text=response_result.get("response_text", ""),
             sources_used=response_result.get("sources", []),

@@ -1415,7 +1415,7 @@ Generate a contextual response that builds on their input:
         # Use phase-based approach if we have design focus OR a design brief (not both required)
         return (has_design_brief or design_focused) and sufficient_conversation
 
-    async def _generate_phase_based_response(self, state: ArchMentorState, context_classification: Dict,
+    def _generate_phase_based_response(self, state: ArchMentorState, context_classification: Dict,
                                            analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
         """Generate response using phase-based Socratic assessment."""
 
@@ -1903,6 +1903,225 @@ Generate a comprehensive answer (3-4 sentences):
             "building_type": building_type,
             "cognitive_flags": ["continued_engagement"]
         }
+
+    # ENHANCEMENT: Technical followup generation ported from FROMOLDREPO
+    async def _generate_technical_followup(self, state: ArchMentorState, domain_expert_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Produce 1–2 concise application probes referencing DomainExpert key points.
+
+        Ported from FROMOLDREPO lines 640-672.
+        """
+        building_type = self._extract_building_type_from_context(state)
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+
+        # Try to extract short labels from DomainExpert response
+        text = (domain_expert_result or {}).get("response_text", "").strip()
+        labels = []
+        if text:
+            import re
+            bullets = re.findall(r"^\s*[-•]\s*(.+)$", text, flags=re.MULTILINE)
+            for b in bullets[:3]:
+                # Use first 4 words as a short label
+                words = b.split()
+                labels.append(" ".join(words[:4]))
+
+        topic = self._extract_main_topic(last_message) if last_message else "your focus"
+        if not labels:
+            labels = [f"{topic} detail", f"{topic} compliance"]
+
+        q1 = f"Given {labels[0]}, where in your {building_type} does this most affect the layout or user flow?"
+        q2 = f"How will you verify {labels[1]} meets your project's constraints?"
+
+        response_text = f"Apply these points in context:\n{q1}\n{q2}"
+
+        return {
+            "response_text": response_text,
+            "response_type": "technical_followup",
+        }
+
+    async def _generate_design_guidance_synthesis(self, state: ArchMentorState, analysis_result: Dict[str, Any], domain_expert_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate design guidance synthesis with Insight/Direction/Watch format.
+
+        Ported from FROMOLDREPO lines 673-715.
+        """
+        building_type = self._extract_building_type_from_context(state)
+        last_message = ""
+        for msg in reversed(state.messages):
+            if msg.get('role') == 'user':
+                last_message = msg['content']
+                break
+
+        topic = self._extract_main_topic(last_message) if last_message else "design approach"
+
+        items = []
+
+        # Insight from domain expert or analysis - ENHANCED: Use multiple sentences
+        domain_text = (domain_expert_result or {}).get("response_text", "")
+        if domain_text:
+            # Extract first 2-3 meaningful sentences for richer insight
+            sentences = [s.strip() for s in domain_text.split('.') if s.strip()]
+            if len(sentences) >= 3:
+                insight = '. '.join(sentences[:3]) + '.'
+            elif len(sentences) >= 2:
+                insight = '. '.join(sentences[:2]) + '.'
+            elif sentences:
+                insight = sentences[0] + '.'
+            else:
+                insight = domain_text[:200]
+
+            # Limit length but preserve complete sentences
+            if len(insight) > 600:
+                insight = insight[:600].rstrip()
+                last_period = insight.rfind('.')
+                if last_period > 400:  # Keep if we have substantial content
+                    insight = insight[:last_period + 1]
+
+            items.append(f"- Insight: {insight}")
+
+        # Direction question
+        direction_q = f"Which approach to {topic} best supports your {building_type} goals?"
+        items.append(f"- Direction: {direction_q}")
+
+        # Watch line
+        watch_line = f"- Watch: Check implications for circulation/daylight/acoustics."
+        items.append(watch_line)
+
+        header = "Synthesis:"
+        next_probe = "Next: test one concrete change and tell me what you notice. What will you try first?"
+        response_text = header + "\n" + "\n".join(items) + "\n\n" + next_probe
+
+        return {
+            "response_text": response_text,
+            "response_type": "design_guidance",
+        }
+
+    def _extract_main_topic(self, text: str) -> str:
+        """Extract main topic from user text."""
+        if not text:
+            return "design"
+
+        # Simple keyword extraction
+        keywords = ["circulation", "lighting", "structure", "materials", "layout", "space", "design"]
+        text_lower = text.lower()
+
+        for keyword in keywords:
+            if keyword in text_lower:
+                return keyword
+
+        return "design approach"
+
+    def _extract_building_type_from_context(self, state: ArchMentorState) -> str:
+        """Extract building type from conversation context."""
+        # Comprehensive building type detection patterns
+        building_patterns = {
+            # Residential
+            "residential": ["house", "home", "residential", "housing", "apartment", "condo", "condominium", 
+                          "bungalow", "cottage", "mansion", "villa", "townhouse", "duplex", "triplex", 
+                          "penthouse", "loft", "studio", "dormitory", "dorm", "residence", "living space"],
+            
+            # Commercial/Retail
+            "commercial": ["retail", "commercial", "shop", "store", "mall", "shopping center", "market", 
+                          "boutique", "showroom", "supermarket", "hypermarket", "department store", 
+                          "convenience store", "pharmacy", "bank", "financial", "office", "corporate"],
+            
+            # Office/Workplace
+            "office": ["office", "workplace", "corporate", "business", "company", "headquarters", "hq", 
+                      "workspace", "coworking", "co-working", "startup", "tech", "consulting", "law firm"],
+            
+            # Educational
+            "educational": ["school", "education", "university", "college", "academy", "institute", "campus", 
+                           "classroom", "lecture hall", "library", "research", "training", "learning center", 
+                           "kindergarten", "preschool", "elementary", "middle school", "high school"],
+            
+            # Cultural/Arts
+            "cultural": ["museum", "gallery", "art", "cultural center", "theater", "theatre", "cinema", 
+                        "concert hall", "auditorium", "exhibition", "performance", "arts center", 
+                        "cultural hub", "creative space", "studio space"],
+            
+            # Healthcare
+            "healthcare": ["hospital", "clinic", "medical", "healthcare", "health center", "dental", 
+                          "pharmacy", "laboratory", "lab", "rehabilitation", "wellness", "fitness", "gym"],
+            
+            # Hospitality
+            "hospitality": ["hotel", "resort", "inn", "motel", "hostel", "guesthouse", "bed and breakfast", 
+                           "bnb", "lodge", "cabin", "restaurant", "cafe", "bar", "pub", "club", "lounge"],
+            
+            # Industrial
+            "industrial": ["factory", "warehouse", "industrial", "manufacturing", "production", "storage", 
+                          "distribution", "logistics", "workshop", "plant", "facility", "mill", "refinery"],
+            
+            # Transportation
+            "transportation": ["airport", "train station", "bus station", "terminal", "transport hub", 
+                             "parking", "garage", "depot", "hangar", "port", "marina", "dock"],
+            
+            # Religious
+            "religious": ["church", "temple", "mosque", "synagogue", "chapel", "cathedral", "basilica", 
+                         "shrine", "monastery", "convent", "religious center", "worship", "prayer"],
+            
+            # Civic/Government
+            "civic": ["government", "city hall", "courthouse", "police", "fire station", "post office", 
+                     "community center", "civic center", "town hall", "municipal", "public building"],
+            
+            # Sports/Recreation
+            "sports": ["stadium", "arena", "gymnasium", "sports center", "fitness", "recreation", 
+                      "swimming pool", "tennis court", "golf course", "park", "playground", "athletic"],
+            
+            # Mixed-Use
+            "mixed_use": ["mixed use", "mixed-use", "multi-use", "multi use", "integrated", "combined", 
+                          "hybrid", "versatile", "adaptive", "flexible space"]
+        }
+        
+        # Check current design brief
+        if hasattr(state, 'current_design_brief') and state.current_design_brief:
+            brief_lower = state.current_design_brief.lower()
+            for building_type, patterns in building_patterns.items():
+                if any(pattern in brief_lower for pattern in patterns):
+                    return building_type.replace("_", " ")
+
+        # Check messages for building type mentions
+        for msg in state.messages:
+            if msg.get('role') == 'user':
+                msg_lower = msg.get('content', '').lower()
+                for building_type, patterns in building_patterns.items():
+                    if any(pattern in msg_lower for pattern in patterns):
+                        return building_type.replace("_", " ")
+
+        # Check for specific architectural terms that might indicate building type
+        architectural_terms = {
+            "skyscraper": "tower",
+            "high-rise": "tower", 
+            "low-rise": "low-rise building",
+            "underground": "underground facility",
+            "floating": "floating structure",
+            "modular": "modular building",
+            "prefabricated": "prefabricated building",
+            "sustainable": "sustainable building",
+            "green": "green building",
+            "smart": "smart building",
+            "historic": "historic building",
+            "modern": "modern building",
+            "contemporary": "contemporary building",
+            "traditional": "traditional building"
+        }
+        
+        # Check design brief and messages for architectural terms
+        if hasattr(state, 'current_design_brief') and state.current_design_brief:
+            brief_lower = state.current_design_brief.lower()
+            for term, building_type in architectural_terms.items():
+                if term in brief_lower:
+                    return building_type
+                    
+        for msg in state.messages:
+            if msg.get('role') == 'user':
+                msg_lower = msg.get('content', '').lower()
+                for term, building_type in architectural_terms.items():
+                    if term in msg_lower:
+                        return building_type
+
+        return "building project"
 
     # Cleanup
     def __del__(self) -> None:

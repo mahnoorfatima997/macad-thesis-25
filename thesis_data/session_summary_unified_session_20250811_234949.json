@@ -1,0 +1,3114 @@
+{
+  "session_id": "unified_session_20250811_234949",
+  "session_start": "2025-08-11T23:49:34.249917",
+  "session_end": "2025-08-11T23:57:10.166541",
+  "session_duration_seconds": 455.911031,
+  "total_interactions": 13,
+  "interactions_per_minute": 1.7108601173547828,
+  "phase_analysis": {
+    "phase_distribution": {
+      "ideation": 13
+    },
+    "most_common_phase": "ideation",
+    "average_phase_confidence": 0.7038461538461539,
+    "average_phase_progression": 0.3269230769230769,
+    "phase_progression_trend": "needs_attention"
+  },
+  "design_move_analysis": {
+    "total_moves": 46,
+    "moves_per_interaction": 3.5384615384615383,
+    "move_type_distribution": {
+      "general": 25,
+      "analysis": 9,
+      "synthesis": 12
+    },
+    "move_modality_distribution": {
+      "text": 46
+    },
+    "most_common_move_type": "general",
+    "most_common_move_modality": "text"
+  },
+  "scientific_metrics_summary": {
+    "average_engagement_score": 0.5278205128205129,
+    "average_complexity_score": 0.16153846153846155,
+    "average_reflection_score": 0.0923076923076923,
+    "average_overall_cognitive_score": 0.4688461538461539,
+    "average_scientific_confidence": 0.6723076923076922,
+    "cognitive_score_trend": "stable",
+    "engagement_trend": "medium",
+    "complexity_trend": "low",
+    "reflection_trend": "low"
+  },
+  "cognitive_state_summary": {
+    "engagement_levels": "moderate",
+    "cognitive_loads": "optimal",
+    "metacognitive_awareness": "low",
+    "passivity_levels": "low",
+    "overconfidence_levels": "low",
+    "conversation_depths": "medium",
+    "learning_progressions": "regressing"
+  },
+  "performance_metrics_summary": {
+    "cognitive_offloading_prevention_rate": 0.6923076923076923,
+    "deep_thinking_encouragement_rate": 0.3076923076923077,
+    "scaffolding_effectiveness_rate": 0.0,
+    "engagement_maintenance_rate": 0.23076923076923078,
+    "skill_adaptation_rate": 0.0,
+    "response_complexity_scores": [
+      0.821578947368421,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.9483333333333334,
+      0.9483333333333334
+    ],
+    "agent_selection_appropriateness_rate": 0.0,
+    "response_coherence_rate": 0.7692307692307693,
+    "average_response_complexity": 0.9783265856950069,
+    "overall_effectiveness_score": 0.2857142857142857
+  },
+  "agent_usage": {
+    "agent_usage": {
+      "socratic_tutor": 13,
+      "analysis_agent": 13,
+      "cognitive_enhancement": 13,
+      "domain_expert": 6
+    },
+    "routing_distribution": {
+      "socratic_exploration": 5,
+      "knowledge_with_challenge": 3,
+      "multi_agent_comprehensive": 3,
+      "supportive_scaffolding": 2
+    },
+    "multi_agent_usage_rate": 1.0,
+    "avg_agents_per_interaction": 3.4615384615384617,
+    "most_used_agent": "socratic_tutor",
+    "most_common_route": "socratic_exploration"
+  },
+  "input_analysis": {
+    "general_statement": 7,
+    "direct_question": 6
+  },
+  "skill_progression": {
+    "initial_skill": "intermediate",
+    "final_skill": "intermediate",
+    "skill_changes": 1,
+    "progression_detected": false
+  },
+  "internal_grading_metrics": {
+    "average_cop_score": 61.15384615384615,
+    "average_dte_score": 45.76923076923077,
+    "average_ki_score": 40.0,
+    "average_cop_factor": 0.6115384615384616,
+    "average_dte_factor": 0.4576923076923075,
+    "average_ki_factor": 0.4000000000000001,
+    "average_milestone_progression": 40.0,
+    "average_quality_factor": 0.48974358974358967,
+    "average_engagement_factor": 0.6615384615384614,
+    "average_completed_milestones": 1.0,
+    "average_total_milestones": 5.0,
+    "average_grade": 48.97435897435897,
+    "benchmarking_summary": {
+      "cognitive_offloading_prevention": "moderate",
+      "deep_thinking_engagement": "moderate",
+      "knowledge_integration": "weak",
+      "overall_learning_progression": "poor"
+    }
+  },
+  "interactions": [
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:49:55.162389",
+      "interaction_number": 1,
+      "student_input": "I'm creating a community learning center that will serve as a hub for education, workshops, and community events. The building needs to include classrooms, a library, multipurpose spaces, and outdoor learning areas. I want it to be welcoming to all ages and accessible to everyone in the community.",
+      "input_length": 48,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "agent_response": "Before we begin designing, what do you think are the most important questions we should ask about this commercial?",
+      "response_length": 19,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.55,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "I'm creating a community learning center that will serve as a hub for education, workshops, and community events.",
+          "timestamp": "2025-08-11T23:49:55.162389",
+          "micro_timestamp": 1754974195.162389,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.132,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 113,
+            "has_question": false,
+            "word_count": 18,
+            "complexity_score": 0.7333333333333334
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "The building needs to include classrooms, a library, multipurpose spaces, and outdoor learning areas.",
+          "timestamp": "2025-08-11T23:49:55.262389",
+          "micro_timestamp": 1754974195.262389,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.13,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 101,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.9285714285714286
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "I want it to be welcoming to all ages and accessible to everyone in the community.",
+          "timestamp": "2025-08-11T23:49:55.362389",
+          "micro_timestamp": 1754974195.362389,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 3,
+          "cognitive_load": 0.067,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 82,
+            "has_question": false,
+            "word_count": 16,
+            "complexity_score": 0.41875
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Before we begin designing, what do you think are the most important questions we should ask about this commercial?",
+          "timestamp": "2025-08-11T23:49:55.462389",
+          "micro_timestamp": 1754974195.462389,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.115,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 114,
+            "has_question": true,
+            "word_count": 19,
+            "complexity_score": 0.6052631578947368
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.7,
+          "interaction_frequency": 0.2,
+          "question_quality": 0.0,
+          "exploration_depth": 0.63,
+          "engagement_consistency": 0.5
+        },
+        "complexity_metrics": {
+          "overall_score": 0.13333333333333333,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.14666666666666667,
+          "complexity_progression": 0.5
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.1,
+          "skill_development": 0.1,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.11000000000000001,
+          "learning_velocity": 0.5
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.34833333333333333,
+        "scientific_confidence": 0.3933333333333333
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "shallow",
+        "learning_progression": "stable"
+      },
+      "context_classification": {
+        "interaction_type": "general_statement",
+        "understanding_level": "high",
+        "confidence_level": "confident",
+        "engagement_level": "high",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "advanced",
+        "learning_intent": "understanding",
+        "context_dependency": "high",
+        "classification_confidence": 0.6499999999999999,
+        "last_message": "I'm creating a community learning center that will serve as a hub for education, workshops, and community events. The building needs to include classrooms, a library, multipurpose spaces, and outdoor learning areas. I want it to be welcoming to all ages and accessible to everyone in the community.",
+        "user_input": "I'm creating a community learning center that will serve as a hub for education, workshops, and community events. The building needs to include classrooms, a library, multipurpose spaces, and outdoor learning areas. I want it to be welcoming to all ages and accessible to everyone in the community."
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "discovery",
+            "required_actions": [
+              "Demonstrate understanding of phase objectives",
+              "Show engagement with current topic",
+              "Identify specific areas of interest"
+            ],
+            "success_criteria": [
+              "Clear understanding of phase objectives demonstrated",
+              "Active engagement with topic shown",
+              "Specific interests or questions identified"
+            ],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in discovery phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 0.821578947368421,
+        "agent_selection_appropriateness": false,
+        "response_coherence": false
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:52:59.591356",
+      "interaction_number": 2,
+      "student_input": "how could i design circulation keeping natural lighting in mind?\n",
+      "input_length": 10,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 2,
+      "design_moves": [
+        {
+          "content": "how could i design circulation keeping natural lighting in mind?",
+          "timestamp": "2025-08-11T23:52:59.591356",
+          "micro_timestamp": 1754974379.591356,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.060500000000000005,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 64,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.55
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-08-11T23:52:59.691356",
+          "micro_timestamp": 1754974379.691356,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "analysis",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:53:11.642503",
+      "interaction_number": 3,
+      "student_input": "how could i design circulation keeping natural lighting in mind?\n",
+      "input_length": 10,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "medium",
+      "agent_response": "Your inquiry into designing circulation with natural lighting in mind is a pivotal consideration in library architecture, where the interplay between movement and illumination can significantly enhance user experience and spatial quality.\n\nHere are three approaches to consider, each grounded in architectural theory and practice:\n\nFirst, the concept of \"daylighting corridors\" can be employed, where circulation paths are strategically aligned with exterior walls that incorporate large windows or clerestories.\n\nThis approach is rooted in the principles of transparency and openness advocated by modernist architects like Le Corbusier, who emphasized the importance of light in shaping spatial perception.\n\nBy aligning circulation with natural light sources, you create dynamic pathways that not only guide users but also reduce reliance on artificial lighting, thereby enhancing energy efficiency.\n\nSecond, consider the use of \"light wells\" or atriums as central organizing elements.\n\nThis strategy draws from the architectural tradition of the Roman impluvium and the more contemporary interpretations by architects such as Louis Kahn, who utilized light as a material to define space.\n\nBy integrating vertical shafts of light within the core of your library, you can illuminate interior corridors while creating a sense of vertical connectivity and openness.\n\nThis approach can foster a serene and contemplative atmosphere, conducive to the library's function as a place of study and reflection.\n\nThird, the implementation of \"translucent partitions\" within the circulation network can diffuse natural light throughout the interior spaces.\n\nThis method aligns with the principles of phenomenology in architecture, where the sensory experience of space is paramount.\n\nBy using materials such as frosted glass or polycarbonate panels, you can maintain privacy and acoustic separation while allowing light to permeate deeper into the building, thus enhancing the spatial experience without compromising functionality.\n\nEach approach presents unique implications: daylighting corridors may limit spatial flexibility, light wells require careful structural integration, and translucent partitions might affect acoustics.\n\nThe choice will depend on your library's specific programmatic needs, site context, and aesthetic aspirations.\n\nIn synthesizing these strategies, consider how each might influence the spatial hierarchy and user navigation within your library.\n\nWhich approach aligns best with your vision for the library's role as a community hub and a beacon of knowledge?\n\nThis layered circulation approach is thoughtful.\n\nHow does the physical design of these pathways reflect the different visitor experiences you want to create?",
+      "response_length": 69,
+      "routing_path": "knowledge_with_challenge",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.6,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "how could i design circulation keeping natural lighting in mind?",
+          "timestamp": "2025-08-11T23:53:11.642503",
+          "micro_timestamp": 1754974391.642503,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.060500000000000005,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 64,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.55
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Your inquiry into designing circulation with natural lighting in mind is a pivotal consideration in library architecture, where the interplay between movement and illumination can significantly enhance user experience and spatial quality.",
+          "timestamp": "2025-08-11T23:53:11.742503",
+          "micro_timestamp": 1754974391.742503,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.2629,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 238,
+            "has_question": false,
+            "word_count": 32,
+            "complexity_score": 0.746875
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "Here are three approaches to consider, each grounded in architectural theory and practice:",
+          "timestamp": "2025-08-11T23:53:11.842503",
+          "micro_timestamp": 1754974391.842503,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.1404,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 90,
+            "has_question": false,
+            "word_count": 13,
+            "complexity_score": 0.8999999999999999
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "First, the concept of \"daylighting corridors\" can be employed, where circulation paths are strategically aligned with exterior walls that incorporate large windows or c",
+          "timestamp": "2025-08-11T23:53:11.942503",
+          "micro_timestamp": 1754974391.942503,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.2316,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.8041666666666667
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "analysis",
+        "analysis",
+        "synthesis",
+        "synthesis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.5,
+          "interaction_frequency": 0.4,
+          "question_quality": 0.6666666666666666,
+          "exploration_depth": 0.45,
+          "engagement_consistency": 0.5
+        },
+        "complexity_metrics": {
+          "overall_score": 0.26666666666666666,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.29333333333333333,
+          "complexity_progression": 0.5
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.2,
+          "skill_development": 0.2,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.22000000000000003,
+          "learning_velocity": 0.5
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.36666666666666664,
+        "scientific_confidence": 0.5033333333333333
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "shallow",
+        "learning_progression": "stable"
+      },
+      "context_classification": {
+        "interaction_type": "general_question",
+        "understanding_level": "medium",
+        "confidence_level": "confident",
+        "engagement_level": "medium",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "basic",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.55,
+        "last_message": "how could i design circulation keeping natural lighting in mind?\n",
+        "user_input": "how could i design circulation keeping natural lighting in mind?\n",
+        "primary_gap": "brief_development"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "visual_context": {
+            "has_visual": false
+          },
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "discovery",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in discovery phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:53:11.642503",
+      "interaction_number": 4,
+      "student_input": "how could i design circulation keeping natural lighting in mind?\n",
+      "input_length": 10,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "medium",
+      "agent_response": "Your inquiry into designing circulation with natural lighting in mind is a pivotal consideration in library architecture, where the interplay between movement and illumination can significantly enhance user experience and spatial quality.\n\nHere are three approaches to consider, each grounded in architectural theory and practice:\n\nFirst, the concept of \"daylighting corridors\" can be employed, where circulation paths are strategically aligned with exterior walls that incorporate large windows or c",
+      "response_length": 69,
+      "routing_path": "knowledge_with_challenge",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.6,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "how could i design circulation keeping natural lighting in mind?",
+          "timestamp": "2025-08-11T23:53:11.642503",
+          "micro_timestamp": 1754974391.642503,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.060500000000000005,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 64,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.55
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Your inquiry into designing circulation with natural lighting in mind is a pivotal consideration in library architecture, where the interplay between movement and illumination can significantly enhance user experience and spatial quality.",
+          "timestamp": "2025-08-11T23:53:11.742503",
+          "micro_timestamp": 1754974391.742503,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.2629,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 238,
+            "has_question": false,
+            "word_count": 32,
+            "complexity_score": 0.746875
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "Here are three approaches to consider, each grounded in architectural theory and practice:",
+          "timestamp": "2025-08-11T23:53:11.842503",
+          "micro_timestamp": 1754974391.842503,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.1404,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 90,
+            "has_question": false,
+            "word_count": 13,
+            "complexity_score": 0.8999999999999999
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "First, the concept of \"daylighting corridors\" can be employed, where circulation paths are strategically aligned with exterior walls that incorporate large windows or c",
+          "timestamp": "2025-08-11T23:53:11.942503",
+          "micro_timestamp": 1754974391.942503,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.2316,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.8041666666666667
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "analysis",
+        "analysis",
+        "synthesis",
+        "synthesis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.5,
+          "interaction_frequency": 0.4,
+          "question_quality": 0.6666666666666666,
+          "exploration_depth": 0.45,
+          "engagement_consistency": 0.5
+        },
+        "complexity_metrics": {
+          "overall_score": 0.26666666666666666,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.29333333333333333,
+          "complexity_progression": 0.5
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.2,
+          "skill_development": 0.2,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.22000000000000003,
+          "learning_velocity": 0.5
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.36666666666666664,
+        "scientific_confidence": 0.5033333333333333
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "shallow",
+        "learning_progression": "stable"
+      },
+      "context_classification": {
+        "interaction_type": "general_question",
+        "understanding_level": "medium",
+        "confidence_level": "confident",
+        "engagement_level": "medium",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "basic",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.55,
+        "last_message": "how could i design circulation keeping natural lighting in mind?\n",
+        "user_input": "how could i design circulation keeping natural lighting in mind?\n",
+        "primary_gap": "brief_development"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "visual_context": {
+            "has_visual": false
+          },
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "discovery",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in discovery phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:53:29.003487",
+      "interaction_number": 5,
+      "student_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+      "input_length": 15,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "knowledge_with_challenge",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 2,
+      "design_moves": [
+        {
+          "content": "what direction should i concentrate my circulation for it to be responsive to natural lighting?",
+          "timestamp": "2025-08-11T23:53:29.003487",
+          "micro_timestamp": 1754974409.003487,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.08100000000000002,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 95,
+            "has_question": true,
+            "word_count": 15,
+            "complexity_score": 0.54
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-08-11T23:53:29.103487",
+          "micro_timestamp": 1754974409.103487,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:53:41.724219",
+      "interaction_number": 6,
+      "student_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+      "input_length": 15,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "medium",
+      "agent_response": "**Synthesis:**\n- Insight: Your inquiry into the direction of circulation in relation to natural lighting is a pivotal consideration in library design, where the interplay between light and movement can significantly enhance user experience and energy efficiency.\n\nTo address this, I propose three approaches grounded in architectural theory and design principles.\n\nFirstly, consider orienting primary circulation paths along the building's east-west axis.\n- Direction: This circulation strategy creates interesting choices for visitors.\n\nWhat design elements will help people understand these different pathways intuitively?\n- Watch: As you navigate the design process for your architectural project, consider how your initial concepts are evolving.\n\nAre you consciously integrating feedback and new insights, or are you adhering to preconceived ideas.\n\nReflect on how your design decisions align with the project's goals and constraints.\n\nNext: test one concrete change and tell me what you notice.\n\nWhat will you try first?",
+      "response_length": 68,
+      "routing_path": "multi_agent_comprehensive",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.65,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 6,
+      "design_moves": [
+        {
+          "content": "what direction should i concentrate my circulation for it to be responsive to natural lighting?",
+          "timestamp": "2025-08-11T23:53:41.724219",
+          "micro_timestamp": 1754974421.724219,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.08100000000000002,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 95,
+            "has_question": true,
+            "word_count": 15,
+            "complexity_score": 0.54
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "**Synthesis:**",
+          "timestamp": "2025-08-11T23:53:41.824219",
+          "micro_timestamp": 1754974421.824219,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 14,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "- Insight: Your inquiry into the direction of circulation in relation to natural lighting is a pivotal consideration in library design, where the interplay between light and movement can significantly enhance user experience and energy efficiency.",
+          "timestamp": "2025-08-11T23:53:41.924219",
+          "micro_timestamp": 1754974421.924219,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.35200000000000004,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 247,
+            "has_question": false,
+            "word_count": 36,
+            "complexity_score": 0.8888888888888888
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "To address this, I propose three approaches grounded in architectural theory and design principles.",
+          "timestamp": "2025-08-11T23:53:42.024219",
+          "micro_timestamp": 1754974422.024219,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.12,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 99,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.7142857142857143
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 4
+        },
+        {
+          "content": "Firstly, consider orienting primary circulation paths along the building's east-west axis.",
+          "timestamp": "2025-08-11T23:53:42.124219",
+          "micro_timestamp": 1754974422.124219,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.10010000000000001,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 90,
+            "has_question": false,
+            "word_count": 11,
+            "complexity_score": 0.8272727272727273
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 5
+        },
+        {
+          "content": "- Direction: This circulation strategy creat",
+          "timestamp": "2025-08-11T23:53:42.224219",
+          "micro_timestamp": 1754974422.224219,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.061200000000000004,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 44,
+            "has_question": false,
+            "word_count": 6,
+            "complexity_score": 0.8500000000000001
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "analysis",
+        "synthesis",
+        "analysis",
+        "synthesis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.5,
+          "interaction_frequency": 0.6,
+          "question_quality": 0.6666666666666666,
+          "exploration_depth": 0.45,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.4,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.44000000000000006,
+          "complexity_progression": 0.21551724137931033
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.3,
+          "skill_development": 0.3,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.33,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.425,
+        "scientific_confidence": 0.605
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "regressing"
+      },
+      "context_classification": {
+        "interaction_type": "feedback_request",
+        "understanding_level": "medium",
+        "confidence_level": "confident",
+        "engagement_level": "medium",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "intermediate",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.55,
+        "last_message": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+        "user_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+        "primary_gap": "brief_development"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "response_text": "I've analyzed your unknown project. Based on your beginner level and current ideation phase, I can help you explore the key design considerations and next steps.",
+          "response_type": "analysis",
+          "cognitive_flags": [],
+          "enhancement_metrics": {
+            "cognitive_offloading_prevention_score": 0.4,
+            "deep_thinking_engagement_score": 0.5,
+            "knowledge_integration_score": 0.6000000000000001,
+            "scaffolding_effectiveness_score": 0.2,
+            "learning_progression_score": 0.7,
+            "metacognitive_awareness_score": 0.2,
+            "overall_cognitive_score": 0.43333333333333335,
+            "scientific_confidence": 0.8999999999999999
+          },
+          "progress_update": {
+            "phase_progress": {},
+            "milestone_progress": {},
+            "cognitive_state": {},
+            "learning_progression": {},
+            "skill_level_update": null,
+            "engagement_level_update": null
+          },
+          "journey_alignment": {
+            "current_phase": "ideation",
+            "phase_progress": 0.0,
+            "milestone_progress": {},
+            "next_milestone": null,
+            "journey_progress": 0.0,
+            "phase_confidence": 0.5,
+            "milestone_questions_asked": []
+          },
+          "metadata": {
+            "analysis_result": {
+              "skill_assessment": {
+                "skill_level": "beginner",
+                "confidence": 0.6766666666666667,
+                "indicators": {
+                  "beginner": 1,
+                  "intermediate": 7,
+                  "advanced": 0
+                },
+                "complexity_metrics": {
+                  "avg_sentence_length": 14.6,
+                  "word_count": 73,
+                  "sentence_count": 5,
+                  "complexity_score": 0.73
+                },
+                "reasoning": "1 beginner-level terms detected; 7 intermediate-level terms detected; assessed as beginner"
+              },
+              "phase_analysis": {
+                "phase": "ideation",
+                "confidence": 0.7,
+                "phase_scores": {
+                  "ideation": 0.7,
+                  "visualization": 0.2,
+                  "materialization": 0.1
+                },
+                "progression_ready": false,
+                "next_phase": null,
+                "phase_recommendations": [],
+                "progression_score": 0.3,
+                "completed_milestones": 1,
+                "total_milestones": 5,
+                "next_milestone": null,
+                "milestone_completion": 0.0
+              },
+              "text_analysis": {
+                "building_type": "unknown",
+                "key_themes": [
+                  "design",
+                  "architecture"
+                ],
+                "program_requirements": [
+                  "functional spaces",
+                  "user needs"
+                ],
+                "constraints": [],
+                "design_goals": [],
+                "complexity_level": "moderate",
+                "detail_level": "medium"
+              },
+              "visual_analysis": {
+                "has_visual": false,
+                "visual_type": "",
+                "spatial_elements": [],
+                "design_elements": [],
+                "technical_elements": [],
+                "phase_indicators": []
+              },
+              "cognitive_state": {
+                "engagement_level": 0.7,
+                "confidence_level": 0.6,
+                "understanding_level": 0.7,
+                "cognitive_load": 0.5,
+                "flags": [],
+                "needs_support": false
+              },
+              "synthesis": {
+                "cognitive_challenges": [
+                  "complex_program_requirements"
+                ],
+                "learning_opportunities": [
+                  "sustainable_design",
+                  "user_centered_approach"
+                ],
+                "missing_considerations": [
+                  "accessibility",
+                  "building_codes"
+                ],
+                "next_focus_areas": [
+                  "site_analysis",
+                  "program_development"
+                ],
+                "recommendations": []
+              },
+              "conversation_progression": {
+                "conversation_phase": "discovery",
+                "opening_strategy": {
+                  "opening_message": "Welcome to exploring general_architecture! This is a rich area of architectural design. Let's explore how space and form work together to create meaning. I'm excited to explore this together!",
+                  "primary_dimension": "spatial",
+                  "opening_questions": [
+                    "What kind of spatial qualities are you seeking?",
+                    "How will people experience and move through the spaces?"
+                  ],
+                  "exploration_prompts": [
+                    "Explore how spatial relationships create meaning",
+                    "Consider the dialogue between interior and exterior",
+                    "Think about scale and proportion in relation to human experience"
+                  ],
+                  "knowledge_gaps": [
+                    "spatial composition",
+                    "circulation",
+                    "proportion"
+                  ],
+                  "complexity_level": "intermediate",
+                  "suggested_approach": "guided_exploration"
+                },
+                "relevant_dimensions": [
+                  "spatial"
+                ],
+                "user_profile": {
+                  "knowledge_level": "intermediate",
+                  "learning_style": "visual",
+                  "interests": [],
+                  "strengths": [],
+                  "gaps": [],
+                  "engagement_patterns": [],
+                  "conversation_preferences": [],
+                  "milestone_progress": {}
+                },
+                "milestone": {
+                  "milestone_type": "phase_entry",
+                  "phase": "discovery",
+                  "dimension": "spatial",
+                  "topic": "general_architecture",
+                  "user_understanding": "intermediate",
+                  "confidence_level": "neutral",
+                  "engagement_level": "medium",
+                  "progress_percentage": 0.0,
+                  "required_actions": [],
+                  "success_criteria": [],
+                  "timestamp": "2025-08-11T23:53:31.522606",
+                  "metadata": {}
+                },
+                "next_steps": [
+                  "Ask follow-up questions to deepen understanding",
+                  "Explore related design space dimensions",
+                  "Begin building foundational knowledge",
+                  "Identify specific areas of interest"
+                ]
+              }
+            }
+          },
+          "quality_score": 0.5,
+          "confidence_score": 0.5,
+          "agent_name": "analysis_agent",
+          "processing_time": 0.0,
+          "sources_used": [],
+          "error_message": null,
+          "fallback_used": false,
+          "phase_analysis": {
+            "phase": "ideation",
+            "step": "initial_context_reasoning",
+            "confidence": 0.65,
+            "progression_score": 0.25,
+            "current_phase": "ideation",
+            "current_step": "initial_context_reasoning",
+            "phase_confidence": 0.65
+          },
+          "conversation_progression": {},
+          "current_milestone": null,
+          "milestone_assessment": {},
+          "agent_guidance": {},
+          "visual_context": {
+            "has_visual": false
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:53:41.731248",
+      "interaction_number": 7,
+      "student_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+      "input_length": 15,
+      "input_type": "direct_question",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "medium",
+      "agent_response": "**Synthesis:**\n- Insight: Your inquiry into the direction of circulation in relation to natural lighting is a pivotal consideration in library design, where the interplay between light and movement can significantly enhance user experience and energy efficiency.\n\nTo address this, I propose three approaches grounded in architectural theory and design principles.\n\nFirstly, consider orienting primary circulation paths along the building's east-west axis.\n- Direction: This circulation strategy creat",
+      "response_length": 68,
+      "routing_path": "multi_agent_comprehensive",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.65,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 6,
+      "design_moves": [
+        {
+          "content": "what direction should i concentrate my circulation for it to be responsive to natural lighting?",
+          "timestamp": "2025-08-11T23:53:41.724219",
+          "micro_timestamp": 1754974421.724219,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.08100000000000002,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 95,
+            "has_question": true,
+            "word_count": 15,
+            "complexity_score": 0.54
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "**Synthesis:**",
+          "timestamp": "2025-08-11T23:53:41.824219",
+          "micro_timestamp": 1754974421.824219,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 14,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "- Insight: Your inquiry into the direction of circulation in relation to natural lighting is a pivotal consideration in library design, where the interplay between light and movement can significantly enhance user experience and energy efficiency.",
+          "timestamp": "2025-08-11T23:53:41.924219",
+          "micro_timestamp": 1754974421.924219,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.35200000000000004,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 247,
+            "has_question": false,
+            "word_count": 36,
+            "complexity_score": 0.8888888888888888
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "To address this, I propose three approaches grounded in architectural theory and design principles.",
+          "timestamp": "2025-08-11T23:53:42.024219",
+          "micro_timestamp": 1754974422.024219,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.12,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 99,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.7142857142857143
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 4
+        },
+        {
+          "content": "Firstly, consider orienting primary circulation paths along the building's east-west axis.",
+          "timestamp": "2025-08-11T23:53:42.124219",
+          "micro_timestamp": 1754974422.124219,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.10010000000000001,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 90,
+            "has_question": false,
+            "word_count": 11,
+            "complexity_score": 0.8272727272727273
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 5
+        },
+        {
+          "content": "- Direction: This circulation strategy creat",
+          "timestamp": "2025-08-11T23:53:42.224219",
+          "micro_timestamp": 1754974422.224219,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.061200000000000004,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 44,
+            "has_question": false,
+            "word_count": 6,
+            "complexity_score": 0.8500000000000001
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "analysis",
+        "synthesis",
+        "analysis",
+        "synthesis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.5,
+          "interaction_frequency": 0.6,
+          "question_quality": 0.6666666666666666,
+          "exploration_depth": 0.45,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.4,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.44000000000000006,
+          "complexity_progression": 0.21551724137931033
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.3,
+          "skill_development": 0.3,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.33,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.425,
+        "scientific_confidence": 0.605
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "regressing"
+      },
+      "context_classification": {
+        "interaction_type": "feedback_request",
+        "understanding_level": "medium",
+        "confidence_level": "confident",
+        "engagement_level": "medium",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "intermediate",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.55,
+        "last_message": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+        "user_input": "what direction should i concentrate my circulation for it to be responsive to natural lighting?\n",
+        "primary_gap": "brief_development"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "response_text": "I've analyzed your unknown project. Based on your beginner level and current ideation phase, I can help you explore the key design considerations and next steps.",
+          "response_type": "analysis",
+          "cognitive_flags": [],
+          "enhancement_metrics": {
+            "cognitive_offloading_prevention_score": 0.4,
+            "deep_thinking_engagement_score": 0.5,
+            "knowledge_integration_score": 0.6000000000000001,
+            "scaffolding_effectiveness_score": 0.2,
+            "learning_progression_score": 0.7,
+            "metacognitive_awareness_score": 0.2,
+            "overall_cognitive_score": 0.43333333333333335,
+            "scientific_confidence": 0.8999999999999999
+          },
+          "progress_update": {
+            "phase_progress": {},
+            "milestone_progress": {},
+            "cognitive_state": {},
+            "learning_progression": {},
+            "skill_level_update": null,
+            "engagement_level_update": null
+          },
+          "journey_alignment": {
+            "current_phase": "ideation",
+            "phase_progress": 0.0,
+            "milestone_progress": {},
+            "next_milestone": null,
+            "journey_progress": 0.0,
+            "phase_confidence": 0.5,
+            "milestone_questions_asked": []
+          },
+          "metadata": {
+            "analysis_result": {
+              "skill_assessment": {
+                "skill_level": "beginner",
+                "confidence": 0.6766666666666667,
+                "indicators": {
+                  "beginner": 1,
+                  "intermediate": 7,
+                  "advanced": 0
+                },
+                "complexity_metrics": {
+                  "avg_sentence_length": 14.6,
+                  "word_count": 73,
+                  "sentence_count": 5,
+                  "complexity_score": 0.73
+                },
+                "reasoning": "1 beginner-level terms detected; 7 intermediate-level terms detected; assessed as beginner"
+              },
+              "phase_analysis": {
+                "phase": "ideation",
+                "confidence": 0.7,
+                "phase_scores": {
+                  "ideation": 0.7,
+                  "visualization": 0.2,
+                  "materialization": 0.1
+                },
+                "progression_ready": false,
+                "next_phase": null,
+                "phase_recommendations": [],
+                "progression_score": 0.3,
+                "completed_milestones": 1,
+                "total_milestones": 5,
+                "next_milestone": null,
+                "milestone_completion": 0.0
+              },
+              "text_analysis": {
+                "building_type": "unknown",
+                "key_themes": [
+                  "design",
+                  "architecture"
+                ],
+                "program_requirements": [
+                  "functional spaces",
+                  "user needs"
+                ],
+                "constraints": [],
+                "design_goals": [],
+                "complexity_level": "moderate",
+                "detail_level": "medium"
+              },
+              "visual_analysis": {
+                "has_visual": false,
+                "visual_type": "",
+                "spatial_elements": [],
+                "design_elements": [],
+                "technical_elements": [],
+                "phase_indicators": []
+              },
+              "cognitive_state": {
+                "engagement_level": 0.7,
+                "confidence_level": 0.6,
+                "understanding_level": 0.7,
+                "cognitive_load": 0.5,
+                "flags": [],
+                "needs_support": false
+              },
+              "synthesis": {
+                "cognitive_challenges": [
+                  "complex_program_requirements"
+                ],
+                "learning_opportunities": [
+                  "sustainable_design",
+                  "user_centered_approach"
+                ],
+                "missing_considerations": [
+                  "accessibility",
+                  "building_codes"
+                ],
+                "next_focus_areas": [
+                  "site_analysis",
+                  "program_development"
+                ],
+                "recommendations": []
+              },
+              "conversation_progression": {
+                "conversation_phase": "discovery",
+                "opening_strategy": {
+                  "opening_message": "Welcome to exploring general_architecture! This is a rich area of architectural design. Let's explore how space and form work together to create meaning. I'm excited to explore this together!",
+                  "primary_dimension": "spatial",
+                  "opening_questions": [
+                    "What kind of spatial qualities are you seeking?",
+                    "How will people experience and move through the spaces?"
+                  ],
+                  "exploration_prompts": [
+                    "Explore how spatial relationships create meaning",
+                    "Consider the dialogue between interior and exterior",
+                    "Think about scale and proportion in relation to human experience"
+                  ],
+                  "knowledge_gaps": [
+                    "spatial composition",
+                    "circulation",
+                    "proportion"
+                  ],
+                  "complexity_level": "intermediate",
+                  "suggested_approach": "guided_exploration"
+                },
+                "relevant_dimensions": [
+                  "spatial"
+                ],
+                "user_profile": {
+                  "knowledge_level": "intermediate",
+                  "learning_style": "visual",
+                  "interests": [],
+                  "strengths": [],
+                  "gaps": [],
+                  "engagement_patterns": [],
+                  "conversation_preferences": [],
+                  "milestone_progress": {}
+                },
+                "milestone": {
+                  "milestone_type": "phase_entry",
+                  "phase": "discovery",
+                  "dimension": "spatial",
+                  "topic": "general_architecture",
+                  "user_understanding": "intermediate",
+                  "confidence_level": "neutral",
+                  "engagement_level": "medium",
+                  "progress_percentage": 0.0,
+                  "required_actions": [],
+                  "success_criteria": [],
+                  "timestamp": "2025-08-11T23:53:31.522606",
+                  "metadata": {}
+                },
+                "next_steps": [
+                  "Ask follow-up questions to deepen understanding",
+                  "Explore related design space dimensions",
+                  "Begin building foundational knowledge",
+                  "Identify specific areas of interest"
+                ]
+              }
+            }
+          },
+          "quality_score": 0.5,
+          "confidence_score": 0.5,
+          "agent_name": "analysis_agent",
+          "processing_time": 0.0,
+          "sources_used": [],
+          "error_message": null,
+          "fallback_used": false,
+          "phase_analysis": {
+            "phase": "ideation",
+            "step": "initial_context_reasoning",
+            "confidence": 0.65,
+            "progression_score": 0.25,
+            "current_phase": "ideation",
+            "current_step": "initial_context_reasoning",
+            "phase_confidence": 0.65
+          },
+          "conversation_progression": {},
+          "current_milestone": null,
+          "milestone_assessment": {},
+          "agent_guidance": {},
+          "visual_context": {
+            "has_visual": false
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:55:59.121027",
+      "interaction_number": 8,
+      "student_input": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light ",
+      "input_length": 24,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "multi_agent_comprehensive",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 2,
+      "design_moves": [
+        {
+          "content": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light",
+          "timestamp": "2025-08-11T23:55:59.121027",
+          "micro_timestamp": 1754974559.121027,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.11599999999999998,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 139,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.4833333333333333
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-08-11T23:55:59.221027",
+          "micro_timestamp": 1754974559.221027,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:56:05.090117",
+      "interaction_number": 9,
+      "student_input": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light ",
+      "input_length": 24,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "agent_response": "This circulation strategy creates interesting choices for visitors.\n\nWhat design elements will help people understand these different pathways intuitively?",
+      "response_length": 19,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.7,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 3,
+      "design_moves": [
+        {
+          "content": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light",
+          "timestamp": "2025-08-11T23:56:05.090117",
+          "micro_timestamp": 1754974565.090117,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.11599999999999998,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 139,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.4833333333333333
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "This circulation strategy creates interesting choices for visitors.",
+          "timestamp": "2025-08-11T23:56:05.190117",
+          "micro_timestamp": 1754974565.190117,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.072,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 67,
+            "has_question": false,
+            "word_count": 8,
+            "complexity_score": 0.75
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "What design elements will help people understand these different pathways intuitively?",
+          "timestamp": "2025-08-11T23:56:05.290117",
+          "micro_timestamp": 1754974565.290117,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.076,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 86,
+            "has_question": true,
+            "word_count": 11,
+            "complexity_score": 0.6909090909090909
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "synthesis",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.7,
+          "interaction_frequency": 0.8,
+          "question_quality": 0.6666666666666666,
+          "exploration_depth": 0.63,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.5333333333333333,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.5866666666666667,
+          "complexity_progression": 0.33620689655172414
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.4,
+          "skill_development": 0.4,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.44000000000000006,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.5233333333333333,
+        "scientific_confidence": 0.69
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "regressing"
+      },
+      "context_classification": {
+        "interaction_type": "general_statement",
+        "understanding_level": "high",
+        "confidence_level": "confident",
+        "engagement_level": "high",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "intermediate",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.6499999999999999,
+        "last_message": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light ",
+        "user_input": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light "
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "discovery",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in discovery phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:56:05.090117",
+      "interaction_number": 10,
+      "student_input": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light ",
+      "input_length": 24,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "agent_response": "This circulation strategy creates interesting choices for visitors.\n\nWhat design elements will help people understand these different pathways intuitively?",
+      "response_length": 19,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.7,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 3,
+      "design_moves": [
+        {
+          "content": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light",
+          "timestamp": "2025-08-11T23:56:05.090117",
+          "micro_timestamp": 1754974565.090117,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.11599999999999998,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 139,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.4833333333333333
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "This circulation strategy creates interesting choices for visitors.",
+          "timestamp": "2025-08-11T23:56:05.190117",
+          "micro_timestamp": 1754974565.190117,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.072,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 67,
+            "has_question": false,
+            "word_count": 8,
+            "complexity_score": 0.75
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "What design elements will help people understand these different pathways intuitively?",
+          "timestamp": "2025-08-11T23:56:05.290117",
+          "micro_timestamp": 1754974565.290117,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.076,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 86,
+            "has_question": true,
+            "word_count": 11,
+            "complexity_score": 0.6909090909090909
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "synthesis",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.7,
+          "interaction_frequency": 0.8,
+          "question_quality": 0.6666666666666666,
+          "exploration_depth": 0.63,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.5333333333333333,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.5866666666666667,
+          "complexity_progression": 0.33620689655172414
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.4,
+          "skill_development": 0.4,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.44000000000000006,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.5233333333333333,
+        "scientific_confidence": 0.69
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "regressing"
+      },
+      "context_classification": {
+        "interaction_type": "general_statement",
+        "understanding_level": "high",
+        "confidence_level": "confident",
+        "engagement_level": "high",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "intermediate",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.6499999999999999,
+        "last_message": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light ",
+        "user_input": "i was thinking of employing vernacular methods to keep the circulation open and airy and have it take the most advantage from natural light "
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "discovery",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in discovery phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:56:19.201919",
+      "interaction_number": 11,
+      "student_input": "you're a bit annoying you're not helping me at all ",
+      "input_length": 10,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 2,
+      "design_moves": [
+        {
+          "content": "you're a bit annoying you're not helping me at all",
+          "timestamp": "2025-08-11T23:56:19.201919",
+          "micro_timestamp": 1754974579.201919,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.040999999999999995,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 50,
+            "has_question": false,
+            "word_count": 10,
+            "complexity_score": 0.41
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-08-11T23:56:19.301919",
+          "micro_timestamp": 1754974579.301919,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:56:26.239860",
+      "interaction_number": 12,
+      "student_input": "you're a bit annoying you're not helping me at all ",
+      "input_length": 10,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "medium",
+      "agent_response": "Can you elaborate on how this approach specifically serves your commercial's goals?\n\nWhat specific part feels unclear?\n\nWhich aspect would help you move forward?",
+      "response_length": 24,
+      "routing_path": "supportive_scaffolding",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.75,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "you're a bit annoying you're not helping me at all",
+          "timestamp": "2025-08-11T23:56:26.239860",
+          "micro_timestamp": 1754974586.23986,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.040999999999999995,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 50,
+            "has_question": false,
+            "word_count": 10,
+            "complexity_score": 0.41
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Can you elaborate on how this approach specifically serves your commercial's goals?",
+          "timestamp": "2025-08-11T23:56:26.339860",
+          "micro_timestamp": 1754974586.33986,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.08639999999999999,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 83,
+            "has_question": true,
+            "word_count": 12,
+            "complexity_score": 0.6
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "What specific part feels unclear?",
+          "timestamp": "2025-08-11T23:56:26.439860",
+          "micro_timestamp": 1754974586.43986,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.028999999999999998,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 33,
+            "has_question": true,
+            "word_count": 5,
+            "complexity_score": 0.58
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "Which aspect would help you move forward?",
+          "timestamp": "2025-08-11T23:56:26.539860",
+          "micro_timestamp": 1754974586.53986,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.035,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 41,
+            "has_question": true,
+            "word_count": 7,
+            "complexity_score": 0.5
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "synthesis",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.5,
+          "interaction_frequency": 1.0,
+          "question_quality": 0.0,
+          "exploration_depth": 0.45,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.6666666666666666,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.7333333333333334,
+          "complexity_progression": 0.29310344827586204
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.5,
+          "skill_development": 0.5,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.55,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.5416666666666666,
+        "scientific_confidence": 0.7750000000000001
+      },
+      "cognitive_state": {
+        "engagement_level": "low",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "regressing"
+      },
+      "context_classification": {
+        "interaction_type": "confusion_expression",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "medium",
+        "is_response_to_question": true,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "basic",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.6,
+        "last_message": "you're a bit annoying you're not helping me at all ",
+        "user_input": "you're a bit annoying you're not helping me at all "
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "discovery",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in discovery phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 0.9483333333333334,
+        "agent_selection_appropriateness": false,
+        "response_coherence": false
+      }
+    },
+    {
+      "session_id": "unified_session_20250811_234949",
+      "timestamp": "2025-08-11T23:56:26.255420",
+      "interaction_number": 13,
+      "student_input": "you're a bit annoying you're not helping me at all ",
+      "input_length": 10,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "medium",
+      "agent_response": "Can you elaborate on how this approach specifically serves your commercial's goals?\n\nWhat specific part feels unclear?\n\nWhich aspect would help you move forward?",
+      "response_length": 24,
+      "routing_path": "supportive_scaffolding",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.75,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "you're a bit annoying you're not helping me at all",
+          "timestamp": "2025-08-11T23:56:26.255420",
+          "micro_timestamp": 1754974586.25542,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.040999999999999995,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 50,
+            "has_question": false,
+            "word_count": 10,
+            "complexity_score": 0.41
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 1
+        },
+        {
+          "content": "Can you elaborate on how this approach specifically serves your commercial's goals?",
+          "timestamp": "2025-08-11T23:56:26.355420",
+          "micro_timestamp": 1754974586.35542,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.08639999999999999,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 83,
+            "has_question": true,
+            "word_count": 12,
+            "complexity_score": 0.6
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "What specific part feels unclear?",
+          "timestamp": "2025-08-11T23:56:26.455420",
+          "micro_timestamp": 1754974586.45542,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.028999999999999998,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 33,
+            "has_question": true,
+            "word_count": 5,
+            "complexity_score": 0.58
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "Which aspect would help you move forward?",
+          "timestamp": "2025-08-11T23:56:26.555420",
+          "micro_timestamp": 1754974586.55542,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.035,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 41,
+            "has_question": true,
+            "word_count": 7,
+            "complexity_score": 0.5
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "synthesis",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.5,
+          "interaction_frequency": 1.0,
+          "question_quality": 0.0,
+          "exploration_depth": 0.45,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.6666666666666666,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.7333333333333334,
+          "complexity_progression": 0.29310344827586204
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.5,
+          "skill_development": 0.5,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.55,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.5416666666666666,
+        "scientific_confidence": 0.7750000000000001
+      },
+      "cognitive_state": {
+        "engagement_level": "low",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "regressing"
+      },
+      "context_classification": {
+        "interaction_type": "confusion_expression",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "medium",
+        "is_response_to_question": true,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "basic",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "medium",
+        "classification_confidence": 0.6,
+        "last_message": "you're a bit annoying you're not helping me at all ",
+        "user_input": "you're a bit annoying you're not helping me at all "
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "discovery",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in discovery phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 0.9483333333333334,
+        "agent_selection_appropriateness": false,
+        "response_coherence": false
+      }
+    }
+  ]
+}

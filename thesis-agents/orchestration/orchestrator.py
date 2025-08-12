@@ -440,6 +440,18 @@ class LangGraphOrchestrator:
         # If no student state found, return None
         return None
 
+    def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
+        """Extract student state from agent results for phase detection."""
+        # Try to get student state from various sources
+        for agent_name, result in agent_results.items():
+            if result and hasattr(result, 'student_state'):
+                return result.student_state
+            elif result and isinstance(result, dict) and 'student_state' in result:
+                return result['student_state']
+        
+        # If no student state found, return None
+        return None
+
     def _extract_topic_from_user_input(self, user_input: str) -> str:
         topics = ["circulation", "lighting", "spatial", "form", "function", "context", "materials", "structure"]
         user_lower = user_input.lower()
