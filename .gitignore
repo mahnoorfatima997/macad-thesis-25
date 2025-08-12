@@ -5,6 +5,7 @@ segment-anything-2/
 
 # Byte-compiled / cache files
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.so
 *.pyc
@@ -14,11 +15,13 @@ __pycache__/
 dmypy.json
 .pyre/
 .pytype/
+.ruff_cache/
 
 # Streamlit cache
 .streamlit/cache/
 .streamlit/cache_data/
 .streamlit/cache_resource/
+.streamlit/storage/
 *.cache
 
 # General cache directories
@@ -26,6 +29,8 @@ cache/
 .cache/
 *_cache/
 cached_data/
+**/cache/
+**/.cache/
 
 # Model cache files
 *.pkl.cache
