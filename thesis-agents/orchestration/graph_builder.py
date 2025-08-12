@@ -29,7 +29,7 @@ def build_workflow(state_cls, handlers, route_decision_fn):
             "topic_transition": "synthesizer",
             "cognitive_intervention": "cognitive_enhancement",
             "socratic_exploration": "socratic_tutor",
-            "design_guidance": "socratic_tutor",
+            "design_guidance": "analysis_agent",
             "multi_agent_comprehensive": "analysis_agent",
             "knowledge_with_challenge": "domain_expert",
             "socratic_clarification": "socratic_tutor",

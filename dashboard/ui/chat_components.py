@@ -275,7 +275,7 @@ def render_single_message(message: Dict[str, Any]):
         # Agent message - left side
         mentor_type = message.get("mentor_type", "Multi-Agent System")
         if mentor_type == "MENTOR" or mentor_type == "Socratic Agent":
-            mentor_label = "Architectural Mentor"
+            mentor_label = "Mentor"
         elif mentor_type == "GENERIC_AI":
             mentor_label = "Generic AI"
         elif mentor_type == "CONTROL":
@@ -320,7 +320,7 @@ def render_welcome_section():
     st.markdown("""
     <div class="top-section">
     <div class="greeting">
-        Welcome to your AI Architectural Mentor!
+        Welcome to your AI Mentor!
     </div>
     <p style="text-align: center; color: #888; margin-top: 1rem;">
         Describe your project or upload an image to get started. You can work with text descriptions, 

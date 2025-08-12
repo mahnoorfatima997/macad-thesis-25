@@ -282,12 +282,24 @@ class UnifiedArchitecturalDashboard:
             if hasattr(analysis_result, 'response_text'):
                 from .ui.analysis_components import convert_agent_response_to_dict
                 analysis_result = convert_agent_response_to_dict(analysis_result)
-            
+
+            # Extract building type from state
+            building_type = state.extract_building_type_from_brief_only()
+            print(f"🏗️ Dashboard: Detected building type: {building_type}")
+
+            # Ensure building type is in the analysis result
+            if isinstance(analysis_result, dict):
+                if 'text_analysis' not in analysis_result:
+                    analysis_result['text_analysis'] = {}
+                analysis_result['text_analysis']['building_type'] = building_type
+                analysis_result['building_type'] = building_type  # Also at top level
+
             # Return comprehensive results
             return {
                 "state": state,
                 "analysis_result": analysis_result,
                 "vision_available": uploaded_file is not None,
+                "building_type": building_type,  # Ensure it's available at top level
                 **analysis_result  # Merge analysis result into top level for compatibility
             }
         finally:

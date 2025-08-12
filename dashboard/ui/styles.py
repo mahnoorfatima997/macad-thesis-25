@@ -254,7 +254,7 @@ def get_dashboard_css() -> str:
         line-height: 1.5 !important;
         color: var(--primary-dark) !important;
         resize: none !important;
-        min-height: 72px !important;
+        min-height: 144px !important;
         max-height: 144px !important;
         font-family: inherit !important;
         box-shadow: none !important;
@@ -308,15 +308,7 @@ def get_dashboard_css() -> str:
         box-shadow: 0 2px 10px rgba(92,79,115,0.3) !important;
     }
 
-    /* Send button icon */
-    div[data-testid="stChatInput"] button::before {
-        content: "➤" !important;
-        font-size: 22px !important;
-        font-weight: bold !important;
-        transform: rotate(90deg) !important;
-        display: block !important;
-        line-height: 1 !important;
-    }
+    /* Send button icon - removed custom icon to prevent duplicates */
 
     /* Input container enhancements */
     div[data-testid="stChatInput"] > div {

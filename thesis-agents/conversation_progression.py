@@ -1622,11 +1622,16 @@ class ConversationProgressionManager:
         })
     
     def _extract_building_type_from_text(self, text: str) -> str:
-        """Extract building type from text using comprehensive detection patterns."""
+        """
+        Enhanced building type detection - SINGLE SOURCE OF TRUTH.
+        This method is called once and the result persists throughout the conversation.
+        """
+        if not text:
+            return "unknown"
         
         text_lower = text.lower()
         
-        # Enhanced building type detection patterns (matching other components)
+        # Enhanced building type detection patterns (SINGLE SOURCE OF TRUTH)
         detection_patterns = [
             # High Priority - Specific building types
             ("learning_center", ["learning center", "education center", "learning hub", "training center", "skill center", "study center", "workshop center", "kindergarten"], 10),
@@ -1690,7 +1695,7 @@ class ConversationProgressionManager:
             ("emergency_services", ["fire station", "police station", "emergency center", "public safety", "emergency facility"], 3),
             ("utility_facility", ["utility facility", "power plant", "water treatment", "energy center", "infrastructure facility"], 3),
             
-            # Lowest Priority - Mixed Use
+            # Lowest Priority - Mixed Use (only if no specific type detected)
             ("mixed_use", ["mixed use", "multi-use", "combined use", "integrated", "hybrid", "versatile", "flexible"], 2)
         ]
         
@@ -1714,7 +1719,7 @@ class ConversationProgressionManager:
             if score > 0:
                 building_scores[building_type] = score
         
-        # Return the highest scoring building type, or mixed_use as fallback
+        # Return the highest scoring building type, or unknown as fallback (no more mixed_use default!)
         if building_scores:
             best_match = max(building_scores, key=building_scores.get)
             # Only return specific types if score is high enough
@@ -1722,5 +1727,47 @@ class ConversationProgressionManager:
                 logger.info(f"🏗️ Building type detected from text: {best_match} (confidence: {building_scores[best_match]})")
                 return best_match
         
-        logger.info("🏗️ No specific building type detected, using mixed_use as fallback")
-        return "mixed_use" 
+        logger.info("🏗️ No specific building type detected, returning 'unknown'")
+        return "unknown"
+
+    def _assess_conversation_analysis_data(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Assess conversation analysis data and extract key insights.
+        This is where building type is detected ONCE and persists.
+        """
+        if not analysis_data:
+            return {}
+        
+        # PRIORITY 1: Use existing building type from state if available
+        if hasattr(self.current_state, 'building_type') and self.current_state.building_type and self.current_state.building_type != "unknown":
+            building_type = self.current_state.building_type
+            logger.info(f"🏗️ Using existing building_type from state: {building_type}")
+        else:
+            # PRIORITY 2: Extract building type from text analysis
+            text_analysis = analysis_data.get("text_analysis", {})
+            user_building_type = text_analysis.get("building_type", "unknown")
+            
+            if user_building_type and user_building_type != "unknown":
+                building_type = user_building_type
+                logger.info(f"🏗️ Using building_type from text analysis: {building_type}")
+            else:
+                # PRIORITY 3: Extract from user input text
+                user_input = analysis_data.get("user_input", "")
+                if user_input:
+                    building_type = self._extract_building_type_from_text(user_input)
+                    logger.info(f"🏗️ Extracted building_type from user input: {building_type}")
+                else:
+                    building_type = "unknown"
+                    logger.info("🏗️ No user input available, building_type set to 'unknown'")
+        
+        # CRITICAL: Update the state with the detected building type
+        if building_type != "unknown":
+            self.current_state.building_type = building_type
+            logger.info(f"🏗️ Updated current_state.building_type to: {building_type}")
+        
+        # Return the building type for use in other parts of the system
+        return {
+            "building_type": building_type,
+            "building_type_source": "conversation_progression_single_source",
+            "building_type_persistent": True
+        }

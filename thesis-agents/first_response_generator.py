@@ -41,7 +41,7 @@ class FirstResponseGenerator:
         
         # 1208-Extract building type from the first message
         logger.info("Step 1.5: Extracting building type from first message...")
-        building_type = self._extract_building_type_from_input(user_input)
+        building_type = self._extract_building_type_from_text(user_input)
         logger.info(f"Building type detected: {building_type}")
         
         # 1208-Update progression analysis with building type
@@ -543,106 +543,11 @@ Focus on opening the design space rather than providing answers.
             "transition_type": "topic_change"
         } 
     
-    def _extract_building_type_from_input(self, input_text: str) -> str:
-        """Extract building type from input text using enhanced detection patterns."""
-        
-        input_lower = input_text.lower()
-        
-        # Enhanced building type detection patterns (matching other components)
-        detection_patterns = [
-            # High Priority - Specific building types
-            ("learning_center", ["learning center", "education center", "learning hub", "training center", "skill center", "study center", "workshop center", "kindergarten"], 10),
-            ("community_center", ["community center", "community facility", "civic center", "public center", "social hub", "gathering place", "neighborhood center", "town hall", "community center for sports", "community sports center"], 10),
-            ("sports_center", ["sports center", "fitness center", "gym", "athletic center", "sports facility", "fitness facility", "athletic facility", "sports complex", "recreation center", "activity center"], 10),
-            ("cultural_institution", ["museum", "gallery", "theater", "cultural center", "arts center", "performance center", "exhibition center", "cultural hub", "heritage center"], 10),
-            ("library", ["library", "librarian", "reading room", "study space", "research center", "information center", "book center"], 10),
-            ("research_facility", ["research facility", "laboratory", "lab", "research center", "innovation center", "development center", "testing facility"], 10),
-            
-            # High Priority - Healthcare
-            ("hospital", ["hospital", "medical center", "health center", "clinic", "medical facility", "healthcare facility", "treatment center"], 9),
-            ("specialized_clinic", ["specialized clinic", "specialty clinic", "medical clinic", "health clinic", "outpatient clinic", "diagnostic center"], 9),
-            ("wellness_center", ["wellness center", "health center", "medical spa", "holistic center", "alternative medicine", "wellness facility"], 9),
-            ("rehabilitation_center", ["rehabilitation center", "rehab center", "recovery center", "therapy center", "treatment facility"], 9),
-            
-            # High Priority - Educational
-            ("educational", ["school", "university", "college", "classroom", "educational", "learning", "academy", "institute"], 9),
-            
-            # Medium Priority - Residential
-            ("residential", ["house", "home", "apartment", "residential", "housing", "dwelling", "residence", "domestic"], 8),
-            ("multi_family", ["multi-family", "apartment building", "condominium", "townhouse", "duplex", "triplex", "residential complex"], 8),
-            ("senior_housing", ["senior housing", "elderly housing", "retirement community", "assisted living", "nursing home", "care facility"], 8),
-            ("student_housing", ["student housing", "dormitory", "student residence", "college housing", "university housing"], 8),
-            
-            # Medium Priority - Commercial
-            ("office", ["office", "workplace", "corporate", "business", "commercial", "workspace", "professional", "executive"], 7),
-            ("retail", ["store", "shop", "retail", "commercial", "market", "shopping", "merchant", "boutique"], 7),
-            ("restaurant", ["restaurant", "cafe", "dining", "eatery", "bistro", "food service", "culinary", "dining establishment"], 7),
-            ("hotel", ["hotel", "lodging", "accommodation", "inn", "resort", "guesthouse", "hostel", "bed and breakfast"], 7),
-            
-            # Medium Priority - Community & Recreation
-            ("recreation_center", ["recreation center", "leisure center", "entertainment center"], 7),
-            ("senior_center", ["senior center", "elderly center", "aging center", "retirement center", "adult center", "mature center"], 7),
-            ("youth_center", ["youth center", "teen center", "adolescent center", "young center", "teenager center"], 7),
-            
-            # Medium Priority - Industrial
-            ("industrial", ["factory", "warehouse", "industrial", "manufacturing", "production", "industrial facility", "manufacturing plant"], 6),
-            ("logistics_center", ["logistics center", "distribution center", "fulfillment center", "storage facility", "warehouse facility"], 6),
-            ("research_industrial", ["research and development", "R&D facility", "innovation center", "technology center", "development facility"], 6),
-            
-            # Medium Priority - Transportation
-            ("transportation_hub", ["transportation hub", "transit center", "transport hub", "mobility center", "travel center"], 6),
-            ("parking_facility", ["parking facility", "parking garage", "parking structure", "parking center", "car park"], 6),
-            ("maintenance_facility", ["maintenance facility", "service center", "repair facility", "maintenance center"], 6),
-            
-            # Lower Priority - Religious & Spiritual
-            ("religious", ["church", "temple", "mosque", "synagogue", "religious", "worship", "spiritual", "sacred", "faith center"], 5),
-            ("meditation_center", ["meditation center", "spiritual center", "zen center", "mindfulness center", "contemplation center"], 5),
-            
-            # Lower Priority - Agricultural & Environmental
-            ("agricultural", ["farm", "agricultural", "greenhouse", "nursery", "agricultural facility", "farming center"], 4),
-            ("environmental_center", ["environmental center", "nature center", "conservation center", "ecology center", "sustainability center"], 4),
-            
-            # Lower Priority - Specialized
-            ("conference_center", ["conference center", "convention center", "meeting center", "event center", "summit center"], 4),
-            ("innovation_hub", ["innovation hub", "startup center", "entrepreneurial center", "business incubator", "tech hub"], 4),
-            ("creative_workspace", ["creative workspace", "artist studio", "design studio", "creative center", "artistic space"], 4),
-            
-            # Lower Priority - Government & Public
-            ("government", ["government building", "civic building", "public building", "administrative center", "public service"], 3),
-            ("emergency_services", ["fire station", "police station", "emergency center", "public safety", "emergency facility"], 3),
-            ("utility_facility", ["utility facility", "power plant", "water treatment", "energy center", "infrastructure facility"], 3),
-            
-            # Lowest Priority - Mixed Use
-            ("mixed_use", ["mixed use", "multi-use", "combined use", "integrated", "hybrid", "versatile", "flexible"], 2)
-        ]
-        
-        # Score each building type based on keyword matches
-        building_scores = {}
-        for building_type, keywords, base_priority in detection_patterns:
-            score = 0
-            for keyword in keywords:
-                if keyword in input_lower:
-                    score += base_priority
-                    # Bonus for exact matches
-                    if keyword == input_lower.strip():
-                        score += 5
-                    # Bonus for longer, more specific keywords
-                    if len(keyword.split()) > 1:
-                        score += 2
-                    # Bonus for multiple keyword matches
-                    if input_lower.count(keyword) > 1:
-                        score += 1
-            
-            if score > 0:
-                building_scores[building_type] = score
-        
-        # Return the highest scoring building type, or mixed_use as fallback
-        if building_scores:
-            best_match = max(building_scores, key=building_scores.get)
-            # Only return specific types if score is high enough
-            if building_scores[best_match] >= 5:
-                logger.info(f"🏗️ Building type detected from input: {best_match} (confidence: {building_scores[best_match]})")
-                return best_match
-        
-        logger.info("🏗️ No specific building type detected, using mixed_use as fallback")
-        return "mixed_use"
+    def _extract_building_type_from_text(self, input_text: str) -> str:
+        """
+        Get building type from state - NO MORE DETECTION, just retrieval.
+        Building type is now centrally managed in conversation_progression.py
+        """
+        # This method is now deprecated - building type detection is centralized
+        # Return unknown to force use of centrally managed building type
+        return "unknown"

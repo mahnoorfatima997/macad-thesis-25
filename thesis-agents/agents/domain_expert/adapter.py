@@ -98,13 +98,13 @@ class DomainExpertAgent:
             if knowledge_pattern["type"] == "legitimate_example_request":
                 print(f"📚 Legitimate example request detected - providing examples")
                 response_result = await self._provide_focused_examples(state, user_input, gap_type)
-                return self._convert_to_agent_response(response_result, state, context_classification, analysis_result, routing_decision)
+                return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
             
             # Handle premature example requests (cognitive offloading protection)
             if knowledge_pattern["type"] == "premature_example_request":
                 print(f"🛡️ Cognitive protection: Example request too early")
                 response_result = await self._generate_premature_example_response(user_input, building_type, project_context)
-                return self._convert_to_agent_response(response_result, state, context_classification, analysis_result, routing_decision)
+                return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
 
             # Generate AI-powered contextual response for standard requests
             ai_response = await self._generate_contextual_knowledge_response(
@@ -141,6 +141,52 @@ class DomainExpertAgent:
                 f"Knowledge provision failed: {str(e)}",
                 agent_name=self.name
             )
+
+    async def _generate_gamified_knowledge_challenge_response(self, user_input: str, state: ArchMentorState,
+                                                           context_classification: Dict, analysis_result: Dict, gap_type: str):
+        """Generate gamified knowledge response with application challenge."""
+        try:
+            building_type = self._extract_building_type_from_context(state)
+            project_context = state.current_design_brief or "architectural project"
+
+            # Create gamified knowledge prompt
+            prompt = f"""
+            Provide rich, contextual knowledge about the user's question, then create an engaging application challenge.
+
+            User's question: "{user_input}"
+            Building type: {building_type}
+            Project context: {project_context}
+
+            Structure your response as:
+            1. Rich knowledge explanation with real-world relevance
+            2. Connect directly to their project context
+            3. Quick application challenge with 3-4 options (A, B, C, D format with emojis)
+            4. Ask for their choice and reasoning
+            5. Set up exploration of implications
+
+            Make the knowledge engaging and the challenge thought-provoking.
+            Use emojis strategically for visual appeal but maintain professional depth.
+            Include research backing or examples where relevant.
+            """
+
+            response = await self._generate_llm_response(prompt, state, analysis_result)
+
+            return {
+                "response_text": response,
+                "response_strategy": "knowledge_with_application_challenge",
+                "educational_intent": "knowledge_application",
+                "gamified_behavior": "knowledge_with_application_challenge",
+                "sources": [],
+                "metadata": {
+                    "knowledge_type": gap_type,
+                    "building_type": building_type,
+                    "challenge_included": True
+                }
+            }
+
+        except Exception as e:
+            self.telemetry.log_error(f"Gamified knowledge challenge response failed: {str(e)}")
+            return await self._generate_fallback_knowledge_response(state, analysis_result, gap_type)
     
     async def discover_knowledge(self, state: ArchMentorState, context_classification: Dict,
                                analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
@@ -1009,10 +1055,14 @@ What questions do you have about your design?"""
             "examples_provided": False
         }
 
-    def _convert_to_agent_response(self, response_result: Dict[str, Any], state: ArchMentorState, 
-                                 context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
-        """Convert response result to AgentResponse format."""
-        
+    def _convert_to_agent_response_internal(self, response_result: Dict[str, Any], state: ArchMentorState,
+                                          context_classification: Dict, analysis_result: Dict, routing_decision: Dict) -> AgentResponse:
+        """Convert response result to AgentResponse format - internal method."""
+
+        # Ensure response_result is a dictionary
+        if not isinstance(response_result, dict):
+            response_result = {"response_text": str(response_result), "response_type": "fallback"}
+
         response_metadata = {
             "agent": self.name,
             "response_type": response_result.get("response_type", "knowledge_delivery"),
@@ -1022,12 +1072,12 @@ What questions do you have about your design?"""
             "sources": response_result.get("sources", []),
             "processing_method": "example_detection" if response_result.get("examples_provided") else "standard_knowledge"
         }
-        
+
         return ResponseBuilder.create_knowledge_response(
             response_text=response_result.get("response_text", ""),
             sources_used=response_result.get("sources", []),
             metadata=response_metadata
-        ) 
+        )
 
     async def _synthesize_examples_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
         """Use the simple, working approach from the old repository - let LLM intelligently process all results."""
