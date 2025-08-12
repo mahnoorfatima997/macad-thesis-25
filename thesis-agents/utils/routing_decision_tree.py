@@ -341,14 +341,7 @@ class AdvancedRoutingDecisionTree:
                 "description": "Technical question - direct knowledge response",
                 "context_agent_override": False
             },
-            # REMOVED: example_request_route conflicts with higher priority example rules
-            # "example_request_route": {
-            #     "priority": 16.5,
-            #     "route": RouteType.SOCRATIC_EXPLORATION,
-            #     "conditions": ["user_intent == 'example_request'"],
-            #     "description": "Example request - knowledge with Socratic follow-up",
-            #     "context_agent_override": False
-            # },
+
             "feedback_request_route": {
                 "priority": 17.5,
                 "route": RouteType.MULTI_AGENT_COMPREHENSIVE,

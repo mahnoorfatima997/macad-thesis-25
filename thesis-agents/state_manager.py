@@ -52,12 +52,15 @@ class ArchMentorState:
     domain: str = "architecture"
     domain_config: Dict[str, Any] = field(default_factory=dict)
     
-    # 0108 added-Debug and display settings
+    # Project context
+    building_type: str = "mixed_use"
+    
+    # Debug and display settings
     show_response_summary: bool = True  # Toggle for response processing summary
     show_scientific_metrics: bool = False  # Toggle for scientific metrics in response
 
 
-#ADDED THIS FOR CONVO HISTORY MANAGEMENT
+    #Conversation History Management
     def ensure_brief_in_messages(self):
         """Enhanced to maintain conversation continuity"""
         if self.current_design_brief:

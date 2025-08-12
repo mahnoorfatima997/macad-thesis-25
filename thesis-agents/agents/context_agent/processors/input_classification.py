@@ -316,13 +316,58 @@ class InputClassificationProcessor:
         if any(pattern in input_lower for pattern in technical_patterns):
             return "technical_question"
 
-        # 12. Confusion expression detection
+        # 12. Project description detection - HIGH PRIORITY: Detect clear project descriptions (CHECK FIRST)
+        project_description_patterns = [
+            "i am designing", "i'm designing", "i am working on", "i'm working on",
+            "i am creating", "i'm creating", "i am building", "i'm building",
+            "my project is", "my design is", "i want to create", "i want to design",
+            "i want to build", "i plan to", "i'm planning to", "my goal is",
+            "i have a project", "i'm working on a", "this is my project"
+        ]
+        if any(pattern in input_lower for pattern in project_description_patterns):
+            print(f"Input classification: Detected project_description pattern in: {input_text[:100]}...")
+            return "project_description"
+
+        # 12.5. Design guidance request detection - HIGH PRIORITY: Detect requests for design help (CHECK SECOND)
+        design_guidance_patterns = [
+            "can you help me", "could you help me", "i need help with",
+            "i want help with", "can you guide me", "could you guide me",
+            "i need guidance", "i want guidance", "can you advise me",
+            "could you advise me", "i need advice", "i want advice",
+            "can you suggest", "could you suggest", "i need suggestions",
+            "i want suggestions", "what should i", "how should i",
+            # ENHANCED: More flexible patterns to catch variations
+            "what should my", "how should my", "what should we", "how should we",
+            "what approach should", "how approach should", "what strategy should",
+            "how strategy should", "what method should", "how method should",
+            "curious how", "wondering how", "thinking about how",
+            "not sure how", "unsure how", "confused about how",
+            "need help organizing", "want help organizing", "help me organize",
+            "guidance on", "advice on", "suggestions for", "help with",
+            # ENHANCED: More specific patterns for approach/strategy questions
+            "what should my approach", "how should my approach",
+            "what approach should i", "how approach should i",
+            "what is my approach", "how is my approach",
+            "what would be my approach", "how would be my approach",
+            "what do you think my approach", "how do you think my approach",
+            "approach should", "strategy should", "method should",
+            "organize my", "organize the", "organize spaces",
+            "organize around", "organize courtyards", "organize gardens"
+        ]
+        if any(pattern in input_lower for pattern in design_guidance_patterns):
+            print(f"Input classification: Detected design_guidance_request pattern in: {input_text[:100]}...")
+            return "design_guidance_request"
+
+        # 12.6. Confusion expression detection - ENHANCED: More specific patterns (CHECK LAST)
         confusion_patterns = [
             "confused", "don't understand", "unclear", "not sure",
-            "help", "lost", "stuck", "struggling", "difficult",
-            "what does this mean", "i don't get it"
+            "lost", "stuck", "struggling", "difficult",
+            "what does this mean", "i don't get it", "i'm confused",
+            "this doesn't make sense", "i'm lost", "i'm stuck",
+            "this is confusing", "i'm struggling", "this is difficult"
         ]
         if any(pattern in input_lower for pattern in confusion_patterns):
+            print(f"Input classification: Detected confusion_expression pattern in: {input_text[:100]}...")
             return "confusion_expression"
 
         # 13. Improvement seeking detection
@@ -351,7 +396,7 @@ class InputClassificationProcessor:
 
         # ENHANCED PATTERN SYSTEM - Level 5: General Classification
 
-        # 15. Enhanced general statement detection
+        # 15. Enhanced general statement detection - MOVED TO LOWER PRIORITY
         statement_patterns = [
             "i am", "i have", "i want", "i need", "i like", "i prefer",
             "this is", "that is", "it is", "there is", "here is"
@@ -1179,3 +1224,106 @@ class InputClassificationProcessor:
             "seeks_validation": False,
             "reasoning": "Default classification"
         }
+
+    def _extract_building_type_from_input(self, input_text: str) -> str:
+        """Extract building type from input text using enhanced detection patterns."""
+        
+        input_lower = input_text.lower()
+        
+        # Enhanced building type detection patterns (matching other components)
+        detection_patterns = [
+            # High Priority - Specific building types
+            ("learning_center", ["learning center", "education center", "learning hub", "training center", "skill center", "study center", "workshop center", "kindergarten"], 10),
+            ("community_center", ["community center", "community facility", "civic center", "public center", "social hub", "gathering place", "neighborhood center", "town hall", "community center for sports", "community sports center"], 10),
+            ("sports_center", ["sports center", "fitness center", "gym", "athletic center", "sports facility", "fitness facility", "athletic facility", "sports complex", "recreation center", "activity center"], 10),
+            ("cultural_institution", ["museum", "gallery", "theater", "cultural center", "arts center", "performance center", "exhibition center", "cultural hub", "heritage center"], 10),
+            ("library", ["library", "librarian", "reading room", "study space", "research center", "information center", "book center"], 10),
+            ("research_facility", ["research facility", "laboratory", "lab", "research center", "innovation center", "development center", "testing facility"], 10),
+            
+            # High Priority - Healthcare
+            ("hospital", ["hospital", "medical center", "health center", "clinic", "medical facility", "healthcare facility", "treatment center"], 9),
+            ("specialized_clinic", ["specialized clinic", "specialty clinic", "medical clinic", "health clinic", "outpatient clinic", "diagnostic center"], 9),
+            ("wellness_center", ["wellness center", "health center", "medical spa", "holistic center", "alternative medicine", "wellness facility"], 9),
+            ("rehabilitation_center", ["rehabilitation center", "rehab center", "recovery center", "therapy center", "treatment facility"], 9),
+            
+            # High Priority - Educational
+            ("educational", ["school", "university", "college", "classroom", "educational", "learning", "academy", "institute"], 9),
+            
+            # Medium Priority - Residential
+            ("residential", ["house", "home", "apartment", "residential", "housing", "dwelling", "residence", "domestic"], 8),
+            ("multi_family", ["multi-family", "apartment building", "condominium", "townhouse", "duplex", "triplex", "residential complex"], 8),
+            ("senior_housing", ["senior housing", "elderly housing", "retirement community", "assisted living", "nursing home", "care facility"], 8),
+            ("student_housing", ["student housing", "dormitory", "student residence", "college housing", "university housing"], 8),
+            
+            # Medium Priority - Commercial
+            ("office", ["office", "workplace", "corporate", "business", "commercial", "workspace", "professional", "executive"], 7),
+            ("retail", ["store", "shop", "retail", "commercial", "market", "shopping", "merchant", "boutique"], 7),
+            ("restaurant", ["restaurant", "cafe", "dining", "eatery", "bistro", "food service", "culinary", "dining establishment"], 7),
+            ("hotel", ["hotel", "lodging", "accommodation", "inn", "resort", "guesthouse", "hostel", "bed and breakfast"], 7),
+            
+            # Medium Priority - Community & Recreation
+            ("recreation_center", ["recreation center", "leisure center", "entertainment center"], 7),
+            ("senior_center", ["senior center", "elderly center", "aging center", "retirement center", "adult center", "mature center"], 7),
+            ("youth_center", ["youth center", "teen center", "adolescent center", "young center", "teenager center"], 7),
+            
+            # Medium Priority - Industrial
+            ("industrial", ["factory", "warehouse", "industrial", "manufacturing", "production", "industrial facility", "manufacturing plant"], 6),
+            ("logistics_center", ["logistics center", "distribution center", "fulfillment center", "storage facility", "warehouse facility"], 6),
+            ("research_industrial", ["research and development", "R&D facility", "innovation center", "technology center", "development facility"], 6),
+            
+            # Medium Priority - Transportation
+            ("transportation_hub", ["transportation hub", "transit center", "transport hub", "mobility center", "travel center"], 6),
+            ("parking_facility", ["parking facility", "parking garage", "parking structure", "parking center", "car park"], 6),
+            ("maintenance_facility", ["maintenance facility", "service center", "repair facility", "maintenance center"], 6),
+            
+            # Lower Priority - Religious & Spiritual
+            ("religious", ["church", "temple", "mosque", "synagogue", "religious", "worship", "spiritual", "sacred", "faith center"], 5),
+            ("meditation_center", ["meditation center", "spiritual center", "zen center", "mindfulness center", "contemplation center"], 5),
+            
+            # Lower Priority - Agricultural & Environmental
+            ("agricultural", ["farm", "agricultural", "greenhouse", "nursery", "agricultural facility", "farming center"], 4),
+            ("environmental_center", ["environmental center", "nature center", "conservation center", "ecology center", "sustainability center"], 4),
+            
+            # Lower Priority - Specialized
+            ("conference_center", ["conference center", "convention center", "meeting center", "event center", "summit center"], 4),
+            ("innovation_hub", ["innovation hub", "startup center", "entrepreneurial center", "business incubator", "tech hub"], 4),
+            ("creative_workspace", ["creative workspace", "artist studio", "design studio", "creative center", "artistic space"], 4),
+            
+            # Lower Priority - Government & Public
+            ("government", ["government building", "civic building", "public building", "administrative center", "public service"], 3),
+            ("emergency_services", ["fire station", "police station", "emergency center", "public safety", "emergency facility"], 3),
+            ("utility_facility", ["utility facility", "power plant", "water treatment", "energy center", "infrastructure facility"], 3),
+            
+            # Lowest Priority - Mixed Use
+            ("mixed_use", ["mixed use", "multi-use", "combined use", "integrated", "hybrid", "versatile", "flexible"], 2)
+        ]
+        
+        # Score each building type based on keyword matches
+        building_scores = {}
+        for building_type, keywords, base_priority in detection_patterns:
+            score = 0
+            for keyword in keywords:
+                if keyword in input_lower:
+                    score += base_priority
+                    # Bonus for exact matches
+                    if keyword == input_lower.strip():
+                        score += 5
+                    # Bonus for longer, more specific keywords
+                    if len(keyword.split()) > 1:
+                        score += 2
+                    # Bonus for multiple keyword matches
+                    if input_lower.count(keyword) > 1:
+                        score += 1
+            
+            if score > 0:
+                building_scores[building_type] = score
+        
+        # Return the highest scoring building type, or mixed_use as fallback
+        if building_scores:
+            best_match = max(building_scores, key=building_scores.get)
+            # Only return specific types if score is high enough
+            if building_scores[best_match] >= 5:
+                print(f"🏗️ Building type detected from input: {best_match} (confidence: {building_scores[best_match]})")
+                return best_match
+        
+        return "mixed_use"

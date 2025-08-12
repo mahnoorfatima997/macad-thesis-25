@@ -141,6 +141,15 @@ class LangGraphOrchestrator:
             "classification": decision.classification,
             "metadata": decision.metadata,
         }
+        
+        # CRITICAL FIX: Store the routing decision path in the main routing_decision field
+        # This is what the synthesis method actually uses
+        if "routing_decision" not in state:
+            state["routing_decision"] = {}
+        state["routing_decision"]["path"] = decision.route.value
+        state["routing_decision"]["reasoning"] = decision.reason
+        state["routing_decision"]["confidence"] = decision.confidence
+        state["routing_decision"]["rule_applied"] = decision.rule_applied
 
         return decision.route.value
 

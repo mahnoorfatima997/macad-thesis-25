@@ -75,42 +75,211 @@ class TextAnalysisProcessor:
             return self._get_fallback_brief_analysis(brief)
     
     def _detect_building_type(self, brief: str) -> str:
-        """Detect building type from brief content."""
+        """Enhanced building type detection with confidence scoring and intelligent fallback."""
         try:
             brief_lower = brief.lower()
             type_scores = {}
             
-            for building_type, patterns in BUILDING_TYPE_PATTERNS.items():
-                score = 0
-                for pattern in patterns:
-                    if pattern.lower() in brief_lower:
-                        score += 1
-                type_scores[building_type] = score
+            # Enhanced building type detection patterns (matching other components)
+            detection_patterns = [
+                # High Priority - Specific building types
+                ("learning_center", ["learning center", "education center", "learning hub", "training center", "skill center", "study center", "workshop center", "kindergarten"], 10),
+                ("community_center", ["community center", "community facility", "civic center", "public center", "social hub", "gathering place", "neighborhood center", "town hall", "community center for sports", "community sports center"], 10),
+                ("sports_center", ["sports center", "fitness center", "gym", "athletic center", "sports facility", "fitness facility", "athletic facility", "sports complex", "recreation center", "activity center"], 10),
+                ("cultural_institution", ["museum", "gallery", "theater", "cultural center", "arts center", "performance center", "exhibition center", "cultural hub", "heritage center"], 10),
+                ("library", ["library", "librarian", "reading room", "study space", "research center", "information center", "book center"], 10),
+                ("research_facility", ["research facility", "laboratory", "lab", "research center", "innovation center", "development center", "testing facility"], 10),
+                
+                # High Priority - Healthcare
+                ("hospital", ["hospital", "medical center", "health center", "clinic", "medical facility", "healthcare facility", "treatment center"], 9),
+                ("specialized_clinic", ["specialized clinic", "specialty clinic", "medical clinic", "health clinic", "outpatient clinic", "diagnostic center"], 9),
+                ("wellness_center", ["wellness center", "health center", "medical spa", "holistic center", "alternative medicine", "wellness facility"], 9),
+                ("rehabilitation_center", ["rehabilitation center", "rehab center", "recovery center", "therapy center", "treatment facility"], 9),
+                
+                # High Priority - Educational
+                ("educational", ["school", "university", "college", "classroom", "educational", "learning", "academy", "institute"], 9),
+                
+                # Medium Priority - Residential
+                ("residential", ["house", "home", "apartment", "residential", "housing", "dwelling", "residence", "domestic"], 8),
+                ("multi_family", ["multi-family", "apartment building", "condominium", "townhouse", "duplex", "triplex", "residential complex"], 8),
+                ("senior_housing", ["senior housing", "elderly housing", "retirement community", "assisted living", "nursing home", "care facility"], 8),
+                ("student_housing", ["student housing", "dormitory", "student residence", "college housing", "university housing"], 8),
+                
+                # Medium Priority - Commercial
+                ("office", ["office", "workplace", "corporate", "business", "commercial", "workspace", "professional", "executive"], 7),
+                ("retail", ["store", "shop", "retail", "commercial", "market", "shopping", "merchant", "boutique"], 7),
+                ("restaurant", ["restaurant", "cafe", "dining", "eatery", "bistro", "food service", "culinary", "dining establishment"], 7),
+                ("hotel", ["hotel", "lodging", "accommodation", "inn", "resort", "guesthouse", "hostel", "bed and breakfast"], 7),
+                
+                # Medium Priority - Community & Recreation
+                ("recreation_center", ["recreation center", "leisure center", "entertainment center"], 7),
+                ("senior_center", ["senior center", "elderly center", "aging center", "retirement center", "adult center", "mature center"], 7),
+                ("youth_center", ["youth center", "teen center", "adolescent center", "young center", "teenager center"], 7),
+                
+                # Medium Priority - Industrial
+                ("industrial", ["factory", "warehouse", "industrial", "manufacturing", "production", "industrial facility", "manufacturing plant"], 6),
+                ("logistics_center", ["logistics center", "distribution center", "fulfillment center", "storage facility", "warehouse facility"], 6),
+                ("research_industrial", ["research and development", "R&D facility", "innovation center", "technology center", "development facility"], 6),
+                
+                # Medium Priority - Transportation
+                ("transportation_hub", ["transportation hub", "transit center", "transport hub", "mobility center", "travel center"], 6),
+                ("parking_facility", ["parking facility", "parking garage", "parking structure", "parking center", "car park"], 6),
+                ("maintenance_facility", ["maintenance facility", "service center", "repair facility", "maintenance center"], 6),
+                
+                # Lower Priority - Religious & Spiritual
+                ("religious", ["church", "temple", "mosque", "synagogue", "religious", "worship", "spiritual", "sacred", "faith center"], 5),
+                ("meditation_center", ["meditation center", "spiritual center", "zen center", "mindfulness center", "contemplation center"], 5),
+                
+                # Lower Priority - Agricultural & Environmental
+                ("agricultural", ["farm", "agricultural", "greenhouse", "nursery", "agricultural facility", "farming center"], 4),
+                ("environmental_center", ["environmental center", "nature center", "conservation center", "ecology center", "sustainability center"], 4),
+                
+                # Lower Priority - Specialized
+                ("conference_center", ["conference center", "convention center", "meeting center", "event center", "summit center"], 4),
+                ("innovation_hub", ["innovation hub", "startup center", "entrepreneurial center", "business incubator", "tech hub"], 4),
+                ("creative_workspace", ["creative workspace", "artist studio", "design studio", "creative center", "artistic space"], 4),
+                
+                # Lower Priority - Government & Public
+                ("government", ["government building", "civic building", "public building", "administrative center", "public service"], 3),
+                ("emergency_services", ["fire station", "police station", "emergency center", "public safety", "emergency facility"], 3),
+                ("utility_facility", ["utility facility", "power plant", "water treatment", "energy center", "infrastructure facility"], 3),
+                
+                # Lowest Priority - Mixed Use
+                ("mixed_use", ["mixed use", "multi-use", "combined use", "integrated", "hybrid", "versatile", "flexible"], 2)
+            ]
             
-            if type_scores and max(type_scores.values()) > 0:
-                return max(type_scores, key=type_scores.get)
+            # Score each building type based on keyword matches
+            for building_type, keywords, base_priority in detection_patterns:
+                score = 0
+                for keyword in keywords:
+                    if keyword in brief_lower:
+                        score += base_priority
+                        # Bonus for exact matches
+                        if keyword == brief_lower.strip():
+                            score += 5
+                        # Bonus for longer, more specific keywords
+                        if len(keyword.split()) > 1:
+                            score += 2
+                        # Bonus for multiple keyword matches
+                        if brief_lower.count(keyword) > 1:
+                            score += 1
+                
+                if score > 0:
+                    type_scores[building_type] = score
+            
+            # Return the highest scoring building type if confidence is high enough
+            if type_scores and max(type_scores.values()) >= 5:
+                best_type = max(type_scores, key=type_scores.get)
+                confidence_score = type_scores[best_type]
+                
+                # Log the detection for debugging
+                print(f"🏗️ Building type detected: {best_type} (confidence: {confidence_score})")
+                
+                return best_type
             else:
+                # Fallback to enhanced detection if no high-confidence match
                 return self._fallback_building_type_detection(brief)
                 
         except Exception as e:
             self.telemetry.log_error("_detect_building_type", str(e))
-            return "mixed-use"
+            return self._fallback_building_type_detection(brief)
     
     def _fallback_building_type_detection(self, brief: str) -> str:
-        """Fallback building type detection using simple heuristics."""
+        """Enhanced fallback building type detection using intelligent heuristics and priority scoring."""
         brief_lower = brief.lower()
         
-        # Simple keyword-based detection
-        if any(word in brief_lower for word in ["house", "home", "residential", "apartment"]):
-            return "residential"
-        elif any(word in brief_lower for word in ["office", "commercial", "retail", "business"]):
-            return "commercial"
-        elif any(word in brief_lower for word in ["school", "hospital", "library", "museum"]):
-            return "institutional"
-        elif any(word in brief_lower for word in ["factory", "warehouse", "industrial"]):
-            return "industrial"
-        else:
-            return "mixed-use"
+        # Define detection patterns with priority scores
+        detection_patterns = [
+            # High Priority - Specific building types
+            ("learning_center", ["learning center", "education center", "learning hub", "training center", "skill center", "study center", "workshop center"], 10),
+            ("community_center", ["community center", "community facility", "civic center", "public center", "social hub", "gathering place", "neighborhood center", "town hall"], 10),
+            ("cultural_institution", ["museum", "gallery", "theater", "cultural center", "arts center", "performance center", "exhibition center", "cultural hub", "heritage center"], 10),
+            ("library", ["library", "librarian", "reading room", "study space", "research center", "information center", "book center"], 10),
+            ("research_facility", ["research facility", "laboratory", "lab", "research center", "innovation center", "development center", "testing facility"], 10),
+            
+            # High Priority - Healthcare
+            ("hospital", ["hospital", "medical center", "health center", "clinic", "medical facility", "healthcare facility", "treatment center"], 9),
+            ("specialized_clinic", ["specialized clinic", "specialty clinic", "medical clinic", "health clinic", "outpatient clinic", "diagnostic center"], 9),
+            ("wellness_center", ["wellness center", "health center", "medical spa", "holistic center", "alternative medicine", "wellness facility"], 9),
+            ("rehabilitation_center", ["rehabilitation center", "rehab center", "recovery center", "therapy center", "treatment facility"], 9),
+            
+            # High Priority - Educational
+            ("educational", ["school", "university", "college", "classroom", "educational", "learning", "academy", "institute"], 9),
+            
+            # Medium Priority - Residential
+            ("residential", ["house", "home", "apartment", "residential", "housing", "dwelling", "residence", "domestic"], 8),
+            ("multi_family", ["multi-family", "apartment building", "condominium", "townhouse", "duplex", "triplex", "residential complex"], 8),
+            ("senior_housing", ["senior housing", "elderly housing", "retirement community", "assisted living", "nursing home", "care facility"], 8),
+            ("student_housing", ["student housing", "dormitory", "student residence", "college housing", "university housing"], 8),
+            
+            # Medium Priority - Commercial
+            ("office", ["office", "workplace", "corporate", "business", "commercial", "workspace", "professional", "executive"], 7),
+            ("retail", ["store", "shop", "retail", "commercial", "market", "shopping", "merchant", "boutique"], 7),
+            ("restaurant", ["restaurant", "cafe", "dining", "eatery", "bistro", "food service", "culinary", "dining establishment"], 7),
+            ("hotel", ["hotel", "lodging", "accommodation", "inn", "resort", "guesthouse", "hostel", "bed and breakfast"], 7),
+            
+            # Medium Priority - Community & Recreation
+            ("recreation_center", ["recreation center", "sports center", "fitness center", "wellness center", "activity center", "leisure center", "entertainment center"], 7),
+            ("senior_center", ["senior center", "elderly center", "aging center", "retirement center", "adult center", "mature center"], 7),
+            ("youth_center", ["youth center", "teen center", "adolescent center", "young center", "teenager center"], 7),
+            
+            # Medium Priority - Industrial
+            ("industrial", ["factory", "warehouse", "industrial", "manufacturing", "production", "industrial facility", "manufacturing plant"], 6),
+            ("logistics_center", ["logistics center", "distribution center", "fulfillment center", "storage facility", "warehouse facility"], 6),
+            ("research_industrial", ["research and development", "R&D facility", "innovation center", "technology center", "development facility"], 6),
+            
+            # Medium Priority - Transportation
+            ("transportation_hub", ["transportation hub", "transit center", "transport hub", "mobility center", "travel center"], 6),
+            ("parking_facility", ["parking facility", "parking garage", "parking structure", "parking center", "car park"], 6),
+            ("maintenance_facility", ["maintenance facility", "service center", "repair facility", "maintenance center"], 6),
+            
+            # Lower Priority - Religious & Spiritual
+            ("religious", ["church", "temple", "mosque", "synagogue", "religious", "worship", "spiritual", "sacred", "faith center"], 5),
+            ("meditation_center", ["meditation center", "spiritual center", "zen center", "mindfulness center", "contemplation center"], 5),
+            
+            # Lower Priority - Agricultural & Environmental
+            ("agricultural", ["farm", "agricultural", "greenhouse", "nursery", "agricultural facility", "farming center"], 4),
+            ("environmental_center", ["environmental center", "nature center", "conservation center", "ecology center", "sustainability center"], 4),
+            
+            # Lower Priority - Specialized
+            ("conference_center", ["conference center", "convention center", "meeting center", "event center", "summit center"], 4),
+            ("innovation_hub", ["innovation hub", "startup center", "entrepreneurial center", "business incubator", "tech hub"], 4),
+            ("creative_workspace", ["creative workspace", "artist studio", "design studio", "creative center", "artistic space"], 4),
+            
+            # Lower Priority - Government & Public
+            ("government", ["government building", "civic building", "public building", "administrative center", "public service"], 3),
+            ("emergency_services", ["fire station", "police station", "emergency center", "public safety", "emergency facility"], 3),
+            ("utility_facility", ["utility facility", "power plant", "water treatment", "energy center", "infrastructure facility"], 3),
+            
+            # Lowest Priority - Mixed Use
+            ("mixed_use", ["mixed use", "multi-use", "combined use", "integrated", "hybrid", "versatile", "flexible"], 2)
+        ]
+        
+        # Score each building type based on keyword matches
+        building_scores = {}
+        for building_type, keywords, base_priority in detection_patterns:
+            score = 0
+            for keyword in keywords:
+                if keyword in brief_lower:
+                    score += base_priority
+                    # Bonus for exact matches
+                    if keyword == brief_lower.strip():
+                        score += 5
+                    # Bonus for longer, more specific keywords
+                    if len(keyword.split()) > 1:
+                        score += 2
+            
+            if score > 0:
+                building_scores[building_type] = score
+        
+        # Return the highest scoring building type, or mixed_use as fallback
+        if building_scores:
+            best_match = max(building_scores, key=building_scores.get)
+            # Only return specific types if score is high enough
+            if building_scores[best_match] >= 5:
+                return best_match
+        
+        return "mixed_use"
     
     def assess_detail_level(self, brief: str) -> str:
         """Assess the level of detail in the design brief."""
@@ -451,4 +620,123 @@ class TextAnalysisProcessor:
             },
             "brief_quality": "adequate",
             "analysis_timestamp": self.telemetry.get_timestamp()
+        } 
+
+    def get_building_type_context(self, building_type: str) -> Dict[str, Any]:
+        """Get comprehensive context and characteristics for a building type."""
+        
+        building_contexts = {
+            "learning_center": {
+                "description": "A facility focused on education, skill development, and knowledge sharing",
+                "key_considerations": ["flexible learning spaces", "technology integration", "accessibility", "acoustic design", "natural lighting"],
+                "typical_users": ["students", "professionals", "community members", "instructors"],
+                "spatial_priorities": ["classrooms", "study areas", "collaborative spaces", "technology labs", "quiet zones"],
+                "sustainability_focus": ["energy efficiency", "indoor air quality", "daylighting", "flexible systems"]
+            },
+            "community_center": {
+                "description": "A multi-purpose facility serving community needs and fostering social connections",
+                "key_considerations": ["versatile spaces", "community engagement", "accessibility", "multi-generational design", "flexible programming"],
+                "typical_users": ["all ages", "community groups", "local organizations", "families"],
+                "spatial_priorities": ["multi-purpose rooms", "gathering spaces", "activity areas", "meeting rooms", "outdoor spaces"],
+                "sustainability_focus": ["community connection", "local materials", "flexible design", "social sustainability"]
+            },
+            "cultural_institution": {
+                "description": "A facility dedicated to arts, culture, heritage, and creative expression",
+                "key_considerations": ["exhibition spaces", "performance venues", "cultural sensitivity", "visitor experience", "preservation"],
+                "typical_users": ["visitors", "artists", "performers", "researchers", "students"],
+                "spatial_priorities": ["galleries", "theaters", "workshops", "storage", "public spaces"],
+                "sustainability_focus": ["cultural preservation", "adaptive reuse", "visitor comfort", "long-term value"]
+            },
+            "library": {
+                "description": "A facility for information access, study, and community learning",
+                "key_considerations": ["quiet study areas", "technology access", "flexible seating", "acoustic design", "natural lighting"],
+                "typical_users": ["students", "researchers", "community members", "professionals"],
+                "spatial_priorities": ["reading rooms", "study carrels", "group study areas", "technology centers", "quiet zones"],
+                "sustainability_focus": ["daylighting", "energy efficiency", "indoor air quality", "flexible systems"]
+            },
+            "research_facility": {
+                "description": "A facility designed for scientific research, development, and innovation",
+                "key_considerations": ["laboratory safety", "flexible research spaces", "technology infrastructure", "collaboration areas", "security"],
+                "typical_users": ["researchers", "scientists", "students", "technicians"],
+                "spatial_priorities": ["laboratories", "research offices", "collaboration spaces", "equipment rooms", "support spaces"],
+                "sustainability_focus": ["energy efficiency", "safety systems", "flexible infrastructure", "technology integration"]
+            },
+            "hospital": {
+                "description": "A comprehensive healthcare facility providing medical treatment and care",
+                "key_considerations": ["patient safety", "infection control", "accessibility", "efficiency", "patient comfort"],
+                "typical_users": ["patients", "medical staff", "visitors", "administrative staff"],
+                "spatial_priorities": ["patient rooms", "operating rooms", "emergency departments", "diagnostic areas", "support services"],
+                "sustainability_focus": ["infection control", "energy efficiency", "patient safety", "operational efficiency"]
+            },
+            "residential": {
+                "description": "A facility designed for living and domestic activities",
+                "key_considerations": ["privacy", "comfort", "functionality", "personalization", "community connection"],
+                "typical_users": ["residents", "families", "individuals", "guests"],
+                "spatial_priorities": ["living areas", "bedrooms", "kitchens", "bathrooms", "outdoor spaces"],
+                "sustainability_focus": ["energy efficiency", "comfort", "durability", "personal well-being"]
+            },
+            "office": {
+                "description": "A facility designed for professional work and business activities",
+                "key_considerations": ["productivity", "collaboration", "technology integration", "comfort", "flexibility"],
+                "typical_users": ["employees", "clients", "visitors", "service providers"],
+                "spatial_priorities": ["workstations", "meeting rooms", "collaboration areas", "support spaces", "reception areas"],
+                "sustainability_focus": ["energy efficiency", "indoor air quality", "daylighting", "flexible systems"]
+            },
+            "mixed_use": {
+                "description": "A facility combining multiple functions and building types",
+                "key_considerations": ["functional integration", "circulation", "noise separation", "flexibility", "community interaction"],
+                "typical_users": ["various user groups", "residents", "workers", "visitors"],
+                "spatial_priorities": ["functional zones", "circulation systems", "shared spaces", "service areas", "outdoor connections"],
+                "sustainability_focus": ["functional efficiency", "community interaction", "resource sharing", "flexible design"]
+            }
+        }
+        
+        return building_contexts.get(building_type, {
+            "description": "A specialized facility with unique requirements",
+            "key_considerations": ["functionality", "user needs", "context", "sustainability"],
+            "typical_users": ["various users", "specialized groups"],
+            "spatial_priorities": ["functional spaces", "support areas", "circulation"],
+            "sustainability_focus": ["efficiency", "user comfort", "long-term value"]
+        })
+    
+    def analyze_building_type_requirements(self, building_type: str, brief: str) -> Dict[str, Any]:
+        """Analyze specific requirements for a building type based on the brief."""
+        
+        context = self.get_building_type_context(building_type)
+        brief_lower = brief.lower()
+        
+        # Analyze specific requirements mentioned in the brief
+        requirements = {
+            "accessibility": any(word in brief_lower for word in ["accessible", "disability", "wheelchair", "universal design", "inclusive"]),
+            "sustainability": any(word in brief_lower for word in ["sustainable", "green", "eco-friendly", "energy efficient", "LEED", "passive"]),
+            "technology": any(word in brief_lower for word in ["smart", "technology", "digital", "automated", "connected"]),
+            "flexibility": any(word in brief_lower for word in ["flexible", "adaptable", "versatile", "multi-purpose", "changeable"]),
+            "community": any(word in brief_lower for word in ["community", "social", "interactive", "collaborative", "gathering"]),
+            "security": any(word in brief_lower for word in ["secure", "safety", "protected", "controlled access", "surveillance"]),
+            "acoustics": any(word in brief_lower for word in ["acoustic", "sound", "noise", "quiet", "audio"]),
+            "lighting": any(word in brief_lower for word in ["lighting", "daylight", "natural light", "illumination", "bright"])
+        }
+        
+        # Calculate priority score for requirements
+        requirement_priorities = {}
+        for req, present in requirements.items():
+            if present:
+                # Base priority based on building type
+                base_priority = 5
+                if req in context["key_considerations"]:
+                    base_priority += 3
+                if req in context["sustainability_focus"]:
+                    base_priority += 2
+                requirement_priorities[req] = base_priority
+        
+        return {
+            "building_type": building_type,
+            "context": context,
+            "requirements": requirements,
+            "requirement_priorities": requirement_priorities,
+            "brief_analysis": {
+                "word_count": len(brief.split()),
+                "complexity": "high" if len(brief.split()) > 100 else "medium" if len(brief.split()) > 50 else "low",
+                "specificity": "high" if any(req for req in requirements.values()) else "low"
+            }
         } 

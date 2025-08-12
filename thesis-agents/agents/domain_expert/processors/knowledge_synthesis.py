@@ -143,7 +143,6 @@ class KnowledgeSynthesisProcessor:
             else:
                 final_response = self._enhance_incomplete_response(optimized_response, topic)
             
-            self.telemetry.log_agent_end("generate_response_internal")
             return final_response
             
         except Exception as e:
@@ -226,53 +225,182 @@ class KnowledgeSynthesisProcessor:
             return f"Educational information about {topic} in architectural design."
 
     def _create_example_focused_response(self, topic: str, knowledge_data: List[Dict], context: Dict = None) -> str:
-        """Create concise example-focused response with Markdown links, filtered to buildings if needed."""
+        """Create concise example-focused response with proper Markdown links, completely topic-agnostic."""
         try:
             if not knowledge_data:
                 return f"Examples of {topic} in architecture are varied. Would you like me to look for specific projects?"
 
-            def host(url: str) -> str:
-                try:
-                    from urllib.parse import urlparse
-                    return urlparse(url).netloc
-                except Exception:
-                    return ""
-
-            # Filter results for likely building examples and preferred sources
+            # Dynamic topic-based filtering - extract key concepts from the user's topic
+            topic_keywords = self._extract_topic_keywords(topic)
+            
+            # Filter results based on topic relevance, not hardcoded assumptions
             examples = []
             for item in knowledge_data:
                 title = item.get('title') or item.get('metadata', {}).get('title', '')
                 url = item.get('url') or item.get('metadata', {}).get('url', '')
-                snippet = item.get('snippet') or item.get('content') or ''
+                snippet = item.get('snippet') or item.get('content', '')
+                
+                # Skip items without proper URLs
                 if not url or 'http' not in url:
                     continue
-                # Prefer items that look like case studies/projects
-                is_example = any(k in (title or '').lower() for k in ['case', 'project', 'example']) or any(
-                    k in (snippet or '').lower() for k in ['case', 'project', 'example']
-                )
-                if is_example:
-                    examples.append((title.strip()[:80], url.strip(), snippet.strip()))
-                if len(examples) >= 3:
+                
+                # Skip items with very short or empty content
+                if not title.strip() or not snippet.strip():
+                    continue
+                
+                # Score relevance based on topic keywords, not hardcoded terms
+                relevance_score = self._calculate_topic_relevance(title, snippet, topic_keywords)
+                
+                # Prefer items that are relevant to the user's specific topic
+                if relevance_score > 0.2:  # Lower threshold for better coverage
+                    examples.append({
+                        'title': title.strip()[:80],
+                        'url': url.strip(),
+                        'snippet': snippet.strip(),
+                        'relevance': relevance_score
+                    })
+                
+                if len(examples) >= 8:  # Get more candidates for better filtering
                     break
 
+            # Sort by relevance and take top 3
+            examples.sort(key=lambda x: x['relevance'], reverse=True)
+            examples = examples[:3]
+
             if not examples:
-                return self._create_educational_response(topic, knowledge_data, context)
+                return f"Examples of {topic} in architecture are varied. Would you like me to look for specific projects?"
 
-            # Build concise example list with links
-            lines = [f"Examples of {topic}:"]
-            for title, url, snip in examples[:3]:
-                short = snip[:120] + ('...' if len(snip) > 120 else '')
-                lines.append(f"- [{title}]({url}) — {short}")
+            # Build clean, properly formatted example list
+            lines = []
+            lines.append(f"## Examples of {topic}")
+            lines.append("")  # Add spacing
+            
+            for i, example in enumerate(examples, 1):
+                title = example['title']
+                url = example['url']
+                snippet = example['snippet']
+                
+                # Clean snippet - remove extra whitespace and truncate properly
+                clean_snippet = ' '.join(snippet.split())[:120]
+                if len(snippet) > 120:
+                    clean_snippet += "..."
+                
+                # Proper Markdown link format: [Title](URL)
+                lines.append(f"### {i}. [{title}]({url})")
+                lines.append(f"{clean_snippet}")
+                lines.append("")  # Add spacing between examples
 
-            # Add a short application prompt
-            lines.append("")
-            bt = (context or {}).get('building_type', 'your project')
-            lines.append(f"How could these approaches inform {bt} design in your context?")
-            return "\n".join(lines)
-
+            # Add a generic, topic-agnostic application prompt
+            lines.append("**How could these approaches inform your design process?**")
+            
+            # Ensure clean formatting
+            final_response = "\n".join(lines).strip()
+            
+            # Validate the response doesn't have weird formatting
+            if "##" in final_response and "###" in final_response:
+                return final_response
+            else:
+                # Fallback to simpler format if Markdown is broken
+                return self._create_simple_example_response(examples, topic)
+            
         except Exception as e:
             self.telemetry.log_error("_create_example_focused_response", str(e))
-            return self._create_educational_response(topic, knowledge_data, context)
+            return f"Examples of {topic} in architecture are varied. Would you like me to look for specific projects?"
+    
+    def _create_simple_example_response(self, examples: List[Dict], topic: str) -> str:
+        """Create a simple, clean example response without complex Markdown."""
+        lines = [f"Examples of {topic}:"]
+        lines.append("")
+        
+        for i, example in enumerate(examples, 1):
+            title = example['title']
+            url = example['url']
+            snippet = example['snippet']
+            
+            # Clean snippet
+            clean_snippet = ' '.join(snippet.split())[:120]
+            if len(snippet) > 120:
+                clean_snippet += "..."
+            
+            # Simple format: Title - URL - Description
+            lines.append(f"{i}. {title}")
+            lines.append(f"   Link: {url}")
+            lines.append(f"   {clean_snippet}")
+            lines.append("")
+        
+        lines.append("How could these approaches inform your design process?")
+        return "\n".join(lines)
+    
+    def _extract_topic_keywords(self, topic: str) -> List[str]:
+        """Extract meaningful keywords from the user's topic for better filtering."""
+        # Remove common architectural words to focus on the specific topic
+        common_words = {
+            'design', 'architecture', 'building', 'space', 'project', 'the', 'a', 'an', 'and', 'or', 
+            'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'are', 'was', 'were', 'be', 'been',
+            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may',
+            'might', 'can', 'must', 'shall', 'this', 'that', 'these', 'those', 'it', 'its', 'they',
+            'them', 'their', 'we', 'our', 'you', 'your', 'me', 'my', 'i', 'am', 'im'
+        }
+        
+        # Split topic into words and filter
+        words = topic.lower().split()
+        keywords = []
+        
+        for word in words:
+            # Remove punctuation and clean
+            clean_word = word.strip('.,!?;:()[]{}"\'').lower()
+            
+            # Skip common words and very short words
+            if (clean_word not in common_words and 
+                len(clean_word) > 2 and 
+                clean_word.isalpha()):
+                keywords.append(clean_word)
+        
+        # If no keywords found, use the original topic words (excluding very common ones)
+        if not keywords:
+            for word in words:
+                clean_word = word.strip('.,!?;:()[]{}"\'').lower()
+                if clean_word not in {'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with'}:
+                    keywords.append(clean_word)
+        
+        return keywords[:5]  # Limit to top 5 keywords
+    
+    def _calculate_topic_relevance(self, title: str, snippet: str, topic_keywords: List[str]) -> float:
+        """Calculate how relevant an example is to the user's specific topic."""
+        if not topic_keywords:
+            return 0.5  # Neutral score if no keywords
+        
+        text = f"{title} {snippet}".lower()
+        
+        # Count keyword matches
+        matches = sum(1 for keyword in topic_keywords if keyword in text)
+        
+        # Base relevance score
+        relevance = matches / len(topic_keywords)
+        
+        # Bonus for title matches (more important)
+        title_matches = sum(1 for keyword in topic_keywords if keyword in title.lower())
+        if title_matches > 0:
+            relevance += 0.3
+        
+        # Bonus for multiple keyword matches
+        if matches >= 2:
+            relevance += 0.2
+        
+        # Bonus for exact phrase matches (if topic is a phrase)
+        if len(topic_keywords) > 1:
+            # Check for 2+ consecutive keywords
+            topic_phrase = ' '.join(topic_keywords[:2])
+            if topic_phrase in text:
+                relevance += 0.3
+        
+        # Penalty for very generic content
+        generic_words = ['architecture', 'design', 'building', 'project', 'space']
+        generic_count = sum(1 for word in generic_words if word in text.lower())
+        if generic_count >= 3:
+            relevance -= 0.1
+        
+        return max(0.0, min(relevance, 1.0))  # Ensure score is between 0.0 and 1.0
     
     def _generate_contextual_insights(self, topic: str, building_type: str = None) -> List[str]:
         """Generate contextual insights for the topic."""

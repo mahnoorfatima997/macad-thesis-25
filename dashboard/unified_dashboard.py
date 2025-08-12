@@ -20,7 +20,8 @@ from .ui.chat_components import (
     render_welcome_section, render_mode_configuration, render_chat_history,
     get_chat_input, render_chat_message, response_contains_questions,
     render_input_mode_selection, render_mentor_type_selection, render_template_selection,
-    render_skill_level_selection, render_project_description_input, render_file_upload, validate_input
+    render_skill_level_selection, render_project_description_input, render_file_upload, validate_input,
+    render_chat_interface
 )
 from .ui.sidebar_components import render_complete_sidebar
 from .ui.analysis_components import render_cognitive_analysis_dashboard, render_metrics_summary, render_phase_progress_section
@@ -161,7 +162,7 @@ class UnifiedArchitecturalDashboard:
         
         # Start analysis button
         with st.form(key="start_form"):
-            start_clicked = st.form_submit_button("🚀 Start Analysis")
+            start_clicked = st.form_submit_button("Start Analysis")
         
         if start_clicked:
             # Validate input based on mode
@@ -356,13 +357,13 @@ class UnifiedArchitecturalDashboard:
     
     def _render_chat_interface(self):
         """Render the chat interface."""
-        with st.columns([1, 2, 1])[1]:  # Center column
+        with st.columns([0.5, 3, 0.5])[1]:  # Wider center column for chat
             # Optional: show pre-test above the chat when enabled via sidebar
             if st.session_state.get("show_pre_test", False):
                 self._render_pretest_block()
 
-            # Display chat messages
-            render_chat_history()
+            # Display chat messages in modern interface
+            render_chat_interface()
             
             # Chat input
             user_input = get_chat_input()
@@ -382,11 +383,8 @@ class UnifiedArchitecturalDashboard:
         # Log interaction
         self._log_user_interaction(user_input)
         
-        # Display user message
-        render_chat_message({
-            "role": "user",
-            "content": user_input
-        })
+        # Display user message - no need to render separately as it's already in session state
+        # The chat interface will automatically show all messages including the new one
         
         # Initialize phase system if needed
         self._initialize_phase_system()
@@ -398,31 +396,60 @@ class UnifiedArchitecturalDashboard:
         # Generate response
         self._generate_and_display_response(user_input)
         
-        st.rerun()
+        # Don't rerun - let the response display naturally
     
     def _generate_and_display_response(self, user_input: str):
         """Generate and display the AI response."""
-        with st.spinner("🧠 Thinking..."):
+        # Simple spinner without typing indicator to avoid conflicts
+        
+        with st.spinner("Thinking..."):
             try:
                 # Process response based on current mode
                 response = asyncio.run(
                     self.mode_processor.process_input(user_input, st.session_state.current_mode)
                 )
                 
+                # Extract the actual response content from the response object
+                st.write(f"DEBUG: Response type: {type(response)}")
+                st.write(f"DEBUG: Response attributes: {dir(response) if hasattr(response, '__dict__') else 'No __dict__'}")
+                
+                if hasattr(response, 'content'):
+                    response_content = response.content
+                    st.write(f"DEBUG: Using response.content: {response_content[:100]}...")
+                elif hasattr(response, 'response'):
+                    response_content = response.response
+                    st.write(f"DEBUG: Using response.response: {response_content[:100]}...")
+                elif isinstance(response, str):
+                    response_content = response
+                    st.write(f"DEBUG: Response is string: {response_content[:100]}...")
+                else:
+                    # Try to convert to string
+                    response_content = str(response)
+                    st.write(f"DEBUG: Converted to string: {response_content[:100]}...")
+                
                 # Add Socratic question if needed
-                combined_response = self._add_socratic_question_if_needed(response)
+                combined_response = self._add_socratic_question_if_needed(response_content)
                 
                 # Add routing metadata if available
                 final_message = self._add_routing_metadata(combined_response)
                 
                 # Add assistant message
+                st.write(f"DEBUG: Final message length: {len(final_message)}")
+                st.write(f"DEBUG: Final message preview: {final_message[:200]}...")
+                
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": final_message,
                     "timestamp": datetime.now().isoformat(),
                     "mentor_type": st.session_state.current_mode
                 })
-
+                
+                st.write(f"DEBUG: Messages in session state: {len(st.session_state.messages)}")
+                st.write(f"DEBUG: Last message: {st.session_state.messages[-1]}")
+                
+                # Force chat interface to update
+                st.rerun()
+                
                 # Update data collector with response
                 self._update_data_collector_response(response, user_input)
                 # Minimal safe logging to satisfy logger signature

@@ -19,6 +19,14 @@ def make_socratic_node(socratic_agent, state_validator, state_monitor, logger) -
         analysis_result = state.get("analysis_result", {})
         context_classification = state.get("student_classification", {})
         domain_expert_result = state.get("domain_expert_result", {})
+        
+        # Add routing path to context classification so Socratic tutor knows which route to use
+        routing_decision = state.get("routing_decision", {})
+        routing_path = routing_decision.get("path", "unknown")
+        context_classification["routing_path"] = routing_path
+        
+        print(f"🔍 DEBUG: Socratic node - routing_path: {routing_path}")
+        print(f"🔍 DEBUG: Socratic node - context_classification keys: {list(context_classification.keys())}")
 
         if current_milestone:
             analysis_result["milestone_context"] = {
