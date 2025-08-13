@@ -220,7 +220,7 @@ def get_dashboard_css() -> str:
         min-height: 40px;
     }
 
-    /* Enhanced Chat Input Styling */
+    /* Enhanced Chat Input Styling - FIXED VERSION */
     div[data-testid="stChatInput"] {
         background: white !important;
         border-radius: 20px !important;
@@ -249,14 +249,14 @@ def get_dashboard_css() -> str:
         background: transparent !important;
         border: none !important;
         border-radius: 16px !important;
-        padding: 18px 24px !important;
+        padding: 18px 55px !important;
         font-size: 16px !important;
         line-height: 1.5 !important;
+        text-align: justify !important;
         color: var(--primary-dark) !important;
         resize: vertical !important;
         min-height: 100px !important;
         max-height: 300px !important;
-        height: auto !important;
         font-family: inherit !important;
         box-shadow: none !important;
         outline: none !important;
@@ -265,12 +265,17 @@ def get_dashboard_css() -> str:
         overflow-y: auto !important;
         white-space: pre-wrap !important;
         word-wrap: break-word !important;
+        /* ADDED: Ensure proper display and visibility */
+        display: block !important;
+        visibility: visible !important;
     }
 
     div[data-testid="stChatInput"] textarea:focus {
         outline: none !important;
         box-shadow: none !important;
         border: none !important;
+        /* ADDED: Ensure focus state is visible and functional */
+        min-height: 56px !important;
     }
 
     div[data-testid="stChatInput"] textarea::placeholder {
@@ -299,6 +304,8 @@ def get_dashboard_css() -> str:
         margin: 4px !important;
         position: relative !important;
         overflow: hidden !important;
+        /* ADDED: Ensure button alignment with new textarea height */
+        align-self: flex-end !important;
     }
 
     div[data-testid="stChatInput"] button:hover {
@@ -312,8 +319,6 @@ def get_dashboard_css() -> str:
         box-shadow: 0 2px 10px rgba(92,79,115,0.3) !important;
     }
 
-    /* Send button icon - removed custom icon to prevent duplicates */
-
     /* Input container enhancements */
     div[data-testid="stChatInput"] > div {
         display: flex !important;
@@ -322,6 +327,8 @@ def get_dashboard_css() -> str:
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
+        /* ADDED: Ensure minimum height for container */
+        min-height: 56px !important;
     }
 
     /* Textarea container */
@@ -330,6 +337,8 @@ def get_dashboard_css() -> str:
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
+        /* ADDED: Ensure proper height inheritance */
+        min-height: 56px !important;
     }
 
     /* Button container */
@@ -339,18 +348,35 @@ def get_dashboard_css() -> str:
         flex-shrink: 0 !important;
     }
 
-    /* Modern Chat Interface - Clean & Seamless */
-    .chat-window {
-        background: #f8f9fa !important;
-        border-radius: 16px !important;
-        padding: 20px !important;
-        margin: 20px 0 !important;
-        border: 1px solid rgba(0,0,0,0.08) !important;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04) !important;
-        max-height: 600px !important;
-        overflow-y: auto !important;
-        width: 100% !important;
-        max-width: none !important;
+    /* Mobile responsive adjustments */
+    @media (max-width: 768px) {
+        div[data-testid="stChatInput"] {
+            margin: 15px 0 !important;
+            border-radius: 18px !important;
+        }
+        
+        div[data-testid="stChatInput"] textarea {
+            padding: 16px 20px !important;
+            font-size: 15px !important;
+            /* FIXED: Mobile height settings - removed fixed height */
+            min-height: 48px !important;
+            max-height: 300px !important;
+        }
+        
+        div[data-testid="stChatInput"] button {
+            width: 48px !important;
+            height: 48px !important;
+            min-width: 48px !important;
+            min-height: 48px !important;
+        }
+        
+        div[data-testid="stChatInput"] > div {
+            min-height: 48px !important;
+        }
+        
+        div[data-testid="stChatInput"] > div > div:first-child {
+            min-height: 48px !important;
+        }
     }
 
     .chat-messages {
@@ -609,7 +635,7 @@ def get_dashboard_css() -> str:
         div[data-testid="stChatInput"] textarea {
             padding: 16px 20px !important;
             font-size: 15px !important;
-            min-height: 100px !important;
+            min-height: 120px !important;
             max-height: 300px !important;
         }
         
