@@ -31,6 +31,11 @@ class SocraticStep(Enum):
     KNOWLEDGE_SYNTHESIS_TRIGGER = "knowledge_synthesis_trigger"
     SOCRATIC_QUESTIONING = "socratic_questioning"
     METACOGNITIVE_PROMPT = "metacognitive_prompt"
+    # New flexible steps
+    CONTEXTUAL_EXPLORATION = "contextual_exploration"
+    DEEPER_INQUIRY = "deeper_inquiry"
+    SYNTHESIS_CHECK = "synthesis_check"
+    READINESS_ASSESSMENT = "readiness_assessment"
 
 @dataclass
 class SocraticQuestion:
@@ -279,8 +284,12 @@ class SocraticQuestionBank:
     
     def get_next_question(self, phase: DesignPhase, completed_steps: List[SocraticStep]) -> Optional[SocraticQuestion]:
         """Get the next question in the Socratic sequence"""
+        print(f"\n🏦 QUESTION_BANK: Getting next question for {phase.value}")
+
         phase_questions = self.questions.get(phase, {})
-        
+        print(f"   📚 Available questions for phase: {len(phase_questions)}")
+        print(f"   🔑 Question keys: {list(phase_questions.keys())}")
+
         # Define the order of Socratic steps
         step_order = [
             SocraticStep.INITIAL_CONTEXT_REASONING,
@@ -288,13 +297,229 @@ class SocraticQuestionBank:
             SocraticStep.SOCRATIC_QUESTIONING,
             SocraticStep.METACOGNITIVE_PROMPT
         ]
-        
+
+        print(f"   ✅ Completed steps: {[step.value for step in completed_steps]}")
+
         # Find the next uncompleted step
         for step in step_order:
+            print(f"   🔍 Checking step: {step.value}")
             if step not in completed_steps:
-                return phase_questions.get(step)
-        
+                print(f"      ➡️ Step not completed")
+                question = phase_questions.get(step)
+                if question:
+                    print(f"      ✅ Found question: {question.question_text[:60]}...")
+                    return question
+                else:
+                    print(f"      ❌ No question available for step")
+            else:
+                print(f"      ⏭️ Step already completed")
+
+        print(f"   ❌ No next question found - all steps completed")
         return None  # All steps completed
+
+class FlexibleQuestionGenerator:
+    """Generates contextual questions based on conversation history and phase needs"""
+
+    def __init__(self):
+        self.question_templates = self._initialize_question_templates()
+        self.phase_keywords = self._initialize_phase_keywords()
+
+    def _initialize_question_templates(self) -> Dict[DesignPhase, Dict[str, List[str]]]:
+        """Initialize flexible question templates for each phase"""
+        return {
+            DesignPhase.IDEATION: {
+                "exploration": [
+                    "What other approaches could you consider for {topic}?",
+                    "How might {concept} be interpreted differently?",
+                    "What if you approached {challenge} from the perspective of {stakeholder}?",
+                    "Can you think of precedents that handle {aspect} in innovative ways?"
+                ],
+                "clarification": [
+                    "Can you elaborate on what you mean by {concept}?",
+                    "How does {element} relate to your overall vision?",
+                    "What specific qualities make {feature} important to your design?",
+                    "Why is {consideration} particularly relevant to this project?"
+                ],
+                "synthesis": [
+                    "How do these ideas connect to form a coherent concept?",
+                    "What themes are emerging from your exploration?",
+                    "Which of these directions feels most promising and why?",
+                    "How might you combine {idea1} and {idea2}?"
+                ]
+            },
+            DesignPhase.VISUALIZATION: {
+                "spatial": [
+                    "How does your {space} support the activities you've described?",
+                    "What spatial relationships are most important in your design?",
+                    "How do people move through and experience your {area}?",
+                    "What views and connections does your design create?"
+                ],
+                "form": [
+                    "How does the building form express your conceptual ideas?",
+                    "What role does {element} play in the overall composition?",
+                    "How do interior and exterior spaces relate to each other?",
+                    "What gives your design its distinctive character?"
+                ],
+                "development": [
+                    "How might you refine {aspect} to better serve your goals?",
+                    "What design moves would strengthen your concept?",
+                    "How do you balance {consideration1} with {consideration2}?",
+                    "What would happen if you emphasized {feature} more strongly?"
+                ]
+            },
+            DesignPhase.MATERIALIZATION: {
+                "technical": [
+                    "How do your material choices support your design intentions?",
+                    "What construction approach best realizes your vision?",
+                    "How do you address {technical_challenge} in your design?",
+                    "What details are critical to your design's success?"
+                ],
+                "practical": [
+                    "How does your design respond to budget and timeline constraints?",
+                    "What aspects of your design are most important to preserve?",
+                    "How might you phase the construction to manage complexity?",
+                    "What partnerships or expertise would help realize this project?"
+                ],
+                "refinement": [
+                    "How might you optimize {system} for better performance?",
+                    "What would you change if you had to reduce the scope by 20%?",
+                    "How do you ensure your design intent survives the construction process?",
+                    "What innovations could make your design more impactful?"
+                ]
+            }
+        }
+
+    def _initialize_phase_keywords(self) -> Dict[DesignPhase, List[str]]:
+        """Initialize keywords that indicate phase-relevant content"""
+        return {
+            DesignPhase.IDEATION: [
+                "concept", "idea", "vision", "approach", "strategy", "philosophy", "inspiration",
+                "community", "needs", "program", "function", "purpose", "goals", "objectives"
+            ],
+            DesignPhase.VISUALIZATION: [
+                "space", "form", "layout", "organization", "circulation", "views", "light",
+                "composition", "massing", "scale", "proportion", "relationship", "experience"
+            ],
+            DesignPhase.MATERIALIZATION: [
+                "material", "construction", "detail", "system", "structure", "technology",
+                "cost", "budget", "timeline", "feasibility", "implementation", "realization"
+            ]
+        }
+
+    def generate_contextual_question(self, phase: DesignPhase, conversation_history: List[Dict],
+                                   recent_response: str, completed_steps: List[SocraticStep]) -> Optional[SocraticQuestion]:
+        """Generate a contextual question based on conversation history and current needs"""
+
+        print(f"\n🎨 FLEXIBLE_GENERATOR: Generating contextual question for {phase.value}")
+        print(f"   Recent response: {recent_response[:80]}...")
+        print(f"   Completed steps: {[step.value for step in completed_steps]}")
+
+        # Analyze recent response for key concepts
+        key_concepts = self._extract_key_concepts(recent_response, phase)
+        print(f"   Key concepts found: {key_concepts}")
+
+        # Determine question type needed
+        question_type = self._determine_question_type(conversation_history, recent_response, completed_steps, phase)
+        print(f"   Question type needed: {question_type}")
+
+        # Generate appropriate question
+        question_text = self._generate_question_text(phase, question_type, key_concepts, recent_response)
+
+        if question_text:
+            question = SocraticQuestion(
+                step=SocraticStep.CONTEXTUAL_EXPLORATION,  # Use flexible step
+                question_text=question_text,
+                keywords=key_concepts,
+                assessment_criteria={
+                    "completeness": "Addresses the question comprehensively",
+                    "depth": "Shows deeper thinking about the topic",
+                    "relevance": "Connects to design goals and context",
+                    "innovation": "Demonstrates creative problem-solving",
+                    "technical_understanding": "Shows appropriate technical awareness"
+                },
+                phase=phase,
+                question_id=f"{phase.value}_contextual_{len(completed_steps)+1:03d}"
+            )
+            print(f"   ✅ Generated question: {question_text}")
+            return question
+
+        print(f"   ❌ Could not generate contextual question")
+        return None
+
+    def _extract_key_concepts(self, response: str, phase: DesignPhase) -> List[str]:
+        """Extract key concepts from user response relevant to the current phase"""
+        response_lower = response.lower()
+        phase_keywords = self.phase_keywords.get(phase, [])
+
+        found_concepts = []
+        for keyword in phase_keywords:
+            if keyword in response_lower:
+                found_concepts.append(keyword)
+
+        # Also extract quoted terms and capitalized terms that might be important
+        import re
+        quoted_terms = re.findall(r'"([^"]*)"', response)
+        found_concepts.extend([term.lower() for term in quoted_terms if len(term) > 2])
+
+        return found_concepts[:5]  # Limit to top 5 concepts
+
+    def _determine_question_type(self, conversation_history: List[Dict], recent_response: str,
+                               completed_steps: List[SocraticStep], phase: DesignPhase) -> str:
+        """Determine what type of question is most needed"""
+
+        response_length = len(recent_response.split())
+
+        # If response is very short, ask for clarification
+        if response_length < 20:
+            return "clarification"
+
+        # If we haven't done much exploration, focus on that
+        if len(completed_steps) < 2:
+            return "exploration"
+
+        # If we have good content, focus on synthesis
+        if len(completed_steps) >= 3:
+            return "synthesis"
+
+        # Default to exploration for middle stages
+        return "exploration"
+
+    def _generate_question_text(self, phase: DesignPhase, question_type: str,
+                              key_concepts: List[str], recent_response: str) -> Optional[str]:
+        """Generate the actual question text"""
+
+        templates = self.question_templates.get(phase, {}).get(question_type, [])
+        if not templates:
+            return None
+
+        # Select template based on available concepts
+        import random
+        template = random.choice(templates)
+
+        # Fill in template with concepts from the response
+        try:
+            if "{topic}" in template and key_concepts:
+                template = template.replace("{topic}", key_concepts[0])
+            if "{concept}" in template and key_concepts:
+                template = template.replace("{concept}", key_concepts[0])
+            if "{challenge}" in template:
+                template = template.replace("{challenge}", "this design challenge")
+            if "{stakeholder}" in template:
+                stakeholders = ["users", "community members", "building operators", "visitors"]
+                template = template.replace("{stakeholder}", random.choice(stakeholders))
+            if "{aspect}" in template and key_concepts:
+                template = template.replace("{aspect}", key_concepts[0] if key_concepts else "this aspect")
+
+            # Handle multiple concept placeholders
+            if len(key_concepts) >= 2:
+                template = template.replace("{idea1}", key_concepts[0])
+                template = template.replace("{idea2}", key_concepts[1])
+
+            return template
+
+        except Exception as e:
+            print(f"   ⚠️ Template filling error: {e}")
+            return templates[0]  # Return basic template if filling fails
 
 class ResponseGradingSystem:
     """Grades user responses to Socratic questions"""
@@ -360,6 +585,193 @@ class ResponseGradingSystem:
             weaknesses=weaknesses,
             recommendations=recommendations
         )
+
+    def _calculate_completeness(self, keywords: List[str], response: str) -> float:
+        """Calculate completeness based on keyword coverage"""
+        keyword_matches = sum(1 for keyword in keywords if keyword in response)
+        return min(5.0, (keyword_matches / len(keywords)) * 5.0)
+
+    def _calculate_depth(self, word_count: int, response: str) -> float:
+        """Calculate depth based on response length and complexity"""
+        # Base score from length (50 words = 3.0 score)
+        length_score = min(3.0, (word_count / 50.0) * 3.0)
+
+        # Bonus for complex sentences and reasoning indicators
+        reasoning_indicators = ["because", "therefore", "however", "although", "while", "since", "thus"]
+        reasoning_bonus = min(2.0, sum(1 for indicator in reasoning_indicators if indicator in response) * 0.5)
+
+        return min(5.0, length_score + reasoning_bonus)
+
+    def _calculate_relevance(self, response: str) -> float:
+        """Calculate relevance based on architectural terms"""
+        arch_term_matches = sum(1 for term in self.architectural_terms if term in response)
+        return min(5.0, (arch_term_matches / len(self.architectural_terms)) * 5.0)
+
+    def _calculate_innovation(self, response: str) -> float:
+        """Calculate innovation based on creative indicators"""
+        creative_matches = sum(1 for indicator in self.creative_indicators if indicator in response)
+        return min(5.0, (creative_matches / len(self.creative_indicators)) * 5.0)
+
+    def _calculate_technical(self, phase: DesignPhase, response: str) -> float:
+        """Calculate technical understanding based on phase-appropriate terms"""
+        phase_terms = {
+            DesignPhase.IDEATION: ["program", "site", "context", "user", "function", "concept"],
+            DesignPhase.VISUALIZATION: ["space", "form", "circulation", "light", "scale", "proportion"],
+            DesignPhase.MATERIALIZATION: ["material", "structure", "detail", "construction", "cost", "feasibility"]
+        }
+
+        relevant_terms = phase_terms.get(phase, [])
+        term_matches = sum(1 for term in relevant_terms if term in response)
+        return min(5.0, (term_matches / len(relevant_terms)) * 5.0)
+
+    def _generate_feedback(self, completeness: float, depth: float, relevance: float,
+                          innovation: float, technical: float, question: SocraticQuestion) -> Tuple[List[str], List[str], List[str]]:
+        """Generate feedback based on scores"""
+        strengths = []
+        weaknesses = []
+        recommendations = []
+
+        if completeness >= 4.0:
+            strengths.append("Comprehensive response addressing key aspects")
+        elif completeness < 2.0:
+            weaknesses.append("Response could be more complete")
+            recommendations.append("Try to address more aspects of the question")
+
+        if depth >= 4.0:
+            strengths.append("Shows deep thinking and reasoning")
+        elif depth < 2.0:
+            weaknesses.append("Could benefit from more detailed explanation")
+            recommendations.append("Elaborate on your reasoning and provide more detail")
+
+        if relevance >= 4.0:
+            strengths.append("Highly relevant to architectural design")
+        elif relevance < 2.0:
+            weaknesses.append("Could be more focused on architectural considerations")
+            recommendations.append("Connect your ideas more directly to design principles")
+
+        if innovation >= 3.0:
+            strengths.append("Shows creative thinking")
+        elif innovation < 2.0:
+            recommendations.append("Consider exploring more creative or innovative approaches")
+
+        if technical >= 3.0:
+            strengths.append("Demonstrates good technical understanding")
+        elif technical < 2.0:
+            recommendations.append("Consider the technical aspects more deeply")
+
+        return strengths, weaknesses, recommendations
+
+class PhaseTransitionSystem:
+    """Manages transitions between design phases"""
+
+    def __init__(self):
+        self.transition_thresholds = {
+            DesignPhase.IDEATION: {
+                "min_interactions": 3,
+                "min_avg_score": 2.5,
+                "min_completion": 60.0,
+                "required_concepts": ["concept", "program", "site", "community"]
+            },
+            DesignPhase.VISUALIZATION: {
+                "min_interactions": 4,
+                "min_avg_score": 3.0,
+                "min_completion": 70.0,
+                "required_concepts": ["space", "form", "circulation", "experience"]
+            },
+            DesignPhase.MATERIALIZATION: {
+                "min_interactions": 4,
+                "min_avg_score": 3.2,
+                "min_completion": 75.0,
+                "required_concepts": ["material", "construction", "detail", "feasibility"]
+            }
+        }
+
+    def assess_phase_readiness(self, session: 'SessionState', phase_progress: 'PhaseProgress') -> Dict[str, Any]:
+        """Assess if the user is ready to transition to the next phase"""
+
+        current_phase = session.current_phase
+        print(f"\n🔄 TRANSITION_ASSESSMENT: Checking readiness for {current_phase.value}")
+
+        # Get transition criteria for current phase
+        criteria = self.transition_thresholds.get(current_phase, {})
+
+        # Check interaction count
+        interaction_count = len(session.conversation_history)
+        min_interactions = criteria.get("min_interactions", 3)
+        interactions_met = interaction_count >= min_interactions
+        print(f"   📊 Interactions: {interaction_count}/{min_interactions} {'✅' if interactions_met else '❌'}")
+
+        # Check average score
+        avg_score = phase_progress.average_score
+        min_score = criteria.get("min_avg_score", 2.5)
+        score_met = avg_score >= min_score
+        print(f"   🎯 Avg Score: {avg_score:.2f}/{min_score} {'✅' if score_met else '❌'}")
+
+        # Check completion percentage
+        completion = phase_progress.completion_percent
+        min_completion = criteria.get("min_completion", 60.0)
+        completion_met = completion >= min_completion
+        print(f"   📈 Completion: {completion:.1f}%/{min_completion}% {'✅' if completion_met else '❌'}")
+
+        # Check for required concepts in conversation
+        required_concepts = criteria.get("required_concepts", [])
+        conversation_text = " ".join([h.get("response", "") for h in session.conversation_history]).lower()
+        concepts_found = [concept for concept in required_concepts if concept in conversation_text]
+        concepts_met = len(concepts_found) >= len(required_concepts) * 0.6  # 60% of concepts
+        print(f"   💡 Concepts: {len(concepts_found)}/{len(required_concepts)} {'✅' if concepts_met else '❌'}")
+        print(f"      Found: {concepts_found}")
+
+        # Overall readiness
+        criteria_met = [interactions_met, score_met, completion_met, concepts_met]
+        readiness_score = sum(criteria_met) / len(criteria_met)
+        is_ready = readiness_score >= 0.75  # 75% of criteria must be met
+
+        print(f"   🎯 READINESS: {readiness_score:.1%} {'✅ READY' if is_ready else '❌ NOT READY'}")
+
+        return {
+            "is_ready": is_ready,
+            "readiness_score": readiness_score,
+            "criteria_met": {
+                "interactions": interactions_met,
+                "score": score_met,
+                "completion": completion_met,
+                "concepts": concepts_met
+            },
+            "next_phase": self._get_next_phase(current_phase),
+            "transition_message": self._generate_transition_message(current_phase, is_ready, readiness_score)
+        }
+
+    def _get_next_phase(self, current_phase: DesignPhase) -> Optional[DesignPhase]:
+        """Get the next phase in the sequence"""
+        phase_order = [DesignPhase.IDEATION, DesignPhase.VISUALIZATION, DesignPhase.MATERIALIZATION]
+        try:
+            current_index = phase_order.index(current_phase)
+            if current_index < len(phase_order) - 1:
+                return phase_order[current_index + 1]
+        except ValueError:
+            pass
+        return None
+
+    def _generate_transition_message(self, current_phase: DesignPhase, is_ready: bool, readiness_score: float) -> str:
+        """Generate a message about phase transition readiness"""
+
+        if is_ready:
+            next_phase = self._get_next_phase(current_phase)
+            if next_phase:
+                phase_descriptions = {
+                    DesignPhase.VISUALIZATION: "spatial organization and form development",
+                    DesignPhase.MATERIALIZATION: "technical development and implementation planning"
+                }
+                next_description = phase_descriptions.get(next_phase, "the next phase")
+
+                return f"🎉 Great progress on {current_phase.value}! You seem ready to move into {next_description}. Would you like to transition to the {next_phase.value} phase?"
+            else:
+                return f"🎉 Excellent work! You've completed the {current_phase.value} phase thoroughly."
+        else:
+            if readiness_score < 0.5:
+                return f"Let's continue developing your {current_phase.value} thinking. I have more questions to help deepen your exploration."
+            else:
+                return f"You're making good progress on {current_phase.value}. Let's explore a bit more to strengthen your foundation before moving forward."
     
     def _calculate_completeness(self, keywords: List[str], response: str) -> float:
         """Calculate completeness based on keyword coverage"""
@@ -453,20 +865,33 @@ class PhaseProgressionSystem:
     def __init__(self):
         self.question_bank = SocraticQuestionBank()
         self.grading_system = ResponseGradingSystem()
+        self.flexible_generator = FlexibleQuestionGenerator()
+        self.transition_system = PhaseTransitionSystem()
         self.sessions: Dict[str, SessionState] = {}
-        
+
         # Phase configuration
         self.phase_weights = {
             DesignPhase.IDEATION: 0.25,
             DesignPhase.VISUALIZATION: 0.35,
             DesignPhase.MATERIALIZATION: 0.40
         }
-        
+
         self.phase_thresholds = {
             DesignPhase.IDEATION: 3.0,
             DesignPhase.VISUALIZATION: 3.5,
             DesignPhase.MATERIALIZATION: 4.0
         }
+
+        # Debug: Check question bank initialization
+        print(f"\n🏦 PHASE_SYSTEM: Question bank initialized")
+        for phase in DesignPhase:
+            questions = self.question_bank.questions.get(phase, {})
+            print(f"   {phase.value}: {len(questions)} questions")
+            for step, question in questions.items():
+                print(f"      {step.value}: {question.question_text[:50]}...")
+
+        print(f"🎨 Flexible question generator initialized")
+        print(f"🔄 Phase transition system initialized")
         # Minimal rubric items (extensible via loader)
         self.phase_checklist_items: Dict[DesignPhase, List[Dict[str, Any]]] = {
             DesignPhase.IDEATION: [
@@ -498,58 +923,233 @@ class PhaseProgressionSystem:
         return session
     
     def get_next_question(self, session_id: str) -> Optional[SocraticQuestion]:
-        """Get the next question for the current session"""
+        """Get the next question for the current session - now with flexible generation"""
+        print(f"\n❓ GET_NEXT_QUESTION: Session {session_id}")
+
         session = self.sessions.get(session_id)
         if not session:
+            print(f"   ❌ Session not found")
             return None
-        
+
+        print(f"   📊 Current phase: {session.current_phase.value}")
         current_phase_progress = session.phase_progress.get(session.current_phase)
         if not current_phase_progress:
+            print(f"   ❌ No phase progress found")
             return None
-        
-        return self.question_bank.get_next_question(
-            session.current_phase, 
+
+        print(f"   🔢 Completed steps: {len(current_phase_progress.completed_steps)}")
+        print(f"   📝 Steps: {[step.value for step in current_phase_progress.completed_steps]}")
+
+        # First, try to get a standard question from the question bank
+        standard_question = self.question_bank.get_next_question(
+            session.current_phase,
             current_phase_progress.completed_steps
         )
-    
-    def process_response(self, session_id: str, response: str) -> Dict[str, Any]:
-        """Process a user response and return assessment results"""
+
+        if standard_question:
+            print(f"   ✅ Standard question found: {standard_question.question_text[:80]}...")
+            return standard_question
+
+        # If no standard questions available, check if we should transition phases
+        print(f"   🔄 No standard questions left, checking phase transition...")
+        transition_assessment = self.transition_system.assess_phase_readiness(session, current_phase_progress)
+
+        if transition_assessment["is_ready"]:
+            print(f"   🎉 Phase transition ready!")
+            # Create a transition question
+            transition_question = SocraticQuestion(
+                step=SocraticStep.READINESS_ASSESSMENT,
+                question_text=transition_assessment["transition_message"],
+                keywords=["transition", "ready", "next", "phase"],
+                assessment_criteria={
+                    "completeness": "Confirms readiness for next phase",
+                    "depth": "Shows understanding of current phase completion",
+                    "relevance": "Acknowledges phase progression",
+                    "innovation": "Shows enthusiasm for next challenges",
+                    "technical_understanding": "Demonstrates phase comprehension"
+                },
+                phase=session.current_phase,
+                question_id=f"{session.current_phase.value}_transition_{len(current_phase_progress.completed_steps)+1:03d}"
+            )
+            return transition_question
+
+        # If not ready for transition, generate a flexible contextual question
+        print(f"   🎨 Generating flexible contextual question...")
+        recent_response = ""
+        if session.conversation_history:
+            recent_response = session.conversation_history[-1].get("response", "")
+
+        flexible_question = self.flexible_generator.generate_contextual_question(
+            session.current_phase,
+            session.conversation_history,
+            recent_response,
+            current_phase_progress.completed_steps
+        )
+
+        if flexible_question:
+            print(f"   ✅ Flexible question generated: {flexible_question.question_text[:80]}...")
+            return flexible_question
+
+        print(f"   ❌ No questions available")
+        return None
+
+    def transition_to_next_phase(self, session_id: str) -> Dict[str, Any]:
+        """Transition the session to the next phase"""
+        print(f"\n🔄 PHASE_TRANSITION: Transitioning session {session_id}")
+
         session = self.sessions.get(session_id)
         if not session:
             return {"error": "Session not found"}
-        
+
+        current_phase = session.current_phase
+        next_phase = self.transition_system._get_next_phase(current_phase)
+
+        if not next_phase:
+            print(f"   ❌ No next phase available after {current_phase.value}")
+            return {"error": "No next phase available"}
+
+        print(f"   🎯 Transitioning from {current_phase.value} to {next_phase.value}")
+
+        # Mark current phase as complete
+        current_progress = session.phase_progress.get(current_phase)
+        if current_progress:
+            current_progress.is_complete = True
+            current_progress.completion_percent = 100.0
+
+        # Initialize next phase
+        session.current_phase = next_phase
+        session.phase_progress[next_phase] = PhaseProgress(
+            phase=next_phase,
+            current_step=SocraticStep.INITIAL_CONTEXT_REASONING
+        )
+
+        # Update session
+        session.last_updated = datetime.now()
+
+        print(f"   ✅ Successfully transitioned to {next_phase.value}")
+
+        return {
+            "success": True,
+            "previous_phase": current_phase.value,
+            "new_phase": next_phase.value,
+            "message": f"Welcome to the {next_phase.value} phase! Let's begin exploring how to develop your ideas further."
+        }
+
+    def process_response(self, session_id: str, response: str) -> Dict[str, Any]:
+        """Process a user response and return assessment results"""
+        print(f"\n🎯 PHASE PROGRESSION: Processing response for session {session_id}")
+        print(f"📝 User response: {response[:100]}...")
+
+        session = self.sessions.get(session_id)
+        if not session:
+            print(f"❌ PHASE ERROR: Session {session_id} not found")
+            return {"error": "Session not found"}
+
+        print(f"📊 Current phase: {session.current_phase.value}")
         current_phase_progress = session.phase_progress.get(session.current_phase)
         if not current_phase_progress:
+            print(f"❌ PHASE ERROR: No progress found for phase {session.current_phase.value}")
             return {"error": "No current phase progress"}
-        
-        # Get the current question
+
+        print(f"📈 Phase progress before: {current_phase_progress.completion_percent:.1f}%")
+        print(f"🔢 Completed steps before: {len(current_phase_progress.completed_steps)}")
+
+        # Get the current question (this should be the question they just answered)
+        # We need to reconstruct what question they were answering
+        current_question = None
+
+        # Check if this is a response to a transition question
+        if "yes" in response.lower() and ("ready" in response.lower() or "next" in response.lower() or "transition" in response.lower()):
+            print(f"🔄 Detected transition acceptance response")
+            transition_result = self.transition_to_next_phase(session_id)
+            if "error" not in transition_result:
+                # Return successful transition result
+                return {
+                    "session_id": session_id,
+                    "current_phase": transition_result["new_phase"],
+                    "phase_transition": True,
+                    "transition_message": transition_result["message"],
+                    "grade": {
+                        "overall_score": 5.0,  # Perfect score for accepting transition
+                        "completeness": 5.0,
+                        "depth": 5.0,
+                        "relevance": 5.0,
+                        "innovation": 5.0,
+                        "technical_understanding": 5.0,
+                        "strengths": ["Ready for next phase"],
+                        "weaknesses": [],
+                        "recommendations": ["Continue with new phase exploration"]
+                    },
+                    "phase_complete": True,
+                    "session_complete": self._is_session_complete(self.sessions[session_id]),
+                    "nudge": f"Great! Let's begin the {transition_result['new_phase']} phase."
+                }
+
+        # Try to get the question they were supposed to answer
+        # This is tricky because we need to know what question was asked
+        # For now, we'll use the most recent question type based on their progress
+
+        # First try standard questions
         current_question = self.question_bank.get_next_question(
-            session.current_phase, 
+            session.current_phase,
             current_phase_progress.completed_steps
         )
-        
+
+        # If no standard question, create a flexible one for grading purposes
         if not current_question:
+            print(f"🎨 Creating flexible question for grading response")
+            recent_history_response = ""
+            if len(session.conversation_history) > 0:
+                recent_history_response = session.conversation_history[-1].get("response", "")
+
+            current_question = self.flexible_generator.generate_contextual_question(
+                session.current_phase,
+                session.conversation_history,
+                recent_history_response,
+                current_phase_progress.completed_steps
+            )
+
+        if not current_question:
+            print(f"❌ PHASE ERROR: No current question found for phase {session.current_phase.value}")
             return {"error": "No current question found"}
-        
+
+        print(f"❓ Current question: {current_question.question_text[:80]}...")
+        print(f"🎯 Question step: {current_question.step.value}")
+
         # Grade the response
         grade = self.grading_system.grade_response(current_question, response)
-        
+        print(f"📊 GRADING RESULTS:")
+        print(f"   Overall Score: {grade.overall_score:.2f}/5.0")
+        print(f"   Completeness: {grade.completeness:.2f}/5.0")
+        print(f"   Depth: {grade.depth:.2f}/5.0")
+        print(f"   Relevance: {grade.relevance:.2f}/5.0")
+        print(f"   Innovation: {grade.innovation:.2f}/5.0")
+        print(f"   Technical: {grade.technical_understanding:.2f}/5.0")
+
         # Update progress
         current_phase_progress.responses[current_question.question_id] = response
         current_phase_progress.grades[current_question.question_id] = grade
         current_phase_progress.completed_steps.append(current_question.step)
         current_phase_progress.last_updated = datetime.now()
-        
+
         # Recalculate average score
         scores = [g.overall_score for g in current_phase_progress.grades.values()]
+        old_avg = current_phase_progress.average_score
         current_phase_progress.average_score = sum(scores) / len(scores) if scores else 0.0
+        print(f"📊 Average score: {old_avg:.2f} → {current_phase_progress.average_score:.2f}")
 
         # Recalculate completion percent for the current phase
+        old_percent = current_phase_progress.completion_percent
         current_phase_progress.completion_percent = self._compute_phase_completion_percent(session, current_phase_progress)
-        
+        print(f"📈 Completion percent: {old_percent:.1f}% → {current_phase_progress.completion_percent:.1f}%")
+        print(f"🔢 Completed steps after: {len(current_phase_progress.completed_steps)}")
+
         # Check if phase is complete
+        was_complete = current_phase_progress.is_complete
         self._check_phase_completion(session, current_phase_progress)
-        
+        if current_phase_progress.is_complete and not was_complete:
+            print(f"🎉 PHASE COMPLETED: {session.current_phase.value}")
+
         # Update session
         session.last_updated = datetime.now()
         session.conversation_history.append({
@@ -560,7 +1160,12 @@ class PhaseProgressionSystem:
             "response": response,
             "grade": grade.overall_score
         })
-        
+
+        print(f"💾 Session updated with {len(session.conversation_history)} total interactions")
+
+        # Generate phase nudge if needed
+        nudge = self._generate_phase_nudge(session, current_phase_progress, grade)
+
         # Get next question or phase transition info
         next_question = self.get_next_question(session_id)
         
@@ -586,7 +1191,8 @@ class PhaseProgressionSystem:
             },
             "next_question": next_question.question_text if next_question else None,
             "phase_complete": current_phase_progress.is_complete,
-            "session_complete": self._is_session_complete(session)
+            "session_complete": self._is_session_complete(session),
+            "nudge": nudge
         }
     
     def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
@@ -597,10 +1203,24 @@ class PhaseProgressionSystem:
         - Required checklist items for the current phase (30%)
         - Score readiness vs. threshold (10%)
         """
-        # Steps completion ratio
-        total_steps = 4
+        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value}:")
+
+        # Steps completion ratio - now more flexible
+        # Base completion on minimum 3 interactions, but allow for more
+        min_steps = 3
         steps_completed = len(phase_progress.completed_steps)
-        steps_ratio = steps_completed / total_steps if total_steps > 0 else 0.0
+
+        # Calculate ratio with diminishing returns after minimum steps
+        if steps_completed <= min_steps:
+            steps_ratio = steps_completed / min_steps
+        else:
+            # After minimum steps, each additional step adds less value
+            extra_steps = steps_completed - min_steps
+            steps_ratio = 1.0 + (extra_steps * 0.1)  # Each extra step adds 10% bonus
+            steps_ratio = min(steps_ratio, 1.5)  # Cap at 150%
+
+        steps_ratio = min(steps_ratio, 1.0)  # Cap at 100% for the calculation
+        print(f"   📊 Steps: {steps_completed} (min: {min_steps}) = {steps_ratio:.2f} ({steps_ratio*60:.1f}% of total)")
 
         # Checklist completion ratio for the current phase
         items = self.phase_checklist_items.get(session.current_phase, [])
@@ -617,18 +1237,84 @@ class PhaseProgressionSystem:
                 if state.get('status') == 'completed':
                     completed_required += 1
         checklist_ratio = (completed_required / total_required) if total_required > 0 else 0.0
+        print(f"   ✅ Checklist: {completed_required}/{total_required} = {checklist_ratio:.2f} ({checklist_ratio*30:.1f}% of total)")
 
         # Score readiness ratio
         threshold = self.phase_thresholds.get(session.current_phase, 3.0)
         score_ratio = min(phase_progress.average_score / threshold, 1.0) if threshold > 0 else 0.0
+        print(f"   🎯 Score: {phase_progress.average_score:.2f}/{threshold:.1f} = {score_ratio:.2f} ({score_ratio*10:.1f}% of total)")
 
         percent = 100.0 * (0.6 * steps_ratio + 0.3 * checklist_ratio + 0.1 * score_ratio)
+        print(f"   🧮 CALCULATION: (60% × {steps_ratio:.2f}) + (30% × {checklist_ratio:.2f}) + (10% × {score_ratio:.2f})")
+        print(f"   🧮 CALCULATION: {0.6 * steps_ratio:.2f} + {0.3 * checklist_ratio:.2f} + {0.1 * score_ratio:.2f} = {percent/100:.2f}")
+
         # Clamp to [0, 100]
         if percent < 0.0:
             percent = 0.0
         elif percent > 100.0:
             percent = 100.0
+
+        print(f"   📈 FINAL COMPLETION: {percent:.1f}%")
         return percent
+
+    def _generate_phase_nudge(self, session: SessionState, phase_progress: PhaseProgress, grade: GradingResult) -> Optional[str]:
+        """Generate a nudge to help the user progress in the current phase."""
+        current_phase = session.current_phase.value
+        completion_percent = phase_progress.completion_percent
+        steps_completed = len(phase_progress.completed_steps)
+        avg_score = phase_progress.average_score
+
+        print(f"\n🎯 GENERATING PHASE NUDGE:")
+        print(f"   Phase: {current_phase}")
+        print(f"   Completion: {completion_percent:.1f}%")
+        print(f"   Steps: {steps_completed}/4")
+        print(f"   Avg Score: {avg_score:.2f}/5.0")
+
+        # No nudge if doing well
+        if completion_percent > 75 and avg_score > 3.5:
+            print(f"   ✅ No nudge needed - good progress")
+            return None
+
+        # Generate nudges based on phase and progress
+        nudges = {
+            "ideation": [
+                "💡 Try exploring different conceptual approaches to your design challenge.",
+                "🎯 Consider the core user needs and how your space can address them uniquely.",
+                "🌟 What if you approached this problem from a completely different angle?",
+                "📝 Break down your design challenge into smaller, manageable components."
+            ],
+            "visualization": [
+                "✏️ Try sketching your ideas to better understand spatial relationships.",
+                "📐 Consider how different design elements work together visually.",
+                "🎨 Explore how materials and lighting could enhance your concept.",
+                "📊 Think about how to communicate your design ideas more clearly."
+            ],
+            "materialization": [
+                "🔧 Consider the practical aspects of implementing your design.",
+                "📋 Think about construction methods and material choices.",
+                "💰 How would budget and timeline constraints affect your design?",
+                "🏗️ What technical challenges need to be addressed in your proposal?"
+            ]
+        }
+
+        phase_nudges = nudges.get(current_phase, [])
+        if not phase_nudges:
+            return None
+
+        # Select nudge based on progress level
+        if completion_percent < 25:
+            nudge_index = 0  # Getting started nudge
+        elif completion_percent < 50:
+            nudge_index = 1  # Development nudge
+        elif completion_percent < 75:
+            nudge_index = 2  # Refinement nudge
+        else:
+            nudge_index = 3  # Completion nudge
+
+        selected_nudge = phase_nudges[min(nudge_index, len(phase_nudges) - 1)]
+        print(f"   💬 Selected nudge: {selected_nudge}")
+
+        return selected_nudge
 
     def _check_phase_completion(self, session: SessionState, phase_progress: PhaseProgress):
         """Check if the current phase is complete"""
