@@ -442,6 +442,12 @@ class UnifiedArchitecturalDashboard:
             if phase_result.get('nudge'):
                 st.info(f"💡 **Phase Guidance**: {phase_result['nudge']}")
 
+            # Handle phase transitions
+            if phase_result.get('phase_transition'):
+                st.success(f"🎉 **Phase Transition**: {phase_result.get('transition_message', 'Moving to next phase!')}")
+                # Force a rerun to update the phase circles
+                st.rerun()
+
         except Exception as e:
             print(f"❌ PHASE PROCESSING ERROR: {e}")
             import traceback
