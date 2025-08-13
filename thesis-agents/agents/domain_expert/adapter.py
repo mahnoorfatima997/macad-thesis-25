@@ -93,15 +93,35 @@ class DomainExpertAgent:
             print(f"🔍 Analyzing knowledge request: '{user_input[:50]}...'")
             knowledge_pattern = self._analyze_knowledge_request(user_input, gap_type, state)
             print(f"🎯 Knowledge pattern detected: {knowledge_pattern['type']}")
-            
-            # Handle legitimate example requests properly
-            if knowledge_pattern["type"] == "legitimate_example_request":
-                print(f"📚 Legitimate example request detected - providing examples")
+
+            # Handle balanced guidance requests (provide specific strategies)
+            routing_path = routing_decision.get("path", "")
+            if routing_path == "balanced_guidance":
+                print(f"⚖️ Balanced guidance request detected - providing specific strategies")
+                response_result = await self._generate_balanced_guidance_strategies(
+                    user_input, building_type, project_context, gap_type, state
+                )
+                return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
+
+            # Handle feedback/guidance requests (should get AI analysis, not examples)
+            if knowledge_pattern["type"] == "feedback_guidance_request":
+                print(f"💬 Feedback/guidance request detected - providing AI analysis")
+                response_result = await self._generate_contextual_knowledge_response(
+                    user_input, building_type, project_context, gap_type, state
+                )
+                return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
+
+            # Handle legitimate example requests properly (both project and general examples use same method)
+            if knowledge_pattern["type"] in ["legitimate_project_example_request", "legitimate_general_example_request"]:
+                if "project" in knowledge_pattern["type"]:
+                    print(f"🏗️ Legitimate PROJECT example request detected - providing specific built projects")
+                else:
+                    print(f"📚 Legitimate GENERAL example request detected - providing examples/strategies")
                 response_result = await self._provide_focused_examples(state, user_input, gap_type)
                 return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
-            
+
             # Handle premature example requests (cognitive offloading protection)
-            if knowledge_pattern["type"] == "premature_example_request":
+            if knowledge_pattern["type"] in ["premature_project_example_request", "premature_general_example_request"]:
                 print(f"🛡️ Cognitive protection: Example request too early")
                 response_result = await self._generate_premature_example_response(user_input, building_type, project_context)
                 return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
@@ -509,11 +529,24 @@ class DomainExpertAgent:
         """Robust building-type inference that prefers the declared project type and only changes on explicit signals.
 
         Rules:
-        - Prefer analysis_result.text_analysis.building_type if set and not 'unknown'.
+        - PRIORITY 1: Use conversation_context.detected_building_type if available (highest confidence)
+        - PRIORITY 2: Use state.building_type if available
+        - PRIORITY 3: Prefer analysis_result.text_analysis.building_type if set and not 'unknown'.
         - Establish a base_type from the initial brief + first user message.
         - Mentions in later messages do NOT change the type unless an explicit switch phrase is detected.
         - Avoid inferring 'museum' from generic words like 'exhibition' or 'cultural center'.
         """
+
+        # PRIORITY 1: Use conversation continuity context (highest confidence)
+        if hasattr(state, 'conversation_context') and state.conversation_context.detected_building_type:
+            if state.conversation_context.building_type_confidence > 0.7:
+                print(f"🏗️ Using stored building type: {state.conversation_context.detected_building_type} (confidence: {state.conversation_context.building_type_confidence:.2f})")
+                return state.conversation_context.detected_building_type
+
+        # PRIORITY 2: Use state.building_type if available and not unknown
+        if hasattr(state, 'building_type') and state.building_type and state.building_type != "unknown":
+            print(f"🏗️ Using state building type: {state.building_type}")
+            return state.building_type
 
         def detect_explicit(text: str, type_word: str) -> bool:
             t = text.lower()
@@ -692,32 +725,78 @@ What questions do you have about your design?"""
         
         user_input_lower = user_input.lower()
         
-        # ENHANCED: Better detection of legitimate example requests
-        example_request_keywords = [
-            "example", "examples", "precedent", "precedents", "case study", "case studies",
-            "project", "projects", "show me", "can you give", "can you provide", "provide",
-            "inspiration", "references", "similar projects", "ideas", "real project", "built project"
+        # ENHANCED: Better detection of legitimate example requests (exclude feedback requests)
+        # First check if this is a feedback/evaluation request (should NOT get examples)
+        feedback_patterns = [
+            "feedback", "evaluate", "assessment", "review", "critique", "thoughts on", "opinion on",
+            "what do you think", "give me feedback", "provide feedback", "can you evaluate"
         ]
-        
-        # Check if this is a legitimate example request
-        is_example_request = any(keyword in user_input_lower for keyword in example_request_keywords)
-        print(f"🔍 Example request check: {is_example_request} (keywords found: {[k for k in example_request_keywords if k in user_input_lower]})")
-        
-        if is_example_request:
+
+        is_feedback_request = any(pattern in user_input_lower for pattern in feedback_patterns)
+
+        if is_feedback_request:
+            # This is a feedback request - should get AI guidance, not examples
+            analysis["type"] = "feedback_guidance_request"
+            analysis["cognitive_risk"] = "low"
+            analysis["indicators"].append("Feedback/guidance request - should provide AI analysis")
+            return analysis
+
+        # DISTINGUISH between PROJECT EXAMPLES and GENERAL EXAMPLES
+
+        # PROJECT EXAMPLES: Specific built projects with names, locations, architects
+        project_example_keywords = [
+            "example projects", "project examples", "examples of projects",
+            "precedent", "precedents", "case study", "case studies",
+            "similar projects", "real project", "built project", "built projects",
+            "actual projects", "specific projects", "project references"
+        ]
+
+        # GENERAL EXAMPLES: Strategies, approaches, concepts, methods
+        general_example_keywords = [
+            "show me examples", "give me examples", "provide examples", "need examples",
+            "examples of", "example of", "for example", "such as",
+            "inspiration", "references", "approaches", "strategies"
+        ]
+
+        # Check what type of example request this is
+        is_project_example_request = any(keyword in user_input_lower for keyword in project_example_keywords)
+        is_general_example_request = any(keyword in user_input_lower for keyword in general_example_keywords)
+
+        print(f"🔍 Project example request: {is_project_example_request} (keywords: {[k for k in project_example_keywords if k in user_input_lower]})")
+        print(f"🔍 General example request: {is_general_example_request} (keywords: {[k for k in general_example_keywords if k in user_input_lower]})")
+
+        if is_project_example_request:
             # Check cognitive offloading protection (minimum 5 messages required)
             if state and hasattr(state, 'messages'):
                 message_count = len([msg for msg in state.messages if msg.get('role') == 'user'])
                 if message_count < 5:
-                    analysis["type"] = "premature_example_request"
+                    analysis["type"] = "premature_project_example_request"
                     analysis["cognitive_risk"] = "high"
-                    analysis["indicators"].append(f"Example request too early (only {message_count} messages, need 5+)")
+                    analysis["indicators"].append(f"Project example request too early (only {message_count} messages, need 5+)")
                     analysis["cognitive_protection"] = "active"
                     return analysis
-            
-            # This is a legitimate example request - should provide examples
-            analysis["type"] = "legitimate_example_request"
+
+            # This is a legitimate PROJECT example request - should provide specific built projects
+            analysis["type"] = "legitimate_project_example_request"
             analysis["cognitive_risk"] = "low"
-            analysis["indicators"].append("Legitimate example request detected")
+            analysis["indicators"].append("Legitimate PROJECT example request detected - will provide specific built projects")
+            return analysis
+
+        elif is_general_example_request:
+            # Check cognitive offloading protection (minimum 3 messages for general examples)
+            if state and hasattr(state, 'messages'):
+                message_count = len([msg for msg in state.messages if msg.get('role') == 'user'])
+                if message_count < 3:
+                    analysis["type"] = "premature_general_example_request"
+                    analysis["cognitive_risk"] = "high"
+                    analysis["indicators"].append(f"General example request too early (only {message_count} messages, need 3+)")
+                    analysis["cognitive_protection"] = "active"
+                    return analysis
+
+            # This is a legitimate GENERAL example request - should provide strategies/approaches
+            analysis["type"] = "legitimate_general_example_request"
+            analysis["cognitive_risk"] = "low"
+            analysis["indicators"].append("Legitimate GENERAL example request detected - will provide strategies/approaches")
             return analysis
         
         # PATTERN 1: Direct answer seeking (but NOT example requests)
@@ -855,6 +934,8 @@ What questions do you have about your design?"""
                 "sources": [],
                 "examples_provided": False
             }
+
+
 
     def _get_quality_modifiers(self, user_input: str, topic: str) -> str:
         """Get quality modifiers to enhance search queries and get better examples."""
@@ -1082,14 +1163,19 @@ What questions do you have about your design?"""
     async def _synthesize_examples_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
         """Use the simple, working approach from the old repository - let LLM intelligently process all results."""
         
-        # Extract URLs for clickable links
+        # Extract URLs for clickable links (check both direct and metadata fields)
         urls = []
         for result in knowledge_results:
-            if result.get('url'):
+            # Try multiple ways to get URL and title
+            url = result.get('url') or result.get('metadata', {}).get('url', '')
+            title = result.get('title') or result.get('metadata', {}).get('title', 'Source')
+
+            if url:
                 urls.append({
-                    'title': result.get('title', 'Source'),
-                    'url': result.get('url')
+                    'title': title,
+                    'url': url
                 })
+                print(f"🔗 Found URL: {title} -> {url}")
         
         # Combine knowledge content for LLM processing
         combined_knowledge = "\n\n---\n\n".join([
@@ -1099,38 +1185,42 @@ What questions do you have about your design?"""
         
         # Use the working prompt from the old repository
         synthesis_prompt = f"""
-        The student is asking for specific examples and knowledge about {user_topic}.
-        
+        The student is asking for SPECIFIC PROJECT EXAMPLES about {user_topic}.
+
         AVAILABLE KNOWLEDGE: {combined_knowledge}
-        
+
         AVAILABLE URLS FOR LINKS: {urls}
-        
-        CRITICAL REQUIREMENT: You MUST include clickable markdown links for each example.
-        
-        Create a response that:
-        1. Provides specific, concrete examples from the knowledge sources
-        2. Includes project names, locations, and brief descriptions where available
-        3. Explains the key approaches and strategies used
-        4. Makes the content directly relevant to the student's specific context
-        5. Varies the response style and approach based on the content available
-        6. Keeps it informative and factual
-        7. ALWAYS include the web links when available - they are crucial for credibility
-        
+
+        CRITICAL REQUIREMENT: You MUST provide ACTUAL PROJECT EXAMPLES, not general strategies or theories.
+
+        DO NOT PROVIDE:
+        - General strategies like "Historical Preservation and Integration"
+        - Theoretical approaches like "Flexible Interior Reconfiguration"
+        - Abstract concepts or principles
+
+        DO PROVIDE:
+        - Specific building names (e.g., "Tate Modern", "High Line", "Gasometer City")
+        - Actual locations (e.g., "London", "New York", "Vienna")
+        - Real architects/firms (e.g., "Herzog & de Meuron", "James Corner Field Operations")
+        - Concrete project details and what makes each project notable
+
         RESPONSE FORMAT REQUIREMENT:
         You MUST format each example exactly like this:
-        1. **[Project Name](URL)**: Brief description of the project...
-        2. **[Project Name](URL)**: Brief description of the project...
-        3. **[Project Name](URL)**: Brief description of the project...
-        
+        1. **[Actual Project Name](URL)**: Brief description of the actual project, location, architect, and key features...
+        2. **[Actual Project Name](URL)**: Brief description of the actual project, location, architect, and key features...
+        3. **[Actual Project Name](URL)**: Brief description of the actual project, location, architect, and key features...
+
         CRITICAL INSTRUCTIONS:
+        - You MUST provide REAL PROJECT NAMES, not strategy names
         - You MUST format each example with clickable markdown links: [Project Name](URL)
-        - Example format: "1. **[Project Name](URL)**: Brief description of the project..."
         - Keep response under 200 words to avoid cut-off
-        - Focus on providing actual information, not questions
-        - Make sure to vary the examples and not repeat the same projects
-        - Present 2-3 specific examples with brief explanations
-        - Address the student's specific question directly
+        - Focus on actual built projects, not theoretical concepts
+        - Present 2-3 specific project examples with brief explanations
+        - Include architect names and locations when available
         - ALWAYS use the exact URLs provided in AVAILABLE URLS FOR LINKS
+        - DO NOT create your own URLs - only use the URLs I provided above
+        - DO NOT use generic category URLs like "archdaily.com/category/community-center"
+        - If no specific URLs are available, use [Project Name](#) instead of fake URLs
         - DO NOT skip the markdown links - they are required!
         """
         
@@ -1149,6 +1239,22 @@ What questions do you have about your design?"""
             )
             
             synthesized_text = response.choices[0].message.content.strip()
+
+            # Fix generic/fake URLs by replacing them with placeholder links
+            import re
+            # Replace generic ArchDaily category URLs with placeholder links
+            synthesized_text = re.sub(
+                r'\[([^\]]+)\]\(https://www\.archdaily\.com/category/[^)]+\)',
+                r'[\1](#)',
+                synthesized_text
+            )
+            # Replace other generic/fake URLs with placeholder links
+            synthesized_text = re.sub(
+                r'\[([^\]]+)\]\(https://www\.archdaily\.com/search/[^)]+\)',
+                r'[\1](#)',
+                synthesized_text
+            )
+
             return synthesized_text
             
         except Exception as e:
@@ -1178,4 +1284,77 @@ What questions do you have about your design?"""
             lines.append("")
         
         lines.append("How could these approaches inform your design process?")
-        return "\n".join(lines) 
+        return "\n".join(lines)
+
+    async def _generate_balanced_guidance_strategies(self, user_input: str, building_type: str, project_context: str, gap_type: str, state: ArchMentorState) -> Dict[str, Any]:
+        """Generate specific strategies for balanced guidance responses."""
+        print(f"⚖️ Generating balanced guidance strategies for: {user_input}")
+
+        # Extract topic from user input
+        user_topic = self._extract_topic_from_user_input(user_input)
+
+        try:
+            # Generate specific strategies using LLM
+            strategies_prompt = f"""
+            The student is working on a {building_type} project and asking about: "{user_input}"
+
+            Project context: {project_context}
+            Topic: {user_topic}
+
+            Provide 2-3 SPECIFIC STRATEGIES that directly address their question about {user_topic} for {building_type} design.
+
+            Format each strategy as:
+            1. **Strategy Name**: Clear description of the approach and how it applies to their {building_type} project.
+            2. **Strategy Name**: Clear description of the approach and how it applies to their {building_type} project.
+
+            Requirements:
+            - Make strategies specific to {building_type} projects
+            - Address their specific question about {user_topic}
+            - Provide actionable, practical guidance
+            - Keep each strategy concise but informative
+            - Focus on design approaches, not generic advice
+
+            Do NOT include questions or follow-ups - just provide the strategies.
+            """
+
+            from openai import OpenAI
+            import os
+
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": strategies_prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
+
+            strategies_text = response.choices[0].message.content.strip()
+
+            return {
+                "response_text": strategies_text,
+                "response_type": "balanced_guidance_strategies",
+                "sources": [],
+                "strategies_provided": True,
+                "building_type": building_type,
+                "topic": user_topic
+            }
+
+        except Exception as e:
+            print(f"⚠️ Balanced guidance strategies generation failed: {e}")
+            # Fallback to generic but helpful strategies
+            return {
+                "response_text": f"""Here are key strategies to consider for {user_topic} in your {building_type} project:
+
+1. **Contextual Integration**: Consider how your approach to {user_topic} can respond to the specific site conditions and community needs of your {building_type}.
+
+2. **Flexible Implementation**: Design solutions that can adapt over time, allowing your {building_type} to evolve with changing community requirements.
+
+3. **User-Centered Approach**: Focus on how different user groups will experience and interact with the {user_topic} aspects of your {building_type} design.""",
+                "response_type": "balanced_guidance_strategies_fallback",
+                "sources": [],
+                "strategies_provided": True,
+                "building_type": building_type,
+                "topic": user_topic
+            }
+

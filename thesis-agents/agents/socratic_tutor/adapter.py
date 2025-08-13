@@ -860,7 +860,13 @@ Consider: Who will use this space? What activities need to happen here? What mak
         Get building type from state - NO MORE DETECTION, just retrieval.
         Building type is now centrally managed in conversation_progression.py
         """
-        # PRIORITY 1: Use state.building_type if available
+        # PRIORITY 1: Use conversation continuity context (highest confidence)
+        if hasattr(state, 'student_state') and hasattr(state.student_state, 'conversation_context'):
+            context = state.student_state.conversation_context
+            if context.detected_building_type and context.building_type_confidence > 0.7:
+                return context.detected_building_type
+
+        # PRIORITY 2: Use state.building_type if available
         if hasattr(state, 'building_type') and state.building_type and state.building_type != "unknown":
             return state.building_type
         
@@ -876,7 +882,23 @@ Consider: Who will use this space? What activities need to happen here? What mak
                 building_type = context_analysis['building_type']
                 if building_type != "unknown":
                     return building_type
-        
+
+        # PRIORITY 4: Extract from current_design_brief if available
+        if hasattr(state, 'student_state') and hasattr(state.student_state, 'current_design_brief'):
+            brief = state.student_state.current_design_brief
+            if brief and "community_center" in brief.lower():
+                return "community_center"
+            elif brief and "community center" in brief.lower():
+                return "community_center"
+
+        # PRIORITY 5: Extract from current_design_brief directly on state
+        if hasattr(state, 'current_design_brief') and state.current_design_brief:
+            brief = state.current_design_brief
+            if brief and "community_center" in brief.lower():
+                return "community_center"
+            elif brief and "community center" in brief.lower():
+                return "community_center"
+
         # FALLBACK: Return unknown instead of mixed_use
         return "unknown"
 
@@ -1806,16 +1828,27 @@ Generate a comprehensive answer (3-4 sentences):
             building_type = self._extract_building_type_from_context(state)
             user_input = context_classification.get("user_input", "")
             
+            # Get more context for better responses
+            design_brief = getattr(state, 'current_design_brief', '') or ''
+            recent_messages = [msg['content'] for msg in state.messages[-4:] if msg.get('role') in ['user', 'assistant']]
+            conversation_context = ' | '.join(recent_messages[-4:]) if recent_messages else ''
+
             # Generate contextual guidance using LLM
             prompt = f"""
-            You are an architectural mentor helping with a {building_type} project. The user is asking for guidance on: "{user_input}"
+            You are an architectural mentor helping with a {building_type} project.
+
+            PROJECT CONTEXT: {design_brief}
+            RECENT CONVERSATION: {conversation_context}
+            CURRENT USER REQUEST: "{user_input}"
 
             Provide a BALANCED response that includes:
-            1. HELPFUL GUIDANCE: Give specific, actionable advice and suggestions
-            2. GENTLE EXPLORATION: Ask ONE thoughtful question that builds on your guidance
-            3. ENCOURAGEMENT: Support their design thinking process
+            1. HELPFUL GUIDANCE: Give specific, actionable advice related to their {building_type} project
+            2. CONTEXTUAL RELEVANCE: Reference their specific project context and previous discussion
+            3. GENTLE EXPLORATION: Ask ONE thoughtful question that builds on your guidance
+            4. ENCOURAGEMENT: Support their design thinking process
 
             Focus on being helpful and practical while encouraging their own thinking.
+            Make sure your response is specific to their {building_type} project, not generic.
             Keep the response conversational and supportive.
             """
             

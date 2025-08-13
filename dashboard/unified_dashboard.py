@@ -511,10 +511,29 @@ class UnifiedArchitecturalDashboard:
         response_metadata = st.session_state.get("last_response_metadata", {})
         routing_path = response_metadata.get("routing_path") or response_metadata.get("route")
         agents_used = response_metadata.get("agents_used") or []
-        
+        interaction_type = response_metadata.get("interaction_type") or response_metadata.get("user_intent")
+        response_type = response_metadata.get("response_type")
+
         if (routing_path or agents_used) and st.session_state.get('show_routing_meta', False):
-            used = ", ".join(agents_used) if agents_used else ""
-            meta_suffix = f"\n\n— Route: {routing_path or 'unknown'}{f' | Agents: {used}' if used else ''}"
+            parts = []
+
+            # Add interaction type if available
+            if interaction_type:
+                parts.append(f"Intent: {interaction_type}")
+
+            # Add route
+            parts.append(f"Route: {routing_path or 'unknown'}")
+
+            # Add agents if available
+            if agents_used:
+                used = ", ".join(agents_used)
+                parts.append(f"Agents: {used}")
+
+            # Add response type if available
+            if response_type:
+                parts.append(f"Type: {response_type}")
+
+            meta_suffix = f"\n\n— {' | '.join(parts)}"
             return response + meta_suffix
         return response
     
