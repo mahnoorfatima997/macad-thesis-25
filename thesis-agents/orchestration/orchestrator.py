@@ -156,6 +156,15 @@ class LangGraphOrchestrator:
                 confidence = classification.get("building_type_confidence", 0.5)
                 student_state.update_building_type_context(classification["building_type"], confidence)
 
+            # ADDITIONAL: Extract building type from design brief if not already set
+            if (student_state.building_type == "unknown" and
+                hasattr(student_state, 'current_design_brief') and
+                student_state.current_design_brief):
+                extracted_type = student_state.extract_building_type_from_brief_only()
+                if extracted_type != "unknown":
+                    print(f"🏗️ Orchestrator extracted building type from brief: {extracted_type}")
+                    student_state.building_type = extracted_type
+
             if classification.get("design_phase"):
                 confidence = classification.get("design_phase_confidence", 0.5)
                 student_state.update_design_phase_context(classification["design_phase"], confidence)
@@ -332,10 +341,16 @@ class LangGraphOrchestrator:
             socratic_result = socratic_result.to_dict()
         
         # For pure example requests, prefer just the examples (no appended Socratic follow-up)
-        is_example_req = any(k in user_input.lower() for k in ["example", "examples", "precedent", "case study", "case studies", "project", "projects"]) and classification.get("interaction_type") == "example_request"
+        has_example_keywords = any(k in user_input.lower() for k in ["example", "examples", "precedent", "case study", "case studies", "project", "projects"])
+        is_example_intent = classification.get("interaction_type") == "example_request" or classification.get("user_intent") == "example_request"
+        is_example_req = has_example_keywords and is_example_intent
+
         if is_example_req:
             text = domain_result.get('response_text', '') if domain_result else ''
-            return text or self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
+            if text:
+                return text, "knowledge_only"
+            else:
+                return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
         if domain_result and socratic_result:
             final_response = f"{domain_result.get('response_text', '')}\n\n{socratic_result.get('response_text', '')}"
@@ -427,18 +442,6 @@ class LangGraphOrchestrator:
 
         # FALLBACK: Return unknown (no more local detection)
         return "unknown"
-
-    def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
-        """Extract student state from agent results for phase detection."""
-        # Try to get student state from various sources
-        for agent_name, result in agent_results.items():
-            if result and hasattr(result, 'student_state'):
-                return result.student_state
-            elif result and isinstance(result, dict) and 'student_state' in result:
-                return result['student_state']
-        
-        # If no student state found, return None
-        return None
 
     def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
         """Extract student state from agent results for phase detection."""
@@ -662,7 +665,7 @@ class LangGraphOrchestrator:
         )
 
     def _synthesize_balanced_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
-        """Synthesize balanced guidance response"""
+        """Synthesize balanced guidance response using proper synthesis logic"""
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
         cognitive_result = agent_results.get("cognitive", {})
@@ -675,17 +678,52 @@ class LangGraphOrchestrator:
         if hasattr(cognitive_result, 'to_dict'):
             cognitive_result = cognitive_result.to_dict()
 
-        # Use the best available response
-        if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "balanced_guidance"
-        elif domain_result and domain_result.get("response_text"):
-            return domain_result.get("response_text", ""), "balanced_guidance"
-        elif cognitive_result and cognitive_result.get("response_text"):
-            return cognitive_result.get("response_text", ""), "balanced_guidance"
-        return (
-            "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?",
-            "balanced_guidance",
-        )
+        # Extract response texts
+        domain_text = domain_result.get("response_text", "") if domain_result else ""
+        socratic_text = socratic_result.get("response_text", "") if socratic_result else ""
+        cognitive_text = cognitive_result.get("response_text", "") if cognitive_result else ""
+
+        # Use synthesis shaping for balanced guidance
+        try:
+            from .synthesis import shape_response_by_path
+
+            # Combine the best available response as base text
+            base_text = ""
+            if domain_text and socratic_text:
+                base_text = f"{domain_text}\n\n{socratic_text}"
+            elif socratic_text:
+                base_text = socratic_text
+            elif domain_text:
+                base_text = domain_text
+            elif cognitive_text:
+                base_text = cognitive_text
+            else:
+                base_text = "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?"
+
+            # Apply synthesis shaping
+            synthesized_response = shape_response_by_path(
+                text=base_text,
+                path="balanced_guidance",
+                domain_text=domain_text,
+                socratic_text=socratic_text,
+                cognitive_text=cognitive_text,
+                classification=classification,
+                context_analysis=classification  # Use classification as context analysis
+            )
+
+            return synthesized_response, "balanced_guidance"
+
+        except Exception as e:
+            print(f"⚠️ Synthesis shaping failed: {e}")
+            # Fallback to simple combination
+            if domain_text and socratic_text:
+                return f"{domain_text}\n\n{socratic_text}", "balanced_guidance"
+            elif socratic_text:
+                return socratic_text, "balanced_guidance"
+            elif domain_text:
+                return domain_text, "balanced_guidance"
+            else:
+                return "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?", "balanced_guidance"
 
     # ------------- Metadata helpers (ported minimally) -------------
 
@@ -827,6 +865,9 @@ class LangGraphOrchestrator:
             "sources": domain_result.get("sources", []) if domain_result else [],
             "processing_time": "N/A",
             "classification": classification,
+            # Add explicit interaction_type and user_intent for routing display
+            "interaction_type": classification.get("interaction_type") or classification.get("user_intent", "unknown"),
+            "user_intent": classification.get("user_intent") or classification.get("interaction_type", "unknown"),
 
         }
 

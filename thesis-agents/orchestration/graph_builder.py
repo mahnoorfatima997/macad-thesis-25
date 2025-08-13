@@ -31,7 +31,7 @@ def build_workflow(state_cls, handlers, route_decision_fn):
             "socratic_exploration": "socratic_tutor",
             "design_guidance": "analysis_agent",
             "multi_agent_comprehensive": "analysis_agent",
-            "knowledge_with_challenge": "domain_expert",
+            "knowledge_with_challenge": "analysis_agent",
             "socratic_clarification": "socratic_tutor",
             "supportive_scaffolding": "socratic_tutor",
             "cognitive_challenge": "cognitive_enhancement",

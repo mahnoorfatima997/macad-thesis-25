@@ -253,14 +253,18 @@ def get_dashboard_css() -> str:
         font-size: 16px !important;
         line-height: 1.5 !important;
         color: var(--primary-dark) !important;
-        resize: none !important;
-        min-height: 144px !important;
-        max-height: 144px !important;
+        resize: vertical !important;
+        min-height: 100px !important;
+        max-height: 300px !important;
+        height: auto !important;
         font-family: inherit !important;
         box-shadow: none !important;
         outline: none !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        overflow-y: auto !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
     }
 
     div[data-testid="stChatInput"] textarea:focus {
@@ -605,7 +609,8 @@ def get_dashboard_css() -> str:
         div[data-testid="stChatInput"] textarea {
             padding: 16px 20px !important;
             font-size: 15px !important;
-            min-height: 64px !important;
+            min-height: 100px !important;
+            max-height: 300px !important;
         }
         
         div[data-testid="stChatInput"] button {

@@ -171,7 +171,8 @@ class AdvancedRoutingDecisionTree:
                 r"what are.*standard", r"standard dimensions", r"typical dimensions"
             ],
             "example_request": [
-                r"examples?", r"case studies?", r"precedents?", r"projects?",
+                r"give.*examples?", r"show.*examples?", r"need.*examples?", r"want.*examples?",
+                r"case studies?", r"precedents?", r"similar projects?",
                 r"show me", r"can you give", r"can you provide", r"can you show",
                 r"real project", r"built project", r"actual project"
             ],
@@ -196,13 +197,16 @@ class AdvancedRoutingDecisionTree:
                 r"explore", r"experiment", r"try", r"test",
                 r"innovative", r"creative", r"different", r"alternative",
                 r"spatial organization", r"organize", r"arrangement", r"layout",
-                r"decide about", r"choices", r"options", r"possibilities"
+                r"decide about", r"choices", r"options", r"possibilities",
+                r"inspiring.*what about", r"examples.*what about", r"what about if i create"
             ],
             "improvement_seeking": [
                 r"improve", r"better", r"enhance", r"fix", r"optimize",
                 r"how can i", r"how do i", r"how might", r"ways to",
                 r"what else can i", r"what else should i", r"what else could i",
-                r"what other", r"what more", r"additional", r"further"
+                r"what other", r"what more", r"additional", r"further",
+                r"would like to focus", r"need more help", r"help.*about",
+                r"best approach", r"best way", r"approach.*to"
             ],
 
             # Feedback and evaluation
@@ -224,7 +228,8 @@ class AdvancedRoutingDecisionTree:
             ],
             "clarification_request": [
                 r"can you explain", r"what do you mean", r"clarify",
-                r"help me understand", r"break down", r"simplify"
+                r"help me understand", r"break down", r"simplify",
+                r"but i need.*help", r"need help.*about", r"more help about"
             ],
             "implementation_request": [
                 r"how to", r"steps", r"process", r"procedure",
@@ -241,7 +246,7 @@ class AdvancedRoutingDecisionTree:
             ],
             "overconfident_statement": [
                 r"obviously", r"clearly", r"definitely", r"perfect",
-                r"best", r"optimal", r"ideal", r"flawless",
+                r"this is the best", r"my.*is.*best", r"optimal", r"ideal", r"flawless",
                 r"this is the", r"this will", r"my design is",
                 r"just.*randomly", r"doesn't matter", r"any.*will work",
                 r"i will just", r"i'll just", r"simply", r"easy"
@@ -249,8 +254,9 @@ class AdvancedRoutingDecisionTree:
 
             # Conversation management
             "topic_transition": [
-                r"let's talk about", r"what about", r"how about", r"can we discuss",
-                r"i want to discuss", r"move on to", r"switch to", r"different topic"
+                r"let's talk about", r"can we discuss", r"let's discuss",
+                r"i want to discuss", r"move on to", r"switch to", r"different topic",
+                r"change the topic", r"new topic"
             ]
         }
     
@@ -782,11 +788,12 @@ class AdvancedRoutingDecisionTree:
                     "can you show", "real project", "built project", "actual project"
                 ]
                 
-                # Check if it's ONLY asking for examples (no design guidance)
-                is_pure_example_request = (
-                    any(keyword in last_message for keyword in pure_example_keywords) and
-                    not any(word in last_message for word in ["how can i", "how do i", "how to", "how might", "incorporate", "integrate", "implement", "apply"])
-                )
+                # Check if it's PRIMARILY asking for examples (even with some guidance context)
+                has_example_keywords = any(keyword in last_message for keyword in pure_example_keywords)
+                has_strong_guidance_keywords = any(word in last_message for word in ["how can i implement", "how do i implement", "how to implement", "help me implement", "guide me through"])
+
+                # If it has example keywords and doesn't have STRONG guidance keywords, treat as pure example request
+                is_pure_example_request = has_example_keywords and not has_strong_guidance_keywords
                 
                 if is_pure_example_request:
                     decision = RoutingDecision(
@@ -805,7 +812,8 @@ class AdvancedRoutingDecisionTree:
                             "context_agent_primary_route": routing_suggestions.get("primary_route") if routing_suggestions else None,
                             "is_pure_knowledge_request": True,  # Pure example requests are pure knowledge
                             "intent_classification": user_intent,
-                            "context_keywords": self._extract_context_keywords(user_input)
+                            "context_keywords": self._extract_context_keywords(user_input),
+                            "agents_to_activate": ["domain_expert"]  # Only domain expert for pure examples
                         }
                     )
                     

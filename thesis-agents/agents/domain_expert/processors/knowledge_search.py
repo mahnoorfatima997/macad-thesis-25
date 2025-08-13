@@ -140,15 +140,9 @@ class KnowledgeSearchProcessor:
                 context = self.analyze_conversation_context_for_search(state)
                 logger.debug("Web search context: %s", context)
 
-<<<<<<< HEAD
-            # Generate context-aware search query
-            search_query = generate_context_aware_search_query(topic, context)
-            logger.info("Tavily search query: %s", search_query)
-=======
             # Generate enhanced context-aware search query
             search_query = self.generate_enhanced_search_query(topic, context)
             logger.info("Enhanced Tavily search query: %s", search_query)
->>>>>>> agents_structure
 
             # Cache key incorporates query and key context fields
             cache_key = f"{search_query}::bt={context.get('building_type','')}"
@@ -197,11 +191,7 @@ class KnowledgeSearchProcessor:
     # REMOVED: Old SerpAPI search method - replaced with Tavily
 
     async def _try_tavily_search(self, query: str, context: Dict[str, Any] = None) -> List[Dict]:
-<<<<<<< HEAD
-        """Use Tavily API for web search, constrained to preferred architecture domains."""
-=======
         """Enhanced Tavily API search with better error handling and fallback strategies."""
->>>>>>> agents_structure
         logger = logging.getLogger(__name__)
 
         # Check cache first
@@ -214,35 +204,21 @@ class KnowledgeSearchProcessor:
             import requests
 
             if not self.tavily_api_key:
-<<<<<<< HEAD
-                logger.debug("TAVILY_API_KEY missing; skipping Tavily search")
-=======
                 logger.warning("TAVILY_API_KEY missing; web search disabled")
->>>>>>> agents_structure
                 return []
 
             include_domains = get_preferred_architecture_domains()
 
-<<<<<<< HEAD
-=======
             # Enhanced payload with better search parameters
->>>>>>> agents_structure
             payload = {
                 'api_key': self.tavily_api_key,
                 'query': query,
                 'search_depth': 'advanced',
-<<<<<<< HEAD
-                'max_results': 8,
-                'include_answer': False,
-                'include_raw_content': False,
-                'include_images': False,
-=======
                 'max_results': 10,  # Increased for better results
                 'include_answer': False,
                 'include_raw_content': False,
                 'include_images': False,
                 'format': 'json'
->>>>>>> agents_structure
             }
 
             # Always restrict to domain whitelist to avoid irrelevant sources
@@ -250,9 +226,6 @@ class KnowledgeSearchProcessor:
                 payload['include_domains'] = include_domains
 
             url = 'https://api.tavily.com/search'
-<<<<<<< HEAD
-            response = requests.post(url, json=payload, timeout=20)
-=======
 
             # Enhanced request with better timeout and headers
             headers = {
@@ -261,28 +234,10 @@ class KnowledgeSearchProcessor:
             }
 
             response = requests.post(url, json=payload, headers=headers, timeout=30)
->>>>>>> agents_structure
 
             if response.status_code == 200:
                 data = response.json()
                 items: List[Dict] = []
-<<<<<<< HEAD
-                allowed = set(include_domains)
-
-                for r in data.get('results', [])[:12]:
-                    title = r.get('title', '')
-                    snippet = r.get('content') or r.get('snippet', '')
-                    url_result = r.get('url', '')
-
-                    # Final filtering by hostname just in case
-                    try:
-                        host = urlparse(url_result).netloc
-                        if allowed and not any(host.endswith(dom) for dom in allowed):
-                            continue
-                    except Exception:
-                        pass
-
-=======
                 allowed = set(include_domains) if include_domains else set()
 
                 results = data.get('results', [])
@@ -309,36 +264,19 @@ class KnowledgeSearchProcessor:
                         continue
 
                     # Enhanced result structure
->>>>>>> agents_structure
                     items.append({
                         'content': snippet,
                         'metadata': {
                             'title': title,
                             'url': url_result,
                             'source': 'tavily',
-<<<<<<< HEAD
-                            'type': 'web_result'
-=======
                             'type': 'web_result',
                             'domain': host,
                             'relevance_score': r.get('score', 0.5)
->>>>>>> agents_structure
                         },
                         'discovery_method': 'web'
                     })
 
-<<<<<<< HEAD
-                # Cache results
-                if len(self._web_cache) >= self._web_cache_max_entries:
-                    # Remove oldest entry
-                    oldest_key = next(iter(self._web_cache))
-                    del self._web_cache[oldest_key]
-                self._web_cache[cache_key] = items
-
-                logger.debug(f"Tavily search returned {len(items)} results for: {query}")
-                return items
-
-=======
                 # Cache results with better management
                 if len(self._web_cache) >= self._web_cache_max_entries:
                     # Remove oldest entry (FIFO)
@@ -361,94 +299,12 @@ class KnowledgeSearchProcessor:
             logger.error("Tavily search timed out")
         except requests.exceptions.ConnectionError:
             logger.error("Tavily search connection failed")
->>>>>>> agents_structure
         except Exception as e:
             logger.error(f"Tavily search failed: {e}")
 
         return []
 
     # REMOVED: Old DuckDuckGo search method - replaced with Tavily
-<<<<<<< HEAD
-        """Use Tavily API for web search, constrained to preferred architecture domains."""
-        logger = logging.getLogger(__name__)
-
-        # Check cache first
-        cache_key = f"tavily:{query}"
-        if cache_key in self._web_cache:
-            logger.debug(f"Using cached Tavily results for: {query}")
-            return self._web_cache[cache_key]
-
-        try:
-            import requests
-
-            if not self.tavily_api_key:
-                logger.debug("TAVILY_API_KEY missing; skipping Tavily search")
-                return []
-
-            include_domains = get_preferred_architecture_domains()
-
-            payload = {
-                'api_key': self.tavily_api_key,
-                'query': query,
-                'search_depth': 'advanced',
-                'max_results': 8,
-                'include_answer': False,
-                'include_raw_content': False,
-                'include_images': False,
-            }
-
-            # Always restrict to domain whitelist to avoid irrelevant sources
-            if include_domains:
-                payload['include_domains'] = include_domains
-
-            url = 'https://api.tavily.com/search'
-            response = requests.post(url, json=payload, timeout=20)
-
-            if response.status_code == 200:
-                data = response.json()
-                items: List[Dict] = []
-                allowed = set(include_domains)
-
-                for r in data.get('results', [])[:12]:
-                    title = r.get('title', '')
-                    snippet = r.get('content') or r.get('snippet', '')
-                    url_result = r.get('url', '')
-
-                    # Final filtering by hostname just in case
-                    try:
-                        host = urlparse(url_result).netloc
-                        if allowed and not any(host.endswith(dom) for dom in allowed):
-                            continue
-                    except Exception:
-                        pass
-
-                    items.append({
-                        'content': snippet,
-                        'metadata': {
-                            'title': title,
-                            'url': url_result,
-                            'source': 'tavily',
-                            'type': 'web_result'
-                        },
-                        'discovery_method': 'web'
-                    })
-
-                # Cache results
-                if len(self._web_cache) >= self._web_cache_max_entries:
-                    # Remove oldest entry
-                    oldest_key = next(iter(self._web_cache))
-                    del self._web_cache[oldest_key]
-                self._web_cache[cache_key] = items
-
-                logger.debug(f"Tavily search returned {len(items)} results for: {query}")
-                return items
-
-        except Exception as e:
-            logger.error(f"Tavily search failed: {e}")
-
-        return []
-=======
->>>>>>> agents_structure
 
     def _get_architectural_knowledge_fallback(self, topic: str) -> List[Dict]:
         """Provide fallback architectural knowledge when searches fail."""
@@ -544,22 +400,6 @@ class KnowledgeSearchProcessor:
             recent_text = ' '.join(user_messages[-3:]).lower()
 
             context = {}
-<<<<<<< HEAD
-            
-            # ENHANCED: Detect building type with more comprehensive keywords
-            building_types = {
-                'residential': ['house', 'home', 'apartment', 'residential', 'condo', 'townhouse', 'villa'],
-                'commercial': ['office', 'retail', 'commercial', 'store', 'mall', 'restaurant', 'hotel'],
-                'institutional': ['school', 'hospital', 'library', 'museum', 'university', 'college', 'clinic'],
-                'community': ['community center', 'cultural center', 'civic center', 'recreation center'],
-                'industrial': ['factory', 'warehouse', 'industrial']
-            }
-            
-            for building_type, keywords in building_types.items():
-                if any(keyword in recent_text for keyword in keywords):
-                    context['building_type'] = building_type
-                    break
-=======
 
             # UPDATED: Use centralized building type detection to avoid duplications
             # Get building type from state instead of detecting locally
@@ -588,7 +428,6 @@ class KnowledgeSearchProcessor:
                         if any(keyword in detection_text for keyword in keywords):
                             context['building_type'] = building_type
                             break
->>>>>>> agents_structure
             
             # Detect focus area
             focus_areas = {

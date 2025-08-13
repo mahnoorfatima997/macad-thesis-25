@@ -13,13 +13,10 @@ from collections import defaultdict
 import re
 
 class MasterMetricsGenerator:
-    def __init__(self, thesis_data_path="../thesis_data", output_path="benchmarking/results"):
-        # Use absolute path resolution from current file location
-        base_dir = Path(__file__).parent.parent  # Go up to project root
-        self.thesis_data_path = base_dir / "thesis_data"
-        # Always save to benchmarking/results where dashboard expects it
-        self.output_path = base_dir / "benchmarking" / "results"
-        self.output_path.mkdir(exist_ok=True, parents=True)
+    def __init__(self, thesis_data_path="../thesis_data", output_path="results"):
+        self.thesis_data_path = Path(thesis_data_path)
+        self.output_path = Path(output_path)
+        self.output_path.mkdir(exist_ok=True)
         
         # Store all metrics
         self.session_metrics = {}
@@ -64,38 +61,20 @@ class MasterMetricsGenerator:
         print(f"  - Calculation log: {self.output_path / 'calculation_log.json'}")
         
     def load_interaction_data(self):
-        """Load all valid interaction CSV files with required columns"""
+        """Load all interaction CSV files"""
         interactions = {}
+        pattern = str(self.thesis_data_path / "interactions_*.csv")
         
-        # Import session validator
-        import sys
-        sys.path.append(str(Path(__file__).parent))
-        
-        try:
-            from session_validator import get_valid_session_files
-            print(f"   Session validator imported successfully")
-            print(f"   Looking in: {Path(self.thesis_data_path).resolve()}")
-            # Get only valid files with all required columns - ensure Path object
-            valid_files = get_valid_session_files(Path(self.thesis_data_path))
-            print(f"   Found {len(valid_files)} valid CSV files")
-        except Exception as e:
-            print(f"   Warning: Error with session_validator: {e}")
-            print("   Falling back to direct file listing...")
-            # Fallback to direct listing
-            valid_files = list(Path(self.thesis_data_path).glob("interactions_*.csv"))
-            print(f"   Found {len(valid_files)} CSV files (no validation)")
-        
-        for file in valid_files:
+        for file in glob.glob(pattern):
             try:
                 df = pd.read_csv(file)
                 if not df.empty:
-                    session_id = self.extract_session_id(str(file))
+                    session_id = self.extract_session_id(file)
                     interactions[session_id] = df
                     print(f"   Loaded {len(df)} interactions for session {session_id}")
             except Exception as e:
                 print(f"   Error loading {file}: {e}")
                 
-        print(f"   Total valid sessions loaded: {len(interactions)} (out of all CSV files)")
         return interactions
     
     def load_session_json_data(self):
@@ -133,19 +112,8 @@ class MasterMetricsGenerator:
     
     def extract_session_id(self, filename):
         """Extract session ID from filename"""
-        # Try UUID pattern first
         match = re.search(r'([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})', filename)
-        if match:
-            return match.group(1)
-        
-        # Handle special cases like interactions_unified_dashboard_session.csv
-        if 'unified_dashboard_session' in filename:
-            return 'unified_dashboard_session'
-        elif 'unified_session' in filename:
-            # Extract the actual session ID format from the file
-            return filename.split('interactions_')[-1].replace('.csv', '')
-        
-        return None
+        return match.group(1) if match else None
     
     def calculate_session_metrics(self, session_id, interactions_df, session_json, linkography_json):
         """Calculate all metrics for a single session"""
@@ -213,37 +181,11 @@ class MasterMetricsGenerator:
         # Agent effectiveness metrics
         metrics.update(self.calculate_agent_metrics(session_id, interactions_df))
         
-        # Anthropomorphism indicators - get from JSON or metadata
-        test_group = 'unknown'
-        
-        # First try session JSON
+        # Anthropomorphism indicators (basic - preserve existing analysis)
         if session_json:
-            test_group = session_json.get('test_group', 'unknown')
-        
-        # If still unknown, try to extract from metadata in CSV
-        if test_group == 'unknown' and interactions_df is not None and not interactions_df.empty:
-            if 'metadata' in interactions_df.columns:
-                for idx in range(len(interactions_df)):
-                    try:
-                        metadata = interactions_df.iloc[idx]['metadata']
-                        if pd.notna(metadata):
-                            import json
-                            meta_dict = json.loads(metadata) if isinstance(metadata, str) else metadata
-                            if isinstance(meta_dict, dict):
-                                # Use test_group if available, otherwise use mode
-                                test_group = meta_dict.get('test_group', meta_dict.get('mode', 'unknown'))
-                                if test_group != 'unknown':
-                                    break
-                    except:
-                        continue
-            
-            # If still unknown but has routing_path data, it's from MENTOR (our system)
-            if test_group == 'unknown' and 'routing_path' in interactions_df.columns:
-                if interactions_df['routing_path'].notna().any():
-                    test_group = 'MENTOR'
-                    self.calculation_log[session_id]['test_group_source'] = 'inferred_from_routing'
-        
-        metrics['test_group'] = test_group
+            metrics['test_group'] = session_json.get('test_group', 'unknown')
+        else:
+            metrics['test_group'] = 'unknown'
             
         # Linkography metrics (basic - preserve existing analysis)
         if linkography_json:
