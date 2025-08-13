@@ -254,7 +254,7 @@ def get_dashboard_css() -> str:
         line-height: 1.5 !important;
         color: var(--primary-dark) !important;
         resize: vertical !important;
-        min-height: 100px !important;
+        min-height: 120px !important;
         max-height: 300px !important;
         height: auto !important;
         font-family: inherit !important;
@@ -609,7 +609,7 @@ def get_dashboard_css() -> str:
         div[data-testid="stChatInput"] textarea {
             padding: 16px 20px !important;
             font-size: 15px !important;
-            min-height: 100px !important;
+            min-height: 120px !important;
             max-height: 300px !important;
         }
         

@@ -70,15 +70,6 @@ def render_chat_interface():
             </div>
         </div>
         
-        <!-- Typing indicator -->
-        <div class="typing-indicator" id="typing-indicator" style="display: none;">
-            <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-        
         <script>
         // Debug: Log the chat interface setup
         console.log('Chat interface initialized');

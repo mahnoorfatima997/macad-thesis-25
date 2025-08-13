@@ -25,6 +25,7 @@ from .ui.chat_components import (
 )
 from .ui.sidebar_components import render_complete_sidebar
 from .ui.analysis_components import render_cognitive_analysis_dashboard, render_metrics_summary, render_phase_progress_section
+from .ui.phase_circles import render_phase_circles, render_phase_metrics
 from .processors.mode_processors import ModeProcessor
 from .analysis.phase_analyzer import PhaseAnalyzer
 
@@ -175,9 +176,6 @@ class UnifiedArchitecturalDashboard:
         # Chat interface (after analysis)
         if st.session_state.analysis_complete:
             self._render_chat_interface()
-            
-            # Comprehensive analysis results
-            self._render_analysis_results()
             
             # Phase progression insights
             if len(st.session_state.messages) > 0:
@@ -385,31 +383,70 @@ class UnifiedArchitecturalDashboard:
     
     def _handle_chat_input(self, user_input: str):
         """Handle new chat input from the user."""
+        print(f"\n🎯 DASHBOARD: _handle_chat_input called with: {user_input[:50]}...")
+
         # Add user message to chat history
         st.session_state.messages.append({
-            "role": "user", 
+            "role": "user",
             "content": user_input,
             "timestamp": datetime.now().isoformat()
         })
-        
+
         # Log interaction
         self._log_user_interaction(user_input)
-        
+
         # Display user message - no need to render separately as it's already in session state
         # The chat interface will automatically show all messages including the new one
-        
+
         # Initialize phase system if needed
+        print(f"🔧 DASHBOARD: Initializing phase system...")
         self._initialize_phase_system()
-        
+
+        # Process ALL user responses through phase system (not just Socratic ones)
+        print(f"🎯 DASHBOARD: Processing user response for phases...")
+        self._process_user_response_for_phases(user_input)
+
         # Handle Socratic response if awaiting one
         if st.session_state.awaiting_socratic_response:
             self._handle_socratic_response(user_input)
-        
+
         # Generate response
         self._generate_and_display_response(user_input)
         
         # Don't rerun - let the response display naturally
-    
+
+    def _process_user_response_for_phases(self, user_input: str):
+        """Process user response through the phase progression system."""
+        try:
+            print(f"\n🎯 DASHBOARD: Processing user response for phase progression")
+            print(f"📝 Input: {user_input[:100]}...")
+
+            # Process the response through the phase system
+            phase_result = self.phase_system.process_response(st.session_state.phase_session_id, user_input)
+
+            if "error" in phase_result:
+                print(f"❌ PHASE ERROR: {phase_result['error']}")
+                return
+
+            # Log the phase progression results
+            print(f"✅ PHASE PROCESSING COMPLETE:")
+            print(f"   Current Phase: {phase_result['current_phase']}")
+            print(f"   Grade: {phase_result['grade']['overall_score']:.2f}/5.0")
+            print(f"   Phase Complete: {phase_result['phase_complete']}")
+            print(f"   Session Complete: {phase_result['session_complete']}")
+
+            # Store phase result for UI display
+            st.session_state.last_phase_result = phase_result
+
+            # Display nudge if available
+            if phase_result.get('nudge'):
+                st.info(f"💡 **Phase Guidance**: {phase_result['nudge']}")
+
+        except Exception as e:
+            print(f"❌ PHASE PROCESSING ERROR: {e}")
+            import traceback
+            traceback.print_exc()
+
     def _generate_and_display_response(self, user_input: str):
         """Generate and display the AI response."""
         # Simple spinner without typing indicator to avoid conflicts
@@ -498,12 +535,29 @@ class UnifiedArchitecturalDashboard:
     
     def _add_socratic_question_if_needed(self, response: str) -> str:
         """Add Socratic question to response if needed."""
-        if not st.session_state.awaiting_socratic_response:
+        print(f"\n🤔 SOCRATIC: Checking if question needed...")
+        print(f"   Awaiting response: {st.session_state.get('awaiting_socratic_response', False)}")
+
+        # Always try to get next question if not already awaiting response
+        if not st.session_state.get('awaiting_socratic_response', False):
             next_question = self.phase_system.get_next_question(st.session_state.phase_session_id)
-            if next_question and not response_contains_questions(response):
-                st.session_state.awaiting_socratic_response = True
-                st.session_state.current_question_id = next_question.question_id
-                return f"{response}\n\n{next_question.question_text}"
+            print(f"   Next question available: {next_question is not None}")
+
+            if next_question:
+                print(f"   Question: {next_question.question_text[:80]}...")
+                if not response_contains_questions(response):
+                    st.session_state.awaiting_socratic_response = True
+                    st.session_state.current_question_id = next_question.question_id
+                    enhanced_response = f"{response}\n\n**🤔 Let me ask you this to help develop your thinking:**\n\n{next_question.question_text}"
+                    print(f"   ✅ Added Socratic question to response")
+                    return enhanced_response
+                else:
+                    print(f"   ⏭️ Response already contains questions, skipping")
+            else:
+                print(f"   ℹ️ No next question available")
+        else:
+            print(f"   ⏳ Already awaiting Socratic response")
+
         return response
     
     def _add_routing_metadata(self, response: str) -> str:
@@ -640,81 +694,9 @@ class UnifiedArchitecturalDashboard:
             pass
 
     def _render_phase_insights(self):
-        """Render phase progression and learning insights."""
-        with st.columns([1, 2, 1])[1]:  # Center column
-            st.markdown("---")
-            st.markdown("""
-            <div class="compact-text" style="font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: center; color: var(--primary-purple);">
-                🎯 Phase Progression & Learning Insights
-            </div>
-            """, unsafe_allow_html=True)
-            
-            try:
-                # Create session data from chat messages
-                chat_interactions = self._create_chat_interactions_data()
-                
-                # Prefer engine-driven progress for display
-                engine_phase = None
-                engine_percent = 0.0
-                try:
-                    summary = self.phase_system.get_session_summary(st.session_state.phase_session_id)
-                    engine_phase = summary.get('current_phase')
-                    phase_summaries = summary.get('phase_summaries', {})
-                    if engine_phase in phase_summaries:
-                        engine_percent = phase_summaries[engine_phase].get('completion_percent', 0.0)
-                except Exception:
-                    pass
-
-                # Fallback lightweight phase guess (percent shown only if engine unavailable)
-                current_phase, heuristic_progress = self.phase_analyzer.calculate_conversation_progress(chat_interactions)
-                phase_progress = engine_percent if engine_phase else heuristic_progress
-                if engine_phase:
-                    current_phase = engine_phase
-                
-                # Display phase progression
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.markdown("**📋 Current Design Phase**")
-                    st.info(f"**{current_phase}** - {phase_progress:.0f}% Complete")
-                    
-                    # Phase indicators
-                    phases = ['ideation', 'visualization', 'materialization']
-                    current_phase_idx = phases.index(current_phase) if current_phase in phases else 0
-                    
-                    for i, phase in enumerate(phases):
-                        if i <= current_phase_idx:
-                            st.markdown(f"✅ {phase}")
-                        else:
-                            st.markdown(f"⏳ {phase}")
-                
-                with col2:
-                    # Analyze and display challenges and learning points (qualitative)
-                    analysis = self.phase_analyzer.analyze_phase_progression(chat_interactions)
-                    
-                    st.markdown("**🎯 Key Challenges Identified**")
-                    for challenge in analysis['challenges']:
-                        st.markdown(f"• {challenge}")
-                    
-                    st.markdown("**💡 Learning Points**")
-                    for point in analysis['learning_points']:
-                        st.markdown(f"• {point}")
-                
-                # Session summary
-                st.markdown("---")
-                st.markdown("**📊 Session Summary**")
-                total_interactions = len(chat_interactions)
-                
-                summary_col1, summary_col2, summary_col3 = st.columns(3)
-                with summary_col1:
-                    st.metric("Interactions", total_interactions)
-                with summary_col2:
-                    st.metric("Phase Progress", f"{phase_progress:.0f}%")
-                with summary_col3:
-                    st.metric("Session Status", "Ongoing")
-                
-            except Exception as e:
-                st.error(f"Error analyzing progression: {str(e)}")
+        """Render only the phase circles."""
+        # Display phase progression with circles - no extra wrapper columns needed
+        render_phase_circles(self.phase_system, st.session_state.phase_session_id)
     
     def _render_analysis_results(self):
         """Render comprehensive analysis results."""

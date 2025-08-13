@@ -279,8 +279,12 @@ class SocraticQuestionBank:
     
     def get_next_question(self, phase: DesignPhase, completed_steps: List[SocraticStep]) -> Optional[SocraticQuestion]:
         """Get the next question in the Socratic sequence"""
+        print(f"\n🏦 QUESTION_BANK: Getting next question for {phase.value}")
+
         phase_questions = self.questions.get(phase, {})
-        
+        print(f"   📚 Available questions for phase: {len(phase_questions)}")
+        print(f"   🔑 Question keys: {list(phase_questions.keys())}")
+
         # Define the order of Socratic steps
         step_order = [
             SocraticStep.INITIAL_CONTEXT_REASONING,
@@ -288,12 +292,24 @@ class SocraticQuestionBank:
             SocraticStep.SOCRATIC_QUESTIONING,
             SocraticStep.METACOGNITIVE_PROMPT
         ]
-        
+
+        print(f"   ✅ Completed steps: {[step.value for step in completed_steps]}")
+
         # Find the next uncompleted step
         for step in step_order:
+            print(f"   🔍 Checking step: {step.value}")
             if step not in completed_steps:
-                return phase_questions.get(step)
-        
+                print(f"      ➡️ Step not completed")
+                question = phase_questions.get(step)
+                if question:
+                    print(f"      ✅ Found question: {question.question_text[:60]}...")
+                    return question
+                else:
+                    print(f"      ❌ No question available for step")
+            else:
+                print(f"      ⏭️ Step already completed")
+
+        print(f"   ❌ No next question found - all steps completed")
         return None  # All steps completed
 
 class ResponseGradingSystem:
@@ -454,19 +470,27 @@ class PhaseProgressionSystem:
         self.question_bank = SocraticQuestionBank()
         self.grading_system = ResponseGradingSystem()
         self.sessions: Dict[str, SessionState] = {}
-        
+
         # Phase configuration
         self.phase_weights = {
             DesignPhase.IDEATION: 0.25,
             DesignPhase.VISUALIZATION: 0.35,
             DesignPhase.MATERIALIZATION: 0.40
         }
-        
+
         self.phase_thresholds = {
             DesignPhase.IDEATION: 3.0,
             DesignPhase.VISUALIZATION: 3.5,
             DesignPhase.MATERIALIZATION: 4.0
         }
+
+        # Debug: Check question bank initialization
+        print(f"\n🏦 PHASE_SYSTEM: Question bank initialized")
+        for phase in DesignPhase:
+            questions = self.question_bank.questions.get(phase, {})
+            print(f"   {phase.value}: {len(questions)} questions")
+            for step, question in questions.items():
+                print(f"      {step.value}: {question.question_text[:50]}...")
         # Minimal rubric items (extensible via loader)
         self.phase_checklist_items: Dict[DesignPhase, List[Dict[str, Any]]] = {
             DesignPhase.IDEATION: [
@@ -499,57 +523,100 @@ class PhaseProgressionSystem:
     
     def get_next_question(self, session_id: str) -> Optional[SocraticQuestion]:
         """Get the next question for the current session"""
+        print(f"\n❓ GET_NEXT_QUESTION: Session {session_id}")
+
         session = self.sessions.get(session_id)
         if not session:
+            print(f"   ❌ Session not found")
             return None
-        
+
+        print(f"   📊 Current phase: {session.current_phase.value}")
         current_phase_progress = session.phase_progress.get(session.current_phase)
         if not current_phase_progress:
+            print(f"   ❌ No phase progress found")
             return None
-        
-        return self.question_bank.get_next_question(
-            session.current_phase, 
+
+        print(f"   🔢 Completed steps: {len(current_phase_progress.completed_steps)}")
+        print(f"   📝 Steps: {[step.value for step in current_phase_progress.completed_steps]}")
+
+        next_question = self.question_bank.get_next_question(
+            session.current_phase,
             current_phase_progress.completed_steps
         )
+
+        if next_question:
+            print(f"   ✅ Next question found: {next_question.question_text[:80]}...")
+        else:
+            print(f"   ❌ No next question available")
+
+        return next_question
     
     def process_response(self, session_id: str, response: str) -> Dict[str, Any]:
         """Process a user response and return assessment results"""
+        print(f"\n🎯 PHASE PROGRESSION: Processing response for session {session_id}")
+        print(f"📝 User response: {response[:100]}...")
+
         session = self.sessions.get(session_id)
         if not session:
+            print(f"❌ PHASE ERROR: Session {session_id} not found")
             return {"error": "Session not found"}
-        
+
+        print(f"📊 Current phase: {session.current_phase.value}")
         current_phase_progress = session.phase_progress.get(session.current_phase)
         if not current_phase_progress:
+            print(f"❌ PHASE ERROR: No progress found for phase {session.current_phase.value}")
             return {"error": "No current phase progress"}
-        
+
+        print(f"📈 Phase progress before: {current_phase_progress.completion_percent:.1f}%")
+        print(f"🔢 Completed steps before: {len(current_phase_progress.completed_steps)}")
+
         # Get the current question
         current_question = self.question_bank.get_next_question(
-            session.current_phase, 
+            session.current_phase,
             current_phase_progress.completed_steps
         )
-        
+
         if not current_question:
+            print(f"❌ PHASE ERROR: No current question found for phase {session.current_phase.value}")
             return {"error": "No current question found"}
-        
+
+        print(f"❓ Current question: {current_question.question_text[:80]}...")
+        print(f"🎯 Question step: {current_question.step.value}")
+
         # Grade the response
         grade = self.grading_system.grade_response(current_question, response)
-        
+        print(f"📊 GRADING RESULTS:")
+        print(f"   Overall Score: {grade.overall_score:.2f}/5.0")
+        print(f"   Completeness: {grade.completeness:.2f}/5.0")
+        print(f"   Depth: {grade.depth:.2f}/5.0")
+        print(f"   Relevance: {grade.relevance:.2f}/5.0")
+        print(f"   Innovation: {grade.innovation:.2f}/5.0")
+        print(f"   Technical: {grade.technical_understanding:.2f}/5.0")
+
         # Update progress
         current_phase_progress.responses[current_question.question_id] = response
         current_phase_progress.grades[current_question.question_id] = grade
         current_phase_progress.completed_steps.append(current_question.step)
         current_phase_progress.last_updated = datetime.now()
-        
+
         # Recalculate average score
         scores = [g.overall_score for g in current_phase_progress.grades.values()]
+        old_avg = current_phase_progress.average_score
         current_phase_progress.average_score = sum(scores) / len(scores) if scores else 0.0
+        print(f"📊 Average score: {old_avg:.2f} → {current_phase_progress.average_score:.2f}")
 
         # Recalculate completion percent for the current phase
+        old_percent = current_phase_progress.completion_percent
         current_phase_progress.completion_percent = self._compute_phase_completion_percent(session, current_phase_progress)
-        
+        print(f"📈 Completion percent: {old_percent:.1f}% → {current_phase_progress.completion_percent:.1f}%")
+        print(f"🔢 Completed steps after: {len(current_phase_progress.completed_steps)}")
+
         # Check if phase is complete
+        was_complete = current_phase_progress.is_complete
         self._check_phase_completion(session, current_phase_progress)
-        
+        if current_phase_progress.is_complete and not was_complete:
+            print(f"🎉 PHASE COMPLETED: {session.current_phase.value}")
+
         # Update session
         session.last_updated = datetime.now()
         session.conversation_history.append({
@@ -560,7 +627,12 @@ class PhaseProgressionSystem:
             "response": response,
             "grade": grade.overall_score
         })
-        
+
+        print(f"💾 Session updated with {len(session.conversation_history)} total interactions")
+
+        # Generate phase nudge if needed
+        nudge = self._generate_phase_nudge(session, current_phase_progress, grade)
+
         # Get next question or phase transition info
         next_question = self.get_next_question(session_id)
         
@@ -586,7 +658,8 @@ class PhaseProgressionSystem:
             },
             "next_question": next_question.question_text if next_question else None,
             "phase_complete": current_phase_progress.is_complete,
-            "session_complete": self._is_session_complete(session)
+            "session_complete": self._is_session_complete(session),
+            "nudge": nudge
         }
     
     def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
@@ -597,10 +670,13 @@ class PhaseProgressionSystem:
         - Required checklist items for the current phase (30%)
         - Score readiness vs. threshold (10%)
         """
+        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value}:")
+
         # Steps completion ratio
         total_steps = 4
         steps_completed = len(phase_progress.completed_steps)
         steps_ratio = steps_completed / total_steps if total_steps > 0 else 0.0
+        print(f"   📊 Steps: {steps_completed}/{total_steps} = {steps_ratio:.2f} ({steps_ratio*60:.1f}% of total)")
 
         # Checklist completion ratio for the current phase
         items = self.phase_checklist_items.get(session.current_phase, [])
@@ -617,18 +693,84 @@ class PhaseProgressionSystem:
                 if state.get('status') == 'completed':
                     completed_required += 1
         checklist_ratio = (completed_required / total_required) if total_required > 0 else 0.0
+        print(f"   ✅ Checklist: {completed_required}/{total_required} = {checklist_ratio:.2f} ({checklist_ratio*30:.1f}% of total)")
 
         # Score readiness ratio
         threshold = self.phase_thresholds.get(session.current_phase, 3.0)
         score_ratio = min(phase_progress.average_score / threshold, 1.0) if threshold > 0 else 0.0
+        print(f"   🎯 Score: {phase_progress.average_score:.2f}/{threshold:.1f} = {score_ratio:.2f} ({score_ratio*10:.1f}% of total)")
 
         percent = 100.0 * (0.6 * steps_ratio + 0.3 * checklist_ratio + 0.1 * score_ratio)
+        print(f"   🧮 CALCULATION: (60% × {steps_ratio:.2f}) + (30% × {checklist_ratio:.2f}) + (10% × {score_ratio:.2f})")
+        print(f"   🧮 CALCULATION: {0.6 * steps_ratio:.2f} + {0.3 * checklist_ratio:.2f} + {0.1 * score_ratio:.2f} = {percent/100:.2f}")
+
         # Clamp to [0, 100]
         if percent < 0.0:
             percent = 0.0
         elif percent > 100.0:
             percent = 100.0
+
+        print(f"   📈 FINAL COMPLETION: {percent:.1f}%")
         return percent
+
+    def _generate_phase_nudge(self, session: SessionState, phase_progress: PhaseProgress, grade: GradingResult) -> Optional[str]:
+        """Generate a nudge to help the user progress in the current phase."""
+        current_phase = session.current_phase.value
+        completion_percent = phase_progress.completion_percent
+        steps_completed = len(phase_progress.completed_steps)
+        avg_score = phase_progress.average_score
+
+        print(f"\n🎯 GENERATING PHASE NUDGE:")
+        print(f"   Phase: {current_phase}")
+        print(f"   Completion: {completion_percent:.1f}%")
+        print(f"   Steps: {steps_completed}/4")
+        print(f"   Avg Score: {avg_score:.2f}/5.0")
+
+        # No nudge if doing well
+        if completion_percent > 75 and avg_score > 3.5:
+            print(f"   ✅ No nudge needed - good progress")
+            return None
+
+        # Generate nudges based on phase and progress
+        nudges = {
+            "ideation": [
+                "💡 Try exploring different conceptual approaches to your design challenge.",
+                "🎯 Consider the core user needs and how your space can address them uniquely.",
+                "🌟 What if you approached this problem from a completely different angle?",
+                "📝 Break down your design challenge into smaller, manageable components."
+            ],
+            "visualization": [
+                "✏️ Try sketching your ideas to better understand spatial relationships.",
+                "📐 Consider how different design elements work together visually.",
+                "🎨 Explore how materials and lighting could enhance your concept.",
+                "📊 Think about how to communicate your design ideas more clearly."
+            ],
+            "materialization": [
+                "🔧 Consider the practical aspects of implementing your design.",
+                "📋 Think about construction methods and material choices.",
+                "💰 How would budget and timeline constraints affect your design?",
+                "🏗️ What technical challenges need to be addressed in your proposal?"
+            ]
+        }
+
+        phase_nudges = nudges.get(current_phase, [])
+        if not phase_nudges:
+            return None
+
+        # Select nudge based on progress level
+        if completion_percent < 25:
+            nudge_index = 0  # Getting started nudge
+        elif completion_percent < 50:
+            nudge_index = 1  # Development nudge
+        elif completion_percent < 75:
+            nudge_index = 2  # Refinement nudge
+        else:
+            nudge_index = 3  # Completion nudge
+
+        selected_nudge = phase_nudges[min(nudge_index, len(phase_nudges) - 1)]
+        print(f"   💬 Selected nudge: {selected_nudge}")
+
+        return selected_nudge
 
     def _check_phase_completion(self, session: SessionState, phase_progress: PhaseProgress):
         """Check if the current phase is complete"""
