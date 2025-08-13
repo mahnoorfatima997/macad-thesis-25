@@ -1,28 +1,53 @@
-# knowledge_base/knowledge_manager.py - Complete Fixed Version
-from turtle import distance
+# enhanced_knowledge_manager.py - With citation support
 import chromadb
 import os
 import PyPDF2
-import requests
 import json
-from typing import List, Dict, Any
+import shutil
+from typing import List, Dict, Any, Optional
 from pathlib import Path
-import urllib.parse
-from io import BytesIO
+from datetime import datetime
 
 class KnowledgeManager:
-    def __init__(self, domain="architecture"):
+    def __init__(self, domain: str = "architecture"):
         self.domain = domain
         
-        # Create directories if they don't exist
-        self.base_path = Path("./knowledge_base")
-        self.docs_path = self.base_path / "raw_documents"
+        # Find the correct paths by checking what actually exists
+        possible_pdf_paths = [
+            Path("./thesis-agents/knowledge_base/local_pdfs"),
+            Path("./knowledge_base/local_pdfs"),
+            Path("thesis-agents/knowledge_base/local_pdfs"),
+            Path("knowledge_base/local_pdfs"),
+        ]
+        
+        # Find the PDF directory that actually exists
+        self.local_pdfs_path = None
+        for path in possible_pdf_paths:
+            if path.exists():
+                self.local_pdfs_path = path
+                print(f"Found PDF directory: {path.absolute()}")
+                break
+        
+        if self.local_pdfs_path is None:
+            self.local_pdfs_path = Path("./thesis-agents/knowledge_base/local_pdfs")
+        
+        # Set base_path
+        if "thesis-agents" in str(self.local_pdfs_path):
+            if Path("./thesis-agents").exists():
+                self.base_path = Path("./thesis-agents/knowledge_base")
+            else:
+                self.base_path = Path("thesis-agents/knowledge_base")
+        else:
+            self.base_path = Path("./knowledge_base")
+        
+        # Create other directories
+        self.docs_path = self.base_path / "raw_documents" 
         self.pdfs_path = self.docs_path / "pdfs"
         self.texts_path = self.docs_path / "texts"
-        self.downloads_path = self.base_path / "downloaded_pdfs"  # Add this line
+        self.citations_path = self.base_path / "citations.json"  # Store citation info
         
-        for path in [self.base_path, self.docs_path, self.pdfs_path, self.texts_path, self.downloads_path]:
-            path.mkdir(exist_ok=True)
+        for path in [self.base_path, self.docs_path, self.pdfs_path, self.texts_path]:
+            path.mkdir(exist_ok=True, parents=True)
         
         # Initialize ChromaDB
         self.client = chromadb.PersistentClient(path=str(self.base_path / "vectorstore"))
@@ -32,7 +57,7 @@ class KnowledgeManager:
             self.collection = self.client.get_collection(name=self.collection_name)
             print(f"Loaded existing collection: {self.collection_name}")
             print(f"   Documents in collection: {self.collection.count()}")
-        except:
+        except Exception:
             try:
                 self.collection = self.client.create_collection(
                     name=self.collection_name,
@@ -41,142 +66,120 @@ class KnowledgeManager:
                 print(f"Created new collection: {self.collection_name}")
             except Exception as e:
                 if "already exists" in str(e):
-                    # Collection exists but get_collection failed somehow
                     self.collection = self.client.get_collection(name=self.collection_name)
                     print(f"Using existing collection: {self.collection_name}")
                 else:
                     raise
-    
-    def add_pdf_from_url(self, url: str, title: str = "", author: str = "", source_type: str = "web_pdf"):
-        """Download and process PDF from URL"""
         
-        print(f"🌐 Downloading PDF from: {url}")
+        # Load or create citation database
+        self.citations_db = self.load_citations_db()
+    
+    def load_citations_db(self) -> Dict:
+        """Load citation information from JSON file"""
+        if self.citations_path.exists():
+            try:
+                with open(self.citations_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"⚠️ Error loading citations: {e}")
+                return {}
+        return {}
+    
+    def save_citations_db(self):
+        """Save citation information to JSON file"""
+        try:
+            with open(self.citations_path, 'w', encoding='utf-8') as f:
+                json.dump(self.citations_db, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"⚠️ Error saving citations: {e}")
+    
+    def extract_pdf_metadata(self, pdf_path: str) -> Dict[str, Any]:
+        """Extract metadata from PDF for better citations"""
+        metadata = {
+            "file_path": pdf_path,
+            "file_name": Path(pdf_path).name,
+            "file_size": Path(pdf_path).stat().st_size,
+            "date_added": datetime.now().isoformat(),
+            "title": "",
+            "author": "",
+            "subject": "",
+            "creator": "",
+            "producer": "",
+            "creation_date": "",
+            "modification_date": "",
+            "total_pages": 0
+        }
         
         try:
-            # Generate title from URL if not provided
-            if not title:
-                title = os.path.basename(urllib.parse.urlparse(url).path).replace('.pdf', '')
-            
-            # Check if already downloaded
-            local_filename = f"{title.replace(' ', '_').replace('/', '_')}.pdf"
-            local_path = self.downloads_path / local_filename
-            
-            if not local_path.exists():
-                # Download the PDF
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
+            with open(pdf_path, 'rb') as file:
+                pdf_reader = PyPDF2.PdfReader(file)
                 
-                print(f"   Downloading to: {local_filename}")
-                response = requests.get(url, headers=headers, stream=True, timeout=30)
-                response.raise_for_status()
+                # Basic info
+                metadata["total_pages"] = len(pdf_reader.pages)
                 
-                # Save to local cache
-                with open(local_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
+                # PDF metadata
+                if pdf_reader.metadata:
+                    metadata["title"] = pdf_reader.metadata.get('/Title', '') or ''
+                    metadata["author"] = pdf_reader.metadata.get('/Author', '') or ''
+                    metadata["subject"] = pdf_reader.metadata.get('/Subject', '') or ''
+                    metadata["creator"] = pdf_reader.metadata.get('/Creator', '') or ''
+                    metadata["producer"] = pdf_reader.metadata.get('/Producer', '') or ''
+                    
+                    # Handle dates
+                    creation_date = pdf_reader.metadata.get('/CreationDate', '')
+                    if creation_date:
+                        metadata["creation_date"] = str(creation_date)
+                    
+                    modification_date = pdf_reader.metadata.get('/ModDate', '')
+                    if modification_date:
+                        metadata["modification_date"] = str(modification_date)
                 
-                print(f"✅ Downloaded: {local_filename}")
-            else:
-                print(f"📄 Using cached: {local_filename}")
-            
-            # Process the PDF
-            self.add_pdf_document(str(local_path), title, author, source_type)
-            
+                # If no title in metadata, use filename
+                if not metadata["title"]:
+                    metadata["title"] = Path(pdf_path).stem.replace('_', ' ').replace('-', ' ')
+                    metadata["title"] = ' '.join(word.capitalize() for word in metadata["title"].split())
+                
         except Exception as e:
-            print(f"❌ Error downloading/processing PDF from {url}: {e}")
+            print(f"⚠️ Error extracting metadata from {pdf_path}: {e}")
+            # Fallback to filename
+            metadata["title"] = Path(pdf_path).stem.replace('_', ' ').replace('-', ' ')
+            metadata["title"] = ' '.join(word.capitalize() for word in metadata["title"].split())
+        
+        return metadata
     
-    def add_archive_org_collection(self, collection_url: str, max_files: int = 3):
-        """Add multiple PDFs from archive.org collection"""
+    def add_pdf_document(self, pdf_path: str, custom_title: str = "", custom_author: str = "", source_type: str = "local_pdf") -> bool:
+        """Extract text from PDF and add to knowledge base with enhanced metadata"""
         
-        print(f"📚 Processing archive.org collection: {collection_url}")
+        # Extract comprehensive metadata
+        pdf_metadata = self.extract_pdf_metadata(pdf_path)
         
-        try:
-            # Extract collection identifier from URL
-            if 'archive.org/details/' in collection_url:
-                collection_id = collection_url.split('archive.org/details/')[-1].split('/')[0]
-            else:
-                print("❌ Invalid archive.org URL format")
-                return
-            
-            print(f"🔍 Collection ID: {collection_id}")
-            
-            # Get collection metadata
-            metadata_url = f"https://archive.org/metadata/{collection_id}"
-            print(f"📡 Fetching metadata from: {metadata_url}")
-            
-            response = requests.get(metadata_url, timeout=15)
-            response.raise_for_status()
-            
-            metadata = response.json()
-            
-            # Find PDF files in the collection
-            pdf_files = []
-            if 'files' in metadata:
-                for file_info in metadata['files']:
-                    if (file_info.get('format') == 'Text PDF' or 
-                        file_info['name'].lower().endswith('.pdf')):
-                        pdf_files.append({
-                            'name': file_info['name'],
-                            'size': int(file_info.get('size', 0)) if file_info.get('size') else 0,
-                            'title': file_info.get('title', file_info['name'].replace('.pdf', ''))
-                        })
-            
-            # Sort by size (smaller files first for testing)
-            pdf_files.sort(key=lambda x: x['size'])
-            
-            print(f"📋 Found {len(pdf_files)} PDF files")
-            
-            # Show file list
-            for i, pdf in enumerate(pdf_files[:5]):
-                size_mb = pdf['size'] / (1024 * 1024) if pdf['size'] > 0 else 0
-                print(f"   {i+1}. {pdf['name']} ({size_mb:.1f}MB)")
-            
-            # Process up to max_files
-            processed = 0
-            for pdf_file in pdf_files:
-                if processed >= max_files:
-                    break
-                
-                # Skip very large files (>20MB) for testing
-                file_size = pdf_file['size']
-                if file_size > 20 * 1024 * 1024:  # 20MB limit
-                    print(f"⏭️ Skipping large file: {pdf_file['name']} ({file_size/1024/1024:.1f}MB)")
-                    continue
-                
-                # Construct download URL
-                pdf_url = f"https://archive.org/download/{collection_id}/{pdf_file['name']}"
-                
-                # Add to knowledge base
-                print(f"\n📥 Processing file {processed + 1}/{max_files}: {pdf_file['name']}")
-                self.add_pdf_from_url(
-                    pdf_url, 
-                    pdf_file['title'], 
-                    metadata.get('metadata', {}).get('creator', 'Archive.org'),
-                    'archive_org'
-                )
-                
-                processed += 1
-            
-            print(f"\n🎉 Successfully processed {processed} files from collection")
-            
-        except Exception as e:
-            print(f"❌ Error processing archive.org collection: {e}")
-            import traceback
-            traceback.print_exc()
-    
-    def add_pdf_document(self, pdf_path: str, title: str, author: str = "", source_type: str = "pdf"):
-        """Extract text from PDF and add to knowledge base"""
+        # Use custom values if provided
+        title = custom_title or pdf_metadata["title"]
+        author = custom_author or pdf_metadata["author"]
         
-        print(f"📄 Processing PDF: {title}")
+        print(f"   📖 Processing: {title}")
+        print(f"      Author: {author}")
+        print(f"      Pages: {pdf_metadata['total_pages']}")
         
         try:
             # Extract text from PDF
             with open(pdf_path, 'rb') as file:
                 pdf_reader = PyPDF2.PdfReader(file)
-                text = ""
                 
-                print(f"   📖 Reading {len(pdf_reader.pages)} pages...")
+                # Check if PDF is encrypted
+                if pdf_reader.is_encrypted:
+                    print(f"   🔒 PDF is encrypted/protected")
+                    
+                    # Try to decrypt with empty password (common for some PDFs)
+                    try:
+                        pdf_reader.decrypt('')
+                        print(f"   🔓 Successfully decrypted with empty password")
+                    except Exception as decrypt_error:
+                        print(f"   ❌ Cannot decrypt PDF: {decrypt_error}")
+                        print(f"      This PDF requires a password or uses encryption not supported")
+                        return False
+                
+                text = ""
                 
                 for page_num, page in enumerate(pdf_reader.pages):
                     try:
@@ -184,51 +187,285 @@ class KnowledgeManager:
                         if page_text and page_text.strip():
                             text += f"[Page {page_num + 1}]\n{page_text}\n\n"
                     except Exception as e:
-                        print(f"   ⚠️ Error reading page {page_num + 1}: {e}")
+                        print(f"      ⚠️ Error reading page {page_num + 1}: {e}")
+                        # For encrypted PDFs, this might be a decryption issue
+                        if "PyCryptodome" in str(e) or "AES" in str(e):
+                            print(f"      💡 This appears to be an encryption issue")
                         continue
             
             if not text.strip():
-                print(f"⚠️ No text extracted from {title}")
-                return
+                print(f"   ⚠️ No text extracted from {title}")
+                return False
             
-            print(f"   📝 Extracted {len(text)} characters")
+            print(f"   📝 Extracted {len(text):,} characters")
             
-            # Split into chunks and add to database
-            chunks = self.split_text_into_chunks(text, max_length=1000)
-            self._add_chunks_to_db(chunks, title, author, source_type)
+            # Store citation information
+            doc_id = title.lower().replace(' ', '_').replace('/', '_')
+            self.citations_db[doc_id] = pdf_metadata
+            self.save_citations_db()
             
-            print(f"✅ Added {len(chunks)} chunks from {title}")
+            # Clean and split into chunks
+            cleaned_text = self.clean_text(text)
+            chunks = self.split_text_into_chunks(cleaned_text, max_length=1000)
+            self._add_chunks_to_db(chunks, title, author, source_type, pdf_metadata)
+            
+            print(f"   ✅ Added {len(chunks)} chunks from {title}")
+            return True
             
         except Exception as e:
-            print(f"❌ Error processing PDF {title}: {e}")
+            print(f"   ❌ Error processing PDF {title}: {e}")
+            return False
     
-    def _add_chunks_to_db(self, chunks: List[str], title: str, author: str, source_type: str):
-        """Helper method to add chunks to ChromaDB"""
+    def clean_text(self, text: str) -> str:
+        """Clean text to improve embedding quality"""
+        import re
+        
+        # Replace problematic encoding characters
+        text = text.replace('�', ' ')
+        text = text.replace('\x00', ' ')
+        
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text)
+        
+        # Remove excessive punctuation patterns that don't add meaning
+        text = re.sub(r'\.{3,}', '...', text)  # Multiple dots to ellipsis
+        text = re.sub(r'-{2,}', '--', text)    # Multiple dashes to double dash
+        
+        # Clean page markers but keep page numbers for reference
+        text = re.sub(r'\[Page (\d+)\]\s*\n', r'[Page \1] ', text)
+        
+        return text.strip()
+    
+    def _add_chunks_to_db(self, chunks: List[str], title: str, author: str, source_type: str, pdf_metadata: Dict):
+        """Add chunks to ChromaDB with enhanced metadata"""
         
         for i, chunk in enumerate(chunks):
-            # Create unique ID
-            doc_id = f"{self.domain}_{title.lower().replace(' ', '_')}_{i}"
+            doc_id = f"{self.domain}_{title.lower().replace(' ', '_').replace('/', '_')}_{i}"
             
-            # Check if document already exists
+            # Enhanced metadata for each chunk
+            chunk_metadata = {
+                "title": title,
+                "author": author,
+                "source_type": source_type,
+                "chunk_index": i,
+                "domain": self.domain,
+                "chunk_length": len(chunk),
+                
+                # Citation information
+                "file_name": pdf_metadata["file_name"],
+                "file_path": pdf_metadata["file_path"],
+                "total_pages": pdf_metadata["total_pages"],
+                "creation_date": pdf_metadata.get("creation_date", ""),
+                "subject": pdf_metadata.get("subject", ""),
+                "date_added": pdf_metadata["date_added"],
+                
+                # For citation generation
+                "citation_key": title.lower().replace(' ', '_').replace('/', '_')
+            }
+            
+            # Check if already exists
             try:
                 existing = self.collection.get(ids=[doc_id])
                 if existing['ids']:
-                    continue  # Skip if already exists
-            except:
+                    continue
+            except Exception:
                 pass
             
             self.collection.add(
                 documents=[chunk],
-                metadatas=[{
-                    "title": title,
-                    "author": author,
-                    "source_type": source_type,
-                    "chunk_index": i,
-                    "domain": self.domain,
-                    "chunk_length": len(chunk)
-                }],
+                metadatas=[chunk_metadata],
                 ids=[doc_id]
             )
+    
+    def search_with_citations(self, query: str, n_results: int = 5) -> List[Dict]:
+        """Search knowledge base and return results with citation information"""
+        
+        print(f"🔍 Searching with citations for: '{query}'")
+        
+        try:
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=min(n_results, self.collection.count())
+            )
+            
+            knowledge_results = []
+            
+            if results["documents"] and results["documents"][0]:
+                for i, (doc, metadata, distance) in enumerate(zip(
+                    results["documents"][0],
+                    results["metadatas"][0], 
+                    results["distances"][0]
+                )):
+                    if distance <= 1.0:
+                        similarity = 1.0 - distance
+                        if similarity > 0.4:
+                            
+                            # Get full citation info
+                            citation_key = metadata.get("citation_key", "")
+                            full_citation_info = self.citations_db.get(citation_key, {})
+                            
+                            result = {
+                                "content": doc,
+                                "metadata": metadata,
+                                "similarity": similarity,
+                                "distance": distance,
+                                "rank": i + 1,
+                                
+                                # Citation information
+                                "citation": self.generate_citation(metadata, full_citation_info),
+                                "source_file": metadata.get("file_name", ""),
+                                "page_info": self.extract_page_info(doc),
+                                "full_citation_data": full_citation_info
+                            }
+                            
+                            knowledge_results.append(result)
+            
+            print(f"📊 Found {len(knowledge_results)} results with citations")
+            return knowledge_results
+            
+        except Exception as e:
+            print(f"❌ Search failed: {e}")
+            return []
+    
+    def generate_citation(self, metadata: Dict, full_info: Dict) -> str:
+        """Generate a properly formatted citation"""
+        
+        title = metadata.get("title", "Unknown Title")
+        author = metadata.get("author", "Unknown Author")
+        creation_date = full_info.get("creation_date", "")
+        file_name = metadata.get("file_name", "")
+        
+        # Extract year from creation date if available
+        year = ""
+        if creation_date:
+            try:
+                # PDF dates are often in format like "D:20220315143022+00'00'"
+                if creation_date.startswith("D:"):
+                    year = creation_date[2:6]  # Extract year
+            except:
+                pass
+        
+        if not year:
+            year = "n.d."  # no date
+        
+        # Basic citation format (adjust as needed for your citation style)
+        if author and author != "Unknown Author":
+            citation = f"{author} ({year}). {title}."
+        else:
+            citation = f"{title} ({year})."
+        
+        if file_name:
+            citation += f" [PDF: {file_name}]"
+        
+        return citation
+    
+    def extract_page_info(self, content: str) -> str:
+        """Extract page information from content"""
+        import re
+        page_match = re.search(r'\[Page (\d+)\]', content)
+        if page_match:
+            return f"Page {page_match.group(1)}"
+        return ""
+    
+    def get_citation_report(self) -> Dict:
+        """Generate a report of all sources for bibliography"""
+        
+        report = {
+            "total_sources": len(self.citations_db),
+            "sources": [],
+            "generated_at": datetime.now().isoformat()
+        }
+        
+        for citation_key, info in self.citations_db.items():
+            source_info = {
+                "title": info.get("title", ""),
+                "author": info.get("author", ""),
+                "file_name": info.get("file_name", ""),
+                "pages": info.get("total_pages", 0),
+                "date_added": info.get("date_added", ""),
+                "creation_date": info.get("creation_date", ""),
+                "subject": info.get("subject", ""),
+                "citation": self.generate_citation(info, info)
+            }
+            report["sources"].append(source_info)
+        
+        # Sort by title
+        report["sources"].sort(key=lambda x: x["title"])
+        
+        return report
+    
+    # Include all the other methods from the original class
+    def clear_database(self) -> None:
+        """Clear all existing data from the knowledge base"""
+        try:
+            print("🧹 Clearing existing knowledge base...")
+            
+            try:
+                self.client.delete_collection(name=self.collection_name)
+                print("   ✅ Deleted existing collection")
+            except Exception:
+                pass
+            
+            self.collection = self.client.create_collection(
+                name=self.collection_name,
+                metadata={"description": f"Knowledge base for {self.domain}"}
+            )
+            print("   ✅ Created fresh collection")
+            
+            # Clear citations database
+            self.citations_db = {}
+            self.save_citations_db()
+            
+        except Exception as e:
+            print(f"❌ Error clearing database: {e}")
+    
+    def process_local_pdfs(self, pdf_directory: Optional[str] = None) -> None:
+        """Process all PDFs from a local directory"""
+        
+        if pdf_directory is None:
+            pdf_directory_path = self.local_pdfs_path
+        else:
+            pdf_directory_path = Path(pdf_directory)
+        
+        if not pdf_directory_path.exists():
+            print(f"❌ PDF directory not found: {pdf_directory_path}")
+            return
+        
+        pdf_files = list(pdf_directory_path.glob("*.pdf"))
+        pdf_files.extend(list(pdf_directory_path.glob("**/*.pdf")))
+        
+        if not pdf_files:
+            print(f"❌ No PDF files found in: {pdf_directory_path}")
+            return
+        
+        print(f"📚 Found {len(pdf_files)} PDF files to process")
+        
+        processed_count = 0
+        failed_count = 0
+        
+        for pdf_file in pdf_files:
+            try:
+                print(f"\n📄 Processing: {pdf_file.name}")
+                
+                success = self.add_pdf_document(
+                    str(pdf_file), 
+                    source_type="local_pdf"
+                )
+                
+                if success:
+                    processed_count += 1
+                else:
+                    failed_count += 1
+                
+            except Exception as e:
+                print(f"❌ Failed to process {pdf_file.name}: {e}")
+                failed_count += 1
+                continue
+        
+        print(f"\n🎉 Processing complete!")
+        print(f"   ✅ Successfully processed: {processed_count} files")
+        print(f"   ❌ Failed: {failed_count} files")
+        print(f"   📊 Total documents in database: {self.collection.count()}")
     
     def split_text_into_chunks(self, text: str, max_length: int = 1000) -> List[str]:
         """Split text into meaningful chunks preserving context"""
@@ -269,8 +506,6 @@ class KnowledgeManager:
         chunks = [chunk for chunk in chunks if len(chunk) > 50]
         
         return chunks
-    
-    # In knowledge_base/knowledge_manager.py - Update search threshold
 
     def search_knowledge(self, query: str, n_results: int = 5, min_similarity: float = 0.0) -> List[Dict]:
         """Search knowledge base with proper distance handling"""
@@ -291,22 +526,26 @@ class KnowledgeManager:
                     results["metadatas"][0], 
                     results["distances"][0]
                 )):
-                    # Accept distances up to 1.2 (based on your test results)
-                    if distance <= 1.0:  # Good matches
-                        similarity = 1.0 - distance  # 0.540 distance = 0.460 similarity
-                        if similarity > 0.4:  # Adjust threshold to match reality
+                    if distance <= 1.5:  # More lenient distance threshold
+                        similarity = 1.0 - distance
+                        # Debug: show all results with their similarities
+                        if i < 3:  # Show top 3 for debugging
+                            print(f"   Debug: Result {i+1} - Distance: {distance:.4f}, Similarity: {similarity:.4f}")
+                        
+                        if similarity > 0.15:  # Lower threshold (15%) for better recall
                             knowledge_results.append({
                                 "content": doc,
                                 "metadata": metadata,
                                 "similarity": similarity,
-                            "distance": distance,
-                            "rank": i + 1
-                        })
+                                "distance": distance,
+                                "rank": i + 1
+                            })
             
             print(f"📊 Found {len(knowledge_results)} relevant results")
             
             for result in knowledge_results[:2]:
-                print(f"   📄 Distance: {result['distance']:.3f} | Content: {result['content'][:60]}...")
+                print(f"   📄 Distance: {result['distance']:.3f} | Source: {result['metadata']['title']}")
+                print(f"      Content: {result['content'][:80]}...")
             
             return knowledge_results
             
@@ -314,13 +553,6 @@ class KnowledgeManager:
             print(f"❌ Knowledge search failed: {e}")
             return []
 
-
-
-
-
-
-
-    
     def get_collection_stats(self):
         """Get statistics about the knowledge base"""
         
@@ -329,8 +561,8 @@ class KnowledgeManager:
             if count == 0:
                 return {"total_documents": 0, "sources": [], "domains": []}
             
-            # Get sample of metadata to analyze
-            sample = self.collection.get(limit=min(100, count))
+            # Get sample of metadata to analyze - get more for better stats
+            sample = self.collection.get(limit=min(1000, count))
             
             # Analyze sources
             sources = {}
@@ -358,37 +590,74 @@ class KnowledgeManager:
             print(f"❌ Error getting stats: {e}")
             return {"error": str(e)}
 
-# Quick setup function for testing
-def quick_setup_with_web_resources():
-    """Quick setup with web resources for testing"""
+    def list_pdf_files(self, directory: str = None):
+        """List all PDF files in the specified directory"""
+        
+        if directory is None:
+            directory = self.local_pdfs_path
+        else:
+            directory = Path(directory)
+        
+        if not directory.exists():
+            print(f"❌ Directory not found: {directory}")
+            return []
+        
+        pdf_files = list(directory.glob("*.pdf"))
+        pdf_files.extend(list(directory.glob("**/*.pdf")))
+        
+        print(f"📁 Found {len(pdf_files)} PDF files in {directory}:")
+        
+        for i, pdf_file in enumerate(pdf_files, 1):
+            file_size = pdf_file.stat().st_size / (1024 * 1024)  # Size in MB
+            print(f"   {i:2d}. {pdf_file.name} ({file_size:.1f} MB)")
+        
+        return pdf_files
+
+
+# Setup function
+def setup_with_local_pdfs(pdf_directory: str = "thesis-agents/knowledge_base/local_pdfs", clear_existing: bool = True):
+    """Setup knowledge base with local PDFs"""
     
-    print("🚀 Quick setup with web resources...")
+    print("🚀 Setting up knowledge base with local PDFs...")
     
     km = KnowledgeManager("architecture")
     
-    # Add the archive.org collection you found
-    km.add_archive_org_collection(
-        "https://archive.org/details/architectureinfrancetaschen/", 
-        max_files=90  #  90 files for testing will be increased later
-    )
+    if clear_existing:
+        km.clear_database()
+    
+    # Process all local PDFs
+    km.process_local_pdfs(pdf_directory)
     
     # Show final stats
     stats = km.get_collection_stats()
     print(f"\n📊 Final Knowledge Base Stats:")
     print(f"   Total documents: {stats.get('total_documents', 0)}")
-    print(f"   Sources: {list(stats.get('sources', {}).keys())}")
+    print(f"   Unique sources: {stats.get('unique_sources', 0)}")
+    print(f"   Source types: {stats.get('source_types', {})}")
     
     return km
 
+
 if __name__ == "__main__":
-    # Test the setup
-    km = quick_setup_with_web_resources()
+    # Test setup with local PDFs
+    pdf_dir = input("Enter path to your PDF directory (or press Enter for 'thesis-agents/knowledge_base/local_pdfs'): ").strip()
+    if not pdf_dir:
+        pdf_dir = "thesis-agents/knowledge_base/local_pdfs"
+    
+    km = setup_with_local_pdfs(pdf_dir)
     
     # Test search if we have content
     if km.collection.count() > 0:
         print("\n🔍 Testing search...")
-        results = km.search_knowledge("architecture design", n_results=2)
+        test_query = input("Enter a search query (or press Enter for 'architecture design'): ").strip()
+        if not test_query:
+            test_query = "architecture design"
         
-        for result in results:
-            print(f"📄 {result['metadata']['title']} (similarity: {result['similarity']:.2f})")
-            print(f"   Content: {result['content'][:100]}...")
+        results = km.search_knowledge(test_query, n_results=3)
+        
+        for i, result in enumerate(results, 1):
+            print(f"\n📄 Result {i}: {result['metadata']['title']}")
+            print(f"   Similarity: {result['similarity']:.3f}")
+            print(f"   Content: {result['content'][:200]}...")
+    else:
+        print("\n❌ No documents found. Make sure your PDF directory contains PDF files.")
