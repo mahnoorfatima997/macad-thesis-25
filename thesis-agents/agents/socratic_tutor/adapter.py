@@ -1853,18 +1853,28 @@ Generate a comprehensive answer (3-4 sentences):
             building_type = self._extract_building_type_from_context(state)
             user_input = context_classification.get("user_input", "")
             
-            # Get more context for better responses
+            # Get comprehensive context for better responses
             design_brief = getattr(state, 'current_design_brief', '') or ''
-            recent_messages = [msg['content'] for msg in state.messages[-4:] if msg.get('role') in ['user', 'assistant']]
-            conversation_context = ' | '.join(recent_messages[-4:]) if recent_messages else ''
+
+            # Get full conversation context to understand references
+            all_messages = [msg['content'] for msg in state.messages if msg.get('role') in ['user', 'assistant']]
+            conversation_context = ' | '.join(all_messages[-8:]) if all_messages else ''
+
+            # Extract key project details from conversation history
+            project_details = self._extract_project_details_from_conversation(state)
 
             # Generate contextual guidance using LLM
             prompt = f"""
             You are an architectural mentor helping with a {building_type} project.
 
             PROJECT CONTEXT: {design_brief}
+            PROJECT DETAILS FROM CONVERSATION: {project_details}
             RECENT CONVERSATION: {conversation_context}
             CURRENT USER REQUEST: "{user_input}"
+
+            IMPORTANT: The user's current message may refer to previous conversation context.
+            Look for references like "this", "that", "it", "forgot about" that connect to earlier discussion.
+            If the user mentions something was "forgotten", identify what specific aspect from the conversation history they're referring to.
 
             Provide a BALANCED response that includes:
             1. HELPFUL GUIDANCE: Give specific, actionable advice related to their {building_type} project
@@ -1961,6 +1971,56 @@ Generate a comprehensive answer (3-4 sentences):
             "building_type": building_type,
             "cognitive_flags": ["continued_engagement"]
         }
+
+    def _extract_project_details_from_conversation(self, state: ArchMentorState) -> str:
+        """Extract key project details from conversation history to understand context."""
+        try:
+            all_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+            conversation_text = ' '.join(all_messages).lower()
+
+            details = []
+
+            # Check conversation context first for project details
+            if hasattr(state, 'conversation_context'):
+                ctx = state.conversation_context
+                if ctx.project_type:
+                    details.append(f"{ctx.project_type} project")
+                if ctx.existing_building_type and ctx.target_building_type:
+                    details.append(f"converting {ctx.existing_building_type} to {ctx.target_building_type}")
+                elif ctx.existing_building_type:
+                    details.append(f"existing {ctx.existing_building_type} building")
+                elif ctx.target_building_type:
+                    details.append(f"{ctx.target_building_type} program")
+                if ctx.project_details:
+                    details.extend(ctx.project_details)
+
+            # Fallback to text analysis if no conversation context
+            if not details:
+                # Check for building types and project types
+                if 'warehouse' in conversation_text:
+                    details.append("existing warehouse building")
+                if 'adaptive reuse' in conversation_text or 'conversion' in conversation_text:
+                    details.append("adaptive reuse project")
+                if 'community center' in conversation_text:
+                    details.append("community center program")
+                if 'elder' in conversation_text or 'senior' in conversation_text:
+                    details.append("serving elder/senior population")
+                if 'construction' in conversation_text:
+                    details.append("construction approach considerations")
+
+            # Check for specific architectural elements mentioned
+            if 'circulation' in conversation_text:
+                details.append("circulation design")
+            if 'material' in conversation_text:
+                details.append("material considerations")
+            if 'structure' in conversation_text:
+                details.append("structural considerations")
+
+            return '; '.join(details) if details else "general architectural project"
+
+        except Exception as e:
+            print(f"⚠️ Error extracting project details: {e}")
+            return "architectural project"
 
     # Cleanup
     def __del__(self) -> None:

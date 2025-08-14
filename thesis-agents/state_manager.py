@@ -45,6 +45,12 @@ class ConversationContext:
     design_phase_detected: str = ""
     phase_confidence: float = 0.0
 
+    # Project-specific context
+    project_type: str = ""  # e.g., "adaptive_reuse", "new_construction"
+    existing_building_type: str = ""  # e.g., "warehouse", "factory" for adaptive reuse
+    target_building_type: str = ""  # e.g., "community_center" for adaptive reuse
+    project_details: List[str] = field(default_factory=list)  # e.g., ["elder_care", "accessibility_focused"]
+
     # Conversation flow tracking
     questions_asked: List[str] = field(default_factory=list)
     concepts_discussed: List[str] = field(default_factory=list)
@@ -136,6 +142,83 @@ class ArchMentorState:
             # Update the main building_type if confidence is high enough
             if confidence > 0.7:
                 self.building_type = building_type
+
+    def update_project_context(self, project_details: Dict[str, Any]) -> None:
+        """Update project-specific context for better conversation continuity"""
+        try:
+            # Update project type (adaptive_reuse, new_construction, etc.)
+            if 'project_type' in project_details:
+                self.conversation_context.project_type = project_details['project_type']
+
+            # Update existing building type for adaptive reuse projects
+            if 'existing_building_type' in project_details:
+                self.conversation_context.existing_building_type = project_details['existing_building_type']
+
+            # Update target building type
+            if 'target_building_type' in project_details:
+                self.conversation_context.target_building_type = project_details['target_building_type']
+
+            # Add project details (avoiding duplicates)
+            if 'details' in project_details:
+                for detail in project_details['details']:
+                    if detail not in self.conversation_context.project_details:
+                        self.conversation_context.project_details.append(detail)
+
+            print(f"🏗️ Updated project context: {self.conversation_context.project_type}, {self.conversation_context.existing_building_type} → {self.conversation_context.target_building_type}")
+
+        except Exception as e:
+            print(f"⚠️ Error updating project context: {e}")
+
+    def detect_and_update_project_context_from_conversation(self) -> None:
+        """Detect project context from conversation history and update accordingly"""
+        try:
+            if not self.messages:
+                return
+
+            # Get all user messages for analysis
+            user_messages = [msg['content'] for msg in self.messages if msg.get('role') == 'user']
+            conversation_text = ' '.join(user_messages).lower()
+
+            project_details = {}
+            details_list = []
+
+            # Detect project type
+            if 'adaptive reuse' in conversation_text or 'conversion' in conversation_text or 'warehouse' in conversation_text:
+                project_details['project_type'] = 'adaptive_reuse'
+
+                # Detect existing building type for adaptive reuse
+                if 'warehouse' in conversation_text:
+                    project_details['existing_building_type'] = 'warehouse'
+                elif 'factory' in conversation_text:
+                    project_details['existing_building_type'] = 'factory'
+                elif 'church' in conversation_text:
+                    project_details['existing_building_type'] = 'church'
+
+                # Detect target building type
+                if 'community center' in conversation_text:
+                    project_details['target_building_type'] = 'community_center'
+                elif 'museum' in conversation_text:
+                    project_details['target_building_type'] = 'museum'
+                elif 'library' in conversation_text:
+                    project_details['target_building_type'] = 'library'
+
+            # Detect specific user groups or requirements
+            if 'elder' in conversation_text or 'senior' in conversation_text:
+                details_list.append('elder_care')
+            if 'accessibility' in conversation_text:
+                details_list.append('accessibility_focused')
+            if 'construction' in conversation_text:
+                details_list.append('construction_considerations')
+
+            if details_list:
+                project_details['details'] = details_list
+
+            # Update project context if we found relevant details
+            if project_details:
+                self.update_project_context(project_details)
+
+        except Exception as e:
+            print(f"⚠️ Error detecting project context: {e}")
 
     def extract_building_type_from_brief_only(self) -> str:
         """
@@ -502,6 +585,10 @@ class ArchMentorState:
             "building_type_confidence": self.conversation_context.building_type_confidence,
             "design_phase_detected": self.conversation_context.design_phase_detected,
             "phase_confidence": self.conversation_context.phase_confidence,
+            "project_type": self.conversation_context.project_type,
+            "existing_building_type": self.conversation_context.existing_building_type,
+            "target_building_type": self.conversation_context.target_building_type,
+            "project_details": self.conversation_context.project_details,
             "questions_asked": self.conversation_context.questions_asked[-5:],  # Last 5 questions
             "concepts_discussed": self.conversation_context.concepts_discussed[-10:],  # Last 10 concepts
             "user_understanding_level": self.conversation_context.user_understanding_level,

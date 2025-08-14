@@ -569,6 +569,15 @@ class UnifiedArchitecturalDashboard:
         else:
             print(f"   ❌ No session found for ID: {st.session_state.phase_session_id}")
 
+        # # Check if this was a knowledge_only route (example requests should not get questions)
+        # routing_path = st.session_state.get('routing_path', '')
+        # print(f"   Last routing path: {routing_path}")
+
+        # # Don't add questions for knowledge_only routes (example requests)
+        # if routing_path == 'knowledge_only':
+        #     print(f"   🚫 Skipping Socratic question for knowledge_only route")
+        #     return response
+
         # Always try to get next question if not already awaiting response
         if not st.session_state.get('awaiting_socratic_response', False):
             next_question = self.phase_system.get_next_question(st.session_state.phase_session_id)

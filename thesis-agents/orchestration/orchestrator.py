@@ -156,6 +156,9 @@ class LangGraphOrchestrator:
                 confidence = classification.get("building_type_confidence", 0.5)
                 student_state.update_building_type_context(classification["building_type"], confidence)
 
+            # Update project context from conversation (adaptive reuse, warehouse, etc.)
+            student_state.detect_and_update_project_context_from_conversation()
+
             # ADDITIONAL: Extract building type from design brief if not already set
             if (student_state.building_type == "unknown" and
                 hasattr(student_state, 'current_design_brief') and

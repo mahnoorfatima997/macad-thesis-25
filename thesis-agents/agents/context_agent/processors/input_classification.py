@@ -213,7 +213,10 @@ class InputClassificationProcessor:
             "can you provide", "precedent projects", "case studies", "examples of",
             "can you give some examples", "can you give examples", "give me examples",
             "example project", "example projects", "example building", "example buildings",
-            "museum examples", "building examples", "project examples", "design examples"
+            "building examples", "project examples", "design examples",
+            "can you give example", "give example", "provide example", "show example",
+            "adaptive reuse projects", "community center projects", "projects for",
+            "looking for example", "need example", "want example"
         ]
         if any(pattern in input_lower for pattern in example_request_patterns):
             return "example_request"

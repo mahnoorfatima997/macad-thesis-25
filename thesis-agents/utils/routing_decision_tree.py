@@ -174,7 +174,10 @@ class AdvancedRoutingDecisionTree:
                 r"give.*examples?", r"show.*examples?", r"need.*examples?", r"want.*examples?",
                 r"case studies?", r"precedents?", r"similar projects?",
                 r"show me", r"can you give", r"can you provide", r"can you show",
-                r"real project", r"built project", r"actual project"
+                r"real project", r"built project", r"actual project",
+                r"example projects?", r"projects? for", r"looking for.*examples?",
+                r"adaptive reuse projects?", r"community center.*projects?",
+                r"give example", r"provide example", r"show example"
             ],
             "technical_question": [
                 r"specifications?", r"technical", r"codes?",

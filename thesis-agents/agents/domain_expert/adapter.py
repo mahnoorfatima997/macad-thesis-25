@@ -1081,45 +1081,88 @@ What questions do you have about your design?"""
         return "\n".join(lines)
 
     async def _generate_ai_examples(self, user_input: str, building_type: str, project_context: str, user_topic: str) -> Dict[str, Any]:
-        """Generate AI-powered examples when search fails."""
-        
-        examples_text = f"Based on your request for {user_topic} examples in {building_type} architecture, here are some key projects to consider:\n\n"
-        
-        # Generate contextual examples based on building type and topic
-        if building_type == "museum" and "circulation" in user_topic.lower():
-            examples_text += "**1. Guggenheim Museum, New York** - Famous spiral circulation that creates a continuous journey through the art, eliminating the need for backtracking\n"
-            examples_text += "**2. Centre Pompidou, Paris** - Innovative circulation with exposed escalators and multiple access points, making movement itself an architectural feature\n"
-            examples_text += "**3. Tate Modern, London** - Adaptive reuse with clear circulation zones and flexible gallery spaces, creating intuitive visitor flow\n\n"
-        elif building_type == "museum":
-            examples_text += "**1. Louvre Pyramid, Paris** - Central circulation hub connecting multiple wings, creating a clear spatial hierarchy\n"
-            examples_text += "**2. Museum of Modern Art, New York** - Grid-based circulation with flexible gallery arrangements, allowing multiple viewing paths\n"
-            examples_text += "**3. Bilbao Guggenheim, Spain** - Organic circulation responding to urban context, with fluid transitions between spaces\n\n"
-        elif building_type == "school" and "circulation" in user_topic.lower():
-            examples_text += "**1. Orestad Gymnasium, Copenhagen** - Innovative circulation with learning streets and flexible movement zones\n"
-            examples_text += "**2. Green School, Bali** - Natural circulation paths that integrate with the landscape and learning environment\n"
-            examples_text += "**3. Ørestad College, Denmark** - Open circulation that promotes collaboration and chance encounters\n\n"
-        elif building_type == "office" and "circulation" in user_topic.lower():
-            examples_text += "**1. Google Campus, Mountain View** - Circulation as social space with multiple pathways and gathering areas\n"
-            examples_text += "**2. Bloomberg HQ, London** - Innovative circulation with ramps and open staircases promoting interaction\n"
-            examples_text += "**3. Apple Park, Cupertino** - Circular circulation that creates continuous flow and connection\n\n"
-        elif building_type == "residential" and "circulation" in user_topic.lower():
-            examples_text += "**1. Villa Savoye, France** - Promenade architecturale with circulation as architectural journey\n"
-            examples_text += "**2. Fallingwater, Pennsylvania** - Circulation that responds to natural topography and views\n"
-            examples_text += "**3. Casa da Música, Portugal** - Innovative circulation that creates spatial drama and flow\n\n"
-        else:
-            examples_text += "**1. High Line, New York** - Elevated circulation as public space and urban connector\n"
-            examples_text += "**2. Pompidou Center, Paris** - Exposed circulation as architectural expression and urban theater\n"
-            examples_text += "**3. Tate Modern, London** - Adaptive circulation for cultural programming and visitor experience\n\n"
-        
-        examples_text += f"These examples show how {user_topic} can enhance the user experience in {building_type} projects. "
-        examples_text += f"What specific aspects would you like to explore for your {project_context}?"
-        
+        """Generate AI-powered examples using LLM for contextual, relevant responses."""
+
+        try:
+            # Get conversation context to understand references
+            conversation_history = self._get_conversation_context_for_examples(user_input, building_type, project_context)
+
+            # Create a comprehensive prompt for generating contextual examples
+            prompt = f"""
+            You are an expert architectural educator providing specific, relevant project examples.
+
+            USER REQUEST: "{user_input}"
+            BUILDING TYPE: {building_type}
+            TOPIC: {user_topic}
+            PROJECT CONTEXT: {project_context}
+            CONVERSATION CONTEXT: {conversation_history}
+
+            Generate 3 specific, real architectural project examples that directly address the user's request.
+
+            REQUIREMENTS:
+            1. Focus specifically on {building_type} projects or similar building types
+            2. Each example should demonstrate {user_topic} effectively
+            3. Include project name, location, and architect when possible
+            4. Explain WHY each example is relevant to their request
+            5. For community centers, focus on projects that serve diverse user groups
+            6. For elder people/senior centers, prioritize accessibility and age-friendly design
+            7. For adaptive reuse, show how existing buildings were transformed
+            8. Avoid generic famous buildings unless they're directly relevant
+
+            FORMAT:
+            **1. [Project Name, Location]** - [Brief description of how it addresses the topic]
+            **2. [Project Name, Location]** - [Brief description of how it addresses the topic]
+            **3. [Project Name, Location]** - [Brief description of how it addresses the topic]
+
+            End with: "Which of these approaches resonates most with your {building_type} project vision?"
+            """
+
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=400, temperature=0.6)
+
+            if response and response.get("content"):
+                ai_examples = response["content"].strip()
+
+                return {
+                    "response_text": ai_examples,
+                    "response_type": "ai_generated_examples",
+                    "sources": ["AI Generated Examples"],
+                    "examples_provided": True
+                }
+
+        except Exception as e:
+            print(f"⚠️ AI example generation failed: {e}")
+
+        # Fallback to a more generic but still contextual response
         return {
-            "response_text": examples_text,
-            "response_type": "ai_generated_examples",
+            "response_text": f"I'd be happy to help you explore {user_topic} examples for your {building_type} project. To provide the most relevant examples, could you tell me what specific aspect of {user_topic} you're most interested in understanding?",
+            "response_type": "fallback_examples",
             "sources": [],
-            "examples_provided": True
+            "examples_provided": False
         }
+
+    def _get_conversation_context_for_examples(self, user_input: str, building_type: str, project_context: str) -> str:
+        """Get conversation context to better understand example requests."""
+        try:
+            # This would ideally get the conversation state, but for now we'll extract from available context
+            context_details = []
+
+            # Check for specific project details in the current context
+            if 'warehouse' in project_context.lower() or 'warehouse' in user_input.lower():
+                context_details.append("adaptive reuse of warehouse building")
+            if 'community center' in project_context.lower() or 'community center' in user_input.lower():
+                context_details.append("community center program")
+            if 'elder' in project_context.lower() or 'elder' in user_input.lower():
+                context_details.append("serving elder/senior population")
+            if 'adaptive reuse' in project_context.lower() or 'adaptive reuse' in user_input.lower():
+                context_details.append("adaptive reuse project")
+
+            return '; '.join(context_details) if context_details else "general architectural project"
+
+        except Exception as e:
+            print(f"⚠️ Error getting conversation context: {e}")
+            return "architectural project"
 
     async def _generate_premature_example_response(self, user_input: str, building_type: str, project_context: str) -> Dict[str, Any]:
         """Generate response for premature example requests (cognitive offloading protection)."""
@@ -1220,7 +1263,7 @@ What questions do you have about your design?"""
         - ALWAYS use the exact URLs provided in AVAILABLE URLS FOR LINKS
         - DO NOT create your own URLs - only use the URLs I provided above
         - DO NOT use generic category URLs like "archdaily.com/category/community-center"
-        - If no specific URLs are available, use [Project Name](#) instead of fake URLs
+        - If no specific URLs are available, use **Project Name** (bold text without links) instead of fake URLs
         - DO NOT skip the markdown links - they are required!
         """
         
