@@ -81,6 +81,9 @@ class ArchMentorState:
     # Project context
     building_type: str = "unknown"  # No more mixed_use default - centrally managed
 
+    # Phase progression context (from dashboard phase system)
+    phase_info: Optional[Dict[str, Any]] = None
+
     # Debug and display settings
     show_response_summary: bool = True  # Toggle for response processing summary
     show_scientific_metrics: bool = False  # Toggle for scientific metrics in response

@@ -137,8 +137,16 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
         ]
         return f"{base}\n\n{clarifiers[0]}\n{clarifiers[1]}"
 
-    # Multi-agent synthesis shaping
+    # Multi-agent synthesis shaping - ONLY apply if we have insufficient content
     if path in {"multi_agent_comprehensive", "balanced_guidance", "knowledge_with_challenge"}:
+        # Check if we already have substantial content from agents
+        total_content_length = len(domain_text) + len(socratic_text) + len(cognitive_text)
+
+        # If we have good content from agents, don't override with synthesis template
+        if total_content_length > 100:  # Agents provided substantial responses
+            return text  # Use the original agent responses
+
+        # Only use synthesis template as true fallback when agents provide minimal content
         header = "Synthesis:"
 
         def _first_sentence(s: str, max_len: int = 400) -> str:
@@ -181,29 +189,29 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
         def _generate_contextual_question(user_input: str, domain_text: str) -> str:
             """Generate a contextual question based on what the user actually asked."""
             user_input_lower = user_input.lower()
-            
+
             # Check if user is asking about placement/organization
             if any(word in user_input_lower for word in ["place", "organize", "layout", "arrange", "position", "where"]):
                 if "outdoor" in user_input_lower or "garden" in user_input_lower or "courtyard" in user_input_lower:
                     return "Which of these placement strategies feels most aligned with your vision for the learning environment?"
                 else:
                     return "How do you envision the relationship between these different spaces?"
-            
+
             # Check if user is asking about approach/strategy
             elif any(word in user_input_lower for word in ["approach", "strategy", "method", "how", "what should"]):
                 return "What aspect of this approach resonates most with your design goals?"
-            
+
             # Check if user is asking about examples/references
             elif any(word in user_input_lower for word in ["example", "reference", "precedent", "case study"]):
                 return "Which of these examples best fits your project's context and requirements?"
-            
+
             # Default contextual question
             return "How does this information help you move forward with your design?"
 
         def _generate_building_type_specific_watch(building_type: str) -> str:
             """Generate building-type specific watch items instead of generic fallbacks."""
             building_type_lower = building_type.lower()
-            
+
             if "community" in building_type_lower or "sports" in building_type_lower:
                 return "Consider circulation patterns, user flow, and how spaces can adapt between different activities and times of day"
             elif "learning" in building_type_lower or "educational" in building_type_lower:
@@ -240,11 +248,11 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
             items.append(f"- Watch: {watch}")
         items = [it for it in items if it][:3]
         body = header + ("\n" + "\n".join(items) if items else "\n" + _first_sentence(text))
-        
+
         # ENHANCED: Generate contextual question instead of hardcoded generic ones
         user_input = classification.get("user_input", "") if classification else ""
         contextual_question = _generate_contextual_question(user_input, domain_text)
-        
+
         return f"{body}\n\n{contextual_question}"
 
     # Default: return text as-is

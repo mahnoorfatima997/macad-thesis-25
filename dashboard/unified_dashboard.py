@@ -333,8 +333,19 @@ class UnifiedArchitecturalDashboard:
         if st.session_state.phase_system is None:
             st.session_state.phase_system = self.phase_system
         if st.session_state.phase_session_id is None:
-            st.session_state.phase_session_id = f"phase_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            # ENHANCED: Use more unique session ID with microseconds to prevent conflicts
+            import uuid
+            unique_id = str(uuid.uuid4())[:8]  # Short unique identifier
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:-3]  # Include milliseconds
+            st.session_state.phase_session_id = f"phase_session_{timestamp}_{unique_id}"
+            print(f"🔧 DASHBOARD: Creating new phase session: {st.session_state.phase_session_id}")
             self.phase_system.start_session(st.session_state.phase_session_id)
+        else:
+            print(f"🔧 DASHBOARD: Using existing phase session: {st.session_state.phase_session_id}")
+            # ENHANCED: Verify session exists in phase system
+            if st.session_state.phase_session_id not in self.phase_system.sessions:
+                print(f"⚠️ DASHBOARD: Session not found in phase system, recreating...")
+                self.phase_system.start_session(st.session_state.phase_session_id)
     
     def _process_initial_input(self, initial_input: str, current_mode: str):
         """Process the initial user input and generate response."""
@@ -542,7 +553,21 @@ class UnifiedArchitecturalDashboard:
     def _add_socratic_question_if_needed(self, response: str) -> str:
         """Add Socratic question to response if needed."""
         print(f"\n🤔 SOCRATIC: Checking if question needed...")
+        print(f"   Session ID: {st.session_state.phase_session_id}")
         print(f"   Awaiting response: {st.session_state.get('awaiting_socratic_response', False)}")
+
+        # ENHANCED: Verify phase system state before getting question
+        session = self.phase_system.sessions.get(st.session_state.phase_session_id)
+        if session:
+            print(f"   Current phase in session: {session.current_phase.value}")
+            current_progress = session.phase_progress.get(session.current_phase)
+            if current_progress:
+                print(f"   Phase progress steps: {len(current_progress.completed_steps)}")
+                print(f"   Phase completion: {current_progress.completion_percent:.1f}%")
+            else:
+                print(f"   ⚠️ No progress found for current phase: {session.current_phase.value}")
+        else:
+            print(f"   ❌ No session found for ID: {st.session_state.phase_session_id}")
 
         # Always try to get next question if not already awaiting response
         if not st.session_state.get('awaiting_socratic_response', False):
@@ -550,6 +575,8 @@ class UnifiedArchitecturalDashboard:
             print(f"   Next question available: {next_question is not None}")
 
             if next_question:
+                print(f"   Question phase: {next_question.phase.value}")
+                print(f"   Question step: {next_question.step.value}")
                 print(f"   Question: {next_question.question_text[:80]}...")
                 if not response_contains_questions(response):
                     st.session_state.awaiting_socratic_response = True
