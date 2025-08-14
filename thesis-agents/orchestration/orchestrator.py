@@ -685,7 +685,7 @@ class LangGraphOrchestrator:
 
         # Use synthesis shaping for balanced guidance
         try:
-            from .synthesis import shape_response_by_path
+            from .synthesis import shape_by_route
 
             # Combine the best available response as base text
             base_text = ""
@@ -701,13 +701,12 @@ class LangGraphOrchestrator:
                 base_text = "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?"
 
             # Apply synthesis shaping
-            synthesized_response = shape_response_by_path(
+            synthesized_response = shape_by_route(
                 text=base_text,
-                path="balanced_guidance",
-                domain_text=domain_text,
-                socratic_text=socratic_text,
-                cognitive_text=cognitive_text,
+                routing_path="balanced_guidance",
                 classification=classification,
+                ordered_results=agent_results,
+                user_message_count=len([m for m in state.get("messages", []) if m.get("role") == "user"]),
                 context_analysis=classification  # Use classification as context analysis
             )
 
@@ -791,8 +790,51 @@ class LangGraphOrchestrator:
                 from phase_assessment.phase_manager import PhaseAssessmentManager
                 phase_manager = PhaseAssessmentManager()
                 
-                # Use the state parameter directly for phase detection
-                if state and hasattr(state, 'student_state'):
+                # ENHANCED: Use phase info from dashboard if available, otherwise detect
+                if state and hasattr(state, 'student_state') and hasattr(state.student_state, 'phase_info') and state.student_state.phase_info:
+                    # Use phase information from dashboard's phase progression system
+                    dashboard_phase_info = state.student_state.phase_info
+                    current_phase_name = dashboard_phase_info.get("current_phase", "ideation")
+                    print(f"🎯 Phase detection: Using dashboard phase info: {current_phase_name}")
+                    print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
+                    print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
+                    print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
+
+                    # Map phase progress to step progression
+                    phase_progress = dashboard_phase_info.get("phase_progress", {})
+                    current_phase_progress = phase_progress.get(current_phase_name, {})
+                    completion_percent = current_phase_progress.get("completion_percent", 0.0)
+
+                    # Estimate step based on completion
+                    if completion_percent < 25:
+                        current_step_name = "initial_context_reasoning"
+                        prog = 0.25
+                    elif completion_percent < 50:
+                        current_step_name = "knowledge_synthesis_trigger"
+                        prog = 0.5
+                    elif completion_percent < 75:
+                        current_step_name = "socratic_questioning"
+                        prog = 0.75
+                    else:
+                        current_step_name = "metacognitive_prompt"
+                        prog = 1.0
+
+                    confidence = max(0.7, min(0.95, completion_percent / 100.0))
+
+                    phase_info = {
+                        "phase": current_phase_name,
+                        "step": current_step_name,
+                        "confidence": confidence,
+                        "progression_score": prog,
+                        "completion_percent": completion_percent,
+                        # Back-compat keys
+                        "current_phase": current_phase_name,
+                        "current_step": current_step_name,
+                        "phase_confidence": confidence,
+                        "next_phase": None,
+                    }
+                elif state and hasattr(state, 'student_state'):
+                    # Fallback to phase detection if no dashboard info available
                     student_state = state.student_state
                     print(f"🔍 Phase detection: Using student state with {len(student_state.messages)} messages")
                     current_phase, current_step = phase_manager.detect_current_phase(student_state)
@@ -887,6 +929,13 @@ class LangGraphOrchestrator:
 
         # Get user input first
         user_messages = [m for m in student_state.messages if m.get("role") == "user"]
+
+        print(f"\n🎯 ORCHESTRATOR: process_student_input called")
+        print(f"   User messages count: {len(user_messages)}")
+        print(f"   Phase info available: {hasattr(student_state, 'phase_info') and student_state.phase_info is not None}")
+        if hasattr(student_state, 'phase_info') and student_state.phase_info:
+            print(f"   Current phase from state: {student_state.phase_info.get('current_phase', 'unknown')}")
+        print(f"   Last user message: {user_messages[-1] if user_messages else 'No messages'}...")
         current_user_input = user_messages[-1]["content"] if user_messages else ""
 
         print(f"\n🚀 ArchMentor Processing Pipeline Started")

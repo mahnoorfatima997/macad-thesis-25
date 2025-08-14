@@ -671,10 +671,11 @@ class SocraticTutorAgent:
             if domain_expert_result and domain_expert_result.get("response_text", ""):
                 return await self._generate_technical_followup(state, domain_expert_result)
 
-        # ENHANCEMENT: Check for design guidance requests
-        if self._looks_design_guidance(last_message):
-            domain_expert_result = getattr(state, "domain_expert_result", {})
-            return await self._generate_design_guidance_synthesis(state, analysis_result, domain_expert_result)
+        # ENHANCEMENT: Check for design guidance requests - DISABLED to prevent hardcoded fallback override
+        # The hardcoded synthesis was overriding proper LLM responses, so we let the normal flow handle design guidance
+        # if self._looks_design_guidance(last_message):
+        #     domain_expert_result = getattr(state, "domain_expert_result", {})
+        #     return await self._generate_design_guidance_synthesis(state, analysis_result, domain_expert_result)
 
         # Original strategy-based routing
         if strategy == "clarifying_guidance":
@@ -1441,10 +1442,34 @@ Generate a contextual response that builds on their input:
                                            analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
         """Generate response using phase-based Socratic assessment."""
 
-        # Detect current phase and step
-        if not self.phase_manager:
-            raise ValueError("Phase manager not available")
-        current_phase, current_step = self.phase_manager.detect_current_phase(state)
+        # ENHANCED: Use phase info from orchestrator if available, otherwise detect
+        if hasattr(state, 'phase_info') and state.phase_info:
+            # Use phase information from dashboard's phase progression system
+            dashboard_phase_info = state.phase_info
+            current_phase_name = dashboard_phase_info.get("current_phase", "ideation")
+            current_step_name = dashboard_phase_info.get("step", "initial_context_reasoning")
+
+            # Convert string names to enum values
+            try:
+                current_phase = DesignPhase(current_phase_name)
+                current_step = SocraticStep(current_step_name)
+                print(f"🎯 SOCRATIC: Using dashboard phase info: {current_phase_name} - {current_step_name}")
+            except (ValueError, NameError):
+                # Fallback if enum conversion fails or enums not available
+                current_phase = DesignPhase.IDEATION if 'DesignPhase' in globals() else None
+                current_step = SocraticStep.INITIAL_CONTEXT_REASONING if 'SocraticStep' in globals() else None
+                if current_phase is None or current_step is None:
+                    # If enums not available, use fallback detection
+                    if not self.phase_manager:
+                        raise ValueError("Phase manager not available")
+                    current_phase, current_step = self.phase_manager.detect_current_phase(state)
+                print(f"⚠️ SOCRATIC: Failed to convert phase info, using fallback")
+        else:
+            # Fallback to phase detection if no dashboard info available
+            if not self.phase_manager:
+                raise ValueError("Phase manager not available")
+            current_phase, current_step = self.phase_manager.detect_current_phase(state)
+            print(f"🔍 SOCRATIC: Using phase detection: {current_phase.value} - {current_step.value}")
 
         # Extract building type
         building_type = self._extract_building_type_from_context(state)

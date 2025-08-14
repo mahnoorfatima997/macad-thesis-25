@@ -64,12 +64,34 @@ class ModeProcessor:
         if st.session_state.analysis_results:
             text_analysis = st.session_state.analysis_results.get('text_analysis', {})
             current_brief = text_analysis.get('building_type', current_brief)
-        
+
+        # ENHANCEMENT: Get current phase information from dashboard's phase system
+        current_phase_info = None
+        try:
+            # Access the phase system from session state (set by dashboard)
+            if hasattr(st.session_state, 'phase_system') and hasattr(st.session_state, 'phase_session_id'):
+                phase_system = st.session_state.phase_system
+                phase_session_id = st.session_state.phase_session_id
+
+                # Get current phase from the phase progression system
+                progress_summary = phase_system.get_progress_summary(phase_session_id)
+                if "error" not in progress_summary:
+                    current_phase_info = {
+                        "current_phase": progress_summary.get("current_phase", "ideation"),
+                        "phase_progress": progress_summary.get("phase_progress", {}),
+                        "session_id": phase_session_id
+                    }
+                    print(f"🎯 MODE_PROCESSOR: Using phase info from dashboard: {current_phase_info['current_phase']}")
+        except Exception as e:
+            print(f"⚠️ MODE_PROCESSOR: Could not get phase info: {e}")
+
         state = ArchMentorState(
             messages=st.session_state.messages.copy(),
             current_design_brief=current_brief,
             student_profile=student_profile,
-            domain="architecture"
+            domain="architecture",
+            # Pass phase information to the orchestrator
+            phase_info=current_phase_info
         )
         
         # Ensure we don't duplicate the same user message
@@ -80,9 +102,27 @@ class ModeProcessor:
             })
         
         # Process with orchestrator
-        result = await self.orchestrator.process_student_input(state)
-        response = result.get("response", "I apologize, but I couldn't generate a response.")
-        response_metadata = result.get("metadata", {})
+        print(f"🎯 MODE_PROCESSOR: Calling orchestrator with phase: {current_phase_info.get('current_phase', 'unknown') if current_phase_info else 'no_phase_info'}")
+        print(f"🎯 MODE_PROCESSOR: State messages count: {len(state.messages)}")
+        print(f"🎯 MODE_PROCESSOR: Last message: {state.messages[-1].get('content', '')[:100] if state.messages else 'No messages'}...")
+
+        try:
+            result = await self.orchestrator.process_student_input(state)
+            print(f"✅ MODE_PROCESSOR: Orchestrator returned result")
+            print(f"   Result keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+
+            response = result.get("response", "I apologize, but I couldn't generate a response.")
+            response_metadata = result.get("metadata", {})
+
+            print(f"📝 MODE_PROCESSOR: Response length: {len(response) if response else 0}")
+            print(f"📝 MODE_PROCESSOR: Response preview: {response[:100] if response else 'No response'}...")
+
+        except Exception as e:
+            print(f"❌ MODE_PROCESSOR: Orchestrator error: {e}")
+            import traceback
+            traceback.print_exc()
+            response = f"I apologize, but I encountered an error: {str(e)}"
+            response_metadata = {}
 
         # Store comprehensive metadata for display
         try:
