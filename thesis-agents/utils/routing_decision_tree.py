@@ -168,16 +168,25 @@ class AdvancedRoutingDecisionTree:
                 r"what (are|is)", r"how (do|does)", r"can you (tell|show|explain)",
                 r"define", r"definition", r"meaning", r"concept",
                 r"principles?", r"guidelines?", r"requirements?",
-                r"what are.*standard", r"standard dimensions", r"typical dimensions"
+                r"what are.*standard", r"standard dimensions", r"typical dimensions",
+                # Enhanced patterns for program elements and design guidance
+                r"what.*elements?", r"program elements?", r"what.*consider",
+                r"what.*suggest", r"what do you suggest", r"what would you suggest",
+                r"what.*should i", r"what should i consider", r"what should i think about",
+                r"what.*factors?", r"what.*aspects?", r"what.*components?",
+                r"how.*organize", r"how.*approach", r"how.*handle"
             ],
             "example_request": [
+                # Specific example requests (high priority)
                 r"give.*examples?", r"show.*examples?", r"need.*examples?", r"want.*examples?",
                 r"case studies?", r"precedents?", r"similar projects?",
-                r"show me", r"can you give", r"can you provide", r"can you show",
-                r"real project", r"built project", r"actual project",
                 r"example projects?", r"projects? for", r"looking for.*examples?",
                 r"adaptive reuse projects?", r"community center.*projects?",
-                r"give example", r"provide example", r"show example"
+                r"give example", r"provide example", r"show example",
+                r"real project", r"built project", r"actual project",
+                # More specific patterns to avoid conflicts
+                r"can you give.*examples?", r"can you provide.*examples?", r"can you show.*examples?",
+                r"show me.*examples?", r"show me.*projects?", r"show me.*precedents?"
             ],
             "technical_question": [
                 r"specifications?", r"technical", r"codes?",
@@ -224,15 +233,32 @@ class AdvancedRoutingDecisionTree:
                 r"can you evaluate", r"evaluate my", r"assess my", r"review my"
             ],
 
-            # Support requests
+            # Support requests - ENHANCED to distinguish confusion from design guidance
             "confusion_expression": [
                 r"confused", r"don't understand", r"unclear", r"lost",
+                r"overwhelmed", r"makes no sense", r"can't figure out",
+                r"having trouble understanding", r"not sure what.*means",
+                r"not sure how.*works", r"not sure how.*done", r"not sure how.*achieved",
+                # Note: These patterns can be problematic - they might catch design guidance requests
                 r"stuck", r"not sure", r"uncertain", r"having trouble"
             ],
             "clarification_request": [
                 r"can you explain", r"what do you mean", r"clarify",
                 r"help me understand", r"break down", r"simplify",
                 r"but i need.*help", r"need help.*about", r"more help about"
+            ],
+            # NEW: Design guidance requests (not confusion)
+            "design_guidance": [
+                r"help me.*integrate", r"help me.*incorporate", r"help.*following.*principles",
+                r"help.*adaptive reuse", r"help.*construction", r"guidance.*design",
+                r"advice.*design", r"suggestions.*design", r"how can i.*integrate",
+                r"how do i.*incorporate", r"how to.*integrate", r"need more help about.*design",
+                # Enhanced patterns for program elements and design considerations
+                r"what.*program elements", r"program elements.*consider", r"elements.*should.*consider",
+                r"what.*considerations", r"design considerations", r"key considerations",
+                r"what.*factors.*design", r"design factors", r"important.*factors",
+                r"what.*should.*consider", r"what.*think about", r"what.*keep in mind",
+                r"curious about.*elements", r"curious about.*considerations"
             ],
             "implementation_request": [
                 r"how to", r"steps", r"process", r"procedure",
@@ -365,14 +391,7 @@ class AdvancedRoutingDecisionTree:
                 "context_agent_override": False,
                 "agents": ["domain_expert", "context_agent", "socratic_tutor"]
             },
-            "example_request_pure": {
-                "priority": 5,
-                "route": RouteType.KNOWLEDGE_ONLY,
-                "conditions": ["user_intent == 'example_request'", "is_pure_knowledge_request == True"],
-                "description": "Pure example request - provide examples without guidance",
-                "context_agent_override": False,
-                "agents": ["domain_expert"]
-            },
+            # REMOVED: example_request_pure - handled by smart routing logic below
             "technical_question_advanced": {
                 "priority": 6,
                 "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
@@ -439,6 +458,16 @@ class AdvancedRoutingDecisionTree:
                 "agents": ["cognitive_enhancement", "context_agent", "socratic_tutor"]
             },
 
+            # DESIGN GUIDANCE ROUTES
+            "design_guidance": {
+                "priority": 12,
+                "route": RouteType.BALANCED_GUIDANCE,
+                "conditions": ["user_intent == 'design_guidance'"],
+                "description": "Design guidance request - balanced knowledge with follow-up questions",
+                "context_agent_override": False,
+                "agents": ["domain_expert", "socratic_tutor", "context_agent"]
+            },
+
             # SUPPORTIVE SCAFFOLDING ROUTES
             "confusion_expression": {
                 "priority": 13,
@@ -476,14 +505,7 @@ class AdvancedRoutingDecisionTree:
                 "context_agent_override": False,
                 "agents": ["socratic_tutor", "domain_expert", "context_agent"]
             },
-            "example_request_with_guidance": {
-                "priority": 17,
-                "route": RouteType.SOCRATIC_EXPLORATION,
-                "conditions": ["user_intent == 'example_request'", "is_pure_knowledge_request == False"],
-                "description": "Example request with integration guidance - Socratic exploration",
-                "context_agent_override": False,
-                "agents": ["socratic_tutor", "domain_expert", "context_agent"]
-            },
+            # REMOVED: example_request_with_guidance - handled by smart routing logic below
             "implementation_request_high_understanding": {
                 "priority": 18,
                 "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
@@ -622,6 +644,7 @@ class AdvancedRoutingDecisionTree:
 
         # Priority 4: Check specific intent patterns (order matters - more specific first)
         intent_priority = [
+            "design_guidance",  # Check design guidance before confusion
             "confusion_expression", "clarification_request",
             "evaluation_request", "feedback_request",  # evaluation before feedback
             "example_request", "knowledge_request", "technical_question",  # knowledge before technical
@@ -635,15 +658,19 @@ class AdvancedRoutingDecisionTree:
                     if re.search(pattern, user_input_lower):
                         return intent_type
 
-        # Priority 5: Context-based fallback classification
+        # Priority 5: Context-based fallback classification - check content, not just length
         if "?" in user_input:
-            return "knowledge_request"
+            # Check if it's asking for knowledge/examples
+            if any(word in user_input_lower for word in ["what", "how", "which", "examples", "consider", "suggest"]):
+                return "knowledge_request"
+            else:
+                return "design_exploration"
         elif any(word in user_input_lower for word in ["my", "i'm", "i am", "working on"]):
             return "design_exploration"
-        elif len(user_input.split()) > 10:
-            return "general_statement"
+        elif any(word in user_input_lower for word in ["what", "how", "which", "examples", "consider", "suggest", "should i"]):
+            return "knowledge_request"
 
-        return "general_statement"  # Better fallback than "unknown"
+        return "design_exploration"  # Better fallback - assume they want guidance
     
     def _is_pure_knowledge_request(self, classification: Dict[str, Any], context: RoutingContext) -> bool:
         """Enhanced check for pure knowledge requests"""
@@ -848,7 +875,38 @@ class AdvancedRoutingDecisionTree:
                     logger.info(f"🎯 SMART ROUTING: Example request with guidance → SOCRATIC_EXPLORATION")
                     print(f"🎯 SMART ROUTING: Example request with guidance → SOCRATIC_EXPLORATION")
                     return decision
-            
+
+            # GAMIFICATION: Check for intelligent triggers before applying standard rules
+            gamification_triggers = cognitive_offloading.get("gamification_triggers", [])
+            if gamification_triggers:
+                # Apply gamification-enhanced routing
+                enhanced_route = self._apply_gamification_routing(gamification_triggers, enhanced_classification, context)
+                if enhanced_route:
+                    decision = RoutingDecision(
+                        route=enhanced_route,
+                        reason=f"Gamification trigger: {', '.join(gamification_triggers)}",
+                        confidence=0.90,
+                        rule_applied="gamification_trigger",
+                        context_agent_override=False,
+                        cognitive_offloading_detected=cognitive_offloading["detected"],
+                        cognitive_offloading_type=cognitive_offloading["type"],
+                        context_agent_confidence=routing_suggestions.get("confidence", 0.0) if routing_suggestions else 0.0,
+                        classification=enhanced_classification,
+                        user_intent=user_intent,
+                        metadata={
+                            "gamification_triggers": gamification_triggers,
+                            "cognitive_offloading_indicators": cognitive_offloading["indicators"],
+                            "context_agent_primary_route": routing_suggestions.get("primary_route") if routing_suggestions else None,
+                            "is_pure_knowledge_request": is_pure_knowledge_request,
+                            "intent_classification": user_intent,
+                            "context_keywords": self._extract_context_keywords(user_input)
+                        }
+                    )
+
+                    logger.info(f"🎮 GAMIFICATION ROUTING: {enhanced_route.value} triggered by {gamification_triggers}")
+                    print(f"🎮 GAMIFICATION ROUTING: {enhanced_route.value} triggered by {gamification_triggers}")
+                    return decision
+
             # Apply decision rules in priority order for other cases
             for rule_name, rule in sorted(self.decision_rules.items(), key=lambda x: x[1]["priority"]):
                 if self._evaluate_rule(rule, enhanced_classification, context):
@@ -1111,13 +1169,121 @@ class AdvancedRoutingDecisionTree:
                 indicators.append(f"avoidance_pattern: '{pattern}'")
                 break
         
+        # GAMIFICATION: Add intelligent triggers based on patterns
+        gamification_triggers = self._detect_gamification_triggers(message, interaction_type, context_analysis)
+
         return {
             "detected": detected,
             "type": offloading_type,
             "confidence": confidence,
-            "indicators": indicators
+            "indicators": indicators,
+            "gamification_triggers": gamification_triggers
         }
-    
+
+    def _detect_gamification_triggers(self, message: str, interaction_type: str, context_analysis: Dict[str, Any]) -> List[str]:
+        """Detect patterns that should trigger gamified responses."""
+        triggers = []
+        message_lower = message.lower()
+
+        # ENGAGEMENT TRIGGERS
+        # Detect low engagement patterns
+        short_responses = ["ok", "sure", "fine", "yes", "no", "maybe", "i guess", "alright", "cool"]
+        if any(response == message.strip().lower() for response in short_responses):
+            triggers.append("low_engagement_challenge")
+
+        # Detect overconfidence patterns
+        overconfident_phrases = ["i already know", "this is easy", "i've got this", "that's obvious", "simple", "basic"]
+        if any(phrase in message_lower for phrase in overconfident_phrases):
+            triggers.append("reality_check_challenge")
+
+        # EXPLORATION TRIGGERS
+        # Detect curiosity opportunities
+        curiosity_indicators = ["interesting", "i wonder", "what if", "how about", "could we", "curious", "fascinating"]
+        if any(indicator in message_lower for indicator in curiosity_indicators):
+            triggers.append("curiosity_amplification")
+
+        # Detect design thinking moments
+        design_thinking_phrases = ["i'm thinking about", "considering", "exploring", "trying to understand", "analyzing", "evaluating"]
+        if any(phrase in message_lower for phrase in design_thinking_phrases):
+            triggers.append("socratic_exploration_boost")
+
+        # CHALLENGE TRIGGERS
+        # Detect when user needs creative push
+        stuck_indicators = ["stuck", "not sure", "don't know how", "having trouble", "confused", "lost", "help"]
+        if any(indicator in message_lower for indicator in stuck_indicators):
+            triggers.append("creative_constraint_challenge")
+
+        # PROGRESSION TRIGGERS
+        # Detect readiness for next level
+        mastery_indicators = ["understand", "makes sense", "got it", "clear now", "see", "realize"]
+        if any(indicator in message_lower for indicator in mastery_indicators):
+            triggers.append("complexity_increase_ready")
+
+        # NEW INTERACTIVE TRIGGERS - MUCH MORE SPECIFIC AND CONTEXTUAL
+        # Detect storytelling opportunities (only with specific storytelling language)
+        story_indicators = ["imagine if", "picture this", "envision a scenario", "what if we", "let's say"]
+        if any(indicator in message_lower for indicator in story_indicators):
+            triggers.append("narrative_engagement")
+
+        # Detect comparison/contrast opportunities (only explicit comparisons)
+        comparison_indicators = ["versus", "compared to", "different from", "better than", "worse than", "which is better"]
+        if any(indicator in message_lower for indicator in comparison_indicators):
+            triggers.append("comparison_challenge")
+
+        # Detect role-playing opportunities (MUCH MORE SPECIFIC - only when explicitly asking about user experience)
+        role_play_phrases = [
+            "how would a", "what would a", "from the perspective of", "if i were a",
+            "as a user", "as a visitor", "user experience", "user journey",
+            "how do users feel", "what do people think when", "user's point of view"
+        ]
+        if any(phrase in message_lower for phrase in role_play_phrases):
+            triggers.append("perspective_shift_challenge")
+
+        # IMPORTANT: Don't trigger gamification for general design statements
+        # Check if this is a thoughtful design statement (should NOT be gamified)
+        design_statement_indicators = [
+            "i am thinking", "i would like to", "my approach is", "the purpose is",
+            "i want to design", "i plan to", "my intention is", "the goal is"
+        ]
+        is_design_statement = any(indicator in message_lower for indicator in design_statement_indicators)
+
+        # If it's a design statement, remove inappropriate triggers
+        if is_design_statement:
+            # Remove triggers that don't make sense for design statements
+            triggers = [t for t in triggers if t not in ["perspective_shift_challenge", "creative_constraint_challenge"]]
+
+        return triggers
+
+    def _apply_gamification_routing(self, triggers: List[str], classification: Dict[str, Any], context: RoutingContext) -> RouteType | None:
+        """Apply gamification-enhanced routing based on detected triggers."""
+
+        # Priority-based trigger routing with enhanced interactivity
+        for trigger in triggers:
+            if trigger == "low_engagement_challenge":
+                return RouteType.COGNITIVE_CHALLENGE
+            elif trigger == "reality_check_challenge":
+                return RouteType.COGNITIVE_CHALLENGE
+            elif trigger == "curiosity_amplification":
+                return RouteType.SOCRATIC_EXPLORATION
+            elif trigger == "socratic_exploration_boost":
+                return RouteType.SOCRATIC_EXPLORATION
+            elif trigger == "creative_constraint_challenge":
+                return RouteType.COGNITIVE_CHALLENGE
+            elif trigger == "complexity_increase_ready":
+                # Check if user is ready for multi-agent comprehensive
+                return RouteType.KNOWLEDGE_WITH_CHALLENGE
+            elif trigger == "narrative_engagement":
+                # Use socratic for storytelling and scenario building
+                return RouteType.SOCRATIC_EXPLORATION
+            elif trigger == "comparison_challenge":
+                # Use cognitive challenge for comparison exercises
+                return RouteType.COGNITIVE_CHALLENGE
+            elif trigger == "perspective_shift_challenge":
+                # Use socratic for role-playing and perspective shifts
+                return RouteType.SOCRATIC_EXPLORATION
+
+        return None  # No gamification routing applied
+
     def _is_pure_example_request(self, classification: Dict[str, Any], context: RoutingContext) -> bool:
         """Determine if this is a pure example request"""
         # Get message from multiple possible sources
