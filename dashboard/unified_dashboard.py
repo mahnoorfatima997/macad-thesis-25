@@ -13,14 +13,14 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Import configuration and utilities
-from .config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, INPUT_MODES, MENTOR_TYPES, get_api_key
+from .config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, MENTOR_TYPES, get_api_key
 from .ui.styles import apply_dashboard_styles
 from .core.session_manager import initialize_session_state, ensure_session_started
 from .ui.chat_components import (
     render_welcome_section, render_mode_configuration, render_chat_history,
     get_chat_input, render_chat_message, response_contains_questions,
-    render_input_mode_selection, render_mentor_type_selection, render_template_selection,
-    render_skill_level_selection, render_project_description_input, render_file_upload, validate_input,
+    render_initial_image_upload, render_mentor_type_selection, render_template_selection,
+    render_skill_level_selection, render_project_description_input, validate_input,
     render_chat_interface
 )
 from .ui.sidebar_components import render_complete_sidebar
@@ -150,40 +150,36 @@ class UnifiedArchitecturalDashboard:
         
         # Mode configuration using full width
         render_mode_configuration()
-        
-        # Input mode selection
-        input_mode = render_input_mode_selection()
-        st.session_state.input_mode = input_mode
-        
+
         # Mentor type selection
         mentor_type = render_mentor_type_selection()
         st.session_state.mentor_type = mentor_type
         st.session_state.current_mode = mentor_type  # Map to current_mode for compatibility
-        
+
         # Template prompts
         selected_template = render_template_selection()
-        
+
         # Skill level selection
         skill_level = render_skill_level_selection()
-        
+
         # Project description input
         template_text = TEMPLATE_PROMPTS.get(selected_template, "")
-        project_description = render_project_description_input(template_text, input_mode)
-        
-        # File upload based on input mode
-        uploaded_file = render_file_upload(input_mode)
+        project_description = render_project_description_input(template_text)
+
+        # Initial image upload using popover
+        uploaded_file = render_initial_image_upload()
         
         # Start analysis button
         with st.form(key="start_form"):
             start_clicked = st.form_submit_button("Start Analysis")
         
         if start_clicked:
-            # Validate input based on mode
-            is_valid, error_msg = validate_input(input_mode, project_description, uploaded_file)
+            # Validate input
+            is_valid, error_msg = validate_input(project_description, uploaded_file)
             if not is_valid:
                 st.error(error_msg)
             else:
-                self._handle_start_analysis(project_description, uploaded_file, skill_level, mentor_type, input_mode)
+                self._handle_start_analysis(project_description, uploaded_file, skill_level, mentor_type)
         
         # Chat interface (after analysis)
         if st.session_state.analysis_complete:
@@ -193,10 +189,10 @@ class UnifiedArchitecturalDashboard:
             if len(st.session_state.messages) > 0:
                 self._render_phase_insights()
     
-    def _handle_start_analysis(self, project_description: str, uploaded_file, skill_level: str, mentor_type: str, input_mode: str):
+    def _handle_start_analysis(self, project_description: str, uploaded_file, skill_level: str, mentor_type: str):
         """Handle the start analysis process."""
-        # Handle Image Only mode
-        if input_mode == "Image Only":
+        # Handle case where only image is provided
+        if not project_description.strip() and uploaded_file:
             project_description = "Analyze this architectural drawing"
         elif not project_description.strip():
             project_description = "Please analyze my architectural project"
@@ -546,8 +542,11 @@ class UnifiedArchitecturalDashboard:
             image_path = st.session_state.messages[-1]["image_path"]
 
         self._generate_and_display_response(user_input, image_path)
-        
-        # Don't rerun - let the response display naturally
+
+        # Check if we need to rerun after response generation (for phase transitions)
+        if st.session_state.get('pending_rerun', False):
+            st.session_state.pending_rerun = False
+            st.rerun()
 
     def _process_uploaded_image(self, uploaded_file) -> str:
         """Process uploaded image and return the file path."""
@@ -637,11 +636,21 @@ class UnifiedArchitecturalDashboard:
             if phase_result.get('nudge'):
                 st.info(f"💡 **Phase Guidance**: {phase_result['nudge']}")
 
-            # Handle phase transitions
+            # Handle phase transitions - but don't rerun yet, let response generation complete
             if phase_result.get('phase_transition'):
                 st.success(f"🎉 **Phase Transition**: {phase_result.get('transition_message', 'Moving to next phase!')}")
-                # Force a rerun to update the phase circles
-                st.rerun()
+
+                # Save generated image if available (display will be handled in chat)
+                generated_image = phase_result.get('generated_image')
+                if generated_image:
+                    # Save the image to thesis data
+                    saved_path = self._save_generated_image(generated_image)
+                    if saved_path:
+                        generated_image['local_path'] = saved_path
+                    print(f"✅ Generated image saved and will be displayed in chat")
+
+                # Mark that we need to rerun after response generation
+                st.session_state.pending_rerun = True
 
         except Exception as e:
             print(f"❌ PHASE PROCESSING ERROR: {e}")
@@ -672,10 +681,24 @@ class UnifiedArchitecturalDashboard:
 
                 # Handle phase transitions first
                 phase_result = st.session_state.get('last_phase_result', {})
+                generated_image_data = None
+
                 if phase_result.get('phase_transition'):
                     transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
                     response_content += transition_msg
                     print(f"✅ Added phase transition message to response")
+
+                    # Handle generated image if available
+                    generated_image = phase_result.get('generated_image')
+                    if generated_image:
+                        # Save the image to thesis data
+                        saved_path = self._save_generated_image(generated_image)
+                        if saved_path:
+                            generated_image['local_path'] = saved_path
+
+                        # Store image data for inclusion in chat message
+                        generated_image_data = generated_image
+                        print(f"✅ Generated image will be included in chat message")
 
                 # Add Socratic question if needed
                 combined_response = self._add_socratic_question_if_needed(response_content)
@@ -687,14 +710,21 @@ class UnifiedArchitecturalDashboard:
                 response_metadata = st.session_state.get("last_response_metadata", {})
                 gamification_display = response_metadata.get("gamification_display", {})
 
-                # Add assistant message with gamification info
-                st.session_state.messages.append({
+                # Add assistant message with gamification info and generated image
+                assistant_message = {
                     "role": "assistant",
                     "content": final_message,
                     "timestamp": datetime.now().isoformat(),
                     "mentor_type": st.session_state.current_mode,
                     "gamification": gamification_display
-                })
+                }
+
+                # Include generated image data if available
+                if generated_image_data:
+                    assistant_message["generated_image"] = generated_image_data
+                    print(f"✅ Added generated image to assistant message")
+
+                st.session_state.messages.append(assistant_message)
                 
                 # Force chat interface to update
                 st.rerun()
@@ -984,10 +1014,10 @@ class UnifiedArchitecturalDashboard:
                 st.markdown(f"**Design Brief:** {brief}")
             
             with col_image:
-                if st.session_state.uploaded_image_path and st.session_state.input_mode in ["Image + Text", "Image Only"]:
+                if st.session_state.get('uploaded_image_path'):
                     st.image(st.session_state.uploaded_image_path, caption="Your Design", use_container_width=True)
-                elif st.session_state.input_mode == "Text Only":
-                    st.info("📝 **Text-Only Analysis**: No image uploaded for this session")
+                else:
+                    st.info("📝 **No image uploaded for this session**")
             
             # Render phase progress section
             render_phase_progress_section(analysis_results)
@@ -1008,6 +1038,133 @@ class UnifiedArchitecturalDashboard:
                         }
                     })
         return chat_interactions
+
+    def _save_generated_image(self, generated_image: dict) -> str:
+        """Save generated image to thesis data directory"""
+
+        if not generated_image or not generated_image.get('url'):
+            return None
+
+        try:
+            import requests
+            import os
+            from datetime import datetime
+
+            # Create thesis data directory if it doesn't exist
+            thesis_data_dir = os.path.join(os.getcwd(), "thesis_data", "generated_images")
+            os.makedirs(thesis_data_dir, exist_ok=True)
+
+            # Generate filename with timestamp and phase
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            phase = generated_image.get('phase', 'unknown')
+            style = generated_image.get('style', 'unknown')
+            filename = f"{timestamp}_{phase}_{style}.png"
+            filepath = os.path.join(thesis_data_dir, filename)
+
+            # Download and save the image
+            print(f"📥 Downloading generated image from: {generated_image['url']}")
+            response = requests.get(generated_image['url'], timeout=30)
+
+            if response.status_code == 200:
+                with open(filepath, 'wb') as f:
+                    f.write(response.content)
+
+                print(f"✅ Generated image saved to: {filepath}")
+
+                # Also save metadata
+                metadata_file = filepath.replace('.png', '_metadata.json')
+                import json
+                metadata = {
+                    'url': generated_image['url'],
+                    'phase': generated_image.get('phase'),
+                    'style': generated_image.get('style'),
+                    'prompt': generated_image.get('prompt'),
+                    'timestamp': timestamp,
+                    'local_path': filepath
+                }
+
+                with open(metadata_file, 'w') as f:
+                    json.dump(metadata, f, indent=2)
+
+                print(f"✅ Image metadata saved to: {metadata_file}")
+                return filepath
+            else:
+                print(f"❌ Failed to download image: HTTP {response.status_code}")
+                return None
+
+        except Exception as e:
+            print(f"❌ Error saving generated image: {e}")
+            return None
+
+    def _display_generated_phase_image(self, generated_image: dict):
+        """Display the generated phase image and ask for user feedback"""
+
+        if not generated_image or not generated_image.get('url'):
+            return
+
+        st.markdown("---")
+        st.markdown("### 🎨 **Generated Design Visualization**")
+
+        # Display the image
+        try:
+            st.image(
+                generated_image['url'],
+                caption=f"AI-generated {generated_image.get('phase', 'design')} visualization",
+                use_container_width=True
+            )
+
+            # Show the prompt used
+            with st.expander("🔍 View Generation Details"):
+                st.markdown(f"**Phase:** {generated_image.get('phase', 'Unknown')}")
+                st.markdown(f"**Style:** {generated_image.get('style', 'Unknown')}")
+                st.markdown(f"**Prompt:** {generated_image.get('prompt', 'No prompt available')}")
+
+            # Ask for user feedback
+            st.markdown("**Does this visualization match your design thinking?**")
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                if st.button("✅ Yes, this captures my ideas", key=f"feedback_yes_{generated_image.get('phase', 'unknown')}"):
+                    st.success("Great! This confirms we're aligned on your design direction.")
+                    # Store positive feedback
+                    if 'image_feedback' not in st.session_state:
+                        st.session_state.image_feedback = []
+                    st.session_state.image_feedback.append({
+                        'phase': generated_image.get('phase'),
+                        'feedback': 'positive',
+                        'timestamp': str(datetime.now())
+                    })
+
+            with col2:
+                if st.button("🤔 Partially, but needs adjustment", key=f"feedback_partial_{generated_image.get('phase', 'unknown')}"):
+                    st.info("Thanks for the feedback! Let's continue refining your design ideas.")
+                    # Store partial feedback
+                    if 'image_feedback' not in st.session_state:
+                        st.session_state.image_feedback = []
+                    st.session_state.image_feedback.append({
+                        'phase': generated_image.get('phase'),
+                        'feedback': 'partial',
+                        'timestamp': str(datetime.now())
+                    })
+
+            with col3:
+                if st.button("❌ No, this doesn't match", key=f"feedback_no_{generated_image.get('phase', 'unknown')}"):
+                    st.warning("No problem! Let's continue exploring your design ideas to better understand your vision.")
+                    # Store negative feedback
+                    if 'image_feedback' not in st.session_state:
+                        st.session_state.image_feedback = []
+                    st.session_state.image_feedback.append({
+                        'phase': generated_image.get('phase'),
+                        'feedback': 'negative',
+                        'timestamp': str(datetime.now())
+                    })
+
+            st.markdown("---")
+
+        except Exception as e:
+            st.error(f"Error displaying generated image: {e}")
+            print(f"❌ Error displaying generated image: {e}")
 
 
 def main():

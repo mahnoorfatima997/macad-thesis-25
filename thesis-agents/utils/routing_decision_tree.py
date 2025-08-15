@@ -1257,30 +1257,34 @@ class AdvancedRoutingDecisionTree:
     def _apply_gamification_routing(self, triggers: List[str], classification: Dict[str, Any], context: RoutingContext) -> RouteType | None:
         """Apply gamification-enhanced routing based on detected triggers."""
 
-        # Priority-based trigger routing with enhanced interactivity
+        # Priority-based trigger routing with enhanced interactivity - REDUCED SOCRATIC OVERRIDE
         for trigger in triggers:
             if trigger == "low_engagement_challenge":
                 return RouteType.COGNITIVE_CHALLENGE
             elif trigger == "reality_check_challenge":
                 return RouteType.COGNITIVE_CHALLENGE
             elif trigger == "curiosity_amplification":
-                return RouteType.SOCRATIC_EXPLORATION
+                # Only use Socratic if user is asking exploratory questions
+                if classification.get("user_intent") in ["design_exploration", "creative_exploration"]:
+                    return RouteType.SOCRATIC_EXPLORATION
+                else:
+                    return RouteType.KNOWLEDGE_WITH_CHALLENGE
             elif trigger == "socratic_exploration_boost":
                 return RouteType.SOCRATIC_EXPLORATION
             elif trigger == "creative_constraint_challenge":
                 return RouteType.COGNITIVE_CHALLENGE
             elif trigger == "complexity_increase_ready":
                 # Check if user is ready for multi-agent comprehensive
-                return RouteType.KNOWLEDGE_WITH_CHALLENGE
+                return RouteType.MULTI_AGENT_COMPREHENSIVE
             elif trigger == "narrative_engagement":
-                # Use socratic for storytelling and scenario building
-                return RouteType.SOCRATIC_EXPLORATION
+                # Use balanced guidance for storytelling
+                return RouteType.BALANCED_GUIDANCE
             elif trigger == "comparison_challenge":
                 # Use cognitive challenge for comparison exercises
                 return RouteType.COGNITIVE_CHALLENGE
             elif trigger == "perspective_shift_challenge":
-                # Use socratic for role-playing and perspective shifts
-                return RouteType.SOCRATIC_EXPLORATION
+                # Use balanced guidance for role-playing and perspective shifts
+                return RouteType.BALANCED_GUIDANCE
 
         return None  # No gamification routing applied
 

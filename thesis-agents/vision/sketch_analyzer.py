@@ -16,37 +16,137 @@ class SketchAnalyzer:
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.domain = domain
         
-        # Domain-specific analysis prompts
+        # Domain-specific analysis prompts - Enhanced for detailed analysis
         self.domain_prompts = {
             "architecture": """
-                Analyze this architectural sketch/plan carefully. Look for:
-                
-                1. SPATIAL ORGANIZATION: How are rooms/spaces arranged? What's the overall layout strategy?
-                2. CIRCULATION: How do people move through the space? Are there clear paths?
-                3. ACCESS POINTS: Where are doors, windows, entrances? Are they logical?
-                4. STRUCTURAL ELEMENTS: Can you identify walls, columns, stairs, structural systems?
-                5. ACCESSIBILITY: Are there accessibility considerations visible? Any barriers?
-                6. DESIGN STRENGTHS: What works well in this design?
-                7. IMPROVEMENT OPPORTUNITIES: What could be enhanced or reconsidered?
-                8. BUILDING SYSTEMS: Any evidence of lighting, ventilation, or other systems?
-                
-                Be specific about what you observe. Point out both positive aspects and areas for development.
-                Focus on architectural principles like proportion, hierarchy, and functionality.
+                You are an expert architectural analyst. Provide a comprehensive, detailed analysis of this architectural drawing/sketch/plan. Be extremely specific and descriptive about what you observe.
+
+                ANALYZE IN DETAIL:
+
+                1. DRAWING TYPE & REPRESENTATION:
+                   - Is this a plan view, section, elevation, axonometric, perspective, or sketch?
+                   - What scale or level of detail is shown?
+                   - Is it hand-drawn, digital, or mixed media?
+                   - What drawing conventions are used (line weights, hatching, symbols)?
+
+                2. SPATIAL ORGANIZATION & LAYOUT:
+                   - Describe the exact arrangement of spaces - how many rooms/areas?
+                   - What is the overall organizational strategy (linear, clustered, courtyard, etc.)?
+                   - How are public, semi-public, and private spaces arranged?
+                   - What are the specific dimensions or proportional relationships you can observe?
+                   - Describe the hierarchy of spaces from largest to smallest
+
+                3. CIRCULATION & MOVEMENT:
+                   - Trace the primary circulation paths - where do they lead?
+                   - Are there secondary or service circulation routes?
+                   - How do vertical circulation elements (stairs, elevators, ramps) connect levels?
+                   - What is the sequence of spaces a person would experience?
+                   - Are there clear wayfinding elements or visual connections?
+
+                4. ACCESS POINTS & OPENINGS:
+                   - Count and describe all doors, windows, and openings
+                   - Where is the main entrance? Are there secondary entrances?
+                   - How do openings relate to interior and exterior spaces?
+                   - What is the rhythm and pattern of fenestration?
+                   - Are there any special opening types (curtain walls, skylights, etc.)?
+
+                5. STRUCTURAL & BUILDING SYSTEMS:
+                   - Identify structural elements: walls (load-bearing vs. partition), columns, beams
+                   - What structural system is implied (post-and-beam, bearing wall, etc.)?
+                   - Are there any mechanical, electrical, or plumbing elements visible?
+                   - How thick are walls? What might this suggest about materials or structure?
+
+                6. SITE RELATIONSHIP & CONTEXT:
+                   - How does the building relate to site boundaries, topography, or context?
+                   - Are there outdoor spaces, courtyards, or landscape elements?
+                   - What is the building's orientation and how might this affect daylighting?
+                   - Are there any site-specific design responses visible?
+
+                7. MATERIALS & CONSTRUCTION DETAILS:
+                   - What materials are indicated through drawing conventions or notes?
+                   - Are there any construction details or technical elements shown?
+                   - What does the drawing suggest about the building's materiality?
+
+                8. DESIGN QUALITY & ARCHITECTURAL PRINCIPLES:
+                   - Evaluate proportion, scale, and hierarchy
+                   - Assess functionality and programmatic organization
+                   - Comment on spatial quality and experiential aspects
+                   - Identify any innovative or noteworthy design moves
+
+                9. SPECIFIC OBSERVATIONS:
+                   - Note any text, dimensions, or annotations
+                   - Identify any symbols, furniture, or equipment shown
+                   - Describe any unique or unusual elements
+                   - Comment on the overall design intent or concept
+
+                10. AREAS FOR DEVELOPMENT:
+                    - What aspects could be clarified or developed further?
+                    - Are there any functional or design issues to address?
+                    - What questions does this drawing raise about the design?
+
+                PROVIDE A RICH, DETAILED DESCRIPTION that captures both the technical and experiential qualities of the design. Use specific architectural terminology and be as descriptive as possible about what you actually see in the image.
             """,
             
             "game_design": """
-                Analyze this game design sketch/level layout. Look for:
-                
-                1. LEVEL LAYOUT: How is the space organized for gameplay?
-                2. PLAYER PATHS: What routes can players take? Are there multiple options?
-                3. OBSTACLES & CHALLENGES: What barriers or puzzles do you see?
-                4. OBJECTIVES: Are there clear goals or targets visible?
-                5. DIFFICULTY PROGRESSION: Does the layout suggest appropriate challenge scaling?
-                6. PLAYER ENGAGEMENT: What elements would keep players interested?
-                7. DESIGN STRENGTHS: What gameplay elements work well?
-                8. IMPROVEMENT OPPORTUNITIES: What could enhance the player experience?
-                
-                Focus on player psychology, flow, and engagement principles.
+                You are an expert game design analyst. Provide a comprehensive, detailed analysis of this game design sketch/level layout/concept art. Be extremely specific about what you observe.
+
+                ANALYZE IN DETAIL:
+
+                1. VISUAL REPRESENTATION & STYLE:
+                   - What type of game design document is this (level layout, concept art, UI mockup, character design)?
+                   - What art style or visual approach is used?
+                   - What perspective or view is shown (top-down, side-scrolling, isometric, 3D)?
+                   - Describe the visual elements, colors, and artistic choices
+
+                2. LEVEL DESIGN & SPATIAL ORGANIZATION:
+                   - Map out the exact layout - what are the distinct areas or zones?
+                   - How is the space organized for gameplay flow?
+                   - What is the scale and scope of the playable area?
+                   - Are there different gameplay zones with distinct functions?
+
+                3. PLAYER MOVEMENT & NAVIGATION:
+                   - Trace all possible player paths and routes
+                   - Are there multiple ways to traverse the space?
+                   - What movement mechanics are implied (walking, jumping, climbing, flying)?
+                   - How does the layout guide or restrict player movement?
+
+                4. GAMEPLAY ELEMENTS & MECHANICS:
+                   - Identify all interactive elements, objects, or mechanics visible
+                   - What obstacles, challenges, or puzzles are present?
+                   - Are there collectibles, power-ups, or special items?
+                   - What combat or interaction scenarios are suggested?
+
+                5. OBJECTIVES & GOALS:
+                   - What are the apparent objectives or win conditions?
+                   - Are there multiple goals or a progression of objectives?
+                   - How are goals communicated visually?
+
+                6. DIFFICULTY & PACING:
+                   - How does the design suggest difficulty progression?
+                   - Are there safe zones, checkpoints, or rest areas?
+                   - What is the pacing of challenges and rewards?
+
+                7. PLAYER PSYCHOLOGY & ENGAGEMENT:
+                   - What elements would create player interest or excitement?
+                   - How does the design encourage exploration or experimentation?
+                   - Are there surprise elements or hidden areas?
+
+                8. TECHNICAL CONSIDERATIONS:
+                   - What technical constraints or requirements are implied?
+                   - How might this design be implemented in a game engine?
+                   - Are there any performance or technical challenges suggested?
+
+                9. NARRATIVE & THEME:
+                   - What story or thematic elements are present?
+                   - How does the visual design support the game's narrative?
+                   - What mood or atmosphere is created?
+
+                10. DESIGN STRENGTHS & OPPORTUNITIES:
+                    - What gameplay elements work particularly well?
+                    - What could enhance the player experience?
+                    - Are there any design issues or areas for improvement?
+
+                PROVIDE A RICH, DETAILED DESCRIPTION that captures both the technical gameplay aspects and the experiential qualities of the design. Use specific game design terminology and be as descriptive as possible about what you actually see.
             """
         }
     
@@ -266,3 +366,94 @@ class SketchAnalyzer:
         
         confidence = (length_score * 0.5 + detail_score * 0.3 + structure_score * 0.2)
         return round(max(0.1, min(1.0, confidence)), 2)
+
+    async def generate_detailed_description(self, image_path: str, context: str = "") -> str:
+        """Generate a detailed description of the image for system understanding"""
+
+        print(f"🔍 Generating detailed description for: {image_path}")
+
+        try:
+            # Preprocess image for better analysis
+            processed_path = self.preprocess_image(image_path)
+
+            # Encode image
+            base64_image = self.encode_image(processed_path)
+
+            # Create a prompt specifically for detailed description
+            description_prompt = f"""
+            You are an expert visual analyst. Your task is to provide an extremely detailed, comprehensive description of this image that will help an AI system understand exactly what is shown.
+
+            PROVIDE A DETAILED DESCRIPTION INCLUDING:
+
+            1. OVERALL COMPOSITION:
+               - What type of image is this? (sketch, photograph, digital rendering, technical drawing, etc.)
+               - What is the main subject or focus?
+               - What is the viewing angle or perspective?
+               - Describe the overall layout and composition
+
+            2. SPECIFIC VISUAL ELEMENTS:
+               - List and describe every visible object, structure, or element
+               - Note colors, textures, materials, and finishes
+               - Describe shapes, forms, and geometric relationships
+               - Identify any text, labels, dimensions, or annotations
+
+            3. SPATIAL RELATIONSHIPS:
+               - How are elements positioned relative to each other?
+               - What are the proportional relationships?
+               - Describe depth, scale, and dimensional qualities
+               - Note any perspective or viewing angle effects
+
+            4. TECHNICAL DETAILS:
+               - Any construction or technical details visible
+               - Drawing conventions, line weights, or symbols used
+               - Level of detail and precision shown
+               - Any measurements, scales, or technical annotations
+
+            5. CONTEXT AND SETTING:
+               - Environmental context or background elements
+               - Site conditions, landscape, or surrounding context
+               - Lighting conditions and shadows
+               - Any contextual clues about location or setting
+
+            6. DESIGN INTENT AND CONCEPT:
+               - What design ideas or concepts are being communicated?
+               - What is the apparent purpose or function?
+               - Any innovative or notable design features
+               - Overall design approach or style
+
+            {f"PROJECT CONTEXT: {context}" if context else ""}
+
+            Write a comprehensive, detailed description that captures every important visual aspect. Use specific, descriptive language that would allow someone who hasn't seen the image to understand exactly what is shown. Focus on observable facts and details rather than interpretations.
+            """
+
+            print("📤 Sending to GPT-4V for detailed description...")
+
+            # Call GPT-4O for detailed description
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": description_prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}",
+                                    "detail": "high"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=2000,  # Increased for detailed descriptions
+                temperature=0.2   # Lower temperature for more factual descriptions
+            )
+
+            detailed_description = response.choices[0].message.content
+            print("✅ Detailed description generated successfully")
+            return detailed_description
+
+        except Exception as e:
+            print(f"❌ Error generating detailed description: {e}")
+            return f"Error generating description: {str(e)}"

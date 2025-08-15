@@ -266,7 +266,7 @@ def render_single_message(message: Dict[str, Any]):
         # Display image if present
         if message.get("image_path"):
             try:
-                st.image(message["image_path"], caption="Uploaded image", use_column_width=True)
+                st.image(message["image_path"], caption="Uploaded image", use_container_width=True)
             except Exception as e:
                 st.error(f"Could not display image: {e}")
     else:
@@ -307,6 +307,10 @@ def render_single_message(message: Dict[str, Any]):
                 """,
                 unsafe_allow_html=True,
             )
+
+            # Display generated image if present in assistant message
+            if message.get("generated_image"):
+                _render_generated_image_in_chat(message["generated_image"])
 
 
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
@@ -366,6 +370,88 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             unsafe_allow_html=True,
         )
 
+def _render_generated_image_in_chat(generated_image: dict):
+    """Render a generated image within the chat interface."""
+    try:
+        if not generated_image or not generated_image.get('url'):
+            return
+
+        # Display the image with a nice caption
+        phase = generated_image.get('phase', 'design')
+        style = generated_image.get('style', 'visualization')
+
+        st.markdown(f"""
+        <div style="margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+            <div style="font-weight: bold; color: #007bff; margin-bottom: 8px;">
+                🎨 AI-Generated {phase.title()} Visualization
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Display the actual image
+        st.image(
+            generated_image['url'],
+            caption=f"AI-generated {phase} visualization ({style})",
+            use_container_width=True
+        )
+
+        # Add feedback buttons in a compact layout
+        st.markdown("**Does this visualization match your design thinking?**")
+
+        col1, col2, col3 = st.columns(3)
+
+        # Use unique keys based on image URL to avoid conflicts
+        image_key = str(hash(generated_image['url']))[-8:]
+
+        with col1:
+            if st.button("✅ Yes", key=f"feedback_yes_{image_key}", help="This captures my ideas well"):
+                st.success("Great! This confirms we're aligned on your design direction.")
+                _store_image_feedback(generated_image, 'positive')
+
+        with col2:
+            if st.button("🤔 Partially", key=f"feedback_partial_{image_key}", help="Close, but needs adjustment"):
+                st.info("Thanks for the feedback! Let's continue refining your design ideas.")
+                _store_image_feedback(generated_image, 'partial')
+
+        with col3:
+            if st.button("❌ No", key=f"feedback_no_{image_key}", help="This doesn't match my vision"):
+                st.warning("No problem! Let's continue exploring your design ideas.")
+                _store_image_feedback(generated_image, 'negative')
+
+        # Show generation details in an expander
+        with st.expander("🔍 View Generation Details"):
+            st.markdown(f"**Phase:** {generated_image.get('phase', 'Unknown')}")
+            st.markdown(f"**Style:** {generated_image.get('style', 'Unknown')}")
+            st.markdown(f"**Prompt:** {generated_image.get('prompt', 'No prompt available')}")
+            if generated_image.get('local_path'):
+                st.markdown(f"**Saved to:** `{generated_image['local_path']}`")
+
+    except Exception as e:
+        st.error(f"Error displaying generated image: {e}")
+        print(f"❌ Error displaying generated image in chat: {e}")
+
+def _store_image_feedback(generated_image: dict, feedback: str):
+    """Store user feedback for generated images."""
+    try:
+        import streamlit as st
+        from datetime import datetime
+
+        if 'image_feedback' not in st.session_state:
+            st.session_state.image_feedback = []
+
+        st.session_state.image_feedback.append({
+            'phase': generated_image.get('phase'),
+            'style': generated_image.get('style'),
+            'url': generated_image.get('url'),
+            'feedback': feedback,
+            'timestamp': datetime.now().isoformat()
+        })
+
+        print(f"✅ Stored {feedback} feedback for {generated_image.get('phase')} image")
+
+    except Exception as e:
+        print(f"❌ Error storing image feedback: {e}")
+
 def _format_timestamp(timestamp: str) -> str:
     """Format timestamp for display."""
     if not timestamp:
@@ -413,17 +499,45 @@ def render_mode_configuration():
     """, unsafe_allow_html=True)
 
 
-def render_input_mode_selection():
-    """Render input mode selection component."""
-    input_mode = st.radio(
-        "Choose your input mode:",
-        INPUT_MODES,
-        index=0,
-        help="Text Only: Describe your project without images\n"
-             "Image + Text: Upload image and describe project\n"
-             "Image Only: Analyze image without text description"
-    )
-    return input_mode
+def render_initial_image_upload():
+    """Render initial image upload using popover - replaces input mode selection."""
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 15px;">
+            <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                Upload an image to get started (optional)
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Center the popover
+        col_left, col_center, col_right = st.columns([1, 1, 1])
+        with col_center:
+            st.markdown("""
+            <style>
+            div[data-testid="popover"] {
+                margin-top: 0.5rem !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+            with st.popover("📷 Upload Image", help="Upload your architectural drawing, plan, or sketch"):
+                uploaded_file = st.file_uploader(
+                    "Choose an image",
+                    type=['png', 'jpg', 'jpeg'],
+                    key="initial_image_upload"
+                )
+
+                if uploaded_file:
+                    st.success(f"✅ {uploaded_file.name} uploaded successfully!")
+
+            # Handle the case where no image is uploaded
+            if 'uploaded_file' not in locals():
+                uploaded_file = None
+
+    return uploaded_file
 
 
 def render_mentor_type_selection():
@@ -459,34 +573,19 @@ def render_skill_level_selection():
     return skill_level
 
 
-def render_project_description_input(template_text: str, input_mode: str):
+def render_project_description_input(template_text: str):
     """Render project description input area."""
-    if input_mode in ["Text Only", "Image + Text"]:
-        placeholder_text = ("Describe your architectural project here..." 
-                          if input_mode == "Text Only" 
-                          else "Describe your project along with the uploaded image...")
-        
-        project_description = st.text_area(
-            "Project Description:",
-            value=template_text,
-            placeholder=placeholder_text,
-            height=120,
-            help="Provide details about your architectural project, design goals, constraints, or specific questions"
-        )
-        return project_description
-    return ""
+    project_description = st.text_area(
+        "Project Description:",
+        value=template_text,
+        placeholder="Describe your architectural project here...",
+        height=120,
+        help="Provide details about your architectural project, design goals, constraints, or specific questions"
+    )
+    return project_description
 
 
-def render_file_upload(input_mode: str):
-    """Render file upload component."""
-    uploaded_file = None
-    if input_mode in ["Image + Text", "Image Only"]:
-        uploaded_file = st.file_uploader(
-            "Upload your architectural drawing",
-            type=['png', 'jpg', 'jpeg'],
-            help="Upload a clear image of your architectural design, plan, or sketch"
-        )
-    return uploaded_file
+# render_file_upload function removed - replaced by render_initial_image_upload
 
 
 def render_chat_history():
@@ -522,24 +621,23 @@ def get_chat_input() -> tuple[str, any]:
         )
 
     with col2:
-            st.markdown("""
-            <style>
-            div[data-testid="popover"] {
-                margin-top: 2rem !important;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-            
-            with st.popover("📷", help="Upload an image to analyze"):
-                uploaded_image = st.file_uploader(
-                    "Choose an image",
-                    type=['png', 'jpg', 'jpeg'],
-                    key="seamless_image_upload"
-                )
-            
-            # Handle the case where no image is uploaded
-            if 'uploaded_image' not in locals():
-                uploaded_image = None
+        st.markdown("""
+        <style>
+        div[data-testid="popover"] {
+            margin-top: 2rem !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Initialize uploaded_image
+        uploaded_image = None
+
+        with st.popover("📷", help="Upload an image to analyze"):
+            uploaded_image = st.file_uploader(
+                "Choose an image",
+                type=['png', 'jpg', 'jpeg'],
+                key="seamless_image_upload"
+            )
 
     return user_input, uploaded_image
 
@@ -554,12 +652,8 @@ def response_contains_questions(text: str) -> bool:
     return text.count('?') >= 1
 
 
-def validate_input(input_mode: str, project_description: str, uploaded_file) -> tuple[bool, str]:
-    """Validate input based on selected mode."""
-    if input_mode == "Text Only" and not project_description.strip():
-        return False, "📝 Please describe your project for text-only analysis"
-    elif input_mode in ["Image + Text", "Image Only"] and not uploaded_file:
-        return False, "🖼️ Please upload an image for image analysis"
-    elif input_mode == "Image + Text" and not project_description.strip():
-        return False, "📝 Please describe your project along with the image"
-    return True, "" 
+def validate_input(project_description: str, uploaded_file) -> tuple[bool, str]:
+    """Validate input - requires either description or image."""
+    if not project_description.strip() and not uploaded_file:
+        return False, "📝 Please provide either a project description or upload an image to get started"
+    return True, ""

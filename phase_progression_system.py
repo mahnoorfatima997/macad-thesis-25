@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 import re
+import asyncio
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -1132,6 +1134,26 @@ class PhaseProgressionSystem:
         self.transition_system = PhaseTransitionSystem()
         self.sessions: Dict[str, SessionState] = {}
 
+        # Initialize image generation components
+        try:
+            import sys
+            import os
+            # Add the thesis-agents directory to the path
+            thesis_agents_path = os.path.join(os.path.dirname(__file__), 'thesis-agents')
+            if thesis_agents_path not in sys.path:
+                sys.path.insert(0, thesis_agents_path)
+
+            from vision.image_generator import ReplicateImageGenerator, DesignPromptGenerator
+            self.image_generator = ReplicateImageGenerator()
+            self.prompt_generator = DesignPromptGenerator()
+            self.image_generation_enabled = True
+            print("🎨 Image generation system initialized")
+        except ImportError as e:
+            print(f"⚠️ Image generation not available: {e}")
+            self.image_generator = None
+            self.prompt_generator = None
+            self.image_generation_enabled = False
+
         # Phase configuration
         self.phase_weights = {
             DesignPhase.IDEATION: 0.25,
@@ -1370,12 +1392,55 @@ class PhaseProgressionSystem:
             f"Welcome to the {next_phase.value} phase! Let's continue developing your design thinking."
         )
 
-        return {
+        # Generate phase-specific image
+        generated_image = None
+        if self.image_generation_enabled and self.image_generator and self.prompt_generator:
+            try:
+                print(f"🎨 Generating {next_phase.value} phase image...")
+
+                # Generate image prompt from conversation history
+                conversation_history = session.conversation_history if hasattr(session, 'conversation_history') else []
+                project_type = getattr(session, 'project_type', 'community center')
+
+                design_description = self.prompt_generator.generate_image_prompt_from_conversation(
+                    conversation_history,
+                    next_phase.value.lower(),
+                    project_type
+                )
+
+                # Generate the image
+                image_result = self.image_generator.generate_phase_image(
+                    design_description,
+                    next_phase.value.lower(),
+                    f"{project_type} design project"
+                )
+
+                if image_result.get("success"):
+                    generated_image = {
+                        "url": image_result["image_url"],
+                        "prompt": image_result["prompt"],
+                        "style": image_result["style"],
+                        "phase": next_phase.value
+                    }
+                    print(f"✅ Generated {next_phase.value} phase image successfully")
+                else:
+                    print(f"❌ Image generation failed: {image_result.get('error', 'Unknown error')}")
+
+            except Exception as e:
+                print(f"❌ Error during image generation: {e}")
+
+        transition_result = {
             "success": True,
             "previous_phase": current_phase.value,
             "new_phase": next_phase.value,
-            "message": welcome_message
+            "message": welcome_message,
+            "generated_image": generated_image
         }
+
+        # Store the transition result for capture by process_user_message
+        self._last_transition_result = transition_result
+
+        return transition_result
 
     def process_user_message(self, session_id: str, message: str) -> Dict[str, Any]:
         """Process a user message and return assessment results - RESTORED WORKING VERSION"""
@@ -1459,13 +1524,26 @@ class PhaseProgressionSystem:
         # Generate phase nudge if needed
         nudge = self._generate_phase_nudge(session, current_phase_progress, grade)
 
+        # Check for phase transitions and capture transition results
+        phase_transition_result = None
+        original_phase = session.current_phase.value
+
         # Get next question or phase transition info
         next_question = self.get_next_question(session_id)
 
-        return {
+        # Check if phase changed during get_next_question (indicates transition occurred)
+        updated_session = self.sessions.get(session_id)
+        if updated_session and updated_session.current_phase.value != original_phase:
+            print(f"🔄 Phase transition detected: {original_phase} → {updated_session.current_phase.value}")
+            # Capture the transition result from the last transition
+            if hasattr(self, '_last_transition_result'):
+                phase_transition_result = self._last_transition_result
+                print(f"✅ Captured transition result with generated image: {bool(phase_transition_result.get('generated_image'))}")
+
+        result = {
             "session_id": session_id,
-            "current_phase": session.current_phase.value,
-            "current_step": current_question.step.value,
+            "current_phase": updated_session.current_phase.value if updated_session else session.current_phase.value,
+            "current_step": current_question.step.value if current_question else "unknown",
             "grade": {
                 "overall_score": grade.overall_score,
                 "completeness": grade.completeness,
@@ -1484,10 +1562,22 @@ class PhaseProgressionSystem:
             },
             "next_question": next_question.question_text if next_question else None,
             "phase_complete": current_phase_progress.is_complete,
-            "session_complete": self._is_session_complete(session),
+            "session_complete": self._is_session_complete(updated_session if updated_session else session),
             "nudge": nudge,
             "question_answered": True  # Always true in working version
         }
+
+        # Add phase transition information if transition occurred
+        if phase_transition_result:
+            result.update({
+                "phase_transition": True,
+                "transition_message": phase_transition_result.get("message", "Phase transition completed!"),
+                "previous_phase": original_phase,
+                "generated_image": phase_transition_result.get("generated_image")
+            })
+            print(f"✅ Added phase transition info to result")
+
+        return result
 
     def process_response(self, session_id: str, response: str) -> Dict[str, Any]:
         """DEPRECATED: Use process_user_message instead. Kept for backward compatibility."""
