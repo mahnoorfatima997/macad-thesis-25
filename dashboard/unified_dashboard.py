@@ -28,6 +28,7 @@ from .ui.analysis_components import render_cognitive_analysis_dashboard, render_
 from .ui.phase_circles import render_phase_circles, render_phase_metrics
 from .processors.mode_processors import ModeProcessor
 from .analysis.phase_analyzer import PhaseAnalyzer
+from .core.image_database import ImageDatabase
 
 # Import external dependencies
 from phase_progression_system import PhaseProgressionSystem
@@ -96,6 +97,9 @@ class UnifiedArchitecturalDashboard:
         
         # Phase analyzer
         self.phase_analyzer = PhaseAnalyzer()
+
+        # Image database
+        self.image_database = ImageDatabase()
         
         # Data collector: store once in session
         if 'data_collector' not in st.session_state:
@@ -116,7 +120,8 @@ class UnifiedArchitecturalDashboard:
         self.mode_processor = ModeProcessor(
             orchestrator=self.orchestrator,
             data_collector=self.data_collector,
-            test_dashboard=self.test_dashboard
+            test_dashboard=self.test_dashboard,
+            image_database=self.image_database
         )
     
     def run(self):
@@ -207,8 +212,18 @@ class UnifiedArchitecturalDashboard:
                     import tempfile
                     from PIL import Image
                     image = Image.open(uploaded_file)
+
+                    # Convert RGBA to RGB if necessary for JPEG format
+                    if image.mode == 'RGBA':
+                        # Create white background
+                        background = Image.new('RGB', image.size, (255, 255, 255))
+                        background.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
+                        image = background
+                    elif image.mode not in ['RGB', 'L']:
+                        image = image.convert('RGB')
+
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
-                        image.save(tmp_file.name)
+                        image.save(tmp_file.name, 'JPEG', quality=95)
                         st.session_state.uploaded_image_path = tmp_file.name
                 
                 # Run analysis based on selected mode
@@ -264,8 +279,18 @@ class UnifiedArchitecturalDashboard:
         # Handle image if provided
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
+
+            # Convert RGBA to RGB if necessary for JPEG format
+            if image.mode == 'RGBA':
+                # Create white background
+                background = Image.new('RGB', image.size, (255, 255, 255))
+                background.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
+                image = background
+            elif image.mode not in ['RGB', 'L']:
+                image = image.convert('RGB')
+
             with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
-                image.save(tmp_file.name)
+                image.save(tmp_file.name, 'JPEG', quality=95)
                 temp_image_path = tmp_file.name
                 
             artifact = VisualArtifact(
@@ -396,11 +421,15 @@ class UnifiedArchitecturalDashboard:
             # PHASE QUESTION DISPLAY: Show current phase question if available
             self._render_current_phase_question()
 
-            # Chat input
-            user_input = get_chat_input()
-            
+            # Chat input with seamless image upload
+            user_input, uploaded_image = get_chat_input()
+
             if user_input:
-                self._handle_chat_input(user_input)
+                self._handle_chat_input(user_input, uploaded_image)
+            elif uploaded_image:
+                # Store image but don't process until user provides input
+                self._store_uploaded_image(uploaded_image)
+                st.info("📷 Image uploaded! Type a message or question and press Enter to analyze it.")
 
     def _render_current_phase_question(self):
         """Render the current phase question if available."""
@@ -440,16 +469,52 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             print(f"⚠️ UI: Error displaying phase question: {e}")
 
-    def _handle_chat_input(self, user_input: str):
-        """Handle new chat input from the user."""
+    def _handle_chat_input(self, user_input: str, uploaded_image=None):
+        """Handle new chat input from the user with optional image."""
         print(f"\n🎯 DASHBOARD: _handle_chat_input called with: {user_input[:50]}...")
+        if uploaded_image:
+            print(f"📷 DASHBOARD: Image uploaded: {uploaded_image.name}")
+
+        # Process image if uploaded
+        image_path = None
+        if uploaded_image:
+            image_path = self._process_uploaded_image(uploaded_image)
+
+        # Check for pending images from previous uploads
+        pending_images = st.session_state.get('pending_images', [])
+        if pending_images and not uploaded_image:
+            # Use the most recent pending image
+            latest_image = pending_images[-1]
+            image_path = latest_image['path']
+            print(f"📷 DASHBOARD: Using pending image: {latest_image['filename']}")
+
+            # Clear pending images after use
+            st.session_state.pending_images = []
 
         # Add user message to chat history
-        st.session_state.messages.append({
+        user_message = {
             "role": "user",
             "content": user_input,
             "timestamp": datetime.now().isoformat()
-        })
+        }
+
+        # Add image path if present and analyze with database
+        if image_path:
+            user_message["image_path"] = image_path
+
+            # Analyze image and store in database
+            image_analysis = self.image_database.analyze_image(image_path, user_input)
+            image_id = self.image_database.store_image_analysis(image_path, image_analysis)
+
+            # Add image info to message
+            image_filename = uploaded_image.name if uploaded_image else pending_images[-1]['filename'] if pending_images else "image"
+            user_message["content"] += f"\n\n[Image uploaded: {image_filename}]"
+            user_message["image_id"] = image_id
+            user_message["image_analysis"] = image_analysis
+
+            print(f"📁 Image analyzed and stored with ID: {image_id}")
+
+        st.session_state.messages.append(user_message)
 
         # Log interaction
         self._log_user_interaction(user_input)
@@ -475,9 +540,70 @@ class UnifiedArchitecturalDashboard:
                 st.session_state.current_question_id = None
 
         # Generate response (this will now handle phase transitions properly)
-        self._generate_and_display_response(user_input)
+        # Get image path from the last message if present
+        image_path = None
+        if st.session_state.messages and "image_path" in st.session_state.messages[-1]:
+            image_path = st.session_state.messages[-1]["image_path"]
+
+        self._generate_and_display_response(user_input, image_path)
         
         # Don't rerun - let the response display naturally
+
+    def _process_uploaded_image(self, uploaded_file) -> str:
+        """Process uploaded image and return the file path."""
+        try:
+            import tempfile
+            from PIL import Image
+
+            print(f"📷 Processing uploaded image: {uploaded_file.name}")
+
+            # Open and process the image
+            image = Image.open(uploaded_file)
+
+            # Convert RGBA to RGB if necessary for JPEG format
+            if image.mode == 'RGBA':
+                # Create white background
+                background = Image.new('RGB', image.size, (255, 255, 255))
+                background.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
+                image = background
+            elif image.mode not in ['RGB', 'L']:
+                image = image.convert('RGB')
+
+            # Save to temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                image.save(tmp_file.name, 'JPEG', quality=95)
+                temp_path = tmp_file.name
+
+            print(f"✅ Image saved to: {temp_path}")
+            return temp_path
+
+        except Exception as e:
+            print(f"❌ Error processing image: {e}")
+            return None
+
+    def _store_uploaded_image(self, uploaded_file):
+        """Store uploaded image without processing it immediately."""
+        try:
+            # Process and save the image
+            image_path = self._process_uploaded_image(uploaded_file)
+
+            if image_path:
+                # Store in session state for later use
+                if 'pending_images' not in st.session_state:
+                    st.session_state.pending_images = []
+
+                st.session_state.pending_images.append({
+                    'path': image_path,
+                    'filename': uploaded_file.name,
+                    'upload_time': datetime.now().isoformat()
+                })
+
+                print(f"📷 Image stored for later processing: {uploaded_file.name}")
+                return image_path
+
+        except Exception as e:
+            print(f"❌ Error storing image: {e}")
+            return None
 
     def _process_user_response_for_phases(self, user_input: str):
         """Process user response through the phase progression system."""
@@ -522,15 +648,15 @@ class UnifiedArchitecturalDashboard:
             import traceback
             traceback.print_exc()
 
-    def _generate_and_display_response(self, user_input: str):
-        """Generate and display the AI response."""
+    def _generate_and_display_response(self, user_input: str, image_path: str = None):
+        """Generate and display the AI response with optional image."""
         # Simple spinner without typing indicator to avoid conflicts
-        
+
         with st.spinner("Thinking..."):
             try:
-                # Process response based on current mode
+                # Process response based on current mode with image support
                 response = asyncio.run(
-                    self.mode_processor.process_input(user_input, st.session_state.current_mode)
+                    self.mode_processor.process_input(user_input, st.session_state.current_mode, image_path)
                 )
                 
                 # Extract the actual response content from the response object

@@ -17,31 +17,72 @@ from thesis_tests.data_models import InteractionData, TestPhase
 
 class ModeProcessor:
     """Base class for mode processors."""
-    
-    def __init__(self, orchestrator=None, data_collector=None, test_dashboard=None):
+
+    def __init__(self, orchestrator=None, data_collector=None, test_dashboard=None, image_database=None):
         self.orchestrator = orchestrator
         self.data_collector = data_collector
         self.test_dashboard = test_dashboard
+        self.image_database = image_database
     
-    async def process_input(self, user_input: str, mode: str) -> str:
-        """Process user input based on the selected mode."""
+    async def process_input(self, user_input: str, mode: str, image_path: str = None) -> str:
+        """Process user input based on the selected mode with optional image."""
         try:
+            # Enhance user input with image context if available
+            enhanced_input = self._enhance_input_with_image_context(user_input)
+
             # Handle both old testing modes and new mentor type modes
             if mode in ["MENTOR", "Socratic Agent"]:
-                return await self._process_mentor_mode(user_input)
+                return await self._process_mentor_mode(enhanced_input, image_path)
             elif mode in ["RAW_GPT", "Raw GPT"]:
-                return await self._process_raw_gpt_mode(user_input)
+                return await self._process_raw_gpt_mode(enhanced_input, image_path)
             elif mode == "GENERIC_AI":
-                return await self._process_generic_ai_mode(user_input)
+                return await self._process_generic_ai_mode(enhanced_input)
             elif mode == "CONTROL":
-                return await self._process_control_mode(user_input)
+                return await self._process_control_mode(enhanced_input)
             else:
                 return "Invalid mode selected."
         except Exception as e:
             st.error(f"❌ Error in process_input: {str(e)}")
             return f"An error occurred: {str(e)}"
+
+    def _enhance_input_with_image_context(self, user_input: str) -> str:
+        """Enhance user input with context from stored images."""
+        if not self.image_database:
+            return user_input
+
+        try:
+            # Get conversation images for context
+            conversation_images = self.image_database.get_conversation_images()
+
+            if not conversation_images:
+                return user_input
+
+            # Check if user is referencing images in their input
+            image_references = []
+            input_lower = user_input.lower()
+
+            # Look for image references
+            if any(word in input_lower for word in ['image', 'drawing', 'sketch', 'plan', 'elevation', 'section', 'uploaded', 'picture']):
+                # Add context about available images
+                recent_images = conversation_images[:3]  # Most recent 3 images
+
+                context_parts = []
+                for img in recent_images:
+                    drawing_type = img.get('drawing_type', 'drawing')
+                    context = img.get('user_context', '')[:50] + '...' if len(img.get('user_context', '')) > 50 else img.get('user_context', '')
+                    context_parts.append(f"- {drawing_type}" + (f" ({context})" if context else ""))
+
+                if context_parts:
+                    image_context = f"\n\n[Context: You have access to these images from our conversation: {', '.join(context_parts)}]"
+                    return user_input + image_context
+
+            return user_input
+
+        except Exception as e:
+            print(f"❌ Error enhancing input with image context: {e}")
+            return user_input
     
-    async def _process_mentor_mode(self, user_input: str) -> str:
+    async def _process_mentor_mode(self, user_input: str, image_path: str = None) -> str:
         """Process using the full mentor system."""
         # Ensure session is initialized
         if not st.session_state.session_id:
@@ -93,13 +134,31 @@ class ModeProcessor:
             # Pass phase information to the orchestrator
             phase_info=current_phase_info
         )
-        
+
+        # Handle image if provided
+        if image_path:
+            print(f"📷 MODE_PROCESSOR: Adding image to state: {image_path}")
+            from state_manager import VisualArtifact
+
+            artifact = VisualArtifact(
+                id="user_uploaded_image",
+                type="sketch",
+                image_path=image_path
+            )
+            state.current_sketch = artifact
+            state.visual_artifacts.append(artifact)
+
         # Ensure we don't duplicate the same user message
         if not state.messages or state.messages[-1].get("role") != "user" or state.messages[-1].get("content") != user_input:
-            state.messages.append({
+            user_message = {
                 "role": "user",
                 "content": user_input
-            })
+            }
+            # Add image reference to message if present
+            if image_path:
+                user_message["image_path"] = image_path
+
+            state.messages.append(user_message)
         
         # Process with orchestrator
         print(f"🎯 MODE_PROCESSOR: Calling orchestrator with phase: {current_phase_info.get('current_phase', 'unknown') if current_phase_info else 'no_phase_info'}")
@@ -198,7 +257,7 @@ class ModeProcessor:
         
         return response
     
-    async def _process_raw_gpt_mode(self, user_input: str) -> str:
+    async def _process_raw_gpt_mode(self, user_input: str, image_path: str = None) -> str:
         """Process using direct Raw GPT (no multi-agent)."""
         # Ensure session is initialized
         if not st.session_state.session_id:

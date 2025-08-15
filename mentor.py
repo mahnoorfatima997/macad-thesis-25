@@ -29,7 +29,7 @@ try:
 except Exception:
     pass
 
-from dashboard import UnifiedArchitecturalDashboard
+from dashboard.unified_dashboard import UnifiedArchitecturalDashboard
 
 def main():
     """Main function to run the dashboard."""

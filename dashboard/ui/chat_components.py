@@ -247,7 +247,7 @@ def hide_typing_indicator():
 
 
 def render_single_message(message: Dict[str, Any]):
-    """Render a single message in the chat interface."""
+    """Render a single message in the chat interface with image support."""
     if message["role"] == "user":
         # User message - right side
         st.markdown(
@@ -262,6 +262,13 @@ def render_single_message(message: Dict[str, Any]):
             """,
             unsafe_allow_html=True,
         )
+
+        # Display image if present
+        if message.get("image_path"):
+            try:
+                st.image(message["image_path"], caption="Uploaded image", use_column_width=True)
+            except Exception as e:
+                st.error(f"Could not display image: {e}")
     else:
         # Agent message - left side
         mentor_type = message.get("mentor_type", "Multi-Agent System")
@@ -488,8 +495,8 @@ def render_chat_history():
     render_chat_interface()
 
 
-def get_chat_input() -> str:
-    """Get chat input from user with enhanced styling and experience."""
+def get_chat_input() -> tuple[str, any]:
+    """Get chat input from user with enhanced styling and seamless image upload."""
     # Enhanced placeholder text based on context
     if 'messages' in st.session_state and st.session_state.messages:
         # Check if this is a follow-up to a question
@@ -503,14 +510,38 @@ def get_chat_input() -> str:
             placeholder = "Continue the conversation..."
     else:
         placeholder = "Start your architectural design journey..."
-    
-    # Get the chat input with enhanced styling
-    user_input = st.chat_input(
-        placeholder,
-        key="enhanced_chat_input"
-    )
-    
-    return user_input
+
+    # Create columns for chat input and image upload
+    col1, col2 = st.columns([0.9, 0.1])
+
+    with col1:
+        # Get the chat input with enhanced styling
+        user_input = st.chat_input(
+            placeholder,
+            key="enhanced_chat_input"
+        )
+
+    with col2:
+            st.markdown("""
+            <style>
+            div[data-testid="popover"] {
+                margin-top: 2rem !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            with st.popover("📷", help="Upload an image to analyze"):
+                uploaded_image = st.file_uploader(
+                    "Choose an image",
+                    type=['png', 'jpg', 'jpeg'],
+                    key="seamless_image_upload"
+                )
+            
+            # Handle the case where no image is uploaded
+            if 'uploaded_image' not in locals():
+                uploaded_image = None
+
+    return user_input, uploaded_image
 
 
 
