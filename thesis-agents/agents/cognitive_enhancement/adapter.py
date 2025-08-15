@@ -208,11 +208,11 @@ class CognitiveEnhancementAgent:
             "scientific_metrics": challenge_result.get("scientific_metrics", {}),
             "enhancement_timestamp": challenge_result.get("enhancement_timestamp", ""),
             "agent": self.name,
-            # ENHANCED: Add gamification display data
+            # SMART GAMIFICATION: Only show enhanced visuals when gamification is actually applied
             "gamification_display": {
-                "is_gamified": True,
+                "is_gamified": challenge_result.get("gamification_applied", False),
                 "challenge_data": challenge_result,
-                "display_type": "enhanced_visual"
+                "display_type": "enhanced_visual" if challenge_result.get("gamification_applied", False) else "standard"
             }
         }
 

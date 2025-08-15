@@ -136,8 +136,15 @@ class ChallengeGeneratorProcessor:
             base_challenge = random.choice(challenges)
             contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "perspective_challenge", perspective_type)
             
-            # GAMIFICATION ENHANCEMENT: Add interactive elements based on trigger type
-            gamified_challenge = await self._add_gamification_elements(contextualized_challenge, perspective_type, state)
+            # SMART GAMIFICATION: Only apply gamification when appropriate
+            should_gamify = self._should_apply_gamification(state, perspective_type, "perspective_challenge")
+
+            if should_gamify:
+                gamified_challenge = await self._add_gamification_elements(contextualized_challenge, perspective_type, state)
+                gamification_applied = True
+            else:
+                gamified_challenge = contextualized_challenge
+                gamification_applied = False
 
             return {
                 "challenge_text": gamified_challenge,
@@ -146,7 +153,7 @@ class ChallengeGeneratorProcessor:
                 "pedagogical_intent": "Expand perspective and empathy in design thinking",
                 "cognitive_target": "perspective_taking",
                 "expected_outcome": "Enhanced empathy and user-centered design thinking",
-                "gamification_applied": True
+                "gamification_applied": gamification_applied
             }
             
         except Exception as e:
@@ -212,6 +219,83 @@ class ChallengeGeneratorProcessor:
             self.telemetry.log_error("_add_gamification_elements", str(e))
             return base_challenge  # Return original if gamification fails
 
+    def _should_apply_gamification(self, state: ArchMentorState, challenge_type: str, context: str) -> bool:
+        """
+        Smart gamification trigger - based on routing_test_user_inputs.md patterns.
+
+        Gamification should ONLY be applied for specific trigger patterns:
+        - Role-play questions (How would a visitor feel...)
+        - Perspective questions (What would an elderly person think...)
+        - Curiosity amplification (I wonder what would happen...)
+        - Creative constraints (I'm stuck on...)
+        - Reality checks (This seems pretty easy...)
+        - Low engagement (Ok, Yes, Sure...)
+        - Overconfidence (I already know exactly what to do...)
+        - Cognitive offloading (Just tell me what to do...)
+        """
+        try:
+            # Get conversation history
+            messages = getattr(state, 'messages', [])
+            user_messages = [msg for msg in messages if msg.get('role') == 'user']
+
+            if len(user_messages) == 0:
+                return False
+
+            latest_message = user_messages[-1].get('content', '').lower().strip()
+
+            # 1. ROLE-PLAY TRIGGERS (from routing test lines 12-16, 36-40)
+            role_play_patterns = [
+                'how would a visitor feel', 'how would', 'what would', 'from the perspective of',
+                'how do users feel', 'what would an elderly person', 'what would a child'
+            ]
+            if any(pattern in latest_message for pattern in role_play_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Role-play question detected")
+                return True
+
+            # 2. CURIOSITY AMPLIFICATION (line 18)
+            curiosity_patterns = ['i wonder what would happen', 'what if', 'i wonder']
+            if any(pattern in latest_message for pattern in curiosity_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Curiosity amplification detected")
+                return True
+
+            # 3. CREATIVE CONSTRAINTS (line 21)
+            constraint_patterns = ['i\'m stuck on', 'stuck on', 'having trouble', 'not sure how']
+            if any(pattern in latest_message for pattern in constraint_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Creative constraint detected")
+                return True
+
+            # 4. REALITY CHECK / OVERCONFIDENCE (lines 24, 33)
+            overconfidence_patterns = [
+                'this seems pretty easy', 'this is easy', 'i already know exactly',
+                'i already know', 'that\'s obvious', 'simple', 'basic'
+            ]
+            if any(pattern in latest_message for pattern in overconfidence_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Overconfidence/reality check detected")
+                return True
+
+            # 5. LOW ENGAGEMENT (lines 27-31)
+            low_engagement_responses = ['ok', 'yes', 'sure', 'fine', 'alright', 'cool', 'maybe']
+            if latest_message in low_engagement_responses:
+                print(f"🎮 GAMIFICATION TRIGGER: Low engagement detected")
+                return True
+
+            # 6. COGNITIVE OFFLOADING (lines 223-233)
+            offloading_patterns = [
+                'just tell me what to do', 'can you design this', 'tell me what to do',
+                'what should i do', 'give me the answer', 'what\'s the standard solution'
+            ]
+            if any(pattern in latest_message for pattern in offloading_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Cognitive offloading detected")
+                return True
+
+            # Default: no gamification for normal design statements, technical questions, etc.
+            print(f"🎮 GAMIFICATION SKIP: Normal design statement/question (no trigger patterns)")
+            return False
+
+        except Exception as e:
+            print(f"🎮 GAMIFICATION ERROR: {e}")
+            return False  # Default to no gamification on error
+
     def _extract_building_type(self, project_context: str) -> str:
         """Extract building type from project context."""
         building_types = ["community center", "hospital", "office", "school", "library", "museum", "residential"]
@@ -267,14 +351,25 @@ class ChallengeGeneratorProcessor:
             
             base_challenge = random.choice(challenges)
             contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "metacognitive_challenge", metacognitive_type)
-            
+
+            # SMART GAMIFICATION: Only apply gamification when appropriate
+            should_gamify = self._should_apply_gamification(state, metacognitive_type, "metacognitive_challenge")
+
+            if should_gamify:
+                gamified_challenge = await self._add_gamification_elements(contextualized_challenge, metacognitive_type, state)
+                gamification_applied = True
+            else:
+                gamified_challenge = contextualized_challenge
+                gamification_applied = False
+
             return {
-                "challenge_text": contextualized_challenge,
+                "challenge_text": gamified_challenge,
                 "challenge_type": "metacognitive_challenge",
                 "metacognitive_type": metacognitive_type,
-                "pedagogical_intent": "Promote metacognitive awareness and reflection",
+                "pedagogical_intent": "Foster metacognitive awareness and self-evaluation" + (" with focus on increasing engagement" if gamification_applied else ""),
                 "cognitive_target": "metacognition",
-                "expected_outcome": "Enhanced self-awareness and reflective practice"
+                "expected_outcome": "Enhanced self-awareness and reflective practice",
+                "gamification_applied": gamification_applied
             }
             
         except Exception as e:

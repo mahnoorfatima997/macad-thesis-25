@@ -450,12 +450,66 @@ class GamificationTracker:
 # Convenience functions for easy integration
 def render_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
     """Render a gamified challenge with enhanced visuals."""
-    display = GamificationDisplay()
-    display.render_gamified_challenge(challenge_data)
+    try:
+        print(f"🎮 GAMIFICATION: Starting render with data: {list(challenge_data.keys())}")
+        display = GamificationDisplay()
+        display.render_gamified_challenge(challenge_data)
+        print(f"🎮 GAMIFICATION: Render completed successfully")
 
-    # Track the challenge
-    tracker = GamificationTracker()
-    # Note: In real implementation, call add_challenge_completion when user responds
+        # Track the challenge
+        tracker = GamificationTracker()
+        # Note: In real implementation, call add_challenge_completion when user responds
+
+    except Exception as e:
+        print(f"🎮 GAMIFICATION ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+
+        # Fallback to simple gamification display
+        _render_simple_gamified_challenge(challenge_data)
+
+def _render_simple_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
+    """Simple fallback gamification display."""
+    import streamlit as st
+
+    challenge_text = challenge_data.get("challenge_text", "")
+    challenge_type = challenge_data.get("challenge_type", "challenge")
+    difficulty = challenge_data.get("difficulty_level", "medium")
+
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, #faf8f5 0%, #cd766d20 100%);
+        border: 3px solid #cd766d;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    ">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <div style="font-size: 2em;">🎯</div>
+            <div style="font-size: 1.2em; font-weight: bold; color: #cd766d;">
+                GAMIFIED CHALLENGE - {difficulty.upper()}
+            </div>
+        </div>
+        <div style="
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #cd766d;
+            margin: 10px 0;
+        ">
+            <div style="font-weight: bold; color: #4f3a3e; margin-bottom: 10px;">
+                🧠 {challenge_type.replace('_', ' ').title()}
+            </div>
+            <div style="line-height: 1.6; color: #2c2328;">
+                {challenge_text}
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 15px; color: #888; font-size: 0.9em;">
+            💡 Take a moment to reflect on this challenge
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 def render_gamification_sidebar() -> None:
     """Render gamification progress in sidebar."""

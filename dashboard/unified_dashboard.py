@@ -710,6 +710,17 @@ class UnifiedArchitecturalDashboard:
                 response_metadata = st.session_state.get("last_response_metadata", {})
                 gamification_display = response_metadata.get("gamification_display", {})
 
+                # FIXED: Also check for 'gamification' key as fallback
+                if not gamification_display:
+                    gamification_display = response_metadata.get("gamification", {})
+
+                # DEBUG: Log gamification data for troubleshooting
+                if gamification_display:
+                    print(f"🎮 UI DEBUG: Gamification data found: {gamification_display.get('is_gamified', False)}")
+                    print(f"🎮 UI DEBUG: Display type: {gamification_display.get('display_type', 'none')}")
+                else:
+                    print(f"🎮 UI DEBUG: No gamification data found in metadata keys: {list(response_metadata.keys())}")
+
                 # Add assistant message with gamification info and generated image
                 assistant_message = {
                     "role": "assistant",

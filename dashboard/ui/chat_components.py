@@ -286,11 +286,20 @@ def render_single_message(message: Dict[str, Any]):
         # ENHANCED: Check if this is a gamified challenge
         gamification_info = message.get("gamification", {})
         is_gamified = gamification_info.get("is_gamified", False)
+        display_type = gamification_info.get("display_type", "")
 
-        if is_gamified and gamification_info.get("display_type") == "enhanced_visual":
+        print(f"🎮 DEBUG: Message gamification check:")
+        print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
+        print(f"🎮 DEBUG: Is gamified: {is_gamified}")
+        print(f"🎮 DEBUG: Display type: {display_type}")
+        print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
+
+        if is_gamified and display_type == "enhanced_visual":
+            print(f"🎮 DEBUG: Calling _render_gamified_message")
             # Render enhanced gamified challenge
             _render_gamified_message(message, mentor_label)
         else:
+            print(f"🎮 DEBUG: Rendering normal message")
             # Render normal message
             st.markdown(
                 f"""
@@ -316,6 +325,10 @@ def render_single_message(message: Dict[str, Any]):
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
     """Render a gamified challenge message with enhanced visuals."""
     try:
+        print(f"🎮 DEBUG: Starting gamified message rendering")
+        print(f"🎮 DEBUG: Message keys: {list(message.keys())}")
+        print(f"🎮 DEBUG: Gamification info: {message.get('gamification', {})}")
+
         # Import the gamification components
         from dashboard.ui.gamification_components import render_gamified_challenge
 
@@ -339,7 +352,12 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
         challenge_data = gamification_info.get("challenge_data", {})
         challenge_data["challenge_text"] = message["content"]
 
+        print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
+        print(f"🎮 DEBUG: About to call render_gamified_challenge")
+
         render_gamified_challenge(challenge_data)
+
+        print(f"🎮 DEBUG: render_gamified_challenge completed successfully")
 
         # Add timestamp
         st.markdown(
@@ -351,8 +369,12 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             unsafe_allow_html=True,
         )
 
+        print(f"🎮 DEBUG: Gamified message rendering completed successfully")
+
     except Exception as e:
         print(f"⚠️ Error rendering gamified message: {e}")
+        import traceback
+        traceback.print_exc()
         # Fallback to normal message rendering
         st.markdown(
             f"""

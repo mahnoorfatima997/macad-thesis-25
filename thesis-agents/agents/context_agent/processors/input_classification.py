@@ -328,12 +328,21 @@ class InputClassificationProcessor:
         if any(pattern in input_lower for pattern in feedback_patterns):
             return "feedback_request"
 
-        # 11. Technical question detection
+        # 11. Technical question detection - FIXED: More specific patterns to avoid false positives
+        # FIXED: Make "how to" more specific to avoid catching design questions like "how to organize"
         technical_patterns = [
-            "how to", "technical", "specification", "requirement", "standard",
-            "code", "regulation", "material", "system", "structure"
+            "how to calculate", "how to size", "how to specify", "how to meet code",
+            "how to comply", "technical", "specification", "requirement", "standard",
+            "code", "regulation", "building code", "ada requirement"
         ]
-        if any(pattern in input_lower for pattern in technical_patterns):
+        # Additional check: only classify as technical if it's asking about specific technical procedures
+        has_technical_context = any(context in input_lower for context in [
+            "calculate", "size", "specify", "code", "standard", "requirement",
+            "regulation", "specification", "technical", "engineering"
+        ])
+        has_technical_pattern = any(pattern in input_lower for pattern in technical_patterns)
+
+        if has_technical_pattern and has_technical_context:
             return "technical_question"
 
         # 12. Project description detection - HIGH PRIORITY: Detect clear project descriptions (CHECK FIRST)

@@ -169,12 +169,12 @@ class AdvancedRoutingDecisionTree:
                 r"define", r"definition", r"meaning", r"concept",
                 r"principles?", r"guidelines?", r"requirements?",
                 r"what are.*standard", r"standard dimensions", r"typical dimensions",
-                # Enhanced patterns for program elements and design guidance
-                r"what.*elements?", r"program elements?", r"what.*consider",
-                r"what.*suggest", r"what do you suggest", r"what would you suggest",
-                r"what.*should i", r"what should i consider", r"what should i think about",
+                # Pure knowledge patterns (not design guidance)
+                r"tell me about", r"explain.*about", r"information.*about",
+                r"what.*strategies", r"cooling strategies", r"passive.*strategies",
                 r"what.*factors?", r"what.*aspects?", r"what.*components?",
-                r"how.*organize", r"how.*approach", r"how.*handle"
+                # Remove patterns that could be design guidance
+                # Removed: r"what.*consider", r"what.*suggest", r"what.*should i", r"how.*organize", r"how.*approach", r"how.*handle"
             ],
             "example_request": [
                 # Specific example requests (high priority)
@@ -205,10 +205,10 @@ class AdvancedRoutingDecisionTree:
                 r"designing", r"developing", r"my project", r"my design"
             ],
             "creative_exploration": [
-                r"what if", r"imagine", r"suppose", r"consider",
-                r"explore", r"experiment", r"try", r"test",
-                r"innovative", r"creative", r"different", r"alternative",
-                r"spatial organization", r"organize", r"arrangement", r"layout",
+                r"what if", r"imagine", r"suppose",
+                r"explore.*possibilities", r"experiment", r"try.*different", r"test.*ideas",
+                r"innovative", r"creative", r"different.*approach", r"alternative.*approach",
+                r"spatial organization.*ideas", r"arrangement.*possibilities", r"layout.*options",
                 r"decide about", r"choices", r"options", r"possibilities",
                 r"inspiring.*what about", r"examples.*what about", r"what about if i create"
             ],
@@ -248,6 +248,17 @@ class AdvancedRoutingDecisionTree:
                 r"but i need.*help", r"need help.*about", r"more help about"
             ],
             # NEW: Design guidance requests (not confusion)
+            "design_guidance": [
+                r"need help.*organizing", r"help.*organizing", r"help.*with.*organizing",
+                r"need help.*handling", r"help.*handling", r"help.*with.*handling",
+                r"need help.*creating", r"help.*creating", r"help.*with.*creating",
+                r"need guidance", r"need advice", r"need direction",
+                r"how should i.*handle", r"how should i.*organize", r"how should i.*approach",
+                r"how do i.*handle", r"how do i.*organize", r"how do i.*approach",
+                r"help.*circulation", r"help.*spaces", r"help.*layout",
+                r"guidance.*on", r"advice.*on", r"direction.*on",
+                r"^help$", r"^help me$"  # Simple "help" requests
+            ],
             "design_guidance": [
                 r"help me.*integrate", r"help me.*incorporate", r"help.*following.*principles",
                 r"help.*adaptive reuse", r"help.*construction", r"guidance.*design",
@@ -499,11 +510,11 @@ class AdvancedRoutingDecisionTree:
             # KNOWLEDGE WITH CHALLENGE ROUTES
             "knowledge_request_with_guidance": {
                 "priority": 16,
-                "route": RouteType.SOCRATIC_EXPLORATION,
+                "route": RouteType.BALANCED_GUIDANCE,
                 "conditions": ["user_intent == 'knowledge_request'", "is_pure_knowledge_request == False"],
-                "description": "Knowledge request with guidance needed - Socratic exploration",
+                "description": "Knowledge request with guidance needed - Balanced guidance",
                 "context_agent_override": False,
-                "agents": ["socratic_tutor", "domain_expert", "context_agent"]
+                "agents": ["domain_expert", "socratic_tutor", "context_agent"]
             },
             # REMOVED: example_request_with_guidance - handled by smart routing logic below
             "implementation_request_high_understanding": {
@@ -623,7 +634,7 @@ class AdvancedRoutingDecisionTree:
         }
     
     def classify_user_intent(self, user_input: str, context: RoutingContext) -> str:
-        """Enhanced intent classification aligned with gamified routing patterns"""
+        """Enhanced intent classification with smart hybrid approach"""
 
         user_input_lower = user_input.lower()
 
@@ -642,23 +653,49 @@ class AdvancedRoutingDecisionTree:
             if re.search(pattern, user_input_lower):
                 return "topic_transition"
 
-        # Priority 4: Check specific intent patterns (order matters - more specific first)
-        intent_priority = [
-            "design_guidance",  # Check design guidance before confusion
-            "confusion_expression", "clarification_request",
-            "evaluation_request", "feedback_request",  # evaluation before feedback
-            "example_request", "knowledge_request", "technical_question",  # knowledge before technical
-            "design_problem", "improvement_seeking", "creative_exploration", "design_exploration",  # design_problem before creative
-            "implementation_request"
-        ]
+        # Priority 4: Smart pattern matching with improved logic
 
-        for intent_type in intent_priority:
+        # Confusion expressions (highest priority for clarity)
+        confusion_patterns = [r"don't understand", r"not following", r"confused", r"unclear",
+                            r"can you explain.*differently", r"what do you mean"]
+        for pattern in confusion_patterns:
+            if re.search(pattern, user_input_lower):
+                return "confusion_expression"
+
+        # Example requests (high priority, clear intent)
+        example_patterns = [r"examples? of", r"show me.*examples?", r"give.*examples?",
+                          r"case studies?", r"precedents?", r"similar projects?"]
+        for pattern in example_patterns:
+            if re.search(pattern, user_input_lower):
+                return "example_request"
+
+        # Knowledge seeking (asking for information, not design help)
+        knowledge_patterns = [r"what are.*strategies", r"tell me about.*strategies", r"explain.*strategies",
+                            r"can you tell me about", r"can you explain.*about", r"information.*about",
+                            r"what.*factors.*consider", r"how should i handle.*patterns",
+                            r"how should i.*handle", r"how.*handle.*patterns"]
+        for pattern in knowledge_patterns:
+            if re.search(pattern, user_input_lower):
+                return "knowledge_request"
+
+        # Design guidance (help with actual design work)
+        design_guidance_patterns = [r"i need help (organizing|arranging|planning|designing)",
+                                  r"help me (organize|arrange|plan|design)", r"need guidance (on|with|for)",
+                                  r"help.*organizing.*spaces", r"help.*with.*layout", r"^help$"]
+        for pattern in design_guidance_patterns:
+            if re.search(pattern, user_input_lower):
+                return "design_guidance"
+
+        # Check other patterns from original system
+        for intent_type in ["evaluation_request", "feedback_request", "technical_question",
+                          "design_problem", "improvement_seeking", "creative_exploration",
+                          "design_exploration", "implementation_request"]:
             if intent_type in self.intent_patterns:
                 for pattern in self.intent_patterns[intent_type]:
                     if re.search(pattern, user_input_lower):
                         return intent_type
 
-        # Priority 5: Context-based fallback classification - check content, not just length
+        # Priority 5: Context-based fallback classification
         if "?" in user_input:
             # Check if it's asking for knowledge/examples
             if any(word in user_input_lower for word in ["what", "how", "which", "examples", "consider", "suggest"]):
@@ -679,13 +716,20 @@ class AdvancedRoutingDecisionTree:
         # Check for pure knowledge indicators
         pure_knowledge_indicators = [
             "what are", "what is", "examples", "case studies", "best practices",
-            "principles", "guidelines", "standards", "requirements"
+            "principles", "guidelines", "standards", "requirements",
+            "tell me about", "explain about", "information about",
+            "can you tell me", "can you explain", "can you show me",
+            "strategies", "techniques", "methods", "approaches",
+            "what factors", "factors to consider", "considerations",
+            "how should i handle", "how to handle", "handling"
         ]
         
         # Check for guidance indicators (which would make it not pure knowledge)
         guidance_indicators = [
-            "how should", "what should", "guide me", "help me", "advice",
-            "suggestions", "recommendations", "tips", "strategies"
+            "guide me", "help me", "advice",
+            "suggestions", "recommendations", "tips"
+            # Removed "how should" and "what should" as they can be part of pure knowledge requests
+            # These are too broad and catch legitimate knowledge requests
         ]
 
         # ENHANCEMENT: Check for feedback request indicators (which would make it not pure knowledge)

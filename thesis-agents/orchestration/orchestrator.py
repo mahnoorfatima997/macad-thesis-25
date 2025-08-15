@@ -718,18 +718,9 @@ class LangGraphOrchestrator:
         try:
             from .synthesis import shape_by_route
 
-            # Combine the best available response as base text
-            base_text = ""
-            if domain_text and socratic_text:
-                base_text = f"{domain_text}\n\n{socratic_text}"
-            elif socratic_text:
-                base_text = socratic_text
-            elif domain_text:
-                base_text = domain_text
-            elif cognitive_text:
-                base_text = cognitive_text
-            else:
-                base_text = "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?"
+            # For balanced_guidance, don't pre-combine texts - let synthesis template handle it
+            # Pass a minimal base text and let shape_by_route use the ordered_results properly
+            base_text = domain_text or socratic_text or cognitive_text or "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?"
 
             # Apply synthesis shaping
             synthesized_response = shape_by_route(
@@ -745,15 +736,9 @@ class LangGraphOrchestrator:
 
         except Exception as e:
             print(f"⚠️ Synthesis shaping failed: {e}")
-            # Fallback to simple combination
-            if domain_text and socratic_text:
-                return f"{domain_text}\n\n{socratic_text}", "balanced_guidance"
-            elif socratic_text:
-                return socratic_text, "balanced_guidance"
-            elif domain_text:
-                return domain_text, "balanced_guidance"
-            else:
-                return "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?", "balanced_guidance"
+            # Fallback - use synthesis template manually
+            fallback_response = "Synthesis:\n- Insight: I'd be happy to help you explore this topic\n- Direction: What specific aspect would you like to focus on?\n- Watch: Consider how your design decisions will impact the user experience"
+            return fallback_response, "balanced_guidance"
 
     # ------------- Metadata helpers (ported minimally) -------------
 
@@ -926,6 +911,35 @@ class LangGraphOrchestrator:
                     "next_phase": None,
                 }
 
+        # ENHANCED: Extract gamification metadata from cognitive enhancement agent
+        gamification_metadata = {}
+
+        # Handle both AgentResponse objects and dict results
+        if cognitive_result:
+            # If it's an AgentResponse object, access metadata directly
+            if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata:
+                if 'gamification_display' in cognitive_result.metadata:
+                    gamification_metadata = cognitive_result.metadata['gamification_display']
+                    print(f"🎮 ORCHESTRATOR: Found gamification metadata from AgentResponse: {gamification_metadata}")
+            # If it's a dict, use the old method
+            elif isinstance(cognitive_result, dict) and cognitive_result.get("metadata", {}).get("gamification_display"):
+                gamification_metadata = cognitive_result.get("metadata", {}).get("gamification_display", {})
+                print(f"🎮 ORCHESTRATOR: Found gamification metadata from dict: {gamification_metadata}")
+
+        # Also check routing decision for gamification triggers
+        detailed_routing = routing_decision.get("detailed_routing_decision", {}) or state.get("detailed_routing_decision", {}) if state else {}
+        gamification_triggers = detailed_routing.get("metadata", {}).get("gamification_triggers", [])
+        if gamification_triggers:
+            print(f"🎮 ORCHESTRATOR: Found gamification triggers: {gamification_triggers}")
+            if not gamification_metadata:
+                # Create gamification metadata from triggers
+                gamification_metadata = {
+                    "is_gamified": True,
+                    "trigger_type": gamification_triggers[0] if gamification_triggers else "unknown",
+                    "display_type": "enhanced_visual",
+                    "challenge_data": {"triggers": gamification_triggers}
+                }
+
         return {
             "response_type": response_type,
             "agents_used": agents_used,
@@ -933,9 +947,17 @@ class LangGraphOrchestrator:
             "ai_reasoning": routing_decision.get("reasoning", "No AI reasoning available"),
             "phase_analysis": phase_info,
             "enhancement_metrics": enhancement_metrics,
-            # FIXED: Extract scientific metrics and cognitive state from metadata
-            "scientific_metrics": cognitive_result.get("metadata", {}).get("scientific_metrics", cognitive_result.get("scientific_metrics", {})),
-            "cognitive_state": cognitive_result.get("metadata", {}).get("cognitive_state", cognitive_result.get("cognitive_state", {})),
+            # FIXED: Extract scientific metrics and cognitive state from metadata (handle AgentResponse objects)
+            "scientific_metrics": (
+                cognitive_result.metadata.get("scientific_metrics", {}) if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata
+                else cognitive_result.get("metadata", {}).get("scientific_metrics", cognitive_result.get("scientific_metrics", {})) if isinstance(cognitive_result, dict)
+                else {}
+            ),
+            "cognitive_state": (
+                cognitive_result.metadata.get("cognitive_state", {}) if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata
+                else cognitive_result.get("metadata", {}).get("cognitive_state", cognitive_result.get("cognitive_state", {})) if isinstance(cognitive_result, dict)
+                else {}
+            ),
             "analysis_result": analysis_result,
             "sources": domain_result.get("sources", []) if domain_result else [],
             "processing_time": "N/A",
@@ -943,6 +965,9 @@ class LangGraphOrchestrator:
             # Add explicit interaction_type and user_intent for routing display
             "interaction_type": classification.get("interaction_type") or classification.get("user_intent", "unknown"),
             "user_intent": classification.get("user_intent") or classification.get("interaction_type", "unknown"),
+            # ENHANCED: Include gamification metadata
+            "gamification_display": gamification_metadata,
+            "gamification": gamification_metadata  # Also include under 'gamification' key for compatibility
 
         }
 
