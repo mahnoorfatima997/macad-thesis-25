@@ -340,8 +340,3 @@ zstandard
 # - Data Collection & Export (Comprehensive logging)
 # - All supporting utilities and tools
 #
-<<<<<<< HEAD
-# ============================================================================= 
-=======
-# ============================================================================= 
->>>>>>> c6fc1eb2b0f7f25df96d8603a2dba9d5e52561fb
