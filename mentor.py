@@ -3,6 +3,16 @@ Entry point for the Unified Architectural Dashboard.
 Ensures correct import paths and environment loading when launched directly.
 """
 
+# Fix for SQLite version issue on Streamlit Cloud
+# This must be done before any other imports that might use SQLite
+try:
+    import pysqlite3
+    import sys
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    # pysqlite3-binary not available, use system sqlite3
+    pass
+
 import os
 import sys
 
