@@ -85,8 +85,8 @@ class PhaseIntegration:
                                 if keyword.lower() in message_content.lower())
             
             if keyword_matches >= 1 and len(message_content.split()) >= 10:
-                # Process as response to current question
-                return self.phase_system.process_response(session_id, message_content)
+                # Process as response to current question using new method
+                return self.phase_system.process_user_message(session_id, message_content)
         
         # Otherwise, analyze for any phase progression
         return self.phase_system.analyze_conversation(session_id, message_content)

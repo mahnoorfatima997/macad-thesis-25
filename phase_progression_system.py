@@ -61,6 +61,8 @@ class GradingResult:
     recommendations: List[str]
     timestamp: datetime = field(default_factory=datetime.now)
 
+# REMOVED: QuestionResponsePair - restored to working simple version
+
 @dataclass
 class PhaseProgress:
     """Tracks progress through a specific design phase"""
@@ -77,7 +79,7 @@ class PhaseProgress:
 
 @dataclass
 class SessionState:
-    """Tracks the overall session state and progression"""
+    """Tracks the overall session state and progression - RESTORED WORKING VERSION"""
     session_id: str
     current_phase: DesignPhase = DesignPhase.IDEATION
     phase_progress: Dict[DesignPhase, PhaseProgress] = field(default_factory=dict)
@@ -1375,10 +1377,10 @@ class PhaseProgressionSystem:
             "message": welcome_message
         }
 
-    def process_response(self, session_id: str, response: str) -> Dict[str, Any]:
-        """Process a user response and return assessment results"""
+    def process_user_message(self, session_id: str, message: str) -> Dict[str, Any]:
+        """Process a user message and return assessment results - RESTORED WORKING VERSION"""
         print(f"\n🎯 PHASE PROGRESSION: Processing response for session {session_id}")
-        print(f"📝 User response: {response[:100]}...")
+        print(f"📝 User response: {message[:100]}...")
 
         session = self.sessions.get(session_id)
         if not session:
@@ -1386,8 +1388,167 @@ class PhaseProgressionSystem:
             return {"error": "Session not found"}
 
         print(f"📊 Current phase: {session.current_phase.value}")
-        # Store the initial phase to detect transitions
-        initial_phase = session.current_phase
+        current_phase_progress = session.phase_progress.get(session.current_phase)
+        if not current_phase_progress:
+            print(f"❌ PHASE ERROR: No progress found for phase {session.current_phase.value}")
+            return {"error": "No current phase progress"}
+
+        print(f"📈 Phase progress before: {current_phase_progress.completion_percent:.1f}%")
+        print(f"🔢 Completed steps before: {len(current_phase_progress.completed_steps)}")
+
+        # Get the current question
+        current_question = self.question_bank.get_next_question(
+            session.current_phase,
+            current_phase_progress.completed_steps
+        )
+
+        if not current_question:
+            print(f"❌ PHASE ERROR: No current question found for phase {session.current_phase.value}")
+            return {"error": "No current question found"}
+
+        print(f"❓ Current question: {current_question.question_text[:80]}...")
+        print(f"🎯 Question step: {current_question.step.value}")
+
+        # Grade the response
+        grade = self.grading_system.grade_response(current_question, message)
+        print(f"📊 GRADING RESULTS:")
+        print(f"   Overall Score: {grade.overall_score:.2f}/5.0")
+        print(f"   Completeness: {grade.completeness:.2f}/5.0")
+        print(f"   Depth: {grade.depth:.2f}/5.0")
+        print(f"   Relevance: {grade.relevance:.2f}/5.0")
+        print(f"   Innovation: {grade.innovation:.2f}/5.0")
+        print(f"   Technical: {grade.technical_understanding:.2f}/5.0")
+
+        # Update progress
+        current_phase_progress.responses[current_question.question_id] = message
+        current_phase_progress.grades[current_question.question_id] = grade
+        current_phase_progress.completed_steps.append(current_question.step)
+        current_phase_progress.last_updated = datetime.now()
+
+        # Recalculate average score
+        scores = [g.overall_score for g in current_phase_progress.grades.values()]
+        old_avg = current_phase_progress.average_score
+        current_phase_progress.average_score = sum(scores) / len(scores) if scores else 0.0
+        print(f"📊 Average score: {old_avg:.2f} → {current_phase_progress.average_score:.2f}")
+
+        # Recalculate completion percent for the current phase
+        old_percent = current_phase_progress.completion_percent
+        current_phase_progress.completion_percent = self._compute_phase_completion_percent(session, current_phase_progress)
+        print(f"📈 Completion percent: {old_percent:.1f}% → {current_phase_progress.completion_percent:.1f}%")
+        print(f"🔢 Completed steps after: {len(current_phase_progress.completed_steps)}")
+
+        # Check if phase is complete
+        was_complete = current_phase_progress.is_complete
+        self._check_phase_completion(session, current_phase_progress)
+        if current_phase_progress.is_complete and not was_complete:
+            print(f"🎉 PHASE COMPLETED: {session.current_phase.value}")
+
+        # Update session
+        session.last_updated = datetime.now()
+        session.conversation_history.append({
+            "timestamp": datetime.now().isoformat(),
+            "phase": session.current_phase.value,
+            "step": current_question.step.value,
+            "question": current_question.question_text,
+            "response": message,
+            "grade": grade.overall_score
+        })
+
+        print(f"💾 Session updated with {len(session.conversation_history)} total interactions")
+
+        # Generate phase nudge if needed
+        nudge = self._generate_phase_nudge(session, current_phase_progress, grade)
+
+        # Get next question or phase transition info
+        next_question = self.get_next_question(session_id)
+
+        return {
+            "session_id": session_id,
+            "current_phase": session.current_phase.value,
+            "current_step": current_question.step.value,
+            "grade": {
+                "overall_score": grade.overall_score,
+                "completeness": grade.completeness,
+                "depth": grade.depth,
+                "relevance": grade.relevance,
+                "innovation": grade.innovation,
+                "technical_understanding": grade.technical_understanding,
+                "strengths": grade.strengths,
+                "weaknesses": grade.weaknesses,
+                "recommendations": grade.recommendations
+            },
+            "phase_progress": {
+                "completed_steps": [step.value for step in current_phase_progress.completed_steps],
+                "average_score": current_phase_progress.average_score,
+                "is_complete": current_phase_progress.is_complete
+            },
+            "next_question": next_question.question_text if next_question else None,
+            "phase_complete": current_phase_progress.is_complete,
+            "session_complete": self._is_session_complete(session),
+            "nudge": nudge,
+            "question_answered": True  # Always true in working version
+        }
+
+    def process_response(self, session_id: str, response: str) -> Dict[str, Any]:
+        """DEPRECATED: Use process_user_message instead. Kept for backward compatibility."""
+        print(f"\n⚠️ DEPRECATED: process_response called - redirecting to process_user_message")
+        return self.process_user_message(session_id, response)
+
+    def get_contextual_question(self, session_id: str) -> Optional[SocraticQuestion]:
+        """Get a contextual question for the current session state - RESTORED WORKING VERSION"""
+        session = self.sessions.get(session_id)
+        if not session:
+            return None
+
+        current_phase_progress = session.phase_progress.get(session.current_phase)
+        if not current_phase_progress:
+            return None
+
+        # Get next question from question bank - same as working version
+        next_question = self.question_bank.get_next_question(
+            session.current_phase,
+            current_phase_progress.completed_steps
+        )
+
+        return next_question
+
+    def _check_and_handle_phase_transition(self, session_id: str) -> Dict[str, Any]:
+        """Check if phase transition should occur and handle it"""
+        session = self.sessions.get(session_id)
+        if not session:
+            return {"error": "Session not found"}
+
+        current_phase_progress = session.phase_progress.get(session.current_phase)
+        if not current_phase_progress:
+            return {"no_transition": "No current phase progress"}
+
+        # Check if current phase is ready for transition
+        transition_assessment = self.transition_system.assess_phase_readiness(session, current_phase_progress)
+
+        if transition_assessment["is_ready"]:
+            next_phase = transition_assessment.get("next_phase")
+            if next_phase:
+                print(f"🔄 AUTO-TRANSITION: Phase transition criteria met, transitioning...")
+                transition_result = self.transition_to_next_phase(session_id)
+                if "error" not in transition_result:
+                    print(f"✅ Successfully transitioned to {transition_result['new_phase']}")
+                    return {
+                        "transition_occurred": True,
+                        "previous_phase": transition_result["previous_phase"],
+                        "new_phase": transition_result["new_phase"],
+                        "message": transition_result["message"]
+                    }
+                else:
+                    print(f"❌ Transition failed: {transition_result['error']}")
+                    return {"transition_failed": transition_result["error"]}
+            else:
+                print(f"ℹ️ Ready for transition but no next phase available")
+                return {"no_next_phase": "Ready but no next phase"}
+        else:
+            print(f"ℹ️ Not ready for phase transition yet")
+            return {"not_ready": "Phase transition criteria not met"}
+
+        return {"no_transition": "No transition needed"}
 
         current_phase_progress = session.phase_progress.get(session.current_phase)
         if not current_phase_progress:

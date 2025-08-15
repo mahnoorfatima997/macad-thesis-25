@@ -324,7 +324,7 @@ class LangGraphOrchestrator:
         elif routing_path == "knowledge_with_challenge":
             return self._synthesize_knowledge_with_challenge_response(agent_results, user_input, classification)
         elif routing_path == "balanced_guidance":
-            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification)
+            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification, state)
 
         # Intervention routes
         elif routing_path == "cognitive_intervention":
@@ -336,7 +336,7 @@ class LangGraphOrchestrator:
         elif routing_path == "feedback_request":
             return self._synthesize_multi_agent_comprehensive_response(agent_results, user_input, classification)
         elif routing_path == "design_guidance":
-            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification)
+            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification, state)
 
         # Fallback
         return self._synthesize_default_response(agent_results)
@@ -451,8 +451,8 @@ class LangGraphOrchestrator:
         Uses the enhanced conversation context to avoid multiple detections.
         """
         # PRIORITY 1: Use conversation continuity context (highest confidence)
-        if hasattr(state, "student_state") and hasattr(state.student_state, 'conversation_context'):
-            continuity_context = state.student_state.conversation_context
+        if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'conversation_context'):
+            continuity_context = state['student_state'].conversation_context
             if continuity_context.detected_building_type and continuity_context.building_type_confidence > 0.7:
                 return continuity_context.detected_building_type
 
@@ -461,13 +461,13 @@ class LangGraphOrchestrator:
             return state.building_type
 
         # PRIORITY 3: Use student_state.building_type if available and not unknown
-        if hasattr(state, "student_state") and hasattr(state.student_state, 'building_type'):
-            if state.student_state.building_type and state.student_state.building_type != "unknown":
-                return state.student_state.building_type
+        if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'building_type'):
+            if state['student_state'].building_type and state['student_state'].building_type != "unknown":
+                return state['student_state'].building_type
 
         # PRIORITY 4: Use conversation continuity context even with lower confidence
-        if hasattr(state, "student_state") and hasattr(state.student_state, 'conversation_context'):
-            continuity_context = state.student_state.conversation_context
+        if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'conversation_context'):
+            continuity_context = state['student_state'].conversation_context
             if continuity_context.detected_building_type and continuity_context.building_type_confidence > 0.3:
                 return continuity_context.detected_building_type
 
@@ -695,7 +695,7 @@ class LangGraphOrchestrator:
             "knowledge_with_challenge",
         )
 
-    def _synthesize_balanced_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+    def _synthesize_balanced_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any], state: Dict[str, Any] = None) -> tuple[str, str]:
         """Synthesize balanced guidance response using proper synthesis logic"""
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
@@ -737,7 +737,7 @@ class LangGraphOrchestrator:
                 routing_path="balanced_guidance",
                 classification=classification,
                 ordered_results=agent_results,
-                user_message_count=len([m for m in state.get("messages", []) if m.get("role") == "user"]),
+                user_message_count=len([m for m in (state or {}).get("messages", []) if m.get("role") == "user"]),
                 context_analysis=classification  # Use classification as context analysis
             )
 
@@ -822,9 +822,9 @@ class LangGraphOrchestrator:
                 phase_manager = PhaseAssessmentManager()
                 
                 # ENHANCED: Use phase info from dashboard if available, otherwise detect
-                if state and hasattr(state, 'student_state') and hasattr(state.student_state, 'phase_info') and state.student_state.phase_info:
+                if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'phase_info') and state['student_state'].phase_info:
                     # Use phase information from dashboard's phase progression system
-                    dashboard_phase_info = state.student_state.phase_info
+                    dashboard_phase_info = state['student_state'].phase_info
                     current_phase_name = dashboard_phase_info.get("current_phase", "ideation")
                     print(f"🎯 Phase detection: Using dashboard phase info: {current_phase_name}")
                     print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
@@ -864,10 +864,11 @@ class LangGraphOrchestrator:
                         "phase_confidence": confidence,
                         "next_phase": None,
                     }
-                elif state and hasattr(state, 'student_state'):
+                elif state and 'student_state' in state and state['student_state']:
                     # Fallback to phase detection if no dashboard info available
-                    student_state = state.student_state
-                    print(f"🔍 Phase detection: Using student state with {len(student_state.messages)} messages")
+                    student_state = state['student_state']
+                    messages = getattr(student_state, 'messages', [])
+                    print(f"🔍 Phase detection: Using student state with {len(messages)} messages")
                     current_phase, current_step = phase_manager.detect_current_phase(student_state)
                     print(f"🎯 Phase detection result: {current_phase.value} - {current_step.value}")
                     #1108 tracking: Phase detection (real tracking): compute early and attach to analysis_result

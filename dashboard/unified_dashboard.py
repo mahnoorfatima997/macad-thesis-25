@@ -465,11 +465,16 @@ class UnifiedArchitecturalDashboard:
         print(f"🎯 DASHBOARD: Processing user response for phases...")
         self._process_user_response_for_phases(user_input)
 
-        # Handle Socratic response if awaiting one
+        # Handle Socratic response state management
         if st.session_state.awaiting_socratic_response:
-            self._handle_socratic_response(user_input)
+            # Check if the phase processing handled the question response
+            phase_result = st.session_state.get('last_phase_result', {})
+            if phase_result.get('question_answered', False):
+                print(f"✅ Question was answered, clearing awaiting state")
+                st.session_state.awaiting_socratic_response = False
+                st.session_state.current_question_id = None
 
-        # Generate response
+        # Generate response (this will now handle phase transitions properly)
         self._generate_and_display_response(user_input)
         
         # Don't rerun - let the response display naturally
@@ -477,11 +482,11 @@ class UnifiedArchitecturalDashboard:
     def _process_user_response_for_phases(self, user_input: str):
         """Process user response through the phase progression system."""
         try:
-            print(f"\n🎯 DASHBOARD: Processing user response for phase progression")
+            print(f"\n🎯 DASHBOARD: Processing user message for phase progression")
             print(f"📝 Input: {user_input[:100]}...")
 
-            # Process the response through the phase system
-            phase_result = self.phase_system.process_response(st.session_state.phase_session_id, user_input)
+            # Use the new process_user_message method instead of process_response
+            phase_result = self.phase_system.process_user_message(st.session_state.phase_session_id, user_input)
 
             if "error" in phase_result:
                 print(f"❌ PHASE ERROR: {phase_result['error']}")
@@ -490,9 +495,14 @@ class UnifiedArchitecturalDashboard:
             # Log the phase progression results
             print(f"✅ PHASE PROCESSING COMPLETE:")
             print(f"   Current Phase: {phase_result['current_phase']}")
-            print(f"   Grade: {phase_result['grade']['overall_score']:.2f}/5.0")
-            print(f"   Phase Complete: {phase_result['phase_complete']}")
-            print(f"   Session Complete: {phase_result['session_complete']}")
+
+            # Only show grade if a question was actually answered
+            if phase_result.get('question_answered', False) and 'grade' in phase_result:
+                print(f"   Grade: {phase_result['grade']['overall_score']:.2f}/5.0")
+                print(f"   Phase Complete: {phase_result['phase_complete']}")
+                print(f"   Session Complete: {phase_result['session_complete']}")
+            else:
+                print(f"   Message processed (no grading - no active question)")
 
             # Store phase result for UI display
             st.session_state.last_phase_result = phase_result
@@ -533,6 +543,13 @@ class UnifiedArchitecturalDashboard:
                 else:
                     # Try to convert to string
                     response_content = str(response)
+
+                # Handle phase transitions first
+                phase_result = st.session_state.get('last_phase_result', {})
+                if phase_result.get('phase_transition'):
+                    transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
+                    response_content += transition_msg
+                    print(f"✅ Added phase transition message to response")
 
                 # Add Socratic question if needed
                 combined_response = self._add_socratic_question_if_needed(response_content)
@@ -618,9 +635,9 @@ class UnifiedArchitecturalDashboard:
         #     print(f"   🚫 Skipping Socratic question for knowledge_only route")
         #     return response
 
-        # Always try to get next question if not already awaiting response
+        # RESTORED WORKING VERSION: Always try to get next question if not already awaiting response
         if not st.session_state.get('awaiting_socratic_response', False):
-            next_question = self.phase_system.get_next_question(st.session_state.phase_session_id)
+            next_question = self.phase_system.get_contextual_question(st.session_state.phase_session_id)
             print(f"   Next question available: {next_question is not None}")
 
             if next_question:
@@ -684,15 +701,7 @@ class UnifiedArchitecturalDashboard:
             return response + meta_suffix
         return response
     
-    def _handle_socratic_response(self, user_input: str):
-        """Handle Socratic dialogue response."""
-        phase_result = self.phase_system.process_response(st.session_state.phase_session_id, user_input)
-        st.session_state.awaiting_socratic_response = False
-        st.session_state.current_question_id = None
-        
-        if "error" not in phase_result:
-            grade = phase_result["grade"]
-            st.caption(f"Phase {phase_result['current_phase'].title()} | Score {grade['overall_score']:.1f}/5")
+    # REMOVED: _handle_socratic_response - now handled in _process_user_response_for_phases
     
     def _log_user_interaction(self, user_input: str):
         """Log user interaction for data collection."""
