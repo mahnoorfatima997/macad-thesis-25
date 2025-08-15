@@ -1453,6 +1453,9 @@ class PhaseProgressionSystem:
             return {"error": "Session not found"}
 
         print(f"📊 Current phase: {session.current_phase.value}")
+        # Store the initial phase to detect transitions
+        initial_phase = session.current_phase
+
         current_phase_progress = session.phase_progress.get(session.current_phase)
         if not current_phase_progress:
             print(f"❌ PHASE ERROR: No progress found for phase {session.current_phase.value}")
