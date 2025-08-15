@@ -1085,7 +1085,30 @@ What questions do you have about your design?"""
 
         except Exception as e:
             print(f"⚠️ AI example generation failed: {e}")
-            return f"I'd be happy to help you explore {topic} in {building_type} architecture. This is an interesting area that involves various approaches and strategies. Could you tell me more specifically what aspect of {topic} you'd like to understand better?"
+            # Generate LLM fallback response instead of hardcoded text
+            try:
+                fallback_prompt = f"""
+                The user is asking about {topic} in {building_type} architecture.
+                Generate a helpful, engaging response that:
+                1. Acknowledges their interest in the topic
+                2. Asks a specific follow-up question to understand what aspect they want to explore
+                3. Avoids generic phrases like "This is an interesting area" or "various approaches and strategies"
+                4. Sounds natural and educational, not templated
+
+                Keep it concise (1-2 sentences) and focus on guiding them toward more specific exploration.
+                """
+
+                fallback_response = await self.client.generate_completion([
+                    self.client.create_system_message("You are an expert architecture educator providing personalized guidance."),
+                    self.client.create_user_message(fallback_prompt)
+                ])
+
+                return fallback_response.strip() if fallback_response else f"What specific aspect of {topic} in {building_type} design would you like to explore further?"
+
+            except Exception as fallback_error:
+                print(f"⚠️ Fallback response generation also failed: {fallback_error}")
+                # Last resort - simple contextual response without hardcoded phrases
+                return f"What specific aspect of {topic} in {building_type} design would you like to explore further?"
 
     def _get_quality_modifiers(self, user_input: str, topic: str) -> str:
         """Get quality modifiers to enhance search queries and get better examples."""
@@ -1284,9 +1307,33 @@ What questions do you have about your design?"""
         except Exception as e:
             print(f"⚠️ AI example generation failed: {e}")
 
-        # Fallback to a more generic but still contextual response
+        # Generate LLM fallback response instead of hardcoded text
+        try:
+            fallback_prompt = f"""
+            The user is asking for examples of {user_topic} in {building_type} architecture.
+            Generate a helpful response that:
+            1. Acknowledges their request for examples
+            2. Asks a specific follow-up question to understand what type of examples would be most helpful
+            3. Avoids generic phrases like "I'd be happy to help you explore"
+            4. Sounds natural and educational, not templated
+
+            Keep it concise (1-2 sentences) and focus on understanding their specific needs.
+            """
+
+            fallback_response = await self.client.generate_completion([
+                self.client.create_system_message("You are an expert architecture educator helping students find relevant examples."),
+                self.client.create_user_message(fallback_prompt)
+            ])
+
+            response_text = fallback_response.strip() if fallback_response else f"What type of {user_topic} examples would be most helpful for your {building_type} project?"
+
+        except Exception as fallback_error:
+            print(f"⚠️ Fallback response generation also failed: {fallback_error}")
+            # Last resort - simple contextual response without hardcoded phrases
+            response_text = f"What type of {user_topic} examples would be most helpful for your {building_type} project?"
+
         return {
-            "response_text": f"I'd be happy to help you explore {user_topic} examples for your {building_type} project. To provide the most relevant examples, could you tell me what specific aspect of {user_topic} you're most interested in understanding?",
+            "response_text": response_text,
             "response_type": "fallback_examples",
             "sources": [],
             "examples_provided": False
@@ -1375,8 +1422,30 @@ What questions do you have about your design?"""
                     knowledge_content.append(f"**{title}**: {content[:300]}...")
 
             if not knowledge_content:
-                # Fallback if no content found
-                return f"I'd be happy to help you understand {user_topic} in {building_type} architecture. This involves several key considerations and principles. Could you tell me more specifically what aspect you'd like to explore?"
+                # Generate LLM fallback response instead of hardcoded text
+                try:
+                    fallback_prompt = f"""
+                    The user is asking about {user_topic} in {building_type} architecture, but no specific knowledge content was found.
+                    Generate a helpful response that:
+                    1. Acknowledges their interest in the topic
+                    2. Asks a specific follow-up question to understand what aspect they want to learn about
+                    3. Avoids generic phrases like "I'd be happy to help" or "This involves several key considerations"
+                    4. Sounds natural and educational, not templated
+
+                    Keep it concise (1-2 sentences) and focus on guiding them toward more specific exploration.
+                    """
+
+                    fallback_response = await self.client.generate_completion([
+                        self.client.create_system_message("You are an expert architecture educator providing personalized guidance."),
+                        self.client.create_user_message(fallback_prompt)
+                    ])
+
+                    return fallback_response.strip() if fallback_response else f"What specific aspect of {user_topic} in {building_type} design would you like to learn more about?"
+
+                except Exception as fallback_error:
+                    print(f"⚠️ Fallback response generation failed: {fallback_error}")
+                    # Last resort - simple contextual response without hardcoded phrases
+                    return f"What specific aspect of {user_topic} in {building_type} design would you like to learn more about?"
 
             # Create synthesis prompt
             prompt = f"""

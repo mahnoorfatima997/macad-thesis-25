@@ -5,15 +5,28 @@ import numpy as np
 from PIL import Image
 from openai import OpenAI
 import os
-from dotenv import load_dotenv
+import sys
 import json
 from typing import Dict, Any, List
 
-load_dotenv()
+# Add utils to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'utils'))
+
+try:
+    from secrets_manager import get_openai_api_key
+except ImportError:
+    # Fallback if secrets_manager is not available
+    def get_openai_api_key() -> str:
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+        except ImportError:
+            pass
+        return os.getenv("OPENAI_API_KEY", "")
 
 class SketchAnalyzer:
     def __init__(self, domain="architecture"):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=get_openai_api_key())
         self.domain = domain
         
         # Domain-specific analysis prompts - Enhanced for detailed analysis

@@ -123,7 +123,14 @@ class KnowledgeSearchProcessor:
         ])
         
         # ENHANCED: Initialize Tavily API configuration (sole web search provider)
-        self.tavily_api_key = os.getenv('TAVILY_API_KEY')
+        try:
+            import sys
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'utils'))
+            from secrets_manager import get_tavily_api_key
+            self.tavily_api_key = get_tavily_api_key()
+        except ImportError:
+            # Fallback if secrets_manager is not available
+            self.tavily_api_key = os.getenv('TAVILY_API_KEY')
 
         # ENHANCED: Simple in-memory cache for web search results (reduces API calls)
         self._web_cache: Dict[str, List[Dict]] = {}

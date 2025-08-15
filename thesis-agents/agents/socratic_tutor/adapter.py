@@ -1813,11 +1813,36 @@ Generate a comprehensive answer (3-4 sentences):
             print(f"🔍 DEBUG: AI generation failed in knowledge-only: {e}")
             return self._generate_fallback_knowledge_response(user_input, building_type)
     
-    def _generate_fallback_knowledge_response(self, user_input: str, building_type: str) -> Dict[str, Any]:
+    async def _generate_fallback_knowledge_response(self, user_input: str, building_type: str) -> Dict[str, Any]:
         """Generate fallback knowledge response when LLM fails."""
-        
+
+        # Generate LLM fallback response instead of hardcoded text
+        try:
+            fallback_prompt = f"""
+            The user is asking about their {building_type} project: "{user_input}"
+            Generate a helpful Socratic response that:
+            1. Acknowledges their question about architectural concepts
+            2. Asks a thought-provoking follow-up question to guide their thinking
+            3. Avoids generic phrases like "I'd be happy to help"
+            4. Sounds natural and educational, not templated
+
+            Keep it concise (1-2 sentences) and focus on guiding their architectural thinking.
+            """
+
+            fallback_response = await self.client.generate_completion([
+                self.client.create_system_message("You are a Socratic architecture tutor who guides students through thoughtful questions."),
+                self.client.create_user_message(fallback_prompt)
+            ])
+
+            response_text = fallback_response.strip() if fallback_response else f"What specific aspect of your {building_type} design are you most curious about exploring further?"
+
+        except Exception as fallback_error:
+            print(f"⚠️ Fallback response generation failed: {fallback_error}")
+            # Last resort - simple contextual response without hardcoded phrases
+            response_text = f"What specific aspect of your {building_type} design are you most curious about exploring further?"
+
         return {
-            "response_text": f"I'd be happy to help you with your {building_type} project. Your question touches on important architectural concepts. Let me provide you with some key information that should help clarify things for you.",
+            "response_text": response_text,
             "response_type": "knowledge_only",
             "response_strategy": "fallback_knowledge",
             "educational_intent": "Provide basic knowledge guidance",
