@@ -50,6 +50,31 @@ def make_socratic_node(socratic_agent, state_validator, state_monitor, logger) -
                 "agent_guidance": agent_guidance,
             }
 
+        # AGENT COORDINATION: Add other agents' responses to context for coordination
+        other_agent_responses = {}
+        if "domain_result" in state:
+            domain_result = state["domain_result"]
+            if hasattr(domain_result, 'to_dict'):
+                domain_dict = domain_result.to_dict()
+            elif isinstance(domain_result, dict):
+                domain_dict = domain_result
+            else:
+                domain_dict = {"response_text": str(domain_result)}
+
+            other_agent_responses["domain_expert"] = {
+                "response_text": domain_dict.get("response_text", ""),
+                "response_type": domain_dict.get("response_type", "knowledge"),
+                "sources": domain_dict.get("sources", []),
+                "key_concepts": domain_dict.get("key_concepts", [])
+            }
+
+        # Add coordination context to classification
+        if other_agent_responses:
+            context_classification["agent_coordination"] = {
+                "other_responses": other_agent_responses,
+                "coordination_notes": "Socratic tutor can build questions based on domain expert's knowledge"
+            }
+
         # Use the adapter's public API
         gap_type = (analysis_result.get("cognitive_state", {}) or {}).get("primary_gap", "general")
         socratic_result = await socratic_agent.provide_guidance(

@@ -647,6 +647,127 @@ def get_dashboard_css() -> str:
         }
     }
 
+    /* ENHANCED GAMIFICATION STYLES - THESIS COLOR PALETTE */
+    .gamified-message {
+        background: linear-gradient(135deg, #5c4f73 0%, #784c80 100%) !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 30px rgba(92, 79, 115, 0.3) !important;
+        animation: gamification-glow 3s ease-in-out infinite alternate !important;
+    }
+
+    .gamified-message .agent-avatar {
+        background: linear-gradient(135deg, #b87189 0%, #cd766d 100%) !important;
+        animation: avatar-pulse 2s ease-in-out infinite !important;
+    }
+
+    .gamified-message .agent-name {
+        color: #faf8f5 !important;
+        font-weight: bold !important;
+        text-shadow: 2px 2px 4px rgba(79, 58, 62, 0.4) !important;
+    }
+
+    @keyframes gamification-glow {
+        0% { box-shadow: 0 10px 30px rgba(92, 79, 115, 0.3); }
+        100% { box-shadow: 0 15px 40px rgba(120, 76, 128, 0.5); }
+    }
+
+    @keyframes avatar-pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* Challenge tool buttons - Thesis colors */
+    .challenge-tools button {
+        background: linear-gradient(135deg, #5c4f73 0%, #784c80 100%) !important;
+        color: #faf8f5 !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 10px 20px !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(92, 79, 115, 0.3) !important;
+    }
+
+    .challenge-tools button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(120, 76, 128, 0.4) !important;
+        background: linear-gradient(135deg, #784c80 0%, #4f3a3e 100%) !important;
+    }
+
+    /* Gamification progress bars - Thesis colors */
+    .gamification-progress {
+        background: linear-gradient(90deg, #cd766d 0%, #d99c66 50%, #5c4f73 100%) !important;
+        border-radius: 10px !important;
+        height: 8px !important;
+    }
+
+    /* Achievement badges - Thesis colors */
+    .achievement-badge {
+        background: linear-gradient(135deg, #b87189 0%, #cda29a 100%) !important;
+        border: 2px solid #784c80 !important;
+        color: #4f3a3e !important;
+        box-shadow: 0 4px 15px rgba(184, 113, 137, 0.3) !important;
+    }
+
+    /* Challenge type specific styles - Thesis colors */
+    .challenge-role-play {
+        border-left: 5px solid #cd766d !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(205, 118, 109, 0.1) 100%) !important;
+    }
+
+    .challenge-perspective-shift {
+        border-left: 5px solid #784c80 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(120, 76, 128, 0.1) 100%) !important;
+    }
+
+    .challenge-detective {
+        border-left: 5px solid #5c4f73 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(92, 79, 115, 0.1) 100%) !important;
+    }
+
+    .challenge-transformation {
+        border-left: 5px solid #dcc188 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(220, 193, 136, 0.1) 100%) !important;
+    }
+
+    .challenge-storytelling {
+        border-left: 5px solid #b87189 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(184, 113, 137, 0.1) 100%) !important;
+    }
+
+    .challenge-time-travel {
+        border-left: 5px solid #4f3a3e !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(79, 58, 62, 0.1) 100%) !important;
+    }
+
+    /* Gamification sidebar styles */
+    .gamification-sidebar {
+        background: #faf8f5 !important;
+        border: 1px solid #e0ceb5 !important;
+        border-radius: 10px !important;
+        padding: 15px !important;
+        margin: 10px 0 !important;
+    }
+
+    .gamification-level {
+        color: #4f3a3e !important;
+        font-weight: bold !important;
+    }
+
+    .gamification-xp {
+        color: #5c4f73 !important;
+    }
+
+    .gamification-achievement {
+        background: linear-gradient(135deg, #cda29a 0%, #e0ceb5 100%) !important;
+        border-radius: 5px !important;
+        padding: 5px 10px !important;
+        margin: 2px 0 !important;
+        color: #4f3a3e !important;
+        font-size: 0.9em !important;
+    }
+
     /* Old chat message styles removed - new seamless interface takes precedence */
 
     /* Cards */

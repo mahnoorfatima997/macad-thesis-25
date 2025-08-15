@@ -115,6 +115,14 @@ class LangGraphOrchestrator:
         except Exception:
             pass
 
+        # CONTEXT CONSISTENCY: Validate and repair context before routing
+        if student_state:
+            context_validation = student_state.validate_and_repair_context_consistency()
+            if context_validation["repairs_made"]:
+                print(f"🔧 Context repairs made: {context_validation['repairs_made']}")
+            if context_validation["context_stability"] < 0.5:
+                print(f"⚠️ Low context stability: {context_validation['context_stability']:.2f}")
+
         # Get conversation continuity context
         continuity_context = {}
         if student_state:
@@ -355,20 +363,40 @@ class LangGraphOrchestrator:
             else:
                 return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
-        if domain_result and socratic_result:
-            final_response = f"{domain_result.get('response_text', '')}\n\n{socratic_result.get('response_text', '')}"
-            return final_response, "knowledge_only_with_socratic"
+        # FIXED: For knowledge_only routes, prioritize domain expert response only
+        if domain_result and domain_result.get('response_text'):
+            return domain_result.get('response_text', ''), "knowledge_only"
+        elif socratic_result and socratic_result.get('response_text'):
+            return socratic_result.get('response_text', ''), "knowledge_only"
         return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
     def _synthesize_socratic_exploration_response(self, agent_results: Dict[str, Any]) -> tuple[str, str]:
         socratic_result = agent_results.get("socratic", {})
-        
+
         # Safety check: ensure socratic_result is a dictionary
         if hasattr(socratic_result, 'to_dict'):
             socratic_result = socratic_result.to_dict()
-        
+
         if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "socratic_exploration"
+            response_text = socratic_result.get("response_text", "")
+
+            # CRITICAL FIX: Add Socratic question at the end if not already present
+            if not response_text.strip().endswith('?'):
+                # Check if there's a separate question in the result
+                socratic_question = socratic_result.get("question_text", "")
+                if not socratic_question:
+                    # Look for question in metadata or other fields
+                    metadata = socratic_result.get("metadata", {})
+                    socratic_question = metadata.get("socratic_question", "")
+
+                # If we found a question, append it
+                if socratic_question and not socratic_question in response_text:
+                    response_text = f"{response_text}\n\n{socratic_question}"
+                elif not socratic_question:
+                    # Generate a contextual follow-up question as fallback
+                    response_text = f"{response_text}\n\nWhat aspects of this would you like to explore further?"
+
+            return response_text, "socratic_exploration"
         return (
             "I'd be happy to help you explore this topic together. What specific aspects would you like to think about?",
             "socratic_exploration",
@@ -904,8 +932,9 @@ class LangGraphOrchestrator:
             "ai_reasoning": routing_decision.get("reasoning", "No AI reasoning available"),
             "phase_analysis": phase_info,
             "enhancement_metrics": enhancement_metrics,
-            "scientific_metrics": cognitive_result.get("scientific_metrics", {}),
-            "cognitive_state": cognitive_result.get("cognitive_state", {}),
+            # FIXED: Extract scientific metrics and cognitive state from metadata
+            "scientific_metrics": cognitive_result.get("metadata", {}).get("scientific_metrics", cognitive_result.get("scientific_metrics", {})),
+            "cognitive_state": cognitive_result.get("metadata", {}).get("cognitive_state", cognitive_result.get("cognitive_state", {})),
             "analysis_result": analysis_result,
             "sources": domain_result.get("sources", []) if domain_result else [],
             "processing_time": "N/A",
@@ -988,9 +1017,9 @@ class LangGraphOrchestrator:
         processing_time = time.time() - start_time
         self.logger.info(f"Workflow completed in {processing_time:.2f}s")
 
-        print(f"\n✅ Processing completed successfully in {processing_time:.2f}s")
-        print(f"   📊 Final response length: {len(final_state.get('final_response', ''))} characters")
-        print(f"   🎯 Route taken: {final_state.get('routing_decision', {}).get('path', 'unknown')}")
+        # Enhanced Process Summary
+        user_input_text = initial_state.get('user_input', 'Unknown input')
+        self._print_enhanced_process_summary(final_state, processing_time, user_input_text)
 
         if "response_metadata" in final_state:
             final_state["response_metadata"]["processing_time"] = f"{processing_time:.2f}s"
@@ -1011,6 +1040,62 @@ class LangGraphOrchestrator:
             "conversation_progression": progression_analysis,
             "milestone_guidance": milestone_guidance,
         }
+
+    def _print_enhanced_process_summary(self, final_state: Dict, processing_time: float, user_input: str):
+        """Print an enhanced, clean process summary."""
+        print(f"\n{'='*80}")
+        print(f"🎯 ORCHESTRATION SUMMARY")
+        print(f"{'='*80}")
+
+        # Input summary
+        input_preview = user_input[:60] + "..." if len(user_input) > 60 else user_input
+        print(f"📝 Input: {input_preview}")
+
+        # Routing information
+        routing_decision = final_state.get('routing_decision', {})
+        routing_path = routing_decision.get('path', 'unknown')
+        print(f"🛤️  Route: {routing_path}")
+
+        # Agents activated
+        agents_used = []
+        if final_state.get("analysis_result"): agents_used.append("Analysis")
+        if final_state.get("domain_expert_result"): agents_used.append("Domain Expert")
+        if final_state.get("socratic_result"): agents_used.append("Socratic Tutor")
+        if final_state.get("cognitive_enhancement_result"): agents_used.append("Cognitive Enhancement")
+
+        print(f"🤖 Agents: {', '.join(agents_used) if agents_used else 'None'}")
+
+        # Response information
+        response_length = len(final_state.get('final_response', ''))
+        print(f"📊 Response: {response_length} characters")
+
+        # Classification information
+        classification = final_state.get('student_classification', {})
+        if classification:
+            intent = classification.get('interaction_type') or classification.get('user_intent', 'unknown')
+            print(f"🎯 Intent: {intent}")
+
+        # Gamification information
+        metadata = final_state.get('response_metadata', {})
+        gamification_info = metadata.get('gamification', {})
+        if gamification_info.get('trigger_type'):
+            trigger = gamification_info.get('trigger_type')
+            enhanced = "✨ Enhanced" if gamification_info.get('enhancement_applied') else "🎯 Detected"
+            print(f"🎮 Gamification: {enhanced} - {trigger}")
+
+        # Performance
+        print(f"⏱️  Processing: {processing_time:.2f}s")
+
+        # Scientific metrics if available
+        scientific_metrics = metadata.get('scientific_metrics', {})
+        if scientific_metrics and scientific_metrics.get('overall_cognitive_score', 0) > 0:
+            cognitive_score = scientific_metrics.get('overall_cognitive_score', 0)
+            confidence = scientific_metrics.get('scientific_confidence', 0)
+            print(f"🧠 Cognitive Score: {cognitive_score:.2f} (confidence: {confidence:.2f})")
+
+        print(f"{'='*80}")
+        print(f"✅ Processing completed successfully")
+        print(f"{'='*80}\n")
 
     def _print_user_requested_info(self, final_state: Dict[str, Any]) -> None:
         routing_path = final_state.get("routing_decision", {}).get("path", "unknown")

@@ -142,9 +142,29 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
         # Check if we already have substantial content from agents
         total_content_length = len(domain_text) + len(socratic_text) + len(cognitive_text)
 
-        # If we have good content from agents, don't override with synthesis template
+        # If we have good content from agents, ensure it ends with a Socratic question
         if total_content_length > 100:  # Agents provided substantial responses
-            return text  # Use the original agent responses
+            # CRITICAL FIX: Ensure Socratic question is included
+            if not text.strip().endswith('?'):
+                # Extract Socratic question from socratic agent result
+                socratic_result = ordered_results.get("socratic", {})
+                if hasattr(socratic_result, 'to_dict'):
+                    socratic_result = socratic_result.to_dict()
+
+                socratic_question = socratic_result.get("question_text", "")
+                if not socratic_question:
+                    # Look in metadata
+                    metadata = socratic_result.get("metadata", {})
+                    socratic_question = metadata.get("socratic_question", "")
+
+                # Add the question if found and not already in text
+                if socratic_question and socratic_question not in text:
+                    text = f"{text}\n\n{socratic_question}"
+                elif not socratic_question:
+                    # Generate contextual follow-up question
+                    text = f"{text}\n\nWhat aspects of this would you like to explore further?"
+
+            return text
 
         # Only use synthesis template as true fallback when agents provide minimal content
         header = "Synthesis:"

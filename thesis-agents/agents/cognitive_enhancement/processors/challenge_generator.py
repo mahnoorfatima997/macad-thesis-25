@@ -136,13 +136,17 @@ class ChallengeGeneratorProcessor:
             base_challenge = random.choice(challenges)
             contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "perspective_challenge", perspective_type)
             
+            # GAMIFICATION ENHANCEMENT: Add interactive elements based on trigger type
+            gamified_challenge = await self._add_gamification_elements(contextualized_challenge, perspective_type, state)
+
             return {
-                "challenge_text": contextualized_challenge,
+                "challenge_text": gamified_challenge,
                 "challenge_type": "perspective_challenge",
                 "perspective_type": perspective_type,
                 "pedagogical_intent": "Expand perspective and empathy in design thinking",
                 "cognitive_target": "perspective_taking",
-                "expected_outcome": "Enhanced empathy and user-centered design thinking"
+                "expected_outcome": "Enhanced empathy and user-centered design thinking",
+                "gamification_applied": True
             }
             
         except Exception as e:
@@ -154,6 +158,70 @@ class ChallengeGeneratorProcessor:
                 "pedagogical_intent": "Encourage empathetic design thinking",
                 "cognitive_target": "empathy"
             }
+
+    async def _add_gamification_elements(self, base_challenge: str, challenge_type: str, state: ArchMentorState) -> str:
+        """Add interactive gamification elements to challenges."""
+        try:
+            # Get project context
+            project_context = getattr(state, 'current_design_brief', 'architectural project')
+            building_type = self._extract_building_type(project_context)
+
+            # Gamification templates based on challenge type
+            gamification_templates = {
+                "user_perspective": [
+                    "🎭 ROLE-PLAY CHALLENGE: Step into someone else's shoes!\n\n*You are now a {user_type} entering your {building_type} for the first time.*\n\n{base_challenge}\n\nWalk me through your first 60 seconds - what do you see, feel, and think?",
+                    "🎯 PERSPECTIVE SHIFT: Time for a reality check!\n\n*Plot twist: You're designing for someone completely different than you imagined.*\n\n{base_challenge}\n\nTell me: How does this change everything?",
+                    "🔍 USER DETECTIVE: Let's solve a mystery!\n\n*Your {building_type} has a secret - different users experience it completely differently.*\n\n{base_challenge}\n\nWhat clues in your design reveal these hidden experiences?"
+                ],
+                "spatial": [
+                    "🏗️ SPACE TRANSFORMATION: Your design just got interesting!\n\n*Imagine your {building_type} could shape-shift based on user needs.*\n\n{base_challenge}\n\nDescribe the transformation - what changes and why?",
+                    "🎨 SPATIAL STORYTELLING: Every space tells a story!\n\n*Your {building_type} is the main character in an architectural narrative.*\n\n{base_challenge}\n\nWhat story does your space want to tell?",
+                    "⚡ DESIGN CHALLENGE: Time for a creative constraint!\n\n*Your {building_type} just got a plot twist that changes everything.*\n\n{base_challenge}\n\nHow do you turn this constraint into your design's superpower?"
+                ],
+                "temporal_perspective": [
+                    "⏰ TIME TRAVEL CHALLENGE: Your building through the ages!\n\n*Fast-forward 20 years - your {building_type} has evolved with its community.*\n\n{base_challenge}\n\nWhat story does this future version tell about adaptability?",
+                    "🔄 LIFECYCLE ADVENTURE: From birth to rebirth!\n\n*Your {building_type} is about to go through a major life change.*\n\n{base_challenge}\n\nHow does good design prepare for transformation?",
+                    "🌅 DAILY RHYTHM CHALLENGE: 24 hours in the life!\n\n*Your {building_type} experiences dawn, noon, dusk, and midnight differently.*\n\n{base_challenge}\n\nHow does your design dance with time?"
+                ]
+            }
+
+            # Select appropriate template
+            templates = gamification_templates.get(challenge_type, gamification_templates["spatial"])
+            template = self.text_processor.select_random(templates)
+
+            # Context-specific user types
+            user_types = {
+                "community center": ["busy parent", "elderly community member", "teenager", "person with mobility challenges"],
+                "hospital": ["anxious patient", "worried family member", "exhausted healthcare worker", "first-time visitor"],
+                "office": ["new employee", "client visitor", "maintenance worker", "executive"],
+                "school": ["nervous student", "visiting parent", "substitute teacher", "administrator"]
+            }
+
+            user_type = self.text_processor.select_random(user_types.get(building_type, ["community member", "visitor", "user", "person"]))
+
+            # Format the gamified challenge
+            gamified_challenge = template.format(
+                base_challenge=base_challenge,
+                building_type=building_type,
+                user_type=user_type
+            )
+
+            return gamified_challenge
+
+        except Exception as e:
+            self.telemetry.log_error("_add_gamification_elements", str(e))
+            return base_challenge  # Return original if gamification fails
+
+    def _extract_building_type(self, project_context: str) -> str:
+        """Extract building type from project context."""
+        building_types = ["community center", "hospital", "office", "school", "library", "museum", "residential"]
+        project_lower = project_context.lower()
+
+        for building_type in building_types:
+            if building_type in project_lower:
+                return building_type
+
+        return "building"  # Default fallback
     
     async def _generate_alternative_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, alternative_type: str = "structural") -> Dict[str, Any]:
         """Generate alternative exploration cognitive challenge."""

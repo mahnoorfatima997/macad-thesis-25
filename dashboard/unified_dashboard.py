@@ -123,7 +123,14 @@ class UnifiedArchitecturalDashboard:
         """Main run method for the dashboard."""
         # Render sidebar
         render_complete_sidebar(self.data_collector)
-        
+
+        # ENHANCED: Add gamification progress to sidebar
+        try:
+            from dashboard.ui.gamification_components import render_gamification_sidebar
+            render_gamification_sidebar()
+        except Exception as e:
+            print(f"⚠️ Error rendering gamification sidebar: {e}")
+
         # Render main chat interface
         self._render_main_chat()
     
@@ -385,13 +392,54 @@ class UnifiedArchitecturalDashboard:
 
             # Display chat messages in modern interface
             render_chat_interface()
-            
+
+            # PHASE QUESTION DISPLAY: Show current phase question if available
+            self._render_current_phase_question()
+
             # Chat input
             user_input = get_chat_input()
             
             if user_input:
                 self._handle_chat_input(user_input)
-    
+
+    def _render_current_phase_question(self):
+        """Render the current phase question if available."""
+        try:
+            if hasattr(self, 'phase_integration') and self.phase_integration:
+                current_question = self.phase_integration.get_current_question()
+
+                if current_question:
+                    # Display the current phase question in a highlighted box
+                    st.markdown("---")
+                    st.markdown(f"""
+                    <div style="
+                        background-color: #f0f8ff;
+                        border-left: 4px solid #4CAF50;
+                        padding: 15px;
+                        margin: 10px 0;
+                        border-radius: 5px;
+                    ">
+                        <h4 style="color: #2E7D32; margin-top: 0;">
+                            🎯 Current Phase Question ({current_question['phase'].title()})
+                        </h4>
+                        <p style="margin-bottom: 0; font-size: 1.1em;">
+                            {current_question['text']}
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    # Show keywords as hints
+                    if current_question.get('keywords'):
+                        keywords_text = ", ".join(current_question['keywords'])
+                        st.markdown(f"💡 *Consider these aspects: {keywords_text}*")
+
+                    print(f"🎯 UI: Displayed phase question: {current_question['text'][:50]}...")
+                else:
+                    print(f"🎯 UI: No current phase question available")
+
+        except Exception as e:
+            print(f"⚠️ UI: Error displaying phase question: {e}")
+
     def _handle_chat_input(self, user_input: str):
         """Handle new chat input from the user."""
         print(f"\n🎯 DASHBOARD: _handle_chat_input called with: {user_input[:50]}...")
@@ -476,42 +524,34 @@ class UnifiedArchitecturalDashboard:
                 )
                 
                 # Extract the actual response content from the response object
-                st.write(f"DEBUG: Response type: {type(response)}")
-                st.write(f"DEBUG: Response attributes: {dir(response) if hasattr(response, '__dict__') else 'No __dict__'}")
-                
                 if hasattr(response, 'content'):
                     response_content = response.content
-                    st.write(f"DEBUG: Using response.content: {response_content[:100]}...")
                 elif hasattr(response, 'response'):
                     response_content = response.response
-                    st.write(f"DEBUG: Using response.response: {response_content[:100]}...")
                 elif isinstance(response, str):
                     response_content = response
-                    st.write(f"DEBUG: Response is string: {response_content[:100]}...")
                 else:
                     # Try to convert to string
                     response_content = str(response)
-                    st.write(f"DEBUG: Converted to string: {response_content[:100]}...")
-                
+
                 # Add Socratic question if needed
                 combined_response = self._add_socratic_question_if_needed(response_content)
-                
+
                 # Add routing metadata if available
                 final_message = self._add_routing_metadata(combined_response)
-                
-                # Add assistant message
-                st.write(f"DEBUG: Final message length: {len(final_message)}")
-                st.write(f"DEBUG: Final message preview: {final_message[:200]}...")
-                
+
+                # ENHANCED: Check if this is a gamified response
+                response_metadata = st.session_state.get("last_response_metadata", {})
+                gamification_display = response_metadata.get("gamification_display", {})
+
+                # Add assistant message with gamification info
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": final_message,
                     "timestamp": datetime.now().isoformat(),
-                    "mentor_type": st.session_state.current_mode
+                    "mentor_type": st.session_state.current_mode,
+                    "gamification": gamification_display
                 })
-                
-                st.write(f"DEBUG: Messages in session state: {len(st.session_state.messages)}")
-                st.write(f"DEBUG: Last message: {st.session_state.messages[-1]}")
                 
                 # Force chat interface to update
                 st.rerun()
@@ -610,6 +650,11 @@ class UnifiedArchitecturalDashboard:
         interaction_type = response_metadata.get("interaction_type") or response_metadata.get("user_intent")
         response_type = response_metadata.get("response_type")
 
+        # Extract gamification info if available
+        gamification_info = response_metadata.get("gamification", {})
+        gamification_trigger = gamification_info.get("trigger_type", "")
+        gamification_enhancement = gamification_info.get("enhancement_applied", False)
+
         if (routing_path or agents_used) and st.session_state.get('show_routing_meta', False):
             parts = []
 
@@ -628,6 +673,12 @@ class UnifiedArchitecturalDashboard:
             # Add response type if available
             if response_type:
                 parts.append(f"Type: {response_type}")
+
+            # Add gamification info if available
+            if gamification_enhancement and gamification_trigger:
+                parts.append(f"🎮 Gamified: {gamification_trigger}")
+            elif gamification_trigger:
+                parts.append(f"🎯 Trigger: {gamification_trigger}")
 
             meta_suffix = f"\n\n— {' | '.join(parts)}"
             return response + meta_suffix

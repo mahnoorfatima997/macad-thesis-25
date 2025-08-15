@@ -275,14 +275,81 @@ def render_single_message(message: Dict[str, Any]):
             mentor_label = "Raw GPT"
         else:
             mentor_label = mentor_type
-        
+
+        # ENHANCED: Check if this is a gamified challenge
+        gamification_info = message.get("gamification", {})
+        is_gamified = gamification_info.get("is_gamified", False)
+
+        if is_gamified and gamification_info.get("display_type") == "enhanced_visual":
+            # Render enhanced gamified challenge
+            _render_gamified_message(message, mentor_label)
+        else:
+            # Render normal message
+            st.markdown(
+                f"""
+                <div class="message agent-message">
+                    <div class="message-avatar agent-avatar"></div>
+                    <div class="message-content agent-content">
+                        <div class="message-header">
+                            <span class="agent-name">{mentor_label}</span>
+                        </div>
+                        <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
+                        <div class="message-time">{_format_timestamp(message.get("timestamp"))}</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
+def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
+    """Render a gamified challenge message with enhanced visuals."""
+    try:
+        # Import the gamification components
+        from dashboard.ui.gamification_components import render_gamified_challenge
+
+        # Show the mentor header first
+        st.markdown(
+            f"""
+            <div class="message agent-message gamified-message">
+                <div class="message-avatar agent-avatar"></div>
+                <div class="message-content agent-content">
+                    <div class="message-header">
+                        <span class="agent-name">🎮 {mentor_label} - Challenge Mode!</span>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Render the enhanced gamified challenge
+        gamification_info = message.get("gamification", {})
+        challenge_data = gamification_info.get("challenge_data", {})
+        challenge_data["challenge_text"] = message["content"]
+
+        render_gamified_challenge(challenge_data)
+
+        # Add timestamp
+        st.markdown(
+            f"""
+            <div style="text-align: right; color: #888; font-size: 0.8em; margin-top: 10px;">
+                {_format_timestamp(message.get("timestamp"))}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    except Exception as e:
+        print(f"⚠️ Error rendering gamified message: {e}")
+        # Fallback to normal message rendering
         st.markdown(
             f"""
             <div class="message agent-message">
                 <div class="message-avatar agent-avatar"></div>
                 <div class="message-content agent-content">
                     <div class="message-header">
-                        <span class="agent-name">{mentor_label}</span>
+                        <span class="agent-name">🎮 {mentor_label}</span>
                     </div>
                     <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
                     <div class="message-time">{_format_timestamp(message.get("timestamp"))}</div>
@@ -292,12 +359,11 @@ def render_single_message(message: Dict[str, Any]):
             unsafe_allow_html=True,
         )
 
-
 def _format_timestamp(timestamp: str) -> str:
     """Format timestamp for display."""
     if not timestamp:
         return ""
-    
+
     try:
         from datetime import datetime
         dt = datetime.fromisoformat(timestamp)

@@ -85,9 +85,20 @@ class DomainExpertAgent:
             # Determine knowledge gap type
             gap_type = context_classification.get("primary_gap", "general_knowledge")
 
+            # AGENT COORDINATION: Check for other agents' responses
+            coordination_context = context_classification.get("agent_coordination", {})
+            other_responses = coordination_context.get("other_responses", {})
+
             print(f"\n📚 {self.name} providing AI-powered knowledge for: {gap_type}")
             print(f"   Building type: {building_type}")
             print(f"   User question: {user_input[:100]}...")
+
+            if other_responses:
+                print(f"🤝 Coordination: Building upon {list(other_responses.keys())} responses")
+                # Extract key insights from other agents
+                socratic_insights = other_responses.get("socratic_tutor", {}).get("key_insights", [])
+                if socratic_insights:
+                    print(f"   📝 Socratic insights to address: {socratic_insights[:2]}")  # Show first 2
 
             # DETECT KNOWLEDGE REQUEST PATTERNS
             print(f"🔍 Analyzing knowledge request: '{user_input[:50]}...'")
@@ -126,31 +137,80 @@ class DomainExpertAgent:
                 response_result = await self._generate_premature_example_response(user_input, building_type, project_context)
                 return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
 
-            # Generate AI-powered contextual response for standard requests
-            ai_response = await self._generate_contextual_knowledge_response(
-                user_input, building_type, project_context, gap_type, state
+            # KNOWLEDGE REQUESTS: Database first, then AI generation as fallback
+            print(f"🔍 KNOWLEDGE REQUEST: Checking database first for: {user_input[:50]}...")
+
+            # Step 1: Try database search first
+            knowledge_results = []
+            user_topic = self._extract_topic_from_user_input(user_input)
+
+            try:
+                from knowledge_base.knowledge_manager import KnowledgeManager
+                km = KnowledgeManager(domain="architecture")
+
+                # Create knowledge-focused search query
+                db_query = f"{user_topic} {building_type} architecture principles guidelines requirements"
+                print(f"   🗄️  DB search query: {db_query}")
+
+                db_results = km.search_knowledge(db_query, n_results=5)
+                if db_results:
+                    knowledge_results.extend(db_results)
+                    print(f"   ✅ Found {len(db_results)} database results")
+                else:
+                    print(f"   ❌ No database results found")
+
+            except Exception as e:
+                print(f"   ⚠️ Database search failed: {e}")
+
+            # Step 2: If database has sufficient results, synthesize them
+            if len(knowledge_results) >= 2:
+                print(f"   📚 Using database knowledge for synthesis")
+                knowledge_text = await self._synthesize_knowledge_with_llm(
+                    user_topic, knowledge_results, building_type, synthesis_type="knowledge"
+                )
+
+                response_metadata = {
+                    "agent": self.name,
+                    "response_type": "database_knowledge",
+                    "knowledge_gap_addressed": gap_type,
+                    "building_type": building_type,
+                    "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
+                    "sources": knowledge_results,
+                    "processing_method": "database_synthesis"
+                }
+
+                agent_response = ResponseBuilder.create_knowledge_response(
+                    response_text=knowledge_text,
+                    sources_used=knowledge_results,
+                    metadata=response_metadata
+                )
+
+            else:
+                # Step 3: Fallback to AI generation if database insufficient
+                print(f"   🤖 Database insufficient - using AI generation as fallback")
+                ai_response = await self._generate_contextual_knowledge_response(
+                    user_input, building_type, project_context, gap_type, state
+                )
+
+                response_metadata = {
+                    "agent": self.name,
+                    "response_type": "ai_generated_knowledge",
+                    "knowledge_gap_addressed": gap_type,
+                    "building_type": building_type,
+                    "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
+                    "sources": knowledge_results,  # Include any partial results
+                    "processing_method": "ai_fallback"
+                }
+
+                agent_response = ResponseBuilder.create_knowledge_response(
+                    response_text=ai_response,
+                    sources_used=knowledge_results,
+                    metadata=response_metadata
             )
 
-            # Create response metadata
-            response_metadata = {
-                "agent": self.name,
-                "response_type": "thinking_prompt_knowledge",
-                "knowledge_gap_addressed": gap_type,
-                "building_type": building_type,
-                "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
-                "sources": [],
-                "processing_method": "ai_powered_contextual"
-            }
-
-            # Convert to AgentResponse
-            agent_response = ResponseBuilder.create_knowledge_response(
-                response_text=ai_response,
-                sources_used=[],
-                metadata=response_metadata
-            )
-
-            # Add cognitive flags manually
-            agent_response.cognitive_flags = [CognitiveFlag.ENCOURAGES_THINKING] if "?" in ai_response else []
+            # Add cognitive flags manually - check if response contains questions
+            response_text = getattr(agent_response, 'response_text', '') or ''
+            agent_response.cognitive_flags = [CognitiveFlag.ENCOURAGES_THINKING] if "?" in response_text else []
 
             self.telemetry.log_agent_end("provide_knowledge")
             return agent_response
@@ -824,19 +884,37 @@ What questions do you have about your design?"""
         return analysis
 
     async def _provide_focused_examples(self, state: ArchMentorState, user_input: str, gap_type: str) -> Dict[str, Any]:
-        """Provide focused examples using database and web search - completely topic-agnostic."""
+        """
+        Provide focused examples with different strategies based on request type:
+        - "examples" (general) → Database first, then AI generation if no relevant info
+        - "example projects" (specific) → Database first, then web search if no relevant info (NO AI generation)
+        """
         print(f"🔄 Providing focused examples for: {user_input}")
-        
+
         # Extract building type and topic
         building_type = self._extract_building_type_from_context(state)
         user_topic = self._extract_topic_from_user_input(user_input)
         project_context = getattr(state, 'current_design_brief', '') or ''
-        
+
         print(f"   🏗️  Building type: {building_type}")
         print(f"   🎯 Topic: {user_topic}")
         print(f"   📋 Context: {project_context}")
-        
-        # Search examples: local DB first, then web
+
+        # Determine if this is a PROJECT example request or GENERAL example request
+        user_input_lower = user_input.lower()
+        project_example_keywords = [
+            "example projects", "project examples", "examples of projects",
+            "precedent", "precedents", "case study", "case studies",
+            "similar projects", "real project", "built project", "built projects",
+            "actual projects", "specific projects", "project references"
+        ]
+
+        is_project_example_request = any(keyword in user_input_lower for keyword in project_example_keywords)
+        request_type = "project_examples" if is_project_example_request else "general_examples"
+
+        print(f"   📋 Request type: {request_type}")
+
+        # Search examples: local DB first, then different fallback strategies
         try:
             knowledge_results: List[Dict[str, Any]] = []
             
@@ -853,12 +931,18 @@ What questions do you have about your design?"""
                 
                 # Convert DB results to the format expected by synthesis processor
                 for r in db_results:
+                    # Preserve similarity/distance information for relevance checking
+                    distance = r.get("distance", 1.0)
+                    similarity = 1.0 - distance  # Convert distance to similarity
+
                     knowledge_results.append({
                         "title": r.get("metadata", {}).get("title", "Untitled"),
                         "url": r.get("metadata", {}).get("source_url", ""),
                         "snippet": r.get("content", "")[:200] + "..." if len(r.get("content", "")) > 200 else r.get("content", ""),
                         "content": r.get("content", ""),
-                        "source": "local_db"
+                        "source": "local_db",
+                        "similarity": similarity,
+                        "distance": distance
                     })
                     
                 print(f"   ✅ Found {len(knowledge_results)} database results")
@@ -866,29 +950,42 @@ What questions do you have about your design?"""
             except Exception as e:
                 print(f"⚠️ Local DB search unavailable: {e}")
 
-            # If we don't have enough results, try web search
-            if len(knowledge_results) < 3:
-                try:
-                    # Create flexible web search query
-                    context_query = f"{user_topic} {building_type} architecture case study precedent project"
-                    print(f"   🌐 Web search query: {context_query}")
-                    
-                    web_results = await self.search_processor.search_web_for_knowledge(context_query, state)
-                    if web_results:
-                        # Convert web results to the format expected by synthesis processor
-                        for r in web_results:
-                            # Extract from metadata structure that web search actually returns
-                            title = r.get("metadata", {}).get("title", "Untitled")
-                            url = r.get("metadata", {}).get("url", "")
-                            content = r.get("content", "")
-                            snippet = content[:200] + "..." if len(content) > 200 else content
-                            
-                            knowledge_results.append({
-                                "title": title,
-                                "url": url,
-                                "snippet": snippet,
-                                "content": content,
-                                "source": "web_search",
+            # IMPLEMENT DIFFERENT FALLBACK STRATEGIES BASED ON REQUEST TYPE
+            # Check both quantity AND quality of database results
+            has_sufficient_db_results = len(knowledge_results) >= 3
+            has_relevant_db_results = False
+
+            if knowledge_results:
+                # Check if database results are relevant by looking at similarity scores
+                avg_similarity = sum(r.get('similarity', 0) for r in knowledge_results) / len(knowledge_results)
+                has_relevant_db_results = avg_similarity > 0.3  # Threshold for relevance
+                print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.3)")
+
+            if not has_sufficient_db_results or not has_relevant_db_results:
+                if request_type == "project_examples":
+                    # PROJECT EXAMPLES: Database → Web search (NO AI generation)
+                    print(f"   🏗️ PROJECT EXAMPLES: Trying web search for specific built projects")
+                    try:
+                        # Create web search query focused on specific projects
+                        context_query = f"{user_topic} {building_type} architecture case study precedent project built examples"
+                        print(f"   🌐 Web search query: {context_query}")
+
+                        web_results = await self.search_processor.search_web_for_knowledge(context_query, state)
+                        if web_results:
+                            # Convert web results to the format expected by synthesis processor
+                            for r in web_results:
+                                # Extract from metadata structure that web search actually returns
+                                title = r.get("metadata", {}).get("title", "Untitled")
+                                url = r.get("metadata", {}).get("url", "")
+                                content = r.get("content", "")
+                                snippet = content[:200] + "..." if len(content) > 200 else content
+
+                                knowledge_results.append({
+                                    "title": title,
+                                    "url": url,
+                                    "snippet": snippet,
+                                    "content": content,
+                                    "source": "web_search",
                                 # Add metadata structure for compatibility
                                 "metadata": {
                                     "title": title,
@@ -897,20 +994,24 @@ What questions do you have about your design?"""
                                 }
                             })
                         
-                        print(f"   ✅ Found {len([r for r in knowledge_results if r['source'] == 'web_search'])} web results")
-                        
-                except Exception as e:
-                    print(f"⚠️ Web search failed: {e}")
+                            print(f"   ✅ Found {len([r for r in knowledge_results if r['source'] == 'web_search'])} web results")
 
-            # Use the knowledge synthesis processor to create properly formatted examples
-            # This processor handles relevance filtering and formatting dynamically
+                    except Exception as e:
+                        print(f"⚠️ Web search failed: {e}")
+
+                else:
+                    # GENERAL EXAMPLES: Database → AI generation (NO web search)
+                    print(f"   📚 GENERAL EXAMPLES: Using AI generation for strategies/approaches")
+                    # For general examples, we'll use AI generation as fallback
+                    # This will be handled in the final synthesis section
+
+            # SYNTHESIS LOGIC: Different strategies based on request type and available data
             if knowledge_results:
-                # Use the simple, working approach from the old repository
-                # Let the LLM intelligently process all results instead of pre-filtering
+                # We have database or web search results - synthesize them
                 examples_text = await self._synthesize_examples_with_llm(
                     user_topic, knowledge_results, building_type
                 )
-                
+
                 return {
                     "response_text": examples_text,
                     "response_type": "focused_examples",
@@ -918,13 +1019,29 @@ What questions do you have about your design?"""
                     "examples_provided": True
                 }
             else:
-                # If no results at all, provide a helpful message about the topic
-                return {
-                    "response_text": f"I'd be happy to help you find examples of {user_topic} in {building_type} architecture. This is an interesting area that could benefit from case studies and precedents. Would you like me to search for specific aspects of this topic, or do you have particular examples in mind?",
-                    "response_type": "no_examples_found",
-                    "sources": [],
-                    "examples_provided": False
-                }
+                # NO RESULTS FOUND - Apply different fallback strategies
+                if request_type == "project_examples":
+                    # PROJECT EXAMPLES: No AI generation - just inform user
+                    return {
+                        "response_text": f"I wasn't able to find specific built project examples for {user_topic} in {building_type} architecture in my current database or web search. This could be because it's a specialized area or the search terms need refinement. Could you provide more specific details about what type of {user_topic} examples you're looking for, or try a different search approach?",
+                        "response_type": "no_project_examples_found",
+                        "sources": [],
+                        "examples_provided": False
+                    }
+                else:
+                    # GENERAL EXAMPLES: Use AI generation as fallback
+                    print(f"   🤖 No database/web results found - generating AI examples for general strategies")
+                    ai_examples = await self._generate_ai_examples_for_general_strategies(
+                        user_input, user_topic, building_type, project_context
+                    )
+
+                    return {
+                        "response_text": ai_examples,
+                        "response_type": "ai_generated_examples",
+                        "sources": [],
+                        "examples_provided": True,
+                        "generation_method": "ai_fallback"
+                    }
                 
         except Exception as e:
             print(f"⚠️ Example search failed: {e}")
@@ -935,7 +1052,40 @@ What questions do you have about your design?"""
                 "examples_provided": False
             }
 
+    async def _generate_ai_examples_for_general_strategies(self, user_input: str, topic: str, building_type: str, project_context: str) -> str:
+        """
+        Generate AI-powered examples for general strategies/approaches when no database/web results are found.
+        This is only used for GENERAL example requests, not PROJECT example requests.
+        """
+        try:
+            prompt = f"""
+            As an expert architecture educator, provide helpful examples and strategies for: {topic}
 
+            Context:
+            - Building type: {building_type}
+            - User question: {user_input}
+            - Project context: {project_context}
+
+            Since this is a request for general examples/strategies (not specific built projects), provide:
+            1. Key approaches and strategies for {topic}
+            2. General principles and considerations
+            3. Common methods and techniques
+            4. Conceptual examples and scenarios
+
+            Focus on educational value and practical guidance rather than specific project names.
+            Keep the response informative but concise (2-3 paragraphs).
+            """
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are an expert architecture educator providing helpful examples and strategies."),
+                self.client.create_user_message(prompt)
+            ])
+
+            return response.strip()
+
+        except Exception as e:
+            print(f"⚠️ AI example generation failed: {e}")
+            return f"I'd be happy to help you explore {topic} in {building_type} architecture. This is an interesting area that involves various approaches and strategies. Could you tell me more specifically what aspect of {topic} you'd like to understand better?"
 
     def _get_quality_modifiers(self, user_input: str, topic: str) -> str:
         """Get quality modifiers to enhance search queries and get better examples."""
@@ -993,7 +1143,7 @@ What questions do you have about your design?"""
             "acoustics": ["acoustic", "sound", "noise", "audio"],
             "ventilation": ["ventilation", "air", "breathing", "fresh air"],
             "shading": ["shade", "shading", "sun protection", "overhang"],
-            "community spaces": ["community", "social", "gathering", "public"],
+            "social spaces": ["social interaction", "gathering spaces", "public areas"],
             "office design": ["office", "workplace", "work", "desk"],
             "open plan": ["open plan", "open space", "open office"],
             "private spaces": ["private", "quiet", "focus", "individual"],
@@ -1022,7 +1172,7 @@ What questions do you have about your design?"""
         # Find the most specific topic match (prioritize longer/more specific terms first)
         # Sort topics by specificity (longer topic names first)
         sorted_topics = sorted(topic_keywords.items(), key=lambda x: len(x[0]), reverse=True)
-        
+
         # Check all topics for matches
         for topic, keywords in sorted_topics:
             if any(keyword in user_input_lower for keyword in keywords):
@@ -1203,6 +1353,62 @@ What questions do you have about your design?"""
             metadata=response_metadata
         )
 
+    async def _synthesize_knowledge_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str, synthesis_type: str = "examples") -> str:
+        """Synthesize knowledge from database results - can handle both examples and general knowledge."""
+
+        if synthesis_type == "examples":
+            return await self._synthesize_examples_with_llm(user_topic, knowledge_results, building_type)
+        else:
+            # Handle general knowledge synthesis
+            return await self._synthesize_general_knowledge_with_llm(user_topic, knowledge_results, building_type)
+
+    async def _synthesize_general_knowledge_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
+        """Synthesize general knowledge from database results."""
+
+        try:
+            # Prepare knowledge content for synthesis
+            knowledge_content = []
+            for result in knowledge_results:
+                content = result.get('content', '') or result.get('snippet', '') or result.get('text', '')
+                title = result.get('title', 'Knowledge Source')
+                if content:
+                    knowledge_content.append(f"**{title}**: {content[:300]}...")
+
+            if not knowledge_content:
+                # Fallback if no content found
+                return f"I'd be happy to help you understand {user_topic} in {building_type} architecture. This involves several key considerations and principles. Could you tell me more specifically what aspect you'd like to explore?"
+
+            # Create synthesis prompt
+            prompt = f"""
+            Based on the following knowledge sources about {user_topic} in {building_type} architecture, provide a comprehensive and educational response:
+
+            Knowledge Sources:
+            {chr(10).join(knowledge_content)}
+
+            Please synthesize this information to:
+            1. Explain the key concepts and principles
+            2. Provide practical guidance and considerations
+            3. Make it relevant to {building_type} projects
+            4. Keep it educational and informative
+
+            Focus on understanding rather than just listing information.
+            """
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are an expert architecture educator synthesizing knowledge from reliable sources."),
+                self.client.create_user_message(prompt)
+            ])
+
+            # FIXED: Extract content from response dictionary
+            if response and response.get("content"):
+                return response["content"].strip()
+            else:
+                return f"Based on architectural principles, {user_topic} in {building_type} design involves careful consideration of user needs, functional requirements, and design standards. What specific aspect would you like to explore further?"
+
+        except Exception as e:
+            print(f"⚠️ Knowledge synthesis failed: {e}")
+            return f"Based on architectural principles, {user_topic} in {building_type} design involves careful consideration of user needs, functional requirements, and design standards. What specific aspect would you like to explore further?"
+
     async def _synthesize_examples_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
         """Use the simple, working approach from the old repository - let LLM intelligently process all results."""
         
@@ -1222,9 +1428,19 @@ What questions do you have about your design?"""
         
         # Combine knowledge content for LLM processing
         combined_knowledge = "\n\n---\n\n".join([
-            f"Source: {r.get('title', 'Unknown')}\nContent: {r.get('content', r.get('snippet', ''))}" 
+            f"Source: {r.get('title', 'Unknown')}\nContent: {r.get('content', r.get('snippet', ''))}"
             for r in knowledge_results
         ])
+
+        # DEBUG: Print what content is being passed to synthesis
+        print(f"🔍 DEBUG: Synthesizing {len(knowledge_results)} results")
+        for i, r in enumerate(knowledge_results[:3]):
+            title = r.get('title', 'Unknown')[:50]
+            content = r.get('content', r.get('snippet', ''))[:100]
+            print(f"   📄 Result {i+1}: {title} | Content: {content}...")
+        print(f"🔍 DEBUG: Combined knowledge length: {len(combined_knowledge)} chars")
+        print(f"🔍 DEBUG: User topic: {user_topic}")
+        print(f"🔍 DEBUG: Building type: {building_type}")
         
         # Use the working prompt from the old repository
         synthesis_prompt = f"""
@@ -1235,6 +1451,8 @@ What questions do you have about your design?"""
         AVAILABLE URLS FOR LINKS: {urls}
 
         CRITICAL REQUIREMENT: You MUST provide ACTUAL PROJECT EXAMPLES, not general strategies or theories.
+
+        IMPORTANT: You MUST base your examples on the AVAILABLE KNOWLEDGE provided above. Do NOT make up examples that are not mentioned in the knowledge sources.
 
         DO NOT PROVIDE:
         - General strategies like "Historical Preservation and Integration"

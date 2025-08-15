@@ -140,6 +140,19 @@ class SocraticTutorAgent:
             if not user_input:
                 return await self._generate_fallback_response(state, analysis_result, gap_type)
 
+            # AGENT COORDINATION: Check for other agents' responses to build upon
+            coordination_context = context_classification.get("agent_coordination", {})
+            other_responses = coordination_context.get("other_responses", {})
+
+            if other_responses:
+                print(f"🤝 Coordination: Building Socratic questions upon {list(other_responses.keys())} responses")
+                # Extract domain knowledge to create questions about
+                domain_knowledge = other_responses.get("domain_expert", {}).get("response_text", "")
+                if domain_knowledge:
+                    print(f"   📚 Domain knowledge available: {len(domain_knowledge)} chars")
+                    # Store for use in question generation
+                    context_classification["domain_knowledge_context"] = domain_knowledge[:500]  # First 500 chars
+
             # ENHANCED ROUTE-AWARE RESPONSE GENERATION WITH GAMIFICATION
             if routing_path == "supportive_scaffolding":
                 print(f"   🆘 Using SUPPORTIVE SCAFFOLDING approach")

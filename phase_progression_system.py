@@ -1699,19 +1699,23 @@ class PhaseProgressionSystem:
             for phase_progress in session.phase_progress.values()
         )
     
+    def get_progress_summary(self, session_id: str) -> Dict[str, Any]:
+        """Get progress summary for dashboard integration (alias for get_session_summary)"""
+        return self.get_session_summary(session_id)
+
     def get_session_summary(self, session_id: str) -> Dict[str, Any]:
         """Get a comprehensive summary of the session"""
         session = self.sessions.get(session_id)
         if not session:
             return {"error": "Session not found"}
-        
+
         # Calculate overall session score
         all_scores = []
         for phase_progress in session.phase_progress.values():
             all_scores.extend([g.overall_score for g in phase_progress.grades.values()])
-        
+
         overall_score = sum(all_scores) / len(all_scores) if all_scores else 0.0
-        
+
         # Generate phase summaries
         phase_summaries = {}
         for phase, phase_progress in session.phase_progress.items():
@@ -1723,7 +1727,7 @@ class PhaseProgressionSystem:
                 "total_steps": 4,
                 "completion_percent": phase_progress.completion_percent
             }
-        
+
         return {
             "session_id": session_id,
             "overall_score": overall_score,
