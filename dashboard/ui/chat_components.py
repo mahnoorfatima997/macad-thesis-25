@@ -569,7 +569,8 @@ def render_mentor_type_selection():
         MENTOR_TYPES,
         index=0,
         help="Socratic Agent: Multi-agent system that challenges and guides thinking\n"
-             "Raw GPT: Direct GPT responses for comparison"
+             "Raw GPT: Direct GPT responses for comparison\n"
+             "No AI: Hardcoded questions only, no AI assistance (control group)"
     )
     return mentor_type
 

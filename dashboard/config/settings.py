@@ -89,7 +89,7 @@ PAGE_CONFIG = {
 INPUT_MODES = ["Text Only", "Image + Text", "Image Only"]
 
 # Mentor type options for research comparison
-MENTOR_TYPES = ["Socratic Agent", "Raw GPT"]
+MENTOR_TYPES = ["Socratic Agent", "Raw GPT", "No AI"]
 
 # Template design prompts
 TEMPLATE_PROMPTS = {
