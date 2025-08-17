@@ -37,7 +37,7 @@ tiktoken
 # =============================================================================
 # COMPUTER VISION & IMAGE PROCESSING
 # =============================================================================
-opencv-python
+opencv-python-headless
 pillow
 imageio
 albumentations

@@ -45,6 +45,11 @@ def get_cached_orchestrator():
     """Get cached orchestrator instance."""
     import sys
     import os
+
+    # Set environment variable to prevent GUI dependencies
+    os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '0'
+    os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+
     # Add thesis-agents to path
     thesis_agents_path = os.path.join(os.path.dirname(__file__), '../thesis-agents')
     if thesis_agents_path not in sys.path:
@@ -54,7 +59,12 @@ def get_cached_orchestrator():
         from orchestration.langgraph_orchestrator import LangGraphOrchestrator
         return LangGraphOrchestrator(domain="architecture")
     except ImportError as e:
-        st.error(f"Failed to import LangGraphOrchestrator: {e}")
+        st.warning(f"LangGraphOrchestrator not available: {e}")
+        st.info("Running in fallback mode without multi-agent orchestration.")
+        return None
+    except Exception as e:
+        st.warning(f"Failed to initialize LangGraphOrchestrator: {e}")
+        st.info("Running in fallback mode without multi-agent orchestration.")
         return None
 
 
