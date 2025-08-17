@@ -39,20 +39,33 @@ class DropboxExporter:
         self._initialize_dropbox()
     
     def _initialize_dropbox(self):
-        """Initialize Dropbox client with access token from secrets."""
+        """Initialize Dropbox client with refresh token (preferred) or access token (legacy)."""
         if not DROPBOX_AVAILABLE:
             logger.warning("Dropbox package not available")
             return
 
         try:
-            # Get access token from secrets
-            access_token = SecretsManager.get_secret("DROPBOX_ACCESS_TOKEN")
+            # Try refresh token method first (preferred)
+            refresh_token = SecretsManager.get_secret("DROPBOX_REFRESH_TOKEN")
+            app_key = SecretsManager.get_secret("DROPBOX_APP_KEY")
+            app_secret = SecretsManager.get_secret("DROPBOX_APP_SECRET")
 
-            if not access_token:
-                logger.warning("DROPBOX_ACCESS_TOKEN not found in secrets")
-                return
-
-            self.dropbox_client = dropbox.Dropbox(access_token)
+            if refresh_token and app_key and app_secret:
+                logger.info("Initializing Dropbox client with refresh token...")
+                self.dropbox_client = dropbox.Dropbox(
+                    app_key=app_key,
+                    app_secret=app_secret,
+                    oauth2_refresh_token=refresh_token
+                )
+            else:
+                # Fallback to legacy access token method
+                access_token = SecretsManager.get_secret("DROPBOX_ACCESS_TOKEN")
+                if access_token:
+                    logger.warning("Using legacy access token. Consider upgrading to refresh token.")
+                    self.dropbox_client = dropbox.Dropbox(access_token)
+                else:
+                    logger.warning("No Dropbox credentials found in secrets")
+                    return
 
             # Test connection
             account_info = self.dropbox_client.users_get_current_account()
@@ -60,7 +73,7 @@ class DropboxExporter:
 
         except dropbox.exceptions.AuthError as e:
             logger.error(f"❌ Dropbox authentication failed: {e}")
-            logger.error("Please check your DROPBOX_ACCESS_TOKEN and ensure it has 'files.content.write' scope")
+            logger.error("Please check your Dropbox credentials and ensure they have 'files.content.write' scope")
             self.dropbox_client = None
         except Exception as e:
             logger.error(f"❌ Failed to initialize Dropbox client: {e}")
