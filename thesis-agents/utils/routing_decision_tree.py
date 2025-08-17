@@ -163,17 +163,15 @@ class AdvancedRoutingDecisionTree:
     def _initialize_intent_patterns(self) -> Dict[str, List[str]]:
         """Initialize patterns aligned with gamified routing system"""
         return {
-            # Core knowledge requests
+            # Pure knowledge requests - very specific patterns
             "knowledge_request": [
-                r"what (are|is)", r"how (do|does)", r"can you (tell|show|explain)",
-                r"define", r"definition", r"meaning", r"concept",
-                r"principles?", r"guidelines?", r"requirements?",
-                r"what are.*standard", r"standard dimensions", r"typical dimensions",
-                # Pure knowledge patterns (not design guidance)
-                r"tell me about", r"explain.*about", r"information.*about",
-                r"what.*strategies", r"cooling strategies", r"passive.*strategies",
-                r"what.*factors?", r"what.*aspects?", r"what.*components?",
-                # Remove patterns that could be design guidance
+                r"^what is", r"^what are", r"^how does", r"^how do",
+                r"can you (tell|show|explain)", r"tell me about", r"explain.*about",
+                r"^define", r"definition of", r"meaning of", r"concept of",
+                r"principles of", r"examples of", r"show me examples",
+                r"give me examples", r"case studies", r"precedents",
+                r"what.*strategies are", r"what.*methods are", r"what.*approaches are",
+                r"information about", r"details about", r"facts about"
                 # Removed: r"what.*consider", r"what.*suggest", r"what.*should i", r"how.*organize", r"how.*approach", r"how.*handle"
             ],
             "example_request": [
@@ -189,20 +187,25 @@ class AdvancedRoutingDecisionTree:
                 r"show me.*examples?", r"show me.*projects?", r"show me.*precedents?"
             ],
             "technical_question": [
-                r"specifications?", r"technical", r"codes?",
-                r"regulations?", r"ada", r"accessibility",
-                r"building codes", r"fire codes", r"zoning"
+                r"specifications?", r"technical.*requirements?", r"codes?",
+                r"regulations?", r"ada.*requirements?", r"accessibility.*requirements?",
+                r"building codes?", r"fire codes?", r"zoning.*requirements?",
+                r"what are.*ada", r"what are.*requirements", r"door widths?",
+                r"clearance.*requirements?", r"minimum.*dimensions?"
             ],
 
-            # Learning and exploration
-            "design_problem": [
-                r"i'm designing", r"i am designing", r"designing the", r"working on the",
-                r"considering.*access", r"multiple.*points", r"entrance.*area",
-                r"layout.*problem", r"spatial.*problem", r"design.*challenge"
-            ],
+            # Learning and exploration (design_problem REMOVED - patterns moved to design_exploration)
             "design_exploration": [
-                r"thinking about", r"exploring", r"considering", r"working on",
-                r"designing", r"developing", r"my project", r"my design"
+                r"i'm thinking about", r"i'm exploring", r"i'm considering",
+                r"i want to understand", r"help me explore", r"let's explore",
+                r"i'm curious about", r"i want to dive deeper", r"how might i",
+                r"what if i", r"i'm working on understanding", r"help me think through",
+                r"i'm trying to figure out", r"i'm wondering about",
+                # Added former design_problem patterns - these are design exploration, not problems
+                r"i'm stuck", r"having trouble", r"not sure how",
+                r"difficulty with", r"challenge with", r"issue with",
+                r"struggling with", r"can't figure out", r"don't know how",
+                r"layout.*problem", r"spatial.*problem", r"design.*challenge"
             ],
             "creative_exploration": [
                 r"what if", r"imagine", r"suppose",
@@ -236,11 +239,11 @@ class AdvancedRoutingDecisionTree:
             # Support requests - ENHANCED to distinguish confusion from design guidance
             "confusion_expression": [
                 r"confused", r"don't understand", r"unclear", r"lost",
-                r"overwhelmed", r"makes no sense", r"can't figure out",
+                r"overwhelmed", r"makes no sense",
                 r"having trouble understanding", r"not sure what.*means",
                 r"not sure how.*works", r"not sure how.*done", r"not sure how.*achieved",
-                # Note: These patterns can be problematic - they might catch design guidance requests
-                r"stuck", r"not sure", r"uncertain", r"having trouble"
+                # Removed "stuck", "not sure", "having trouble" - these are now in design_exploration
+                r"uncertain.*about.*meaning", r"uncertain.*what.*means"
             ],
             "clarification_request": [
                 r"can you explain", r"what do you mean", r"clarify",
@@ -613,23 +616,23 @@ class AdvancedRoutingDecisionTree:
         }
     
     def _initialize_cognitive_offloading_patterns(self) -> Dict[str, List[str]]:
-        """Initialize cognitive offloading detection patterns"""
+        """Initialize cognitive offloading detection patterns - more specific to avoid false positives"""
         return {
             "solution_request": [
-                "give me the answer", "tell me what to do", "what should i do",
-                "show me the solution", "give me the design", "solve this for me"
+                "give me the complete answer", "tell me exactly what to do",
+                "show me the final solution", "give me the finished design", "solve this completely for me"
             ],
             "direct_answer_request": [
-                "what is", "how do i", "can you tell me", "what should",
-                "give me", "show me", "tell me"
+                "just give me", "just show me", "just tell me the answer",
+                "don't make me think", "make it simple for me"
             ],
             "avoidance_pattern": [
-                "i don't know", "i'm not sure", "i can't figure out",
-                "this is too hard", "i give up", "i'm stuck"
+                "this is too hard for me", "i give up completely", "i don't want to try",
+                "you do it instead", "i can't be bothered"
             ],
             "overreliance": [
-                "you decide", "you choose", "whatever you think",
-                "you know better", "i trust you", "do it for me"
+                "you decide everything", "you choose for me", "whatever you think is best",
+                "you know better than me", "i trust you completely", "do it all for me"
             ]
         }
     
@@ -653,30 +656,22 @@ class AdvancedRoutingDecisionTree:
             if re.search(pattern, user_input_lower):
                 return "topic_transition"
 
-        # Priority 4: Smart pattern matching with improved logic
+        # Priority 4: Use intent patterns for classification
 
-        # Confusion expressions (highest priority for clarity)
-        confusion_patterns = [r"don't understand", r"not following", r"confused", r"unclear",
-                            r"can you explain.*differently", r"what do you mean"]
-        for pattern in confusion_patterns:
-            if re.search(pattern, user_input_lower):
-                return "confusion_expression"
+        # Check each intent type in priority order (design_problem REMOVED to prevent override)
+        intent_priority = [
+            "confusion_expression",
+            "example_request",
+            "technical_question",  # Check technical before general knowledge
+            "knowledge_request",
+            "design_exploration"
+        ]
 
-        # Example requests (high priority, clear intent)
-        example_patterns = [r"examples? of", r"show me.*examples?", r"give.*examples?",
-                          r"case studies?", r"precedents?", r"similar projects?"]
-        for pattern in example_patterns:
-            if re.search(pattern, user_input_lower):
-                return "example_request"
-
-        # Knowledge seeking (asking for information, not design help)
-        knowledge_patterns = [r"what are.*strategies", r"tell me about.*strategies", r"explain.*strategies",
-                            r"can you tell me about", r"can you explain.*about", r"information.*about",
-                            r"what.*factors.*consider", r"how should i handle.*patterns",
-                            r"how should i.*handle", r"how.*handle.*patterns"]
-        for pattern in knowledge_patterns:
-            if re.search(pattern, user_input_lower):
-                return "knowledge_request"
+        for intent_type in intent_priority:
+            if intent_type in self.intent_patterns:
+                for pattern in self.intent_patterns[intent_type]:
+                    if re.search(pattern, user_input_lower):
+                        return intent_type
 
         # Design guidance (help with actual design work)
         design_guidance_patterns = [r"i need help (organizing|arranging|planning|designing)",
@@ -686,28 +681,20 @@ class AdvancedRoutingDecisionTree:
             if re.search(pattern, user_input_lower):
                 return "design_guidance"
 
-        # Check other patterns from original system
+        # Check other patterns from original system (design_problem removed)
         for intent_type in ["evaluation_request", "feedback_request", "technical_question",
-                          "design_problem", "improvement_seeking", "creative_exploration",
+                          "improvement_seeking", "creative_exploration",
                           "design_exploration", "implementation_request"]:
             if intent_type in self.intent_patterns:
                 for pattern in self.intent_patterns[intent_type]:
                     if re.search(pattern, user_input_lower):
                         return intent_type
 
-        # Priority 5: Context-based fallback classification
-        if "?" in user_input:
-            # Check if it's asking for knowledge/examples
-            if any(word in user_input_lower for word in ["what", "how", "which", "examples", "consider", "suggest"]):
-                return "knowledge_request"
-            else:
-                return "design_exploration"
-        elif any(word in user_input_lower for word in ["my", "i'm", "i am", "working on"]):
+        # Default fallback - prefer design_exploration for descriptive statements
+        if len(user_input.split()) > 10:  # Longer descriptive inputs
             return "design_exploration"
-        elif any(word in user_input_lower for word in ["what", "how", "which", "examples", "consider", "suggest", "should i"]):
-            return "knowledge_request"
-
-        return "design_exploration"  # Better fallback - assume they want guidance
+        else:
+            return "knowledge_request"  # Short inputs likely asking for information
     
     def _is_pure_knowledge_request(self, classification: Dict[str, Any], context: RoutingContext) -> bool:
         """Enhanced check for pure knowledge requests"""

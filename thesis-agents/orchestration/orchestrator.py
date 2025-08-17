@@ -152,6 +152,12 @@ class LangGraphOrchestrator:
         decision = self.routing_decision_tree.decide_route(routing_context)
         self.last_routing_decision = decision  # for reasoning access
 
+        # CRITICAL FIX: Update state with enhanced classification from routing decision
+        # This ensures the metadata uses the correct user_intent (not design_problem)
+        if hasattr(decision, 'classification') and decision.classification:
+            state["student_classification"] = decision.classification
+            print(f"🔧 FIXED: Updated classification with user_intent = {decision.classification.get('user_intent', 'unknown')}")
+
         # Update conversation context with routing decision
         if student_state:
             user_input = state.get("last_message", "")

@@ -350,14 +350,78 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
         # Render the enhanced gamified challenge
         gamification_info = message.get("gamification", {})
         challenge_data = gamification_info.get("challenge_data", {})
-        challenge_data["challenge_text"] = message["content"]
+
+        # Clean the message content - remove any HTML that might have been captured
+        clean_content = message["content"]
+
+        # COMPREHENSIVE HTML CLEANING - Remove all HTML that got captured as text
+        if "<div style=" in clean_content or "<!-- Main content -->" in clean_content or "<h2 style=" in clean_content:
+            print(f"🎮 DEBUG: Detected HTML in message content, cleaning...")
+
+            # Use regex to remove all HTML tags and their content
+            import re
+
+            # Remove HTML comments
+            clean_content = re.sub(r'<!--.*?-->', '', clean_content, flags=re.DOTALL)
+
+            # Remove complete HTML tags with their attributes
+            clean_content = re.sub(r'<[^>]+>', '', clean_content)
+
+            # Remove lines that are just HTML attributes or empty
+            lines = clean_content.split('\n')
+            clean_lines = []
+
+            for line in lines:
+                line = line.strip()
+                # Skip empty lines
+                if not line:
+                    continue
+                # Skip lines that are just CSS properties or HTML attributes
+                if (line.startswith('font-size:') or line.startswith('margin:') or
+                    line.startswith('color:') or line.startswith('background:') or
+                    line.startswith('border:') or line.startswith('padding:') or
+                    line.startswith('text-shadow:') or line.startswith('animation:') or
+                    line.startswith('width:') or line.startswith('height:') or
+                    line.startswith('border-radius:') or line.startswith('letter-spacing:') or
+                    'style=' in line or line.startswith('">') or line == '>' or line == '"):'):
+                    continue
+                # Keep meaningful content lines
+                clean_lines.append(line)
+
+            clean_content = '\n'.join(clean_lines)
+            print(f"🎮 DEBUG: Cleaned HTML from message content - {len(clean_lines)} lines kept")
+
+        # Ensure challenge_data has all required fields
+        if not challenge_data:
+            challenge_data = {}
+
+        challenge_data.update({
+            "challenge_text": clean_content,
+            "challenge_type": gamification_info.get("challenge_type", "role_play"),
+            "building_type": gamification_info.get("building_type", "community center"),
+            "mentor_label": mentor_label
+        })
 
         print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
-        print(f"🎮 DEBUG: About to call render_gamified_challenge")
+        print(f"🎮 DEBUG: About to call enhanced gamification renderer")
 
-        render_gamified_challenge(challenge_data)
+        # Use enhanced gamification system for much cooler visuals
+        try:
+            from dashboard.ui.enhanced_gamification import render_enhanced_gamified_challenge, inject_gamification_css
 
-        print(f"🎮 DEBUG: render_gamified_challenge completed successfully")
+            # Inject CSS for animations
+            inject_gamification_css()
+
+            # Render enhanced gamification
+            render_enhanced_gamified_challenge(challenge_data)
+            print(f"🎮 DEBUG: Enhanced gamification rendered successfully")
+
+        except ImportError as e:
+            # Fallback to original system
+            print(f"🎮 DEBUG: Enhanced gamification not available ({e}), using fallback")
+            render_gamified_challenge(challenge_data)
+
+        print(f"🎮 DEBUG: Gamification rendering completed successfully")
 
         # Add timestamp
         st.markdown(

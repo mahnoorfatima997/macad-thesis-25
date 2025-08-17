@@ -510,27 +510,33 @@ class KnowledgeSynthesisProcessor:
         """Generate educational-style response."""
         try:
             prompt = f"""
-            Create an educational response about {topic} in architecture.
-            
+            Create a clean, educational response about {topic} in architecture.
+
             Knowledge available: {knowledge.get('summary', 'General architectural knowledge')}
             Context: {context if context else 'General architectural learning'}
-            
-            Structure the response to:
-            1. Introduce the topic clearly
-            2. Explain key concepts
-            3. Provide practical applications
-            4. Include architectural considerations
-            
-            Keep the tone informative but accessible.
+
+            Requirements:
+            - Write in clear, flowing paragraphs without markdown headers
+            - No ### or ## headers - use natural paragraph breaks instead
+            - Introduce the topic clearly
+            - Explain key concepts in an accessible way
+            - Provide practical applications
+            - Include architectural considerations
+            - Keep the tone informative but conversational
+            - Maximum 300 words
+
+            Format as clean text with paragraph breaks, not markdown.
             """
-            
+
             response = await self.client.generate_completion([
-                self.client.create_system_message("You are an expert architecture educator."),
+                self.client.create_system_message("You are an expert architecture educator. Write clean, flowing text without markdown headers."),
                 self.client.create_user_message(prompt)
             ])
-            
+
             if response and response.get("content"):
-                return response["content"]
+                # Clean any markdown headers that might have been generated
+                clean_response = self._clean_markdown_headers(response["content"])
+                return clean_response
             
             return f"Educational information about {topic} in architectural design and practice."
             
@@ -540,58 +546,45 @@ class KnowledgeSynthesisProcessor:
     
     async def _generate_practical_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate practical-focused response."""
-        response = f"Practical Applications of {topic}\n\n"
-        response += f"In architectural practice, {topic} is commonly applied through:\n\n"
-        
-        # Add practical examples
+        response = f"In architectural practice, {topic} is commonly applied through direct implementation in design projects, "
+        response += f"integration with building systems, and coordination with construction processes.\n\n"
+
+        # Add practical examples in paragraph form
         examples = knowledge.get('examples', [])
         if examples:
-            for i, example in enumerate(examples[:3], 1):
-                response += f"{i}. {example}\n"
-        else:
-            response += f"• Direct implementation in design projects\n"
-            response += f"• Integration with building systems\n"
-            response += f"• Coordination with construction processes\n"
-        
-        response += f"\nWhen implementing {topic}, consider practical factors such as budget, timeline, and constructability."
-        
-        return response
+            response += "Key applications include: "
+            response += ", ".join(examples[:3]) + ".\n\n"
+
+        response += f"When implementing {topic}, consider practical factors such as budget, timeline, and constructability."
+
+        return self._clean_markdown_headers(response)
     
     async def _generate_technical_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate technical-focused response."""
-        response = f"Technical Aspects of {topic}\n\n"
-        response += f"From a technical perspective, {topic} involves:\n\n"
-        
-        # Add technical details
+        response = f"From a technical perspective, {topic} involves specification requirements and standards, "
+        response += f"performance criteria and testing, integration with building systems, and code compliance considerations.\n\n"
+
+        # Add technical details in paragraph form
         technical_points = knowledge.get('technical_points', [])
         if technical_points:
-            for point in technical_points[:4]:
-                response += f"• {point}\n"
-        else:
-            response += f"• Specification requirements and standards\n"
-            response += f"• Performance criteria and testing\n"
-            response += f"• Integration with building systems\n"
-            response += f"• Code compliance and safety considerations\n"
-        
-        response += f"\nTechnical implementation of {topic} requires careful coordination with engineering disciplines."
-        
-        return response
+            response += "Key technical aspects include: " + ", ".join(technical_points[:4]) + ".\n\n"
+
+        response += f"Technical implementation of {topic} requires careful coordination with engineering disciplines."
+
+        return self._clean_markdown_headers(response)
     
     async def _generate_balanced_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate balanced response covering multiple aspects."""
-        response = f"{topic} in Architecture\n\n"
-        response += f"{topic} encompasses both design and technical considerations in architectural practice.\n\n"
-        
-        # Add key aspects
-        response += "Key aspects include:\n"
-        response += f"• Design integration and aesthetic considerations\n"
-        response += f"• Technical requirements and performance criteria\n"
-        response += f"• Practical implementation and construction methods\n"
-        response += f"• Code compliance and safety requirements\n\n"
-        
+        response = f"{topic} encompasses both design and technical considerations in architectural practice.\n\n"
+
+        # Add key aspects in paragraph form
+        response += "Key aspects include design integration and aesthetic considerations, "
+        response += "technical requirements and performance criteria, practical implementation and construction methods, "
+        response += "and code compliance and safety requirements.\n\n"
+
         response += f"Successful implementation of {topic} requires balancing creative design with technical feasibility."
-        
-        return response
+
+        return self._clean_markdown_headers(response)
     
     # Helper methods for knowledge processing
     
@@ -767,12 +760,30 @@ class KnowledgeSynthesisProcessor:
         """Validate if response is complete and informative."""
         return len(response) > 100 and '.' in response
     
+    def _clean_markdown_headers(self, text: str) -> str:
+        """Clean markdown headers from text."""
+        import re
+
+        # Remove markdown headers (### or ##)
+        text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+
+        # Remove excessive line breaks
+        text = re.sub(r'\n{3,}', '\n\n', text)
+
+        # Clean up any remaining formatting issues
+        text = text.strip()
+
+        return text
+
     def _finalize_knowledge_response(self, response: str) -> str:
         """Finalize the knowledge response."""
+        # Clean markdown headers first
+        response = self._clean_markdown_headers(response)
+
         # Ensure proper ending
         if not response.endswith(('.', '!', '?')):
             response += "."
-        
+
         return response
     
     def _enhance_incomplete_response(self, response: str, topic: str) -> str:

@@ -131,8 +131,13 @@ class UnifiedArchitecturalDashboard:
 
         # ENHANCED: Add gamification progress to sidebar
         try:
-            from dashboard.ui.gamification_components import render_gamification_sidebar
+            from dashboard.ui.gamification_components import render_gamification_sidebar, render_advanced_gamification_dashboard
             render_gamification_sidebar()
+
+            # Check if advanced gamification dashboard should be shown
+            if st.session_state.get('show_advanced_gamification', False):
+                render_advanced_gamification_dashboard()
+
         except Exception as e:
             print(f"⚠️ Error rendering gamification sidebar: {e}")
 

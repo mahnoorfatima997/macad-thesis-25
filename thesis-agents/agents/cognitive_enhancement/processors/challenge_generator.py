@@ -173,7 +173,7 @@ class ChallengeGeneratorProcessor:
             project_context = getattr(state, 'current_design_brief', 'architectural project')
             building_type = self._extract_building_type(project_context)
 
-            # Gamification templates based on challenge type
+            # Gamification templates with nice formatting for UI
             gamification_templates = {
                 "user_perspective": [
                     "🎭 ROLE-PLAY CHALLENGE: Step into someone else's shoes!\n\n*You are now a {user_type} entering your {building_type} for the first time.*\n\n{base_challenge}\n\nWalk me through your first 60 seconds - what do you see, feel, and think?",

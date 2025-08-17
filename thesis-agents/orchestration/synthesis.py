@@ -182,7 +182,7 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
             return first[:max_len].rstrip()
 
         def _extract_insight(s: str, max_len: int = 800) -> str:
-            """Extract a more substantial insight from domain expert response."""
+            """Extract a substantial insight from domain expert response, removing numbering."""
             if not s:
                 return ""
 
@@ -193,13 +193,26 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
             if not sentences:
                 return s[:max_len].rstrip()
 
-            # Take first 2-3 sentences for a more substantial insight
-            if len(sentences) >= 3:
-                insight = '. '.join(sentences[:3]) + '.'
-            elif len(sentences) >= 2:
-                insight = '. '.join(sentences[:2]) + '.'
+            # Clean sentences by removing numbering at the start
+            clean_sentences = []
+            for sentence in sentences:
+                # Remove numbering patterns like "1.", "2.", "3.", etc.
+                cleaned = re.sub(r'^\d+\.\s*', '', sentence.strip())
+                # Remove bold markdown patterns like "**Title**:"
+                cleaned = re.sub(r'^\*\*[^*]+\*\*:\s*', '', cleaned)
+                if cleaned and len(cleaned) > 10:  # Only keep substantial sentences
+                    clean_sentences.append(cleaned)
+
+            if not clean_sentences:
+                return s[:max_len].rstrip()
+
+            # Take first 2-3 sentences for a substantial insight
+            if len(clean_sentences) >= 3:
+                insight = '. '.join(clean_sentences[:3]) + '.'
+            elif len(clean_sentences) >= 2:
+                insight = '. '.join(clean_sentences[:2]) + '.'
             else:
-                insight = sentences[0] + '.'
+                insight = clean_sentences[0] + '.'
 
             # Ensure it doesn't exceed max length
             if len(insight) > max_len:
@@ -266,15 +279,23 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
         if insight:
             items.append(f"- Insight: {insight}")
 
-        # Generate Direction from socratic agent or fallback
+        # Generate Direction from socratic agent or fallback - make it a statement, not question
         if socratic_text:
-            direction = _sanitize(_first_question(socratic_text))
-            if direction and not direction.endswith("?"):
-                direction = direction + "?"
+            direction = _sanitize(_first_sentence(socratic_text))
+            # Remove question marks to make it a directional statement
+            direction = direction.rstrip('?').strip()
+            if direction and not direction.endswith('.'):
+                direction = direction + '.'
         else:
-            # Generate fallback direction question
+            # Generate fallback direction statement based on user input
             user_input = classification.get("user_input", "") if classification else ""
-            direction = _generate_contextual_question(user_input, domain_text)
+            building_type = context_analysis.get("building_type", "project")
+            if "organize" in user_input.lower() or "layout" in user_input.lower():
+                direction = f"Focus on creating clear spatial relationships and logical flow patterns in your {building_type}."
+            elif "outdoor" in user_input.lower() or "garden" in user_input.lower():
+                direction = f"Consider how outdoor spaces can enhance the overall experience of your {building_type}."
+            else:
+                direction = f"Prioritize user experience and functional efficiency in your {building_type} design."
 
         if direction:
             items.append(f"- Direction: {direction}")

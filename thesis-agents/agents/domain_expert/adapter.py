@@ -162,32 +162,44 @@ class DomainExpertAgent:
             except Exception as e:
                 print(f"   ⚠️ Database search failed: {e}")
 
-            # Step 2: If database has sufficient results, synthesize them
+            # Step 2: Check if database results are actually relevant before using them
             if len(knowledge_results) >= 2:
-                print(f"   📚 Using database knowledge for synthesis")
-                knowledge_text = await self._synthesize_knowledge_with_llm(
-                    user_topic, knowledge_results, building_type, synthesis_type="knowledge"
-                )
+                # Check relevance of database results
+                relevant_results = self._filter_relevant_results(knowledge_results, user_topic)
 
-                response_metadata = {
-                    "agent": self.name,
-                    "response_type": "database_knowledge",
-                    "knowledge_gap_addressed": gap_type,
-                    "building_type": building_type,
-                    "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
-                    "sources": knowledge_results,
-                    "processing_method": "database_synthesis"
-                }
+                if len(relevant_results) >= 2:
+                    print(f"   📚 Using {len(relevant_results)} relevant database results for synthesis")
+                    knowledge_text = await self._synthesize_knowledge_with_llm(
+                        user_topic, relevant_results, building_type, synthesis_type="knowledge"
+                    )
 
-                agent_response = ResponseBuilder.create_knowledge_response(
-                    response_text=knowledge_text,
-                    sources_used=knowledge_results,
-                    metadata=response_metadata
-                )
+                    response_metadata = {
+                        "agent": self.name,
+                        "response_type": "database_knowledge",
+                        "knowledge_gap_addressed": gap_type,
+                        "building_type": building_type,
+                        "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
+                        "sources": relevant_results,
+                        "processing_method": "database_synthesis"
+                    }
+
+                    agent_response = ResponseBuilder.create_knowledge_response(
+                        response_text=knowledge_text,
+                        sources_used=relevant_results,
+                        metadata=response_metadata
+                    )
+                else:
+                    print(f"   ⚠️ Database results not sufficiently relevant to {user_topic} - using AI generation")
+                    # Fall through to AI generation
+                    agent_response = None
 
             else:
-                # Step 3: Fallback to AI generation if database insufficient
-                print(f"   🤖 Database insufficient - using AI generation as fallback")
+                # Not enough database results - fall through to AI generation
+                agent_response = None
+
+            # Step 3: Use AI generation if database was insufficient or irrelevant
+            if agent_response is None:
+                print(f"   🤖 Database insufficient or irrelevant - using AI generation as fallback")
                 ai_response = await self._generate_contextual_knowledge_response(
                     user_input, building_type, project_context, gap_type, state
                 )
@@ -198,15 +210,15 @@ class DomainExpertAgent:
                     "knowledge_gap_addressed": gap_type,
                     "building_type": building_type,
                     "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
-                    "sources": knowledge_results,  # Include any partial results
+                    "sources": [],  # No relevant database sources
                     "processing_method": "ai_fallback"
                 }
 
                 agent_response = ResponseBuilder.create_knowledge_response(
                     response_text=ai_response,
-                    sources_used=knowledge_results,
+                    sources_used=[],
                     metadata=response_metadata
-            )
+                )
 
             # Add cognitive flags manually - check if response contains questions
             response_text = getattr(agent_response, 'response_text', '') or ''
@@ -1156,6 +1168,57 @@ What questions do you have about your design?"""
         
         # Return the first 2-3 quality modifiers
         return " ".join(quality_words[:2])
+
+    def _filter_relevant_results(self, knowledge_results: List[Dict], user_topic: str) -> List[Dict]:
+        """Filter knowledge results to only include those relevant to the user's topic."""
+        if not knowledge_results:
+            return []
+
+        relevant_results = []
+        user_topic_lower = user_topic.lower()
+
+        for result in knowledge_results:
+            # Get content from various possible fields
+            content = result.get('content', '') or result.get('snippet', '') or result.get('text', '')
+            title = result.get('title', '')
+
+            # Combine title and content for relevance checking
+            full_text = f"{title} {content}".lower()
+
+            # Check if the topic appears meaningfully in the content
+            topic_mentions = full_text.count(user_topic_lower)
+
+            # Also check for related terms based on topic
+            related_terms = self._get_related_terms(user_topic_lower)
+            related_mentions = sum(full_text.count(term) for term in related_terms)
+
+            # Consider it relevant if:
+            # 1. Topic is mentioned multiple times, OR
+            # 2. Topic + related terms appear frequently, OR
+            # 3. High similarity score (if available)
+            similarity = result.get('similarity', 0)
+
+            if (topic_mentions >= 2 or
+                (topic_mentions >= 1 and related_mentions >= 2) or
+                similarity > 0.7):
+                relevant_results.append(result)
+                print(f"   ✅ Relevant result: {title[:50]}... (topic mentions: {topic_mentions}, related: {related_mentions}, similarity: {similarity:.3f})")
+            else:
+                print(f"   ❌ Filtered out: {title[:50]}... (topic mentions: {topic_mentions}, related: {related_mentions}, similarity: {similarity:.3f})")
+
+        return relevant_results
+
+    def _get_related_terms(self, topic: str) -> List[str]:
+        """Get related terms for a topic to improve relevance checking."""
+        related_terms_map = {
+            'circulation': ['flow', 'movement', 'wayfinding', 'navigation', 'corridor', 'pathway', 'route'],
+            'lighting': ['daylight', 'illumination', 'natural light', 'artificial light', 'luminance'],
+            'materials': ['construction', 'building materials', 'finishes', 'structural materials'],
+            'sustainability': ['green', 'environmental', 'energy efficient', 'sustainable design'],
+            'accessibility': ['universal design', 'ada', 'barrier-free', 'inclusive design']
+        }
+
+        return related_terms_map.get(topic, [])
 
     def _extract_topic_from_user_input(self, user_input: str) -> str:
         """Extract the main architectural topic from user input"""
