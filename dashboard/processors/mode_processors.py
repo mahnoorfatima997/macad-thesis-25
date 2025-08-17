@@ -12,36 +12,80 @@ from typing import Dict, Any, Optional
 
 # Import required components
 from .raw_gpt_processor import get_raw_gpt_response
+from .no_ai_processor import get_no_ai_response
 from thesis_tests.data_models import InteractionData, TestPhase
 
 
 class ModeProcessor:
     """Base class for mode processors."""
-    
-    def __init__(self, orchestrator=None, data_collector=None, test_dashboard=None):
+
+    def __init__(self, orchestrator=None, data_collector=None, test_dashboard=None, image_database=None):
         self.orchestrator = orchestrator
         self.data_collector = data_collector
         self.test_dashboard = test_dashboard
+        self.image_database = image_database
     
-    async def process_input(self, user_input: str, mode: str) -> str:
-        """Process user input based on the selected mode."""
+    async def process_input(self, user_input: str, mode: str, image_path: str = None) -> str:
+        """Process user input based on the selected mode with optional image."""
         try:
+            # Enhance user input with image context if available
+            enhanced_input = self._enhance_input_with_image_context(user_input)
+
             # Handle both old testing modes and new mentor type modes
             if mode in ["MENTOR", "Socratic Agent"]:
-                return await self._process_mentor_mode(user_input)
+                return await self._process_mentor_mode(enhanced_input, image_path)
             elif mode in ["RAW_GPT", "Raw GPT"]:
-                return await self._process_raw_gpt_mode(user_input)
+                return await self._process_raw_gpt_mode(enhanced_input, image_path)
+            elif mode in ["NO_AI", "No AI"]:
+                return await self._process_no_ai_mode(enhanced_input, image_path)
             elif mode == "GENERIC_AI":
-                return await self._process_generic_ai_mode(user_input)
+                return await self._process_generic_ai_mode(enhanced_input)
             elif mode == "CONTROL":
-                return await self._process_control_mode(user_input)
+                return await self._process_control_mode(enhanced_input)
             else:
                 return "Invalid mode selected."
         except Exception as e:
             st.error(f"❌ Error in process_input: {str(e)}")
             return f"An error occurred: {str(e)}"
+
+    def _enhance_input_with_image_context(self, user_input: str) -> str:
+        """Enhance user input with context from stored images."""
+        if not self.image_database:
+            return user_input
+
+        try:
+            # Get conversation images for context
+            conversation_images = self.image_database.get_conversation_images()
+
+            if not conversation_images:
+                return user_input
+
+            # Check if user is referencing images in their input
+            image_references = []
+            input_lower = user_input.lower()
+
+            # Look for image references
+            if any(word in input_lower for word in ['image', 'drawing', 'sketch', 'plan', 'elevation', 'section', 'uploaded', 'picture']):
+                # Add context about available images
+                recent_images = conversation_images[:3]  # Most recent 3 images
+
+                context_parts = []
+                for img in recent_images:
+                    drawing_type = img.get('drawing_type', 'drawing')
+                    context = img.get('user_context', '')[:50] + '...' if len(img.get('user_context', '')) > 50 else img.get('user_context', '')
+                    context_parts.append(f"- {drawing_type}" + (f" ({context})" if context else ""))
+
+                if context_parts:
+                    image_context = f"\n\n[Context: You have access to these images from our conversation: {', '.join(context_parts)}]"
+                    return user_input + image_context
+
+            return user_input
+
+        except Exception as e:
+            print(f"❌ Error enhancing input with image context: {e}")
+            return user_input
     
-    async def _process_mentor_mode(self, user_input: str) -> str:
+    async def _process_mentor_mode(self, user_input: str, image_path: str = None) -> str:
         """Process using the full mentor system."""
         # Ensure session is initialized
         if not st.session_state.session_id:
@@ -64,25 +108,83 @@ class ModeProcessor:
         if st.session_state.analysis_results:
             text_analysis = st.session_state.analysis_results.get('text_analysis', {})
             current_brief = text_analysis.get('building_type', current_brief)
-        
+
+        # ENHANCEMENT: Get current phase information from dashboard's phase system
+        current_phase_info = None
+        try:
+            # Access the phase system from session state (set by dashboard)
+            if hasattr(st.session_state, 'phase_system') and hasattr(st.session_state, 'phase_session_id'):
+                phase_system = st.session_state.phase_system
+                phase_session_id = st.session_state.phase_session_id
+
+                # Get current phase from the phase progression system
+                progress_summary = phase_system.get_progress_summary(phase_session_id)
+                if "error" not in progress_summary:
+                    current_phase_info = {
+                        "current_phase": progress_summary.get("current_phase", "ideation"),
+                        "phase_progress": progress_summary.get("phase_progress", {}),
+                        "session_id": phase_session_id
+                    }
+                    print(f"🎯 MODE_PROCESSOR: Using phase info from dashboard: {current_phase_info['current_phase']}")
+        except Exception as e:
+            print(f"⚠️ MODE_PROCESSOR: Could not get phase info: {e}")
+
         state = ArchMentorState(
             messages=st.session_state.messages.copy(),
             current_design_brief=current_brief,
             student_profile=student_profile,
-            domain="architecture"
+            domain="architecture",
+            # Pass phase information to the orchestrator
+            phase_info=current_phase_info
         )
-        
+
+        # Handle image if provided
+        if image_path:
+            print(f"📷 MODE_PROCESSOR: Adding image to state: {image_path}")
+            from state_manager import VisualArtifact
+
+            artifact = VisualArtifact(
+                id="user_uploaded_image",
+                type="sketch",
+                image_path=image_path
+            )
+            state.current_sketch = artifact
+            state.visual_artifacts.append(artifact)
+
         # Ensure we don't duplicate the same user message
         if not state.messages or state.messages[-1].get("role") != "user" or state.messages[-1].get("content") != user_input:
-            state.messages.append({
+            user_message = {
                 "role": "user",
                 "content": user_input
-            })
+            }
+            # Add image reference to message if present
+            if image_path:
+                user_message["image_path"] = image_path
+
+            state.messages.append(user_message)
         
         # Process with orchestrator
-        result = await self.orchestrator.process_student_input(state)
-        response = result.get("response", "I apologize, but I couldn't generate a response.")
-        response_metadata = result.get("metadata", {})
+        print(f"🎯 MODE_PROCESSOR: Calling orchestrator with phase: {current_phase_info.get('current_phase', 'unknown') if current_phase_info else 'no_phase_info'}")
+        print(f"🎯 MODE_PROCESSOR: State messages count: {len(state.messages)}")
+        print(f"🎯 MODE_PROCESSOR: Last message: {state.messages[-1].get('content', '')[:100] if state.messages else 'No messages'}...")
+
+        try:
+            result = await self.orchestrator.process_student_input(state)
+            print(f"✅ MODE_PROCESSOR: Orchestrator returned result")
+            print(f"   Result keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+
+            response = result.get("response", "I apologize, but I couldn't generate a response.")
+            response_metadata = result.get("metadata", {})
+
+            print(f"📝 MODE_PROCESSOR: Response length: {len(response) if response else 0}")
+            print(f"📝 MODE_PROCESSOR: Response preview: {response[:100] if response else 'No response'}...")
+
+        except Exception as e:
+            print(f"❌ MODE_PROCESSOR: Orchestrator error: {e}")
+            import traceback
+            traceback.print_exc()
+            response = f"I apologize, but I encountered an error: {str(e)}"
+            response_metadata = {}
 
         # Store comprehensive metadata for display
         try:
@@ -158,40 +260,42 @@ class ModeProcessor:
         
         return response
     
-    async def _process_raw_gpt_mode(self, user_input: str) -> str:
-        """Process using direct Raw GPT (no multi-agent)."""
+    async def _process_raw_gpt_mode(self, user_input: str, image_path: str = None) -> str:
+        """Process using pure Raw GPT (completely independent of multi-agent system)."""
         # Ensure session is initialized
         if not st.session_state.session_id:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        # Build project context from analysis if available
-        project_context = ""
-        if st.session_state.analysis_results:
-            ta = st.session_state.analysis_results.get('text_analysis', {})
-            bt = ta.get('building_type')
-            if bt:
-                project_context = f"Building type: {bt}"
-        
-        # Call Raw GPT helper
+
+        # Get conversation history for phase calculation and context
+        messages = st.session_state.get('messages', [])
+
+        # Call Pure Raw GPT processor
         try:
-            result = get_raw_gpt_response(user_input, project_context)
+            result = await get_raw_gpt_response(user_input, messages, st.session_state.session_id)
         except Exception as e:
             return f"I apologize, but I encountered an error calling Raw GPT: {e}"
-        
+
         response = result.get("response", "I couldn't generate a response.")
         response_metadata = result.get("metadata", {})
-        
+        phase_info = result.get("phase_info", {})
+
         # Store metadata for display
         st.session_state.last_response_metadata = response_metadata
-        
+
+        # Store phase information
+        if phase_info:
+            st.session_state.raw_gpt_phase_info = phase_info
+            print(f"🎯 RAW_GPT: Current phase = {phase_info.get('current_phase', 'unknown')}")
+            print(f"📊 RAW_GPT: Phase progression = {phase_info.get('phase_progression', 0):.1%}")
+
         # Log interaction
         try:
             interaction = InteractionData(
                 id=str(uuid.uuid4()),
                 session_id=st.session_state.session_id,
                 timestamp=datetime.now(),
-                phase=TestPhase.IDEATION,
-                interaction_type="raw_gpt_response",
+                phase=TestPhase.IDEATION,  # Map to enum if needed
+                interaction_type="pure_raw_gpt_response",
                 user_input=user_input,
                 system_response=response,
                 response_time=1.0,
@@ -203,31 +307,101 @@ class ModeProcessor:
                 },
                 metadata={**{"mode": "RAW_GPT"}, **response_metadata}
             )
-            
+
             if self.data_collector:
                 routing_meta = response_metadata if isinstance(response_metadata, dict) else {}
-                agents_used = routing_meta.get("agents_used", []) or ["raw_gpt"]
-                routing_path = routing_meta.get("routing_path") or routing_meta.get("route") or "raw_gpt_mode"
-                cognitive_flags = routing_meta.get("cognitive_flags", [])
+                agents_used = routing_meta.get("agents_used", []) or ["pure_raw_gpt"]
+                routing_path = routing_meta.get("routing_path") or "pure_raw_gpt_mode"
                 self.data_collector.log_interaction(
                     student_input=user_input,
                     agent_response=str(response)[:500],
                     routing_path=routing_path,
                     agents_used=agents_used,
-                    response_type="raw_gpt",
-                    cognitive_flags=cognitive_flags if isinstance(cognitive_flags, list) else [],
+                    response_type="pure_raw_gpt",
+                    cognitive_flags=[],
                     student_skill_level='intermediate',
                     confidence_score=0.7,
-                    sources_used=routing_meta.get('sources', []),
+                    sources_used=[],
                     response_time=1.0,
                     context_classification=routing_meta.get('classification', {}),
                     metadata=routing_meta
                 )
         except Exception as e:
             print(f"Warning: Could not log Raw GPT interaction: {e}")
-        
+
         return response
-    
+
+    async def _process_no_ai_mode(self, user_input: str, image_path: str = None) -> str:
+        """Process using No AI mode (hardcoded questions only with phase calculation)."""
+        # Ensure session is initialized
+        if not st.session_state.session_id:
+            st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        # Get conversation history for phase calculation
+        messages = st.session_state.get('messages', [])
+
+        # Call No AI processor
+        try:
+            result = await get_no_ai_response(user_input, messages, st.session_state.session_id)
+        except Exception as e:
+            return f"I apologize, but I encountered an error: {e}"
+
+        response = result.get("response", "Please continue with your design thinking.")
+        response_metadata = result.get("metadata", {})
+        phase_info = result.get("phase_info", {})
+
+        # Store metadata for display
+        st.session_state.last_response_metadata = response_metadata
+
+        # Store phase information
+        if phase_info:
+            st.session_state.no_ai_phase_info = phase_info
+            print(f"🎯 NO_AI: Current phase = {phase_info.get('current_phase', 'unknown')}")
+            print(f"📊 NO_AI: Phase progression = {phase_info.get('phase_progression', 0):.1%}")
+
+        # Log interaction
+        try:
+            interaction = InteractionData(
+                id=str(uuid.uuid4()),
+                session_id=st.session_state.session_id,
+                timestamp=datetime.now(),
+                phase=TestPhase.IDEATION,  # Map string to enum if needed
+                interaction_type="no_ai_response",
+                user_input=user_input,
+                system_response=response,
+                response_time=0.0,
+                cognitive_metrics={
+                    "understanding_level": 0.0,  # No AI understanding
+                    "confidence_level": 0.0,     # No AI confidence
+                    "engagement_level": 0.5,     # Neutral engagement
+                    "confidence_score": 0.0
+                },
+                metadata={**{"mode": "NO_AI"}, **response_metadata}
+            )
+
+            if self.data_collector:
+                routing_meta = response_metadata if isinstance(response_metadata, dict) else {}
+                agents_used = routing_meta.get("agents_used", []) or ["no_ai"]
+                routing_path = routing_meta.get("routing_path") or "no_ai_mode"
+                self.data_collector.log_interaction(
+                    student_input=user_input,
+                    agent_response=str(response)[:500],
+                    routing_path=routing_path,
+                    agents_used=agents_used,
+                    response_type="no_ai",
+                    cognitive_flags=[],
+                    student_skill_level='intermediate',
+                    confidence_score=0.0,
+                    sources_used=[],
+                    response_time=0.0,
+                    context_classification={},
+                    metadata=routing_meta
+                )
+        except Exception as e:
+            print(f"Warning: Could not log No AI interaction: {e}")
+
+        return response
+
     async def _process_generic_ai_mode(self, user_input: str) -> str:
         """Process using generic AI."""
         # Ensure session is initialized

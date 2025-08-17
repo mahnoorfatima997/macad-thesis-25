@@ -136,13 +136,24 @@ class ChallengeGeneratorProcessor:
             base_challenge = random.choice(challenges)
             contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "perspective_challenge", perspective_type)
             
+            # SMART GAMIFICATION: Only apply gamification when appropriate
+            should_gamify = self._should_apply_gamification(state, perspective_type, "perspective_challenge")
+
+            if should_gamify:
+                gamified_challenge = await self._add_gamification_elements(contextualized_challenge, perspective_type, state)
+                gamification_applied = True
+            else:
+                gamified_challenge = contextualized_challenge
+                gamification_applied = False
+
             return {
-                "challenge_text": contextualized_challenge,
+                "challenge_text": gamified_challenge,
                 "challenge_type": "perspective_challenge",
                 "perspective_type": perspective_type,
                 "pedagogical_intent": "Expand perspective and empathy in design thinking",
                 "cognitive_target": "perspective_taking",
-                "expected_outcome": "Enhanced empathy and user-centered design thinking"
+                "expected_outcome": "Enhanced empathy and user-centered design thinking",
+                "gamification_applied": gamification_applied
             }
             
         except Exception as e:
@@ -154,6 +165,147 @@ class ChallengeGeneratorProcessor:
                 "pedagogical_intent": "Encourage empathetic design thinking",
                 "cognitive_target": "empathy"
             }
+
+    async def _add_gamification_elements(self, base_challenge: str, challenge_type: str, state: ArchMentorState) -> str:
+        """Add interactive gamification elements to challenges."""
+        try:
+            # Get project context
+            project_context = getattr(state, 'current_design_brief', 'architectural project')
+            building_type = self._extract_building_type(project_context)
+
+            # Gamification templates based on challenge type
+            gamification_templates = {
+                "user_perspective": [
+                    "🎭 ROLE-PLAY CHALLENGE: Step into someone else's shoes!\n\n*You are now a {user_type} entering your {building_type} for the first time.*\n\n{base_challenge}\n\nWalk me through your first 60 seconds - what do you see, feel, and think?",
+                    "🎯 PERSPECTIVE SHIFT: Time for a reality check!\n\n*Plot twist: You're designing for someone completely different than you imagined.*\n\n{base_challenge}\n\nTell me: How does this change everything?",
+                    "🔍 USER DETECTIVE: Let's solve a mystery!\n\n*Your {building_type} has a secret - different users experience it completely differently.*\n\n{base_challenge}\n\nWhat clues in your design reveal these hidden experiences?"
+                ],
+                "spatial": [
+                    "🏗️ SPACE TRANSFORMATION: Your design just got interesting!\n\n*Imagine your {building_type} could shape-shift based on user needs.*\n\n{base_challenge}\n\nDescribe the transformation - what changes and why?",
+                    "🎨 SPATIAL STORYTELLING: Every space tells a story!\n\n*Your {building_type} is the main character in an architectural narrative.*\n\n{base_challenge}\n\nWhat story does your space want to tell?",
+                    "⚡ DESIGN CHALLENGE: Time for a creative constraint!\n\n*Your {building_type} just got a plot twist that changes everything.*\n\n{base_challenge}\n\nHow do you turn this constraint into your design's superpower?"
+                ],
+                "temporal_perspective": [
+                    "⏰ TIME TRAVEL CHALLENGE: Your building through the ages!\n\n*Fast-forward 20 years - your {building_type} has evolved with its community.*\n\n{base_challenge}\n\nWhat story does this future version tell about adaptability?",
+                    "🔄 LIFECYCLE ADVENTURE: From birth to rebirth!\n\n*Your {building_type} is about to go through a major life change.*\n\n{base_challenge}\n\nHow does good design prepare for transformation?",
+                    "🌅 DAILY RHYTHM CHALLENGE: 24 hours in the life!\n\n*Your {building_type} experiences dawn, noon, dusk, and midnight differently.*\n\n{base_challenge}\n\nHow does your design dance with time?"
+                ]
+            }
+
+            # Select appropriate template
+            templates = gamification_templates.get(challenge_type, gamification_templates["spatial"])
+            template = self.text_processor.select_random(templates)
+
+            # Context-specific user types
+            user_types = {
+                "community center": ["busy parent", "elderly community member", "teenager", "person with mobility challenges"],
+                "hospital": ["anxious patient", "worried family member", "exhausted healthcare worker", "first-time visitor"],
+                "office": ["new employee", "client visitor", "maintenance worker", "executive"],
+                "school": ["nervous student", "visiting parent", "substitute teacher", "administrator"]
+            }
+
+            user_type = self.text_processor.select_random(user_types.get(building_type, ["community member", "visitor", "user", "person"]))
+
+            # Format the gamified challenge
+            gamified_challenge = template.format(
+                base_challenge=base_challenge,
+                building_type=building_type,
+                user_type=user_type
+            )
+
+            return gamified_challenge
+
+        except Exception as e:
+            self.telemetry.log_error("_add_gamification_elements", str(e))
+            return base_challenge  # Return original if gamification fails
+
+    def _should_apply_gamification(self, state: ArchMentorState, challenge_type: str, context: str) -> bool:
+        """
+        Smart gamification trigger - based on routing_test_user_inputs.md patterns.
+
+        Gamification should ONLY be applied for specific trigger patterns:
+        - Role-play questions (How would a visitor feel...)
+        - Perspective questions (What would an elderly person think...)
+        - Curiosity amplification (I wonder what would happen...)
+        - Creative constraints (I'm stuck on...)
+        - Reality checks (This seems pretty easy...)
+        - Low engagement (Ok, Yes, Sure...)
+        - Overconfidence (I already know exactly what to do...)
+        - Cognitive offloading (Just tell me what to do...)
+        """
+        try:
+            # Get conversation history
+            messages = getattr(state, 'messages', [])
+            user_messages = [msg for msg in messages if msg.get('role') == 'user']
+
+            if len(user_messages) == 0:
+                return False
+
+            latest_message = user_messages[-1].get('content', '').lower().strip()
+
+            # 1. ROLE-PLAY TRIGGERS (from routing test lines 12-16, 36-40)
+            role_play_patterns = [
+                'how would a visitor feel', 'how would', 'what would', 'from the perspective of',
+                'how do users feel', 'what would an elderly person', 'what would a child'
+            ]
+            if any(pattern in latest_message for pattern in role_play_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Role-play question detected")
+                return True
+
+            # 2. CURIOSITY AMPLIFICATION (line 18)
+            curiosity_patterns = ['i wonder what would happen', 'what if', 'i wonder']
+            if any(pattern in latest_message for pattern in curiosity_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Curiosity amplification detected")
+                return True
+
+            # 3. CREATIVE CONSTRAINTS (line 21)
+            constraint_patterns = ['i\'m stuck on', 'stuck on', 'having trouble', 'not sure how']
+            if any(pattern in latest_message for pattern in constraint_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Creative constraint detected")
+                return True
+
+            # 4. REALITY CHECK / OVERCONFIDENCE (lines 24, 33)
+            overconfidence_patterns = [
+                'this seems pretty easy', 'this is easy', 'i already know exactly',
+                'i already know', 'that\'s obvious', 'simple', 'basic'
+            ]
+            if any(pattern in latest_message for pattern in overconfidence_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Overconfidence/reality check detected")
+                return True
+
+            # 5. LOW ENGAGEMENT (lines 27-31)
+            low_engagement_responses = ['ok', 'yes', 'sure', 'fine', 'alright', 'cool', 'maybe']
+            if latest_message in low_engagement_responses:
+                print(f"🎮 GAMIFICATION TRIGGER: Low engagement detected")
+                return True
+
+            # 6. COGNITIVE OFFLOADING (lines 223-233)
+            offloading_patterns = [
+                'just tell me what to do', 'can you design this', 'tell me what to do',
+                'what should i do', 'give me the answer', 'what\'s the standard solution'
+            ]
+            if any(pattern in latest_message for pattern in offloading_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Cognitive offloading detected")
+                return True
+
+            # Default: no gamification for normal design statements, technical questions, etc.
+            print(f"🎮 GAMIFICATION SKIP: Normal design statement/question (no trigger patterns)")
+            return False
+
+        except Exception as e:
+            print(f"🎮 GAMIFICATION ERROR: {e}")
+            return False  # Default to no gamification on error
+
+    def _extract_building_type(self, project_context: str) -> str:
+        """Extract building type from project context."""
+        building_types = ["community center", "hospital", "office", "school", "library", "museum", "residential"]
+        project_lower = project_context.lower()
+
+        for building_type in building_types:
+            if building_type in project_lower:
+                return building_type
+
+        return "building"  # Default fallback
     
     async def _generate_alternative_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, alternative_type: str = "structural") -> Dict[str, Any]:
         """Generate alternative exploration cognitive challenge."""
@@ -199,14 +351,25 @@ class ChallengeGeneratorProcessor:
             
             base_challenge = random.choice(challenges)
             contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "metacognitive_challenge", metacognitive_type)
-            
+
+            # SMART GAMIFICATION: Only apply gamification when appropriate
+            should_gamify = self._should_apply_gamification(state, metacognitive_type, "metacognitive_challenge")
+
+            if should_gamify:
+                gamified_challenge = await self._add_gamification_elements(contextualized_challenge, metacognitive_type, state)
+                gamification_applied = True
+            else:
+                gamified_challenge = contextualized_challenge
+                gamification_applied = False
+
             return {
-                "challenge_text": contextualized_challenge,
+                "challenge_text": gamified_challenge,
                 "challenge_type": "metacognitive_challenge",
                 "metacognitive_type": metacognitive_type,
-                "pedagogical_intent": "Promote metacognitive awareness and reflection",
+                "pedagogical_intent": "Foster metacognitive awareness and self-evaluation" + (" with focus on increasing engagement" if gamification_applied else ""),
                 "cognitive_target": "metacognition",
-                "expected_outcome": "Enhanced self-awareness and reflective practice"
+                "expected_outcome": "Enhanced self-awareness and reflective practice",
+                "gamification_applied": gamification_applied
             }
             
         except Exception as e:
@@ -238,28 +401,47 @@ class ChallengeGeneratorProcessor:
         }
     
     async def _contextualize_challenge(self, base_challenge: str, state: ArchMentorState, challenge_type: str, subtype: str) -> str:
-        """Contextualize challenge to the current project."""
+        """Contextualize challenge to the current project and user's specific question."""
         try:
             project_context = getattr(state, 'current_design_brief', 'architectural project')
             
+            # Get user's last question to make the challenge relevant
+            user_messages = getattr(state, 'messages', [])
+            user_input = ""
+            if user_messages:
+                for msg in reversed(user_messages):
+                    if msg.get('role') == 'user':
+                        user_input = msg.get('content', '')
+                        break
+            
+            # Extract key context from user's question
+            user_context = self._extract_user_context(user_input)
+            
             prompt = f"""
-            Adapt this cognitive challenge for an architecture student's specific project:
+            Adapt this cognitive challenge for an architecture student's specific project and question:
             
             BASE CHALLENGE: {base_challenge}
             STUDENT'S PROJECT: {project_context}
+            STUDENT'S QUESTION: {user_input[:200] if user_input else "No specific question provided"}
             CHALLENGE TYPE: {challenge_type} - {subtype}
+            USER CONTEXT: {user_context}
             
             Make the challenge:
-            1. Specific to their architectural project
-            2. Thought-provoking and engaging
-            3. Appropriate for their skill level
-            4. Clear and actionable
+            1. DIRECTLY RELEVANT to what they're asking about
+            2. Specific to their architectural project
+            3. Thought-provoking and engaging
+            4. Appropriate for their skill level
+            5. Clear and actionable
             
-            Keep it under 100 words and end with a specific question.
+            IMPORTANT: The challenge must relate to their specific question, not be generic.
+            If they're asking about outdoor area placement, focus on that.
+            If they're asking about material choices, focus on that.
+            
+            Keep it under 100 words and end with a specific question that builds on their inquiry.
             """
             
             response = await self.client.generate_completion([
-                self.client.create_system_message("You are an expert in architectural pedagogy."),
+                self.client.create_system_message("You are an expert in architectural pedagogy who creates relevant, contextual challenges."),
                 self.client.create_user_message(prompt)
             ])
             
@@ -269,8 +451,48 @@ class ChallengeGeneratorProcessor:
         except Exception as e:
             self.telemetry.log_error(f"Challenge contextualization failed: {e}")
         
-        # Fallback to base challenge
-        return base_challenge
+        # Fallback to context-aware challenge
+        return self._generate_context_aware_fallback(user_input, project_context, challenge_type)
+    
+    def _extract_user_context(self, user_input: str) -> str:
+        """Extract key context from user's question to make challenges relevant."""
+        if not user_input:
+            return "general architectural inquiry"
+        
+        user_input_lower = user_input.lower()
+        
+        # Check for specific architectural elements
+        if any(word in user_input_lower for word in ["outdoor", "garden", "courtyard", "landscape"]):
+            return "outdoor space design and placement"
+        elif any(word in user_input_lower for word in ["classroom", "room", "space", "area"]):
+            return "interior space organization and layout"
+        elif any(word in user_input_lower for word in ["material", "construction", "building"]):
+            return "material selection and construction methods"
+        elif any(word in user_input_lower for word in ["light", "sunlight", "natural light"]):
+            return "lighting and environmental factors"
+        elif any(word in user_input_lower for word in ["organize", "layout", "arrange", "place"]):
+            return "spatial organization and arrangement"
+        elif any(word in user_input_lower for word in ["approach", "strategy", "method"]):
+            return "design approach and methodology"
+        else:
+            return "general design inquiry"
+    
+    def _generate_context_aware_fallback(self, user_input: str, project_context: str, challenge_type: str) -> str:
+        """Generate a context-aware fallback challenge when LLM fails."""
+        if not user_input:
+            return f"Consider how users will experience your {project_context} at different times and conditions."
+        
+        user_input_lower = user_input.lower()
+        
+        # Generate relevant fallback based on user's question
+        if any(word in user_input_lower for word in ["outdoor", "garden", "courtyard"]):
+            return f"Think about how the placement of outdoor areas in your {project_context} affects the flow and experience of users throughout the day and seasons."
+        elif any(word in user_input_lower for word in ["classroom", "room", "space"]):
+            return f"Consider how the organization of spaces in your {project_context} influences user movement, interaction, and learning outcomes."
+        elif any(word in user_input_lower for word in ["organize", "layout", "arrange"]):
+            return f"Reflect on how your spatial organization choices in this {project_context} will impact user experience and project success."
+        else:
+            return f"Consider how your design decisions for this {project_context} will be experienced by different users and in various conditions."
     
     def _get_pedagogical_intent(self, strategy: str, cognitive_state: Dict) -> str:
         """Get pedagogical intent for the strategy."""

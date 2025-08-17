@@ -1,0 +1,72 @@
+{
+  "ui_formatting_tests": [
+    {
+      "response_type": "knowledge_only",
+      "analysis": {
+        "has_synthesis_structure": false,
+        "has_bullet_points": false,
+        "has_sections": false,
+        "word_count": 19,
+        "has_gamification": false,
+        "response_length": "short"
+      },
+      "content_preview": "Passive cooling strategies include natural ventilation, thermal mass, and shading. These techniques ..."
+    },
+    {
+      "response_type": "balanced_guidance",
+      "analysis": {
+        "has_synthesis_structure": true,
+        "has_bullet_points": true,
+        "has_sections": true,
+        "word_count": 49,
+        "has_gamification": false,
+        "response_length": "medium"
+      },
+      "content_preview": "Synthesis:\n\n- Insight: Organizing spaces by age groups requires understanding different spatial need..."
+    },
+    {
+      "response_type": "socratic_clarification",
+      "analysis": {
+        "has_synthesis_structure": false,
+        "has_bullet_points": true,
+        "has_sections": false,
+        "word_count": 44,
+        "has_gamification": false,
+        "response_length": "medium"
+      },
+      "content_preview": "Let me help clarify spatial hierarchy. Think about how you move through a building - what spaces fee..."
+    },
+    {
+      "response_type": "gamified_response",
+      "analysis": {
+        "has_synthesis_structure": false,
+        "has_bullet_points": false,
+        "has_sections": false,
+        "word_count": 8,
+        "has_gamification": true,
+        "response_length": "short"
+      },
+      "content_preview": "Great question about materials! Here's what to consider..."
+    }
+  ],
+  "gamification_visual_tests": [
+    {
+      "gamification_type": "encouragement_boost",
+      "visual_elements": {
+        "message_display": true,
+        "visual_effect": "highlight_border",
+        "points_display": true,
+        "emoji_used": true,
+        "color_coding": "green"
+      },
+      "user_visible": true
+    }
+  ],
+  "ui_recommendations": [
+    "Ensure gamification messages are prominently displayed",
+    "Use consistent color coding for different response types",
+    "Optimize synthesis format for mobile devices",
+    "Add visual indicators for conversation flow progression",
+    "Consider accessibility features for gamification elements"
+  ]
+}

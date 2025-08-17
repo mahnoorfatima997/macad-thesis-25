@@ -137,8 +137,41 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
         ]
         return f"{base}\n\n{clarifiers[0]}\n{clarifiers[1]}"
 
-    # Multi-agent synthesis shaping
-    if path in {"multi_agent_comprehensive", "balanced_guidance"}:
+    # Multi-agent synthesis shaping - ALWAYS apply synthesis template for balanced_guidance
+    if path in {"multi_agent_comprehensive", "balanced_guidance", "knowledge_with_challenge"}:
+        # For balanced_guidance, ALWAYS use the synthesis template to ensure consistent format
+        if path == "balanced_guidance":
+            # Skip the content length check and go directly to synthesis template
+            pass
+        else:
+            # For other paths, check if we already have substantial content from agents
+            total_content_length = len(domain_text) + len(socratic_text) + len(cognitive_text)
+
+            # If we have good content from agents, ensure it ends with a Socratic question
+            if total_content_length > 100:  # Agents provided substantial responses
+                # CRITICAL FIX: Ensure Socratic question is included
+                if not text.strip().endswith('?'):
+                    # Extract Socratic question from socratic agent result
+                    socratic_result = ordered_results.get("socratic", {})
+                    if hasattr(socratic_result, 'to_dict'):
+                        socratic_result = socratic_result.to_dict()
+
+                    socratic_question = socratic_result.get("question_text", "")
+                    if not socratic_question:
+                        # Look in metadata
+                        metadata = socratic_result.get("metadata", {})
+                        socratic_question = metadata.get("socratic_question", "")
+
+                    # Add the question if found and not already in text
+                    if socratic_question and socratic_question not in text:
+                        text = f"{text}\n\n{socratic_question}"
+                    elif not socratic_question:
+                        # Generate contextual follow-up question
+                        text = f"{text}\n\nWhat aspects of this would you like to explore further?"
+
+                return text
+
+        # Use synthesis template for balanced_guidance and as fallback for others
         header = "Synthesis:"
 
         def _first_sentence(s: str, max_len: int = 400) -> str:
@@ -178,29 +211,101 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
 
             return insight
 
+        def _generate_contextual_question(user_input: str, domain_text: str) -> str:
+            """Generate a contextual question based on what the user actually asked."""
+            user_input_lower = user_input.lower()
+
+            # Check if user is asking about placement/organization
+            if any(word in user_input_lower for word in ["place", "organize", "layout", "arrange", "position", "where"]):
+                if "outdoor" in user_input_lower or "garden" in user_input_lower or "courtyard" in user_input_lower:
+                    return "Which of these placement strategies feels most aligned with your vision for the learning environment?"
+                else:
+                    return "How do you envision the relationship between these different spaces?"
+
+            # Check if user is asking about approach/strategy
+            elif any(word in user_input_lower for word in ["approach", "strategy", "method", "how", "what should"]):
+                return "What aspect of this approach resonates most with your design goals?"
+
+            # Check if user is asking about examples/references
+            elif any(word in user_input_lower for word in ["example", "reference", "precedent", "case study"]):
+                return "Which of these examples best fits your project's context and requirements?"
+
+            # Default contextual question
+            return "How does this information help you move forward with your design?"
+
+        def _generate_building_type_specific_watch(building_type: str) -> str:
+            """Generate building-type specific watch items instead of generic fallbacks."""
+            building_type_lower = building_type.lower()
+
+            if "community" in building_type_lower or "sports" in building_type_lower:
+                return "Consider circulation patterns, user flow, and how spaces can adapt between different activities and times of day"
+            elif "learning" in building_type_lower or "educational" in building_type_lower:
+                return "Consider how the learning environment supports different teaching methods and student needs"
+            elif "residential" in building_type_lower:
+                return "Consider how the space supports daily living patterns and personal comfort"
+            elif "cultural" in building_type_lower or "museum" in building_type_lower:
+                return "Consider how the space enhances visitor experience and showcases exhibits effectively"
+            elif "healthcare" in building_type_lower or "medical" in building_type_lower:
+                return "Consider patient comfort, staff efficiency, and infection control requirements"
+            elif "office" in building_type_lower or "commercial" in building_type_lower:
+                return "Consider workflow efficiency, collaboration opportunities, and professional atmosphere"
+            else:
+                return "Consider how users will experience your architectural project at different times of the day and year"
+
         items = []
+
+        # Generate Insight from domain expert or fallback
         if domain_text:
             insight = _sanitize(_extract_insight(domain_text))
-            if insight:
-                items.append(f"- Insight: {insight}")
+        else:
+            # Generate fallback insight based on user input
+            user_input = classification.get("user_input", "") if classification else ""
+            building_type = context_analysis.get("building_type", "architectural project")
+            insight = f"Organizing spaces in a {building_type} requires careful consideration of user flow, functional relationships, and spatial hierarchy"
+
+        if insight:
+            items.append(f"- Insight: {insight}")
+
+        # Generate Direction from socratic agent or fallback
         if socratic_text:
             direction = _sanitize(_first_question(socratic_text))
             if direction and not direction.endswith("?"):
                 direction = direction + "?"
-            if direction:
-                items.append(f"- Direction: {direction}")
-        if cognitive_text:
-            watch = _sanitize(_extract_insight(cognitive_text, max_len=600))  # Use extract_insight for Watch too
         else:
-            # ENHANCED: Use context-aware fallback based on conversation content
-            watch = "Consider how users will experience your architectural project at different times of the day and year"
+            # Generate fallback direction question
+            user_input = classification.get("user_input", "") if classification else ""
+            direction = _generate_contextual_question(user_input, domain_text)
+
+        if direction:
+            items.append(f"- Direction: {direction}")
+
+        # Generate Watch from cognitive agent or fallback
+        if cognitive_text:
+            watch = _sanitize(_extract_insight(cognitive_text, max_len=600))
+        else:
+            # ENHANCED: Use building-type specific fallback instead of generic one
+            building_type = context_analysis.get("building_type", "mixed_use")
+            watch = _generate_building_type_specific_watch(building_type)
+
         if watch:
             items.append(f"- Watch: {watch}")
+
+        # Ensure we have at least the basic structure
         items = [it for it in items if it][:3]
-        body = header + ("\n" + "\n".join(items) if items else "\n" + _first_sentence(text))
-        next_action = "Next: test one concrete change and tell me what you notice."
-        question = "What will you try first?"
-        return f"{body}\n\n{next_action} {question}"
+        if not items:
+            items = [f"- Insight: {_first_sentence(text) or 'Let me help you explore this design challenge'}"]
+
+        body = header + "\n" + "\n".join(items)
+
+        # ENHANCED: Generate contextual question instead of hardcoded generic ones
+        user_input = classification.get("user_input", "") if classification else ""
+        contextual_question = _generate_contextual_question(user_input, domain_text)
+
+        # Ensure we always have a question
+        if not contextual_question or not contextual_question.strip().endswith('?'):
+            contextual_question = "How does this information help you move forward with your design?"
+
+        return f"{body}\n\n{contextual_question}"
 
     # Default: return text as-is
     return text

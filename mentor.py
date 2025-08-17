@@ -3,6 +3,16 @@ Entry point for the Unified Architectural Dashboard.
 Ensures correct import paths and environment loading when launched directly.
 """
 
+# Fix for SQLite version issue on Streamlit Cloud
+# This must be done before any other imports that might use SQLite
+try:
+    import pysqlite3
+    import sys
+    sys.modules['sqlite3'] = pysqlite3
+except ImportError:
+    # pysqlite3-binary not available, use system sqlite3
+    pass
+
 import os
 import sys
 
@@ -18,18 +28,34 @@ THESIS_AGENTS_DIR = os.path.join(PROJECT_ROOT, 'thesis-agents')
 if THESIS_AGENTS_DIR not in sys.path:
     sys.path.insert(0, THESIS_AGENTS_DIR)
 
-# Load environment variables from .env at project root if present
+# Initialize secrets manager for API keys and configuration
+# This will handle both Streamlit secrets and environment variables
 try:
-    from dotenv import load_dotenv
-    env_path = os.path.join(PROJECT_ROOT, '.env')
-    if os.path.exists(env_path):
-        load_dotenv(env_path, override=True)
+    sys.path.insert(0, os.path.join(PROJECT_ROOT, 'thesis-agents'))
+    from utils.secrets_manager import secrets_manager
+    # Test that secrets are available
+    api_key = secrets_manager.get_secret('OPENAI_API_KEY')
+    if api_key:
+        print("✅ Secrets manager initialized successfully")
     else:
-        load_dotenv()
-except Exception:
-    pass
+        print("⚠️ Warning: OPENAI_API_KEY not found in secrets or environment")
+except ImportError as e:
+    print(f"⚠️ Warning: Could not import secrets manager: {e}")
+    # Fallback to dotenv for local development
+    try:
+        from dotenv import load_dotenv
+        env_path = os.path.join(PROJECT_ROOT, '.env')
+        if os.path.exists(env_path):
+            load_dotenv(env_path, override=True)
+        else:
+            load_dotenv()
+        print("✅ Fallback to dotenv successful")
+    except Exception as fallback_e:
+        print(f"⚠️ Warning: Could not load environment variables: {fallback_e}")
+except Exception as e:
+    print(f"⚠️ Warning: Secrets manager initialization failed: {e}")
 
-from dashboard import UnifiedArchitecturalDashboard
+from dashboard.unified_dashboard import UnifiedArchitecturalDashboard
 
 def main():
     """Main function to run the dashboard."""

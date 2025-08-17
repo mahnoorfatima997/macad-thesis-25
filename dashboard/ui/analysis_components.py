@@ -145,13 +145,21 @@ def _render_real_phase_progression(phase_analysis: Dict[str, Any], enhancement_m
             current_phase = 'ideation'
             progression_score = 0.2
 
-        # Infer building type from messages
-        if any(word in recent_text for word in ['community', 'center', 'public']):
+        # Infer building type from messages - enhanced with more types
+        if any(word in recent_text for word in ['kindergarten', 'preschool', 'early childhood']):
+            building_type = 'kindergarten'
+        elif any(word in recent_text for word in ['school', 'educational', 'learning center', 'education']):
+            building_type = 'educational building'
+        elif any(word in recent_text for word in ['community', 'center', 'public']):
             building_type = 'community center'
         elif any(word in recent_text for word in ['house', 'home', 'residential']):
             building_type = 'residential building'
         elif any(word in recent_text for word in ['office', 'commercial', 'business']):
             building_type = 'commercial building'
+        elif any(word in recent_text for word in ['library', 'museum', 'cultural']):
+            building_type = 'cultural building'
+        elif any(word in recent_text for word in ['hospital', 'clinic', 'healthcare', 'medical']):
+            building_type = 'healthcare facility'
 
     # Default values
     current_phase = current_phase or 'ideation'

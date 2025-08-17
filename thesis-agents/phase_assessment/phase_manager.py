@@ -248,19 +248,60 @@ class PhaseAssessmentManager:
         
         return current_phase, current_step
     
-    def generate_socratic_question(self, phase: DesignPhase, step: SocraticStep, 
+    async def generate_socratic_question(self, phase: DesignPhase, step: SocraticStep, 
                                  building_type: str, context: Dict[str, Any]) -> SocraticQuestion:
         """
-        Generate a Socratic question for the specified phase and step.
+        Generate a Socratic question for the specified phase and step using LLM instead of hardcoded templates.
         """
         
         pattern = self.socratic_patterns[phase][step]
         
-        # Format the question template with context
-        question_text = pattern["template"].format(
-            building_type=building_type,
-            context_element=context.get("context_element", "character")
-        )
+        try:
+            # Generate dynamic question using LLM instead of hardcoded template
+            prompt = f"""
+            You are an expert architectural mentor helping a student in the {phase.value} phase of design.
+            
+            CONTEXT:
+            - Building type: {building_type}
+            - Current step: {step.value}
+            - Phase: {phase.value}
+            - Assessment criteria: {', '.join(pattern['criteria'])}
+            - Expected elements: {', '.join(pattern['expected_elements'])}
+            
+            TASK: Generate a thoughtful, engaging Socratic question that:
+            1. Encourages critical thinking about {building_type} design
+            2. Is appropriate for the {step.value} step in the {phase.value} phase
+            3. Helps the student consider {', '.join(pattern['expected_elements'])}
+            4. Sounds natural and conversational, not like a template
+            5. Is specific to {building_type} projects
+            
+            RESPONSE: Write only the question, no explanations or formatting.
+            """
+            
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=150,
+                temperature=0.7
+            )
+            
+            ai_generated_question = response.choices[0].message.content.strip()
+            
+            # Fallback to template if LLM fails
+            if not ai_generated_question or len(ai_generated_question) < 20:
+                question_text = pattern["template"].format(
+                    building_type=building_type,
+                    context_element=context.get("context_element", "character")
+                )
+            else:
+                question_text = ai_generated_question
+                
+        except Exception as e:
+            # Fallback to template if LLM fails
+            question_text = pattern["template"].format(
+                building_type=building_type,
+                context_element=context.get("context_element", "character")
+            )
         
         return SocraticQuestion(
             phase=phase,

@@ -19,6 +19,27 @@ def make_socratic_node(socratic_agent, state_validator, state_monitor, logger) -
         analysis_result = state.get("analysis_result", {})
         context_classification = state.get("student_classification", {})
         domain_expert_result = state.get("domain_expert_result", {})
+        
+        # Add routing path and gamified behavior to context classification so Socratic tutor knows which route to use
+        routing_decision = state.get("routing_decision", {})
+        detailed_routing_decision = state.get("detailed_routing_decision", {})
+        routing_path = routing_decision.get("path", "unknown")
+        context_classification["routing_path"] = routing_path
+
+        # Extract gamified behavior from detailed routing decision
+        if detailed_routing_decision and hasattr(detailed_routing_decision, 'metadata'):
+            gamified_behavior = detailed_routing_decision.metadata.get("gamified_behavior", "")
+        elif isinstance(detailed_routing_decision, dict):
+            gamified_behavior = detailed_routing_decision.get("gamified_behavior", "")
+        else:
+            gamified_behavior = ""
+
+        if gamified_behavior:
+            context_classification["gamified_behavior"] = gamified_behavior
+            print(f"🎮 DEBUG: Socratic node - gamified_behavior: {gamified_behavior}")
+        
+        print(f"🔍 DEBUG: Socratic node - routing_path: {routing_path}")
+        print(f"🔍 DEBUG: Socratic node - context_classification keys: {list(context_classification.keys())}")
 
         if current_milestone:
             analysis_result["milestone_context"] = {
@@ -27,6 +48,31 @@ def make_socratic_node(socratic_agent, state_validator, state_monitor, logger) -
                 "required_actions": current_milestone.required_actions,
                 "success_criteria": current_milestone.success_criteria,
                 "agent_guidance": agent_guidance,
+            }
+
+        # AGENT COORDINATION: Add other agents' responses to context for coordination
+        other_agent_responses = {}
+        if "domain_result" in state:
+            domain_result = state["domain_result"]
+            if hasattr(domain_result, 'to_dict'):
+                domain_dict = domain_result.to_dict()
+            elif isinstance(domain_result, dict):
+                domain_dict = domain_result
+            else:
+                domain_dict = {"response_text": str(domain_result)}
+
+            other_agent_responses["domain_expert"] = {
+                "response_text": domain_dict.get("response_text", ""),
+                "response_type": domain_dict.get("response_type", "knowledge"),
+                "sources": domain_dict.get("sources", []),
+                "key_concepts": domain_dict.get("key_concepts", [])
+            }
+
+        # Add coordination context to classification
+        if other_agent_responses:
+            context_classification["agent_coordination"] = {
+                "other_responses": other_agent_responses,
+                "coordination_notes": "Socratic tutor can build questions based on domain expert's knowledge"
             }
 
         # Use the adapter's public API

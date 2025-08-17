@@ -3,6 +3,7 @@ Shared text processing utilities for agents.
 """
 
 import re
+import random
 from typing import List, Dict, Any
 
 
@@ -25,6 +26,21 @@ class TextProcessor:
         """
         text_lower = text.lower()
         return sum(1 for phrase in indicators if phrase in text_lower)
+
+    @staticmethod
+    def select_random(items: List[str]) -> str:
+        """
+        Select a random item from a list.
+
+        Args:
+            items: List of items to choose from
+
+        Returns:
+            Random item from the list, or empty string if list is empty
+        """
+        if not items:
+            return ""
+        return random.choice(items)
     
     @staticmethod
     def calculate_complexity_score(text: str) -> Dict[str, float]:

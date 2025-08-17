@@ -71,63 +71,78 @@ class ContextAnalysisProcessor:
             return self._get_default_context_analysis()
     
     def extract_building_type_from_context(self, state: ArchMentorState) -> str:
-        """Extract building type from conversation context."""
+        """
+        Extract building type from conversation context.
+        UPDATED: Now uses centralized conversation continuity context to avoid duplications.
+        """
         try:
-            user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
-            
-            if not user_messages:
-                return "general"
-            
-            # Combine recent messages for analysis
-            combined_text = ' '.join(user_messages[-5:]).lower()
-            
-            # Building type patterns with confidence scores
-            building_patterns = {
-                'residential': {
-                    'keywords': ['house', 'home', 'apartment', 'residential', 'housing', 'dwelling', 'villa', 'townhouse'],
-                    'weight': 1.0
-                },
-                'commercial': {
-                    'keywords': ['office', 'retail', 'commercial', 'store', 'shopping', 'business', 'corporate'],
-                    'weight': 1.0
-                },
-                'institutional': {
-                    'keywords': ['school', 'hospital', 'library', 'museum', 'university', 'civic', 'public'],
-                    'weight': 1.0
-                },
-                'industrial': {
-                    'keywords': ['factory', 'warehouse', 'industrial', 'manufacturing', 'plant'],
-                    'weight': 1.0
-                },
-                'mixed-use': {
-                    'keywords': ['mixed-use', 'mixed use', 'multi-purpose', 'combined'],
-                    'weight': 1.2
-                },
-                'cultural': {
-                    'keywords': ['theater', 'gallery', 'cultural', 'arts', 'performance'],
-                    'weight': 1.0
-                },
-                'hospitality': {
-                    'keywords': ['hotel', 'restaurant', 'hospitality', 'resort'],
-                    'weight': 1.0
+            # PRIORITY 1: Use conversation continuity context if available
+            if hasattr(state, 'conversation_context') and state.conversation_context.detected_building_type:
+                if state.conversation_context.building_type_confidence > 0.5:
+                    return state.conversation_context.detected_building_type
+
+            # PRIORITY 2: Use state.building_type if available and not unknown
+            if hasattr(state, 'building_type') and state.building_type and state.building_type != "unknown":
+                return state.building_type
+
+            # PRIORITY 3: Only perform local detection if no centralized detection exists
+            # This prevents multiplication of building type detection
+            # IMPORTANT: Only extract from design brief and first user message, NOT all messages
+            if not hasattr(state, 'conversation_context') or not state.conversation_context.detected_building_type:
+                # Extract from design brief first (highest priority)
+                combined_text = ""
+                if state.current_design_brief:
+                    combined_text = state.current_design_brief.lower()
+
+                # If no brief, use ONLY the first user message
+                if not combined_text:
+                    user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+                    if user_messages:
+                        combined_text = user_messages[0].lower()  # ONLY first message
+
+                if not combined_text:
+                    return "general"
+
+                # Simplified building type patterns to avoid conflicts with centralized detection
+                building_patterns = {
+                    'residential': {
+                        'keywords': ['house', 'home', 'apartment', 'residential', 'housing'],
+                        'weight': 1.0
+                    },
+                    'commercial': {
+                        'keywords': ['office', 'retail', 'commercial', 'store', 'business'],
+                        'weight': 1.0
+                    },
+                    'institutional': {
+                        'keywords': ['school', 'hospital', 'library', 'museum', 'university'],
+                        'weight': 1.0
+                    },
+                    'community': {
+                        'keywords': ['community center', 'civic', 'public', 'community'],
+                        'weight': 1.0
+                    }
                 }
-            }
-            
-            # Score each building type
-            type_scores = {}
-            for building_type, config in building_patterns.items():
-                score = 0
-                for keyword in config['keywords']:
-                    if keyword in combined_text:
-                        score += config['weight']
-                type_scores[building_type] = score
-            
-            # Return highest scoring type or 'general' if no clear match
-            if type_scores and max(type_scores.values()) > 0:
-                return max(type_scores, key=type_scores.get)
-            
+
+                # Score each building type
+                type_scores = {}
+                for building_type, config in building_patterns.items():
+                    score = 0
+                    for keyword in config['keywords']:
+                        if keyword in combined_text:
+                            score += config['weight']
+                    type_scores[building_type] = score
+
+                # Return highest scoring type or 'general' if no clear match
+                if type_scores and max(type_scores.values()) > 0:
+                    detected_type = max(type_scores, key=type_scores.get)
+                    # Update conversation context if available
+                    if hasattr(state, 'conversation_context'):
+                        state.conversation_context.detected_building_type = detected_type
+                        state.conversation_context.building_type_confidence = 0.6  # Medium confidence
+                    return detected_type
+
             return "general"
-            
+
         except Exception as e:
             self.telemetry.log_error("extract_building_type_from_context", str(e))
             return "general"

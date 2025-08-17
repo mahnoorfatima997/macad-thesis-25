@@ -39,6 +39,18 @@ class FirstResponseGenerator:
         logger.info(f"Progression analysis keys: {list(progression_analysis.keys())}")
         logger.info(f"Opening strategy: {progression_analysis.get('opening_strategy', {}).get('suggested_approach', 'unknown')}")
         
+        # 1208-Extract building type from the first message
+        logger.info("Step 1.5: Extracting building type from first message...")
+        building_type = self._extract_building_type_from_text(user_input)
+        logger.info(f"Building type detected: {building_type}")
+        
+        # 1208-Update progression analysis with building type
+        if building_type and building_type != "mixed_use":
+            progression_analysis["building_type"] = building_type
+            if "opening_strategy" not in progression_analysis:
+                progression_analysis["opening_strategy"] = {}
+            progression_analysis["opening_strategy"]["building_type"] = building_type
+        
         # Generate the opening response
         logger.info("Step 2: Generating opening response...")
         opening_response = await self._generate_opening_response(progression_analysis, user_input)
@@ -76,7 +88,8 @@ class FirstResponseGenerator:
                 "generator": self.name,
                 "opening_dimensions": progression_analysis.get("relevant_dimensions", []),
                 "intent_analysis": progression_analysis.get("opening_strategy", {}).get("intent_analysis", {}),
-                "knowledge_level": progression_analysis.get("user_profile", {}).get("knowledge_level", "unknown")
+                "knowledge_level": progression_analysis.get("user_profile", {}).get("knowledge_level", "unknown"),
+                "building_type": progression_analysis.get("building_type", "unknown")
             }
         }
     
@@ -108,6 +121,9 @@ class FirstResponseGenerator:
         user_profile = progression_analysis.get("user_profile", {})
         milestone = progression_analysis.get("milestone")
         
+        # Get building type from progression analysis
+        building_type = progression_analysis.get("building_type", "unknown")
+        
         context = f"""
 You are an expert architectural mentor helping a student begin their learning journey. 
 
@@ -118,11 +134,12 @@ ANALYSIS:
 - Learning Style: {user_profile.get('learning_style', 'unknown')}
 - Primary Intent: {opening_strategy.get('suggested_approach', 'guided_exploration')}
 - Primary Design Dimension: {opening_strategy.get('primary_dimension', 'functional')}
+- Building Type: {building_type}
 - Engagement Level: {getattr(milestone, 'engagement_level', 'medium') if milestone else 'medium'}
 
 YOUR ROLE:
 Generate a warm, engaging opening response that:
-1. Acknowledges their specific interests and intent
+1. Acknowledges their specific project type ({building_type}) and interests
 2. Opens up the design space in their area of interest
 3. Shows enthusiasm for their learning journey
 4. Sets up a collaborative, exploratory tone
@@ -131,9 +148,9 @@ Generate a warm, engaging opening response that:
 
 RESPONSE GUIDELINES:
 - Keep it conversational and encouraging
-- Reference their specific interests from their message
-- Open 2-3 related design space dimensions
-- Ask 1-2 thoughtful follow-up questions
+- Reference their specific project type and interests from their message
+- Open 2-3 related design space dimensions relevant to {building_type}
+- Ask 1-2 thoughtful follow-up questions specific to their project
 - Show you're excited to explore this with them
 - Keep it under 150 words for the main response
 
@@ -179,6 +196,7 @@ Focus on opening the design space rather than providing answers.
         opening_strategy = progression_analysis.get("opening_strategy", {})
         primary_dimension = opening_strategy.get("primary_dimension", "functional")
         user_profile = progression_analysis.get("user_profile", {})
+        building_type = progression_analysis.get("building_type", "architectural project")
         
         # Simple template-based fallback
         dimension_openings = {
@@ -192,7 +210,13 @@ Focus on opening the design space rather than providing answers.
         
         opening = dimension_openings.get(primary_dimension, "I'm excited to help you explore architectural design!")
         
-        return f"{opening} Let's start by understanding what interests you most about this area. What specific aspects would you like to explore together?"
+        # Add building type specific context
+        if building_type != "unknown" and building_type != "mixed_use":
+            building_context = f" I can see you're working on a {building_type} project, which is a fascinating area of architectural design!"
+        else:
+            building_context = ""
+        
+        return f"{opening}{building_context} Let's start by understanding what interests you most about this area. What specific aspects would you like to explore together?"
     
     def _generate_follow_up_questions(self, progression_analysis: Dict) -> List[str]:
         """Generate follow-up questions to open design space"""
@@ -518,3 +542,12 @@ Focus on opening the design space rather than providing answers.
             "learning_opportunities": topic_analysis.get("learning_opportunities", []),
             "transition_type": "topic_change"
         } 
+    
+    def _extract_building_type_from_text(self, input_text: str) -> str:
+        """
+        Get building type from state - NO MORE DETECTION, just retrieval.
+        Building type is now centrally managed in conversation_progression.py
+        """
+        # This method is now deprecated - building type detection is centralized
+        # Return unknown to force use of centrally managed building type
+        return "unknown"

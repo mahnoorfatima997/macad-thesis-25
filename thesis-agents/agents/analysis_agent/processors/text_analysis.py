@@ -28,7 +28,7 @@ class TextAnalysisProcessor:
                 return self._get_empty_brief_analysis()
             
             # Core analysis components
-            building_type = self._detect_building_type(brief)
+            building_type = self._extract_building_type_from_text(brief)
             detail_level = self.assess_detail_level(brief)
             complexity_score = self._assess_complexity(brief)
             technical_depth = self._assess_technical_depth(brief)
@@ -74,43 +74,14 @@ class TextAnalysisProcessor:
             self.telemetry.log_error("analyze_design_brief", str(e))
             return self._get_fallback_brief_analysis(brief)
     
-    def _detect_building_type(self, brief: str) -> str:
-        """Detect building type from brief content."""
-        try:
-            brief_lower = brief.lower()
-            type_scores = {}
-            
-            for building_type, patterns in BUILDING_TYPE_PATTERNS.items():
-                score = 0
-                for pattern in patterns:
-                    if pattern.lower() in brief_lower:
-                        score += 1
-                type_scores[building_type] = score
-            
-            if type_scores and max(type_scores.values()) > 0:
-                return max(type_scores, key=type_scores.get)
-            else:
-                return self._fallback_building_type_detection(brief)
-                
-        except Exception as e:
-            self.telemetry.log_error("_detect_building_type", str(e))
-            return "mixed-use"
-    
-    def _fallback_building_type_detection(self, brief: str) -> str:
-        """Fallback building type detection using simple heuristics."""
-        brief_lower = brief.lower()
-        
-        # Simple keyword-based detection
-        if any(word in brief_lower for word in ["house", "home", "residential", "apartment"]):
-            return "residential"
-        elif any(word in brief_lower for word in ["office", "commercial", "retail", "business"]):
-            return "commercial"
-        elif any(word in brief_lower for word in ["school", "hospital", "library", "museum"]):
-            return "institutional"
-        elif any(word in brief_lower for word in ["factory", "warehouse", "industrial"]):
-            return "industrial"
-        else:
-            return "mixed-use"
+    def _extract_building_type_from_text(self, text: str) -> str:
+        """
+        Get building type from state - NO MORE DETECTION, just retrieval.
+        Building type is now centrally managed in conversation_progression.py
+        """
+        # This method is now deprecated - building type detection is centralized
+        # Return unknown to force use of centrally managed building type
+        return "unknown"
     
     def assess_detail_level(self, brief: str) -> str:
         """Assess the level of detail in the design brief."""
@@ -451,4 +422,123 @@ class TextAnalysisProcessor:
             },
             "brief_quality": "adequate",
             "analysis_timestamp": self.telemetry.get_timestamp()
+        } 
+
+    def get_building_type_context(self, building_type: str) -> Dict[str, Any]:
+        """Get comprehensive context and characteristics for a building type."""
+        
+        building_contexts = {
+            "learning_center": {
+                "description": "A facility focused on education, skill development, and knowledge sharing",
+                "key_considerations": ["flexible learning spaces", "technology integration", "accessibility", "acoustic design", "natural lighting"],
+                "typical_users": ["students", "professionals", "community members", "instructors"],
+                "spatial_priorities": ["classrooms", "study areas", "collaborative spaces", "technology labs", "quiet zones"],
+                "sustainability_focus": ["energy efficiency", "indoor air quality", "daylighting", "flexible systems"]
+            },
+            "community_center": {
+                "description": "A multi-purpose facility serving community needs and fostering social connections",
+                "key_considerations": ["versatile spaces", "community engagement", "accessibility", "multi-generational design", "flexible programming"],
+                "typical_users": ["all ages", "community groups", "local organizations", "families"],
+                "spatial_priorities": ["multi-purpose rooms", "gathering spaces", "activity areas", "meeting rooms", "outdoor spaces"],
+                "sustainability_focus": ["community connection", "local materials", "flexible design", "social sustainability"]
+            },
+            "cultural_institution": {
+                "description": "A facility dedicated to arts, culture, heritage, and creative expression",
+                "key_considerations": ["exhibition spaces", "performance venues", "cultural sensitivity", "visitor experience", "preservation"],
+                "typical_users": ["visitors", "artists", "performers", "researchers", "students"],
+                "spatial_priorities": ["galleries", "theaters", "workshops", "storage", "public spaces"],
+                "sustainability_focus": ["cultural preservation", "adaptive reuse", "visitor comfort", "long-term value"]
+            },
+            "library": {
+                "description": "A facility for information access, study, and community learning",
+                "key_considerations": ["quiet study areas", "technology access", "flexible seating", "acoustic design", "natural lighting"],
+                "typical_users": ["students", "researchers", "community members", "professionals"],
+                "spatial_priorities": ["reading rooms", "study carrels", "group study areas", "technology centers", "quiet zones"],
+                "sustainability_focus": ["daylighting", "energy efficiency", "indoor air quality", "flexible systems"]
+            },
+            "research_facility": {
+                "description": "A facility designed for scientific research, development, and innovation",
+                "key_considerations": ["laboratory safety", "flexible research spaces", "technology infrastructure", "collaboration areas", "security"],
+                "typical_users": ["researchers", "scientists", "students", "technicians"],
+                "spatial_priorities": ["laboratories", "research offices", "collaboration spaces", "equipment rooms", "support spaces"],
+                "sustainability_focus": ["energy efficiency", "safety systems", "flexible infrastructure", "technology integration"]
+            },
+            "hospital": {
+                "description": "A comprehensive healthcare facility providing medical treatment and care",
+                "key_considerations": ["patient safety", "infection control", "accessibility", "efficiency", "patient comfort"],
+                "typical_users": ["patients", "medical staff", "visitors", "administrative staff"],
+                "spatial_priorities": ["patient rooms", "operating rooms", "emergency departments", "diagnostic areas", "support services"],
+                "sustainability_focus": ["infection control", "energy efficiency", "patient safety", "operational efficiency"]
+            },
+            "residential": {
+                "description": "A facility designed for living and domestic activities",
+                "key_considerations": ["privacy", "comfort", "functionality", "personalization", "community connection"],
+                "typical_users": ["residents", "families", "individuals", "guests"],
+                "spatial_priorities": ["living areas", "bedrooms", "kitchens", "bathrooms", "outdoor spaces"],
+                "sustainability_focus": ["energy efficiency", "comfort", "durability", "personal well-being"]
+            },
+            "office": {
+                "description": "A facility designed for professional work and business activities",
+                "key_considerations": ["productivity", "collaboration", "technology integration", "comfort", "flexibility"],
+                "typical_users": ["employees", "clients", "visitors", "service providers"],
+                "spatial_priorities": ["workstations", "meeting rooms", "collaboration areas", "support spaces", "reception areas"],
+                "sustainability_focus": ["energy efficiency", "indoor air quality", "daylighting", "flexible systems"]
+            },
+            "mixed_use": {
+                "description": "A facility combining multiple functions and building types",
+                "key_considerations": ["functional integration", "circulation", "noise separation", "flexibility", "community interaction"],
+                "typical_users": ["various user groups", "residents", "workers", "visitors"],
+                "spatial_priorities": ["functional zones", "circulation systems", "shared spaces", "service areas", "outdoor connections"],
+                "sustainability_focus": ["functional efficiency", "community interaction", "resource sharing", "flexible design"]
+            }
+        }
+        
+        return building_contexts.get(building_type, {
+            "description": "A specialized facility with unique requirements",
+            "key_considerations": ["functionality", "user needs", "context", "sustainability"],
+            "typical_users": ["various users", "specialized groups"],
+            "spatial_priorities": ["functional spaces", "support areas", "circulation"],
+            "sustainability_focus": ["efficiency", "user comfort", "long-term value"]
+        })
+    
+    def analyze_building_type_requirements(self, building_type: str, brief: str) -> Dict[str, Any]:
+        """Analyze specific requirements for a building type based on the brief."""
+        
+        context = self.get_building_type_context(building_type)
+        brief_lower = brief.lower()
+        
+        # Analyze specific requirements mentioned in the brief
+        requirements = {
+            "accessibility": any(word in brief_lower for word in ["accessible", "disability", "wheelchair", "universal design", "inclusive"]),
+            "sustainability": any(word in brief_lower for word in ["sustainable", "green", "eco-friendly", "energy efficient", "LEED", "passive"]),
+            "technology": any(word in brief_lower for word in ["smart", "technology", "digital", "automated", "connected"]),
+            "flexibility": any(word in brief_lower for word in ["flexible", "adaptable", "versatile", "multi-purpose", "changeable"]),
+            "community": any(word in brief_lower for word in ["community", "social", "interactive", "collaborative", "gathering"]),
+            "security": any(word in brief_lower for word in ["secure", "safety", "protected", "controlled access", "surveillance"]),
+            "acoustics": any(word in brief_lower for word in ["acoustic", "sound", "noise", "quiet", "audio"]),
+            "lighting": any(word in brief_lower for word in ["lighting", "daylight", "natural light", "illumination", "bright"])
+        }
+        
+        # Calculate priority score for requirements
+        requirement_priorities = {}
+        for req, present in requirements.items():
+            if present:
+                # Base priority based on building type
+                base_priority = 5
+                if req in context["key_considerations"]:
+                    base_priority += 3
+                if req in context["sustainability_focus"]:
+                    base_priority += 2
+                requirement_priorities[req] = base_priority
+        
+        return {
+            "building_type": building_type,
+            "context": context,
+            "requirements": requirements,
+            "requirement_priorities": requirement_priorities,
+            "brief_analysis": {
+                "word_count": len(brief.split()),
+                "complexity": "high" if len(brief.split()) > 100 else "medium" if len(brief.split()) > 50 else "low",
+                "specificity": "high" if any(req for req in requirements.values()) else "low"
+            }
         } 

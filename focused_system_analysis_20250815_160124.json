@@ -1,0 +1,111 @@
+{
+  "routing_analysis": {
+    "accuracy": 40.0,
+    "test_results": [
+      {
+        "input": "What are some examples of community centers in hot climates?",
+        "category": "Example Request",
+        "expected_route": "knowledge_only",
+        "actual_route": "knowledge_only",
+        "correct": true,
+        "rule_applied": "smart_example_request"
+      },
+      {
+        "input": "Can you tell me about passive cooling strategies?",
+        "category": "Knowledge Request",
+        "expected_route": "knowledge_only",
+        "actual_route": "balanced_guidance",
+        "correct": false,
+        "rule_applied": "balanced_guidance_fallback"
+      },
+      {
+        "input": "I need help organizing spaces for different age groups",
+        "category": "Design Guidance",
+        "expected_route": "balanced_guidance",
+        "actual_route": "socratic_clarification",
+        "correct": false,
+        "rule_applied": "confusion_expression"
+      },
+      {
+        "input": "I don't understand spatial hierarchy",
+        "category": "Confusion",
+        "expected_route": "socratic_clarification",
+        "actual_route": "socratic_clarification",
+        "correct": true,
+        "rule_applied": "confusion_expression"
+      },
+      {
+        "input": "How should I handle circulation patterns?",
+        "category": "Knowledge Request",
+        "expected_route": "knowledge_only",
+        "actual_route": "multi_agent_comprehensive",
+        "correct": false,
+        "rule_applied": "feedback_request"
+      }
+    ]
+  },
+  "classification_analysis": {
+    "accuracy": 60.0,
+    "test_results": [
+      {
+        "input": "What are some examples of community centers in hot climates?",
+        "category": "Example Request",
+        "expected_classification": "example_request",
+        "actual_classification": "example_request",
+        "correct": true,
+        "confidence": "confident"
+      },
+      {
+        "input": "Can you tell me about passive cooling strategies?",
+        "category": "Knowledge Request",
+        "expected_classification": "knowledge_seeking",
+        "actual_classification": "knowledge_seeking",
+        "correct": true,
+        "confidence": "confident"
+      },
+      {
+        "input": "I need help organizing spaces for different age groups",
+        "category": "Design Guidance",
+        "expected_classification": "design_guidance",
+        "actual_classification": "confusion_expression",
+        "correct": false,
+        "confidence": "uncertain"
+      },
+      {
+        "input": "I don't understand spatial hierarchy",
+        "category": "Confusion",
+        "expected_classification": "confusion_expression",
+        "actual_classification": "confusion_expression",
+        "correct": true,
+        "confidence": "uncertain"
+      },
+      {
+        "input": "How should I handle circulation patterns?",
+        "category": "Knowledge Request",
+        "expected_classification": "knowledge_seeking",
+        "actual_classification": "feedback_request",
+        "correct": false,
+        "confidence": "uncertain"
+      }
+    ]
+  },
+  "domain_expert_analysis": {},
+  "synthesis_analysis": {
+    "success_rate": 0.0,
+    "test_results": [
+      {
+        "route": "balanced_guidance",
+        "error": "shape_by_route() got an unexpected keyword argument 'path'"
+      },
+      {
+        "route": "knowledge_only",
+        "error": "shape_by_route() got an unexpected keyword argument 'path'"
+      },
+      {
+        "route": "socratic_clarification",
+        "error": "shape_by_route() got an unexpected keyword argument 'path'"
+      }
+    ]
+  },
+  "overall_assessment": {}
+}
