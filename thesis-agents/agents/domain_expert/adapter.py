@@ -1081,7 +1081,13 @@ What questions do you have about your design?"""
                 self.client.create_user_message(prompt)
             ])
 
-            return response.strip()
+            # Handle both string and dict responses
+            if isinstance(response, dict):
+                response_text = response.get("content", "")
+            else:
+                response_text = str(response) if response else ""
+
+            return response_text.strip()
 
         except Exception as e:
             print(f"⚠️ AI example generation failed: {e}")
@@ -1325,7 +1331,13 @@ What questions do you have about your design?"""
                 self.client.create_user_message(fallback_prompt)
             ])
 
-            response_text = fallback_response.strip() if fallback_response else f"What type of {user_topic} examples would be most helpful for your {building_type} project?"
+            # Handle both string and dict responses
+            if isinstance(fallback_response, dict):
+                response_text = fallback_response.get("content", "")
+            else:
+                response_text = str(fallback_response) if fallback_response else ""
+
+            response_text = response_text.strip() if response_text else f"What type of {user_topic} examples would be most helpful for your {building_type} project?"
 
         except Exception as fallback_error:
             print(f"⚠️ Fallback response generation also failed: {fallback_error}")

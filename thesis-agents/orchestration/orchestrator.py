@@ -812,14 +812,15 @@ class LangGraphOrchestrator:
                     dashboard_phase_info = state['student_state'].phase_info
                     current_phase_name = dashboard_phase_info.get("current_phase", "ideation")
                     print(f"🎯 Phase detection: Using dashboard phase info: {current_phase_name}")
-                    print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
-                    print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
-                    print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
 
                     # Map phase progress to step progression
                     phase_progress = dashboard_phase_info.get("phase_progress", {})
                     current_phase_progress = phase_progress.get(current_phase_name, {})
                     completion_percent = current_phase_progress.get("completion_percent", 0.0)
+
+                    print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
+                    print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
+                    print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
 
                     # Estimate step based on completion
                     if completion_percent < 25:

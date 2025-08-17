@@ -95,204 +95,215 @@ class SessionState:
     timeline: List[Dict[str, Any]] = field(default_factory=list)
 
 class SocraticQuestionBank:
-    """Manages the Socratic question bank for all phases"""
-    
-    def __init__(self):
-        self.questions = self._initialize_question_bank()
-    
-    def _initialize_question_bank(self) -> Dict[DesignPhase, Dict[SocraticStep, SocraticQuestion]]:
-        """Initialize the complete Socratic question bank"""
-        
-        return {
-            DesignPhase.IDEATION: {
-                SocraticStep.INITIAL_CONTEXT_REASONING: SocraticQuestion(
-                    step=SocraticStep.INITIAL_CONTEXT_REASONING,
-                    question_text="Before we begin designing, what do you think are the most important questions we should ask about this community?",
-                    keywords=["community", "questions", "important", "designing", "begin"],
-                    assessment_criteria={
-                        "completeness": "Addresses multiple aspects of community needs",
-                        "depth": "Shows thoughtful consideration of community context",
-                        "relevance": "Questions are relevant to architectural design",
-                        "innovation": "Shows creative thinking about community needs",
-                        "technical_understanding": "Demonstrates understanding of design process"
-                    },
-                    phase=DesignPhase.IDEATION,
-                    question_id="ideation_context_001"
-                ),
-                SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER: SocraticQuestion(
-                    step=SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER,
-                    question_text="What are some successful examples of warehouse-to-community transformations you're aware of?",
-                    keywords=["examples", "successful", "warehouse", "community", "transformations", "precedents"],
-                    assessment_criteria={
-                        "completeness": "Provides multiple relevant examples",
-                        "depth": "Explains why examples are successful",
-                        "relevance": "Examples are relevant to the project type",
-                        "innovation": "Shows understanding of innovative approaches",
-                        "technical_understanding": "Demonstrates knowledge of architectural precedents"
-                    },
-                    phase=DesignPhase.IDEATION,
-                    question_id="ideation_knowledge_001"
-                ),
-                SocraticStep.SOCRATIC_QUESTIONING: SocraticQuestion(
-                    step=SocraticStep.SOCRATIC_QUESTIONING,
-                    question_text="Why might the existing industrial character be valuable to preserve? What would be lost if we completely transformed it?",
-                    keywords=["industrial", "character", "preserve", "transform", "value", "lost"],
-                    assessment_criteria={
-                        "completeness": "Addresses both preservation and transformation aspects",
-                        "depth": "Provides detailed reasoning for preservation value",
-                        "relevance": "Connects to architectural heritage and context",
-                        "innovation": "Shows creative thinking about adaptive reuse",
-                        "technical_understanding": "Demonstrates understanding of preservation principles"
-                    },
-                    phase=DesignPhase.IDEATION,
-                    question_id="ideation_socratic_001"
-                ),
-                SocraticStep.METACOGNITIVE_PROMPT: SocraticQuestion(
-                    step=SocraticStep.METACOGNITIVE_PROMPT,
-                    question_text="How are you approaching this problem differently than a typical new-build community center?",
-                    keywords=["approaching", "differently", "typical", "new-build", "community center", "problem"],
-                    assessment_criteria={
-                        "completeness": "Explains the unique approach to the problem",
-                        "depth": "Shows self-awareness of design thinking process",
-                        "relevance": "Connects to the specific project context",
-                        "innovation": "Demonstrates creative problem-solving approach",
-                        "technical_understanding": "Shows understanding of design methodology"
-                    },
-                    phase=DesignPhase.IDEATION,
-                    question_id="ideation_meta_001"
-                )
-            },
-            
-            DesignPhase.VISUALIZATION: {
-                SocraticStep.INITIAL_CONTEXT_REASONING: SocraticQuestion(
-                    step=SocraticStep.INITIAL_CONTEXT_REASONING,
-                    question_text="How does your spatial organization respond to the site's existing conditions and program requirements?",
-                    keywords=["spatial", "organization", "site", "existing", "conditions", "program", "requirements"],
-                    assessment_criteria={
-                        "completeness": "Addresses both site conditions and program requirements",
-                        "depth": "Shows detailed understanding of spatial relationships",
-                        "relevance": "Connects spatial decisions to architectural principles",
-                        "innovation": "Shows creative spatial solutions",
-                        "technical_understanding": "Demonstrates understanding of spatial planning"
-                    },
-                    phase=DesignPhase.VISUALIZATION,
-                    question_id="visualization_context_001"
-                ),
-                SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER: SocraticQuestion(
-                    step=SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER,
-                    question_text="What precedents inform your approach to circulation and spatial hierarchy?",
-                    keywords=["precedents", "circulation", "spatial", "hierarchy", "approach"],
-                    assessment_criteria={
-                        "completeness": "References relevant precedents",
-                        "depth": "Explains how precedents inform the approach",
-                        "relevance": "Precedents are appropriate for the project type",
-                        "innovation": "Shows creative adaptation of precedents",
-                        "technical_understanding": "Demonstrates understanding of circulation principles"
-                    },
-                    phase=DesignPhase.VISUALIZATION,
-                    question_id="visualization_knowledge_001"
-                ),
-                SocraticStep.SOCRATIC_QUESTIONING: SocraticQuestion(
-                    step=SocraticStep.SOCRATIC_QUESTIONING,
-                    question_text="How does your form development balance functional efficiency with architectural expression?",
-                    keywords=["form", "development", "functional", "efficiency", "architectural", "expression"],
-                    assessment_criteria={
-                        "completeness": "Addresses both functional and expressive aspects",
-                        "depth": "Shows detailed understanding of form-function relationship",
-                        "relevance": "Connects to architectural design principles",
-                        "innovation": "Shows creative form development",
-                        "technical_understanding": "Demonstrates understanding of architectural form"
-                    },
-                    phase=DesignPhase.VISUALIZATION,
-                    question_id="visualization_socratic_001"
-                ),
-                SocraticStep.METACOGNITIVE_PROMPT: SocraticQuestion(
-                    step=SocraticStep.METACOGNITIVE_PROMPT,
-                    question_text="What design decisions are you most confident about, and which ones need more exploration?",
-                    keywords=["design", "decisions", "confident", "exploration", "need"],
-                    assessment_criteria={
-                        "completeness": "Identifies both confident and uncertain decisions",
-                        "depth": "Shows self-awareness of design process",
-                        "relevance": "Connects to the specific design challenges",
-                        "innovation": "Shows willingness to explore and experiment",
-                        "technical_understanding": "Demonstrates understanding of design methodology"
-                    },
-                    phase=DesignPhase.VISUALIZATION,
-                    question_id="visualization_meta_001"
-                )
-            },
-            
-            DesignPhase.MATERIALIZATION: {
-                SocraticStep.INITIAL_CONTEXT_REASONING: SocraticQuestion(
-                    step=SocraticStep.INITIAL_CONTEXT_REASONING,
-                    question_text="How do your material choices respond to both the building's function and its environmental context?",
-                    keywords=["material", "choices", "function", "environmental", "context"],
-                    assessment_criteria={
-                        "completeness": "Addresses both functional and environmental considerations",
-                        "depth": "Shows detailed understanding of material properties",
-                        "relevance": "Connects to architectural and environmental principles",
-                        "innovation": "Shows creative material solutions",
-                        "technical_understanding": "Demonstrates understanding of material science"
-                    },
-                    phase=DesignPhase.MATERIALIZATION,
-                    question_id="materialization_context_001"
-                ),
-                SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER: SocraticQuestion(
-                    step=SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER,
-                    question_text="What construction precedents demonstrate effective integration of your chosen materials?",
-                    keywords=["construction", "precedents", "integration", "materials", "effective"],
-                    assessment_criteria={
-                        "completeness": "References relevant construction precedents",
-                        "depth": "Explains how precedents inform material integration",
-                        "relevance": "Precedents are appropriate for the materials chosen",
-                        "innovation": "Shows creative material integration approaches",
-                        "technical_understanding": "Demonstrates understanding of construction methods"
-                    },
-                    phase=DesignPhase.MATERIALIZATION,
-                    question_id="materialization_knowledge_001"
-                ),
-                SocraticStep.SOCRATIC_QUESTIONING: SocraticQuestion(
-                    step=SocraticStep.SOCRATIC_QUESTIONING,
-                    question_text="How does your technical approach balance innovation with constructability and cost considerations?",
-                    keywords=["technical", "approach", "innovation", "constructability", "cost"],
-                    assessment_criteria={
-                        "completeness": "Addresses innovation, constructability, and cost",
-                        "depth": "Shows detailed understanding of technical constraints",
-                        "relevance": "Connects to practical construction realities",
-                        "innovation": "Shows creative technical solutions",
-                        "technical_understanding": "Demonstrates understanding of construction economics"
-                    },
-                    phase=DesignPhase.MATERIALIZATION,
-                    question_id="materialization_socratic_001"
-                ),
-                SocraticStep.METACOGNITIVE_PROMPT: SocraticQuestion(
-                    step=SocraticStep.METACOGNITIVE_PROMPT,
-                    question_text="What aspects of your design would you prioritize if budget or time constraints required simplification?",
-                    keywords=["aspects", "prioritize", "budget", "time", "constraints", "simplification"],
-                    assessment_criteria={
-                        "completeness": "Identifies key aspects for prioritization",
-                        "depth": "Shows understanding of design value hierarchy",
-                        "relevance": "Connects to practical project constraints",
-                        "innovation": "Shows creative problem-solving under constraints",
-                        "technical_understanding": "Demonstrates understanding of project management"
-                    },
-                    phase=DesignPhase.MATERIALIZATION,
-                    question_id="materialization_meta_001"
-                )
-            }
-        }
-    
-    def get_question(self, phase: DesignPhase, step: SocraticStep) -> Optional[SocraticQuestion]:
-        """Get a specific Socratic question"""
-        return self.questions.get(phase, {}).get(step)
-    
-    def get_next_question(self, phase: DesignPhase, completed_steps: List[SocraticStep]) -> Optional[SocraticQuestion]:
-        """Get the next question in the Socratic sequence"""
-        print(f"\n🏦 QUESTION_BANK: Getting next question for {phase.value}")
+    """Generates dynamic, contextual Socratic questions for all phases using LLM"""
 
-        phase_questions = self.questions.get(phase, {})
-        print(f"   📚 Available questions for phase: {len(phase_questions)}")
-        print(f"   🔑 Question keys: {list(phase_questions.keys())}")
+    def __init__(self):
+        # Initialize OpenAI client for question generation
+        try:
+            from openai import OpenAI
+            import os
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            self.llm_available = True
+            print("🤖 LLM-powered question generation initialized")
+        except Exception as e:
+            print(f"⚠️ LLM not available for question generation: {e}")
+            self.client = None
+            self.llm_available = False
+    
+    def generate_contextual_question(self, phase: DesignPhase, step: SocraticStep,
+                                   user_context: str = "", project_context: str = "") -> SocraticQuestion:
+        """Generate a contextual Socratic question using LLM based on phase, step, and user context"""
+
+        if not self.llm_available:
+            return self._get_fallback_question(phase, step)
+
+        try:
+            # Define phase-specific themes and objectives
+            phase_themes = {
+                DesignPhase.IDEATION: {
+                    "focus": "conceptual thinking, problem definition, and creative exploration",
+                    "objectives": "understanding context, identifying opportunities, exploring possibilities"
+                },
+                DesignPhase.VISUALIZATION: {
+                    "focus": "spatial organization, form development, and design synthesis",
+                    "objectives": "organizing space, developing form, integrating systems"
+                },
+                DesignPhase.MATERIALIZATION: {
+                    "focus": "technical development, material selection, and implementation",
+                    "objectives": "resolving details, selecting materials, ensuring constructability"
+                }
+            }
+
+            # Define step-specific approaches
+            step_approaches = {
+                SocraticStep.INITIAL_CONTEXT_REASONING: "Ask about foundational understanding and context analysis",
+                SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER: "Prompt for precedent knowledge and synthesis of examples",
+                SocraticStep.SOCRATIC_QUESTIONING: "Challenge assumptions and deepen critical thinking",
+                SocraticStep.METACOGNITIVE_PROMPT: "Encourage reflection on design process and decision-making"
+            }
+
+            # Create the prompt for LLM question generation
+            theme = phase_themes.get(phase, {})
+            approach = step_approaches.get(step, "Ask a thoughtful question")
+
+            prompt = f"""You are an expert architecture educator using the Socratic method. Generate a single, thoughtful question for a student working on an architectural design project.
+
+CONTEXT:
+- Design Phase: {phase.value} (Focus: {theme.get('focus', 'architectural design')})
+- Socratic Step: {step.value} ({approach})
+- Phase Objectives: {theme.get('objectives', 'design development')}
+- User Context: {user_context if user_context else 'General architectural design project'}
+- Project Context: {project_context if project_context else 'Community-focused architectural project'}
+
+REQUIREMENTS:
+1. Generate ONE specific, engaging question that fits the phase and step
+2. Make it contextual to the user's situation and project
+3. Encourage deep thinking and reflection
+4. Avoid generic or overly broad questions
+5. Make it appropriate for architecture students
+6. Keep it concise but thought-provoking
+
+Generate only the question text, no additional explanation."""
+
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are an expert architecture educator specializing in Socratic questioning."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=150,
+                temperature=0.7
+            )
+
+            question_text = response.choices[0].message.content.strip()
+
+            # Generate assessment criteria based on the phase and step
+            criteria_prompt = f"""Based on this Socratic question for {phase.value} phase, {step.value} step:
+"{question_text}"
+
+Generate 5 assessment criteria as a JSON object with keys: completeness, depth, relevance, innovation, technical_understanding. Each value should be a brief description of what constitutes a good response for that criterion."""
+
+            criteria_response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are an expert in architectural education assessment."},
+                    {"role": "user", "content": criteria_prompt}
+                ],
+                max_tokens=200,
+                temperature=0.3
+            )
+
+            try:
+                import json
+                criteria_text = criteria_response.choices[0].message.content.strip()
+                # Extract JSON from response if it's wrapped in markdown
+                if "```json" in criteria_text:
+                    criteria_text = criteria_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in criteria_text:
+                    criteria_text = criteria_text.split("```")[1].strip()
+
+                assessment_criteria = json.loads(criteria_text)
+            except:
+                # Fallback criteria if JSON parsing fails
+                assessment_criteria = {
+                    "completeness": f"Addresses key aspects of {phase.value} phase thinking",
+                    "depth": "Shows thoughtful analysis and reasoning",
+                    "relevance": "Connects to architectural design principles",
+                    "innovation": "Demonstrates creative thinking",
+                    "technical_understanding": f"Shows understanding of {phase.value} phase concepts"
+                }
+
+            # Extract keywords from the question for assessment
+            keywords = self._extract_keywords(question_text, phase, step)
+
+            # Create and return the dynamic question
+            return SocraticQuestion(
+                step=step,
+                question_text=question_text,
+                keywords=keywords,
+                assessment_criteria=assessment_criteria,
+                phase=phase,
+                question_id=f"{phase.value}_{step.value}_{hash(question_text) % 1000:03d}"
+            )
+
+        except Exception as e:
+            print(f"⚠️ LLM question generation failed: {e}")
+            return self._get_fallback_question(phase, step)
+
+    def _extract_keywords(self, question_text: str, phase: DesignPhase, step: SocraticStep) -> List[str]:
+        """Extract relevant keywords from the generated question"""
+        # Simple keyword extraction - could be enhanced with NLP
+        import re
+        words = re.findall(r'\b[a-zA-Z]{4,}\b', question_text.lower())
+
+        # Add phase and step specific keywords
+        phase_keywords = {
+            DesignPhase.IDEATION: ["concept", "idea", "context", "community", "needs"],
+            DesignPhase.VISUALIZATION: ["spatial", "form", "organization", "design", "visual"],
+            DesignPhase.MATERIALIZATION: ["material", "construction", "technical", "detail", "implementation"]
+        }
+
+        keywords = list(set(words[:5] + phase_keywords.get(phase, [])))
+        return keywords[:8]  # Limit to 8 keywords
+
+    def _get_fallback_question(self, phase: DesignPhase, step: SocraticStep) -> SocraticQuestion:
+        """Provide simple fallback questions when LLM is not available"""
+
+        fallback_questions = {
+            (DesignPhase.IDEATION, SocraticStep.INITIAL_CONTEXT_REASONING):
+                "What are the most important aspects to consider for this design project?",
+            (DesignPhase.IDEATION, SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER):
+                "What examples or precedents might inform your approach?",
+            (DesignPhase.IDEATION, SocraticStep.SOCRATIC_QUESTIONING):
+                "What assumptions are you making about this project?",
+            (DesignPhase.IDEATION, SocraticStep.METACOGNITIVE_PROMPT):
+                "How are you approaching this design challenge?",
+
+            (DesignPhase.VISUALIZATION, SocraticStep.INITIAL_CONTEXT_REASONING):
+                "How does your spatial organization respond to the project requirements?",
+            (DesignPhase.VISUALIZATION, SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER):
+                "What precedents inform your spatial approach?",
+            (DesignPhase.VISUALIZATION, SocraticStep.SOCRATIC_QUESTIONING):
+                "How does your design balance different functional needs?",
+            (DesignPhase.VISUALIZATION, SocraticStep.METACOGNITIVE_PROMPT):
+                "What design decisions are you most confident about?",
+
+            (DesignPhase.MATERIALIZATION, SocraticStep.INITIAL_CONTEXT_REASONING):
+                "How do your material choices respond to the project context?",
+            (DesignPhase.MATERIALIZATION, SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER):
+                "What construction precedents inform your technical approach?",
+            (DesignPhase.MATERIALIZATION, SocraticStep.SOCRATIC_QUESTIONING):
+                "How does your technical approach balance different constraints?",
+            (DesignPhase.MATERIALIZATION, SocraticStep.METACOGNITIVE_PROMPT):
+                "What aspects of your design would you prioritize under constraints?"
+        }
+
+        question_text = fallback_questions.get((phase, step), "What are your thoughts on this aspect of the design?")
+
+        return SocraticQuestion(
+            step=step,
+            question_text=question_text,
+            keywords=["design", "architecture", "thinking"],
+            assessment_criteria={
+                "completeness": f"Addresses key aspects of {phase.value} phase",
+                "depth": "Shows thoughtful analysis",
+                "relevance": "Connects to architectural principles",
+                "innovation": "Demonstrates creative thinking",
+                "technical_understanding": f"Shows understanding of {phase.value} concepts"
+            },
+            phase=phase,
+            question_id=f"fallback_{phase.value}_{step.value}"
+        )
+
+    def get_question(self, phase: DesignPhase, step: SocraticStep,
+                    user_context: str = "", project_context: str = "") -> Optional[SocraticQuestion]:
+        """Get a contextual Socratic question using LLM generation"""
+        return self.generate_contextual_question(phase, step, user_context, project_context)
+
+    def get_next_question(self, phase: DesignPhase, completed_steps: List[SocraticStep],
+                         user_context: str = "", project_context: str = "") -> Optional[SocraticQuestion]:
+        """Get the next question in the Socratic sequence using dynamic generation"""
+        print(f"\n🏦 QUESTION_BANK: Getting next question for {phase.value}")
 
         # Define the order of Socratic steps
         step_order = [
@@ -304,22 +315,14 @@ class SocraticQuestionBank:
 
         print(f"   ✅ Completed steps: {[step.value for step in completed_steps]}")
 
-        # Find the next uncompleted step
+        # Find the next step that hasn't been completed
         for step in step_order:
-            print(f"   🔍 Checking step: {step.value}")
             if step not in completed_steps:
-                print(f"      ➡️ Step not completed")
-                question = phase_questions.get(step)
-                if question:
-                    print(f"      ✅ Found question: {question.question_text[:60]}...")
-                    return question
-                else:
-                    print(f"      ❌ No question available for step")
-            else:
-                print(f"      ⏭️ Step already completed")
+                print(f"   🎯 Next step: {step.value}")
+                return self.generate_contextual_question(phase, step, user_context, project_context)
 
-        print(f"   ❌ No next question found - all steps completed")
-        return None  # All steps completed
+        print("   🏁 All steps completed for this phase")
+        return None
 
 class FlexibleQuestionGenerator:
     """Generates contextual questions based on conversation history and phase needs"""
@@ -1168,12 +1171,11 @@ class PhaseProgressionSystem:
         }
 
         # Debug: Check question bank initialization
-        print(f"\n🏦 PHASE_SYSTEM: Question bank initialized")
-        for phase in DesignPhase:
-            questions = self.question_bank.questions.get(phase, {})
-            print(f"   {phase.value}: {len(questions)} questions")
-            for step, question in questions.items():
-                print(f"      {step.value}: {question.question_text[:50]}...")
+        print(f"\n🏦 PHASE_SYSTEM: Dynamic question bank initialized")
+        if self.question_bank.llm_available:
+            print(f"   🤖 LLM-powered question generation enabled")
+        else:
+            print(f"   📝 Using fallback question generation")
 
         print(f"🎨 Flexible question generator initialized")
         print(f"🔄 Phase transition system initialized")
@@ -1237,10 +1239,15 @@ class PhaseProgressionSystem:
         print(f"      Progress phase: {current_phase_progress.phase.value}")
         print(f"      Phase match: {session.current_phase == current_phase_progress.phase}")
 
-        # First, try to get a standard question from the question bank
+        # First, try to get a contextual question from the dynamic question bank
+        user_context = ""  # No user input context available in this method
+        project_context = session.project_description if hasattr(session, 'project_description') else ""
+
         standard_question = self.question_bank.get_next_question(
             session.current_phase,
-            current_phase_progress.completed_steps
+            current_phase_progress.completed_steps,
+            user_context,
+            project_context
         )
 
         if standard_question:
@@ -1282,7 +1289,9 @@ class PhaseProgressionSystem:
                         if new_phase_progress:
                             first_question = self.question_bank.get_next_question(
                                 updated_session.current_phase,
-                                new_phase_progress.completed_steps
+                                new_phase_progress.completed_steps,
+                                user_context,
+                                project_context
                             )
                             if first_question:
                                 # Modify the question text to include transition announcement
@@ -1464,10 +1473,15 @@ class PhaseProgressionSystem:
         print(f"📈 Phase progress before: {current_phase_progress.completion_percent:.1f}%")
         print(f"🔢 Completed steps before: {len(current_phase_progress.completed_steps)}")
 
-        # Get the current question
+        # Get the current question with context
+        user_context = message[:200] if message else ""
+        project_context = session.project_description if hasattr(session, 'project_description') else ""
+
         current_question = self.question_bank.get_next_question(
             session.current_phase,
-            current_phase_progress.completed_steps
+            current_phase_progress.completed_steps,
+            user_context,
+            project_context
         )
 
         if not current_question:
@@ -1597,10 +1611,15 @@ class PhaseProgressionSystem:
         if not current_phase_progress:
             return None
 
-        # Get next question from question bank - same as working version
+        # Get next question from question bank with context
+        user_context = ""  # No user input context for next question
+        project_context = session.project_description if hasattr(session, 'project_description') else ""
+
         next_question = self.question_bank.get_next_question(
             session.current_phase,
-            current_phase_progress.completed_steps
+            current_phase_progress.completed_steps,
+            user_context,
+            project_context
         )
 
         return next_question
@@ -1662,10 +1681,15 @@ class PhaseProgressionSystem:
         # This is tricky because we need to know what question was asked
         # For now, we'll use the most recent question type based on their progress
 
-        # First try standard questions
+        # First try contextual questions
+        user_context = ""  # No user input context available in this method
+        project_context = session.project_description if hasattr(session, 'project_description') else ""
+
         current_question = self.question_bank.get_next_question(
             session.current_phase,
-            current_phase_progress.completed_steps
+            current_phase_progress.completed_steps,
+            user_context,
+            project_context
         )
 
         # If no standard question, create a flexible one for grading purposes
@@ -1794,38 +1818,51 @@ class PhaseProgressionSystem:
         }
     
     def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
-        """Compute a stable completion percent (0-100) for the current phase.
+        """Compute a meaningful completion percent (0-100) for the current phase.
 
-        Combines three signals:
-        - Socratic steps completion (60%)
-        - Required checklist items for the current phase (30%)
-        - Score readiness vs. threshold (10%)
+        Uses a balanced approach that progresses at reasonable pace:
+        - Interaction engagement (50%) - based on meaningful exchanges
+        - Quality of responses (30%) - based on actual grading scores
+        - Concept coverage (20%) - checklist items completed
         """
         print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value}:")
 
-        # Steps completion ratio - now more flexible
-        # Base completion on minimum 3 interactions, but allow for more
-        min_steps = 3
-        steps_completed = len(phase_progress.completed_steps)
+        # 1. INTERACTION ENGAGEMENT (50%) - Based on meaningful exchanges
+        interactions = len(session.conversation_history)
 
-        # Calculate ratio with diminishing returns after minimum steps
-        if steps_completed <= min_steps:
-            steps_ratio = steps_completed / min_steps
+        # More generous progression - each meaningful interaction adds significant value
+        if interactions >= 3:
+            engagement_ratio = 1.0  # Full credit after 3 interactions
+        elif interactions >= 2:
+            engagement_ratio = 0.75  # Good progress after 2 interactions
+        elif interactions >= 1:
+            engagement_ratio = 0.5   # Decent start after 1 interaction
         else:
-            # After minimum steps, each additional step adds less value
-            extra_steps = steps_completed - min_steps
-            steps_ratio = 1.0 + (extra_steps * 0.1)  # Each extra step adds 10% bonus
-            steps_ratio = min(steps_ratio, 1.5)  # Cap at 150%
+            engagement_ratio = 0.0
 
-        steps_ratio = min(steps_ratio, 1.0)  # Cap at 100% for the calculation
-        print(f"   📊 Steps: {steps_completed} (min: {min_steps}) = {steps_ratio:.2f} ({steps_ratio*60:.1f}% of total)")
+        print(f"   💬 Engagement: {interactions} interactions = {engagement_ratio:.2f} ({engagement_ratio*50:.1f}% of total)")
 
-        # Checklist completion ratio for the current phase
+        # 2. QUALITY OF RESPONSES (30%) - Based on actual grading scores
+        if phase_progress.grades:
+            print(f"   🔍 DEBUG: Computing quality from {len(phase_progress.grades)} grades")
+            total_score = sum(grade.overall_score for grade in phase_progress.grades.values())
+            max_possible = len(phase_progress.grades) * 5.0  # Assuming 5.0 is max score
+            quality_ratio = min(total_score / max_possible, 1.0) if max_possible > 0 else 0.0
+            print(f"   🔍 DEBUG: Quality calculation successful: {total_score}/{max_possible} = {quality_ratio}")
+        else:
+            # No grades yet - give some baseline credit for participation
+            quality_ratio = 0.6 if interactions > 0 else 0.0
+            print(f"   🔍 DEBUG: No grades yet, baseline quality_ratio = {quality_ratio}")
+
+        print(f"   🎯 Quality: {quality_ratio:.2f} ({quality_ratio*30:.1f}% of total)")
+
+        # 3. CONCEPT COVERAGE (20%) - Checklist items completed
         items = self.phase_checklist_items.get(session.current_phase, [])
         required_items = [i for i in items if i.get('required')]
         total_required = len(required_items)
         phase_key = session.current_phase.value
         completed_required = 0
+
         if total_required > 0:
             for item in required_items:
                 item_id = item.get('id')
@@ -1834,23 +1871,17 @@ class PhaseProgressionSystem:
                 state = session.checklist_state.get(phase_key, {}).get(item_id, {})
                 if state.get('status') == 'completed':
                     completed_required += 1
-        checklist_ratio = (completed_required / total_required) if total_required > 0 else 0.0
-        print(f"   ✅ Checklist: {completed_required}/{total_required} = {checklist_ratio:.2f} ({checklist_ratio*30:.1f}% of total)")
 
-        # Score readiness ratio
-        threshold = self.phase_thresholds.get(session.current_phase, 3.0)
-        score_ratio = min(phase_progress.average_score / threshold, 1.0) if threshold > 0 else 0.0
-        print(f"   🎯 Score: {phase_progress.average_score:.2f}/{threshold:.1f} = {score_ratio:.2f} ({score_ratio*10:.1f}% of total)")
+        concept_ratio = (completed_required / total_required) if total_required > 0 else 0.5  # Give some baseline credit
+        print(f"   ✅ Concepts: {completed_required}/{total_required} = {concept_ratio:.2f} ({concept_ratio*20:.1f}% of total)")
 
-        percent = 100.0 * (0.6 * steps_ratio + 0.3 * checklist_ratio + 0.1 * score_ratio)
-        print(f"   🧮 CALCULATION: (60% × {steps_ratio:.2f}) + (30% × {checklist_ratio:.2f}) + (10% × {score_ratio:.2f})")
-        print(f"   🧮 CALCULATION: {0.6 * steps_ratio:.2f} + {0.3 * checklist_ratio:.2f} + {0.1 * score_ratio:.2f} = {percent/100:.2f}")
+        # Combine all factors with new weights
+        percent = 100.0 * (0.50 * engagement_ratio + 0.30 * quality_ratio + 0.20 * concept_ratio)
+        print(f"   🧮 CALCULATION: (50% × {engagement_ratio:.2f}) + (30% × {quality_ratio:.2f}) + (20% × {concept_ratio:.2f})")
+        print(f"   🧮 CALCULATION: {0.50 * engagement_ratio:.2f} + {0.30 * quality_ratio:.2f} + {0.20 * concept_ratio:.2f} = {percent/100:.2f}")
 
         # Clamp to [0, 100]
-        if percent < 0.0:
-            percent = 0.0
-        elif percent > 100.0:
-            percent = 100.0
+        percent = max(0.0, min(100.0, percent))
 
         print(f"   📈 FINAL COMPLETION: {percent:.1f}%")
         return percent
@@ -1915,18 +1946,39 @@ class PhaseProgressionSystem:
         return selected_nudge
 
     def _check_phase_completion(self, session: SessionState, phase_progress: PhaseProgress):
-        """Check if the current phase is complete"""
+        """Check if the current phase is complete based on meaningful progress"""
         threshold = self.phase_thresholds.get(session.current_phase, 3.0)
-        
-        # Check if all Socratic steps are completed and average score meets threshold
-        all_steps_completed = len(phase_progress.completed_steps) == 4
-        score_meets_threshold = phase_progress.average_score >= threshold
 
-        # Add stabilization by requiring high completion percent
-        has_sufficient_completion = phase_progress.completion_percent >= 95.0
+        # More achievable completion criteria
+        has_meaningful_engagement = len(session.conversation_history) >= 2  # Reduced from 3 to 2
+        has_sufficient_quality = phase_progress.average_score >= (threshold * 0.8)  # 80% of threshold
+        has_good_completion = phase_progress.completion_percent >= 60.0  # Reduced from 75% to 60%
 
-        if all_steps_completed and score_meets_threshold and has_sufficient_completion:
+        # Check if required checklist items are completed
+        items = self.phase_checklist_items.get(session.current_phase, [])
+        required_items = [i for i in items if i.get('required')]
+        phase_key = session.current_phase.value
+        completed_required = 0
+
+        if required_items:
+            for item in required_items:
+                item_id = item.get('id')
+                if item_id:
+                    state = session.checklist_state.get(phase_key, {}).get(item_id, {})
+                    if state.get('status') == 'completed':
+                        completed_required += 1
+
+        has_core_concepts = (completed_required >= len(required_items) * 0.3) if required_items else True  # Reduced to 30% of required concepts
+
+        print(f"   🔍 PHASE COMPLETION CHECK:")
+        print(f"      Engagement: {has_meaningful_engagement} (≥2 interactions)")
+        print(f"      Quality: {has_sufficient_quality} (score ≥{threshold * 0.8:.1f})")
+        print(f"      Completion: {has_good_completion} (≥60%)")
+        print(f"      Concepts: {has_core_concepts} ({completed_required}/{len(required_items)} required)")
+
+        if has_meaningful_engagement and has_sufficient_quality and has_good_completion and has_core_concepts:
             phase_progress.is_complete = True
+            print(f"   🎉 PHASE MARKED COMPLETE!")
             self._advance_to_next_phase(session)
     
     def _advance_to_next_phase(self, session: SessionState):

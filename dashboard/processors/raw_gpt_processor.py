@@ -1,7 +1,7 @@
 """
-Pure Raw GPT processor - completely independent of multi-agent system.
-Provides direct GPT responses with phase-aware context but no socratic training.
-Used for research comparison purposes.
+Raw GPT processor - completely unfiltered GPT responses like ChatGPT app.
+No conditioning, no socratic elements, no phase awareness, no architectural focus.
+Provides pure, direct GPT responses for research comparison purposes.
 """
 
 import os
@@ -13,88 +13,81 @@ from .phase_calculator import phase_calculator
 
 class PureRawGPTProcessor:
     """
-    Pure Raw GPT processor that is completely independent of the multi-agent system.
-    Uses only direct GPT calls with phase-aware context.
+    Raw GPT processor that provides completely unfiltered responses like ChatGPT app.
+    No conditioning, no socratic elements, no phase awareness - pure conversational AI.
     """
 
     def __init__(self):
         self.conversation_history = {}  # Track conversations per session
 
-    def get_phase_aware_context(self, messages: List[Dict[str, Any]],
-                               current_phase: str) -> str:
-        """Create phase-aware context for GPT without any socratic elements."""
+    def get_minimal_context(self, messages: List[Dict[str, Any]]) -> str:
+        """Create minimal context for pure GPT response - no conditioning or phase awareness."""
 
-        phase_contexts = {
-            "ideation": """You are an architectural expert helping with the IDEATION phase of design.
-            Focus on: concept development, program analysis, user needs, site context, and initial ideas.
-            Provide direct, comprehensive answers about architectural concepts and design thinking.""",
-
-            "visualization": """You are an architectural expert helping with the VISUALIZATION phase of design.
-            Focus on: spatial arrangements, sketching techniques, plans/sections/elevations, circulation, and form development.
-            Provide direct, comprehensive answers about architectural visualization and spatial design.""",
-
-            "materialization": """You are an architectural expert helping with the MATERIALIZATION phase of design.
-            Focus on: materials, construction systems, technical details, building systems, and implementation strategies.
-            Provide direct, comprehensive answers about architectural technology and construction."""
-        }
-
-        base_context = phase_contexts.get(current_phase, phase_contexts["ideation"])
-
-        # Add conversation context if available
+        # Only provide basic conversation context if available
         if len(messages) > 1:
-            recent_context = "\n\nRecent conversation context:\n"
-            for msg in messages[-3:]:  # Last 3 messages for context
+            context = "Previous conversation:\n"
+            for msg in messages[-3:]:  # Last 3 messages for context only
                 if msg.get("role") == "user":
-                    recent_context += f"Student: {msg.get('content', '')[:100]}...\n"
+                    context += f"User: {msg.get('content', '')}\n"
                 elif msg.get("role") == "assistant":
-                    recent_context += f"You previously: {msg.get('content', '')[:100]}...\n"
-            base_context += recent_context
+                    context += f"Assistant: {msg.get('content', '')}\n"
+            return context
 
-        return base_context
+        return ""
 
     async def process_input(self, user_input: str, messages: List[Dict[str, Any]],
                            session_id: str = None) -> Dict[str, Any]:
         """
-        Process user input with pure GPT response - no multi-agent system involvement.
+        Process user input with pure, unfiltered GPT response - completely raw like ChatGPT.
 
         Args:
             user_input: The user's input
-            messages: Conversation history for context
+            messages: Conversation history for context only
             session_id: Session identifier
 
         Returns:
-            Dict containing GPT response and metadata
+            Dict containing pure GPT response and metadata
         """
 
-        # Calculate current phase using standalone calculator
+        # Calculate current phase for metadata only (not used in response generation)
         phase_info = phase_calculator.calculate_current_phase(messages, session_id)
         current_phase = phase_info["current_phase"]
 
-        # Get phase-aware context
-        context = self.get_phase_aware_context(messages, current_phase)
+        # Get minimal conversation context only
+        context = self.get_minimal_context(messages)
 
-        # Create the prompt for direct GPT response
-        prompt = f"""{context}
+        # Create completely raw prompt - no conditioning, no phase awareness, no architectural focus
+        if context:
+            prompt = f"""{context}
 
-STUDENT QUESTION: "{user_input}"
-
-CURRENT DESIGN PHASE: {current_phase.upper()}
-PHASE DESCRIPTION: {phase_calculator.get_phase_description(current_phase)}
-
-Provide a detailed, informative answer that directly addresses their question.
-Give specific architectural advice, examples, and technical information appropriate for the {current_phase} phase.
-Be comprehensive and educational, but avoid asking socratic questions - give direct answers and guidance."""
+User: {user_input}"""
+        else:
+            prompt = user_input
 
         try:
             from openai import OpenAI
 
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+            # Use conversation format for better context handling
+            messages_for_api = []
+
+            # Add conversation history if available
+            if len(messages) > 1:
+                for msg in messages[-5:]:  # Last 5 messages for context
+                    role = "user" if msg.get("role") == "user" else "assistant"
+                    content = msg.get("content", "")
+                    if content:
+                        messages_for_api.append({"role": role, "content": content})
+
+            # Add current user input
+            messages_for_api.append({"role": "user", "content": user_input})
+
             response = client.chat.completions.create(
                 model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
+                messages=messages_for_api,
                 max_tokens=1000,
-                temperature=0.3
+                temperature=0.7  # Higher temperature for more natural responses
             )
 
             raw_response = response.choices[0].message.content.strip()
@@ -102,23 +95,25 @@ Be comprehensive and educational, but avoid asking socratic questions - give dir
             return {
                 "response": raw_response,
                 "metadata": {
-                    "response_type": "pure_raw_gpt",
+                    "response_type": "raw_gpt_unfiltered",
                     "agents_used": ["gpt-4o"],
-                    "interaction_type": "direct_answer",
+                    "interaction_type": "raw_conversation",
                     "confidence_level": "high",
                     "understanding_level": "high",
                     "engagement_level": "medium",
                     "sources": [],
                     "response_time": 0,
-                    "routing_path": "pure_raw_gpt",
+                    "routing_path": "raw_gpt_unfiltered",
                     "current_phase": current_phase,
                     "phase_info": phase_info,
+                    "no_conditioning": True,
                     "no_socratic_elements": True,
-                    "pure_gpt": True
+                    "no_phase_awareness": True,
+                    "pure_chatgpt_style": True
                 },
-                "routing_path": "pure_raw_gpt",
+                "routing_path": "raw_gpt_unfiltered",
                 "classification": {
-                    "interaction_type": "direct_answer",
+                    "interaction_type": "raw_conversation",
                     "confidence_level": "high",
                     "understanding_level": "high",
                     "engagement_level": "medium"
@@ -127,7 +122,7 @@ Be comprehensive and educational, but avoid asking socratic questions - give dir
             }
 
         except Exception as e:
-            print(f"❌ Pure Raw GPT response failed: {e}")
+            print(f"❌ Raw GPT response failed: {e}")
             return {
                 "response": "I apologize, but I'm unable to provide a response at the moment. Please try again.",
                 "metadata": {
@@ -137,8 +132,10 @@ Be comprehensive and educational, but avoid asking socratic questions - give dir
                     "routing_path": "error",
                     "current_phase": current_phase,
                     "phase_info": phase_info,
+                    "no_conditioning": True,
                     "no_socratic_elements": True,
-                    "pure_gpt": True
+                    "no_phase_awareness": True,
+                    "pure_chatgpt_style": True
                 },
                 "routing_path": "error",
                 "classification": {},
@@ -153,15 +150,15 @@ pure_raw_gpt_processor = PureRawGPTProcessor()
 async def get_raw_gpt_response(user_input: str, messages: List[Dict[str, Any]] = None,
                               session_id: str = None) -> Dict[str, Any]:
     """
-    Get a pure Raw GPT response completely independent of multi-agent system.
+    Get a completely unfiltered Raw GPT response like ChatGPT app.
 
     Args:
         user_input: The user's input
-        messages: Conversation history for phase calculation and context
+        messages: Conversation history for context only
         session_id: Session identifier
 
     Returns:
-        Dict containing pure GPT response and metadata
+        Dict containing raw GPT response and metadata
     """
 
     # Use default empty messages if none provided

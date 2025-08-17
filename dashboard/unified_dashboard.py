@@ -19,7 +19,7 @@ from .core.session_manager import initialize_session_state, ensure_session_start
 from .ui.chat_components import (
     render_welcome_section, render_mode_configuration, render_chat_history,
     get_chat_input, render_chat_message, response_contains_questions,
-    render_initial_image_upload, render_mentor_type_selection, render_template_selection,
+    render_mentor_type_selection, render_template_selection,
     render_skill_level_selection, render_project_description_input, validate_input,
     render_chat_interface
 )
@@ -63,7 +63,7 @@ def get_cached_orchestrator():
 
 @st.cache_resource
 def get_cached_phase_system():
-    """Get cached phase system instance."""
+    """Get cached phase system instance - v2.0 with improved completion calculation."""
     return PhaseProgressionSystem()
 
 
@@ -162,16 +162,14 @@ class UnifiedArchitecturalDashboard:
         # Skill level selection
         skill_level = render_skill_level_selection()
 
-        # Project description input
+        # Project description input with inline image upload
         template_text = TEMPLATE_PROMPTS.get(selected_template, "")
-        project_description = render_project_description_input(template_text)
-
-        # Initial image upload using popover
-        uploaded_file = render_initial_image_upload()
+        project_description, uploaded_file = render_project_description_input(template_text)
         
-        # Start analysis button
-        with st.form(key="start_form"):
-            start_clicked = st.form_submit_button("Start Analysis")
+        # Start analysis button (centered, no form rectangle)
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            start_clicked = st.button("Start Analysis", use_container_width=True, type="primary")
         
         if start_clicked:
             # Validate input
@@ -390,8 +388,8 @@ class UnifiedArchitecturalDashboard:
         # Process response based on current mode
         response = asyncio.run(self.mode_processor.process_input(initial_input, current_mode))
         
-        # Add Socratic question if needed
-        combined_response = self._add_socratic_question_if_needed(response)
+        # Add Socratic question if needed (only for MENTOR mode)
+        combined_response = self._add_socratic_question_if_needed(response, current_mode)
         
         # Add routing metadata if available
         final_message = self._add_routing_metadata(combined_response)
@@ -700,8 +698,8 @@ class UnifiedArchitecturalDashboard:
                         generated_image_data = generated_image
                         print(f"✅ Generated image will be included in chat message")
 
-                # Add Socratic question if needed
-                combined_response = self._add_socratic_question_if_needed(response_content)
+                # Add Socratic question if needed (only for MENTOR mode)
+                combined_response = self._add_socratic_question_if_needed(response_content, st.session_state.current_mode)
 
                 # Add routing metadata if available
                 final_message = self._add_routing_metadata(combined_response)
@@ -774,9 +772,14 @@ class UnifiedArchitecturalDashboard:
                     "mentor_type": st.session_state.current_mode
                 })
     
-    def _add_socratic_question_if_needed(self, response: str) -> str:
-        """Add Socratic question to response if needed."""
-        print(f"\n🤔 SOCRATIC: Checking if question needed...")
+    def _add_socratic_question_if_needed(self, response: str, current_mode: str = None) -> str:
+        """Add Socratic question to response if needed (only for MENTOR mode)."""
+        # Only add socratic questions for MENTOR mode
+        if current_mode not in ["MENTOR", "Socratic Agent"]:
+            print(f"\n🤔 SOCRATIC: Skipping for mode '{current_mode}' (not MENTOR)")
+            return response
+
+        print(f"\n🤔 SOCRATIC: Checking if question needed for MENTOR mode...")
         print(f"   Session ID: {st.session_state.phase_session_id}")
         print(f"   Awaiting response: {st.session_state.get('awaiting_socratic_response', False)}")
 

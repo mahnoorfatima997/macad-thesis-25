@@ -526,13 +526,6 @@ def render_initial_image_upload():
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
-        st.markdown("""
-        <div style="text-align: center; margin-bottom: 15px;">
-            <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
-                Upload an image to get started (optional)
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
 
         # Center the popover
         col_left, col_center, col_right = st.columns([1, 1, 1])
@@ -597,15 +590,36 @@ def render_skill_level_selection():
 
 
 def render_project_description_input(template_text: str):
-    """Render project description input area."""
-    project_description = st.text_area(
-        "Project Description:",
-        value=template_text,
-        placeholder="Describe your architectural project here...",
-        height=120,
-        help="Provide details about your architectural project, design goals, constraints, or specific questions"
-    )
-    return project_description
+    """Render project description input area with inline image upload."""
+    # Create columns for project description and image upload
+    col1, col2 = st.columns([0.85, 0.15])
+
+    with col1:
+        project_description = st.text_area(
+            "Project Description:",
+            value=template_text,
+            placeholder="Describe your architectural project here...",
+            height=120,
+            help="Provide details about your architectural project, design goals, constraints, or specific questions"
+        )
+
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)  # Add some spacing to align with text area
+        with st.popover("📷 Upload Image", help="Upload your architectural drawing, plan, or sketch"):
+            uploaded_file = st.file_uploader(
+                "Choose an image",
+                type=['png', 'jpg', 'jpeg'],
+                key="inline_image_upload"
+            )
+
+            if uploaded_file:
+                st.success(f"✅ {uploaded_file.name} uploaded!")
+
+        # Handle the case where no image is uploaded
+        if 'uploaded_file' not in locals():
+            uploaded_file = None
+
+    return project_description, uploaded_file
 
 
 # render_file_upload function removed - replaced by render_initial_image_upload

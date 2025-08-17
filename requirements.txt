@@ -87,6 +87,7 @@ python-multipart
 aiofiles
 filetype
 pydub
+dropbox
 
 # =============================================================================
 # WEB SCRAPING & EXTERNAL DATA
