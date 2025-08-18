@@ -165,7 +165,7 @@ class DomainExpertAgent:
             # Step 2: Check if database results are actually relevant before using them
             if len(knowledge_results) >= 2:
                 # Check relevance of database results
-                relevant_results = self._filter_relevant_results(knowledge_results, user_topic)
+                relevant_results = self._filter_relevant_results(knowledge_results, user_topic, user_input, building_type)
 
                 if len(relevant_results) >= 2:
                     print(f"   📚 Using {len(relevant_results)} relevant database results for synthesis")
@@ -935,8 +935,8 @@ What questions do you have about your design?"""
                 from knowledge_base.knowledge_manager import KnowledgeManager
                 km = KnowledgeManager(domain="architecture")
                 
-                # Create flexible, topic-agnostic search query
-                db_query = f"{user_topic} {building_type} architecture case study precedent project example"
+                # Create specific database search query based on user's actual request
+                db_query = self._create_specific_db_query(user_input, building_type, request_type)
                 
                 print(f"   🗄️  DB search query: {db_query}")
                 db_results = km.search_knowledge(db_query, n_results=8)
@@ -978,8 +978,8 @@ What questions do you have about your design?"""
                     # PROJECT EXAMPLES: Database → Web search (NO AI generation)
                     print(f"   🏗️ PROJECT EXAMPLES: Trying web search for specific built projects")
                     try:
-                        # Create web search query focused on specific projects
-                        context_query = f"{user_topic} {building_type} architecture case study precedent project built examples"
+                        # Create specific web search query based on user's actual request
+                        context_query = self._create_specific_web_query(user_input, building_type, request_type)
                         print(f"   🌐 Web search query: {context_query}")
 
                         web_results = await self.search_processor.search_web_for_knowledge(context_query, state)
@@ -1169,13 +1169,18 @@ What questions do you have about your design?"""
         # Return the first 2-3 quality modifiers
         return " ".join(quality_words[:2])
 
-    def _filter_relevant_results(self, knowledge_results: List[Dict], user_topic: str) -> List[Dict]:
-        """Filter knowledge results to only include those relevant to the user's topic."""
+    def _filter_relevant_results(self, knowledge_results: List[Dict], user_topic: str, user_input: str = "", building_type: str = "") -> List[Dict]:
+        """Enhanced filter for knowledge results with building type and feature matching."""
         if not knowledge_results:
             return []
 
         relevant_results = []
         user_topic_lower = user_topic.lower()
+        user_input_lower = user_input.lower()
+        building_type_lower = building_type.lower()
+
+        # Extract specific features from user input
+        features = self._extract_architectural_features(user_input)
 
         for result in knowledge_results:
             # Get content from various possible fields
@@ -1185,28 +1190,81 @@ What questions do you have about your design?"""
             # Combine title and content for relevance checking
             full_text = f"{title} {content}".lower()
 
-            # Check if the topic appears meaningfully in the content
-            topic_mentions = full_text.count(user_topic_lower)
+            # Calculate relevance score
+            relevance_score = 0
 
-            # Also check for related terms based on topic
+            # 1. Topic relevance (30% weight)
+            topic_mentions = full_text.count(user_topic_lower)
             related_terms = self._get_related_terms(user_topic_lower)
             related_mentions = sum(full_text.count(term) for term in related_terms)
+            topic_score = min(1.0, (topic_mentions * 0.5 + related_mentions * 0.3) / 3)
+            relevance_score += topic_score * 0.3
 
-            # Consider it relevant if:
-            # 1. Topic is mentioned multiple times, OR
-            # 2. Topic + related terms appear frequently, OR
-            # 3. High similarity score (if available)
+            # 2. Building type relevance (40% weight)
+            building_score = 0
+            if building_type_lower and building_type_lower != "project":
+                building_mentions = full_text.count(building_type_lower)
+                building_synonyms = self._get_building_type_synonyms(building_type_lower)
+                synonym_mentions = sum(full_text.count(syn) for syn in building_synonyms)
+                building_score = min(1.0, (building_mentions * 0.7 + synonym_mentions * 0.3) / 2)
+            relevance_score += building_score * 0.4
+
+            # 3. Feature relevance (30% weight)
+            feature_score = 0
+            if features:
+                feature_mentions = sum(full_text.count(feature.lower()) for feature in features)
+                feature_score = min(1.0, feature_mentions / len(features))
+            relevance_score += feature_score * 0.3
+
+            # 4. Use similarity score if available
             similarity = result.get('similarity', 0)
+            if similarity > 0:
+                relevance_score = max(relevance_score, similarity)
 
-            if (topic_mentions >= 2 or
-                (topic_mentions >= 1 and related_mentions >= 2) or
-                similarity > 0.7):
+            # Consider relevant if score is above threshold
+            if relevance_score > 0.4:  # Adjusted threshold
                 relevant_results.append(result)
-                print(f"   ✅ Relevant result: {title[:50]}... (topic mentions: {topic_mentions}, related: {related_mentions}, similarity: {similarity:.3f})")
+                print(f"   ✅ Relevant result: {title[:50]}... (score: {relevance_score:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
             else:
-                print(f"   ❌ Filtered out: {title[:50]}... (topic mentions: {topic_mentions}, related: {related_mentions}, similarity: {similarity:.3f})")
+                print(f"   ❌ Filtered out: {title[:50]}... (score: {relevance_score:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
 
         return relevant_results
+
+    def _extract_architectural_features(self, user_input: str) -> List[str]:
+        """Extract specific architectural features from user input."""
+        features = []
+        user_input_lower = user_input.lower()
+
+        # Common architectural features
+        feature_keywords = [
+            'courtyard', 'atrium', 'skylight', 'balcony', 'terrace', 'garden',
+            'plaza', 'lobby', 'entrance', 'facade', 'roof', 'basement',
+            'mezzanine', 'gallery', 'corridor', 'staircase', 'elevator',
+            'window', 'door', 'column', 'beam', 'wall', 'ceiling',
+            'amphitheater', 'auditorium', 'library', 'cafeteria', 'kitchen',
+            'workshop', 'studio', 'office', 'meeting room', 'conference room'
+        ]
+
+        for feature in feature_keywords:
+            if feature in user_input_lower:
+                features.append(feature)
+
+        return features
+
+    def _get_building_type_synonyms(self, building_type: str) -> List[str]:
+        """Get synonyms for building types to improve matching."""
+        synonyms_map = {
+            'community center': ['community centre', 'civic center', 'community building', 'neighborhood center'],
+            'library': ['public library', 'branch library', 'media center', 'learning center'],
+            'museum': ['gallery', 'exhibition hall', 'cultural center', 'art center'],
+            'school': ['educational facility', 'learning facility', 'academic building', 'campus'],
+            'hospital': ['medical center', 'healthcare facility', 'clinic', 'medical facility'],
+            'office': ['office building', 'commercial building', 'workplace', 'corporate building'],
+            'residential': ['housing', 'apartment', 'residential building', 'dwelling'],
+            'retail': ['shopping center', 'commercial space', 'store', 'marketplace']
+        }
+
+        return synonyms_map.get(building_type, [])
 
     def _get_related_terms(self, topic: str) -> List[str]:
         """Get related terms for a topic to improve relevance checking."""
@@ -1553,6 +1611,98 @@ What questions do you have about your design?"""
             print(f"⚠️ Knowledge synthesis failed: {e}")
             return f"Based on architectural principles, {user_topic} in {building_type} design involves careful consideration of user needs, functional requirements, and design standards. What specific aspect would you like to explore further?"
 
+    def _create_specific_db_query(self, user_input: str, building_type: str, request_type: str) -> str:
+        """Create a specific database search query by extracting meaningful keywords from user input."""
+        import re
+
+        # Clean and tokenize user input
+        user_input_clean = re.sub(r'[^\w\s]', ' ', user_input.lower())
+        words = user_input_clean.split()
+
+        print(f"   🔍 Input words: {words}")
+
+        # Remove only essential stop words (keep architectural terms)
+        stop_words = {
+            'can', 'you', 'give', 'me', 'show', 'find', 'get', 'what', 'how', 'where', 'when', 'why',
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+            'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did',
+            'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall',
+            'this', 'that', 'these', 'those', 'i', 'we', 'they', 'it', 'he', 'she',
+            'example', 'examples'  # Only remove generic request words, keep architectural terms
+        }
+
+        # Extract meaningful keywords (keep all architectural and descriptive terms)
+        meaningful_words = []
+        for word in words:
+            if len(word) > 2 and word not in stop_words:
+                meaningful_words.append(word)
+
+        print(f"   🎯 Extracted keywords: {meaningful_words}")
+
+        # Build query using the actual user keywords
+        if meaningful_words:
+            # Take the most relevant keywords (limit to avoid over-specification)
+            key_terms = meaningful_words[:4]
+            if request_type == "project_examples":
+                query = f"{building_type} {' '.join(key_terms)} project case study"
+            else:
+                query = f"{building_type} {' '.join(key_terms)} design"
+        else:
+            # Fallback if no meaningful words extracted
+            if request_type == "project_examples":
+                query = f"{building_type} project case study"
+            else:
+                query = f"{building_type} design"
+
+        print(f"   🎯 Final DB query: {query}")
+        return query
+
+    def _create_specific_web_query(self, user_input: str, building_type: str, request_type: str) -> str:
+        """Create a specific web search query by extracting meaningful keywords from user input."""
+        import re
+
+        # Clean and tokenize user input
+        user_input_clean = re.sub(r'[^\w\s]', ' ', user_input.lower())
+        words = user_input_clean.split()
+
+        # Remove only essential stop words (keep architectural terms)
+        stop_words = {
+            'can', 'you', 'give', 'me', 'show', 'find', 'get', 'what', 'how', 'where', 'when', 'why',
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+            'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did',
+            'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall',
+            'this', 'that', 'these', 'those', 'i', 'we', 'they', 'it', 'he', 'she',
+            'example', 'examples'  # Only remove generic request words, keep architectural terms
+        }
+
+        # Extract meaningful keywords
+        meaningful_words = []
+        for word in words:
+            if len(word) > 2 and word not in stop_words:
+                meaningful_words.append(word)
+
+        print(f"   🌐 Web keywords extracted: {meaningful_words}")
+
+        # Build web search query using actual user keywords
+        if request_type == "project_examples":
+            if meaningful_words:
+                # Use quotes for building type and key terms for better matching
+                key_terms = " ".join(meaningful_words[:3])  # Limit to avoid over-specification
+                query = f'"{building_type}" {key_terms} architect project built site:archdaily.com OR site:dezeen.com'
+            else:
+                # Fallback for project search
+                query = f'"{building_type}" architecture project built site:archdaily.com OR site:dezeen.com'
+        else:
+            # For general examples, broader search
+            if meaningful_words:
+                key_terms = " ".join(meaningful_words[:3])
+                query = f'{building_type} {key_terms} architecture design'
+            else:
+                query = f'{building_type} architecture design'
+
+        print(f"   🌐 Final web query: {query}")
+        return query
+
     async def _synthesize_examples_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
         """Use the simple, working approach from the old repository - let LLM intelligently process all results."""
         
@@ -1645,20 +1795,8 @@ What questions do you have about your design?"""
             
             synthesized_text = response.choices[0].message.content.strip()
 
-            # Fix generic/fake URLs by replacing them with placeholder links
-            import re
-            # Replace generic ArchDaily category URLs with placeholder links
-            synthesized_text = re.sub(
-                r'\[([^\]]+)\]\(https://www\.archdaily\.com/category/[^)]+\)',
-                r'[\1](#)',
-                synthesized_text
-            )
-            # Replace other generic/fake URLs with placeholder links
-            synthesized_text = re.sub(
-                r'\[([^\]]+)\]\(https://www\.archdaily\.com/search/[^)]+\)',
-                r'[\1](#)',
-                synthesized_text
-            )
+            # Keep URLs intact - don't replace them with placeholders
+            # The URLs from web search should be clickable
 
             return synthesized_text
             

@@ -953,22 +953,9 @@ class GamificationTracker:
                 display.render_achievement_popup('perspective_master')
 
     def render_progress_sidebar(self) -> None:
-        """Render gamification progress in sidebar."""
-        stats = st.session_state.gamification_stats
-
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### 🎮 Your Progress")
-
-        # Level and XP
-        st.sidebar.markdown(f"**Level:** {stats['level']} 🏆")
-        xp_to_next = 100 - (stats['total_xp'] % 100)
-        st.sidebar.progress((stats['total_xp'] % 100) / 100)
-        st.sidebar.markdown(f"**XP:** {stats['total_xp']} ({xp_to_next} to next level)")
-
-        # Stats
-        st.sidebar.markdown(f"**Challenges:** {stats['challenges_completed']} ✅")
-        st.sidebar.markdown(f"**Current Streak:** {stats['current_streak']} 🔥")
-        st.sidebar.markdown(f"**Best Streak:** {stats['best_streak']} ⭐")
+        """Render gamification progress in sidebar - DISABLED."""
+        # Progress display has been moved to contextual inline display
+        pass
 
         # Achievements
         if stats['achievements']:

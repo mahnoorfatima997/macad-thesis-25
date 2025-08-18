@@ -285,8 +285,9 @@ class KnowledgeSynthesisProcessor:
                 if len(snippet) > 120:
                     clean_snippet += "..."
                 
-                # Proper Markdown link format: [Title](URL)
-                lines.append(f"### {i}. [{title}]({url})")
+                # Create clickable link format for Streamlit
+                lines.append(f"### {i}. {title}")
+                lines.append(f"🔗 **Link:** [{url}]({url})")
                 lines.append(f"{clean_snippet}")
                 lines.append("")  # Add spacing between examples
 
@@ -322,9 +323,9 @@ class KnowledgeSynthesisProcessor:
             if len(snippet) > 120:
                 clean_snippet += "..."
             
-            # Simple format: Title - URL - Description
-            lines.append(f"{i}. {title}")
-            lines.append(f"   Link: {url}")
+            # Simple format with clickable links
+            lines.append(f"{i}. **{title}**")
+            lines.append(f"   🔗 [{url}]({url})")
             lines.append(f"   {clean_snippet}")
             lines.append("")
         
