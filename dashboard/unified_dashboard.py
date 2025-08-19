@@ -1111,6 +1111,10 @@ class UnifiedArchitecturalDashboard:
                     json.dump(metadata, f, indent=2)
 
                 print(f"✅ Image metadata saved to: {metadata_file}")
+
+                # Upload to Dropbox
+                self._upload_image_to_dropbox(filepath, filename)
+
                 return filepath
             else:
                 print(f"❌ Failed to download image: HTTP {response.status_code}")
@@ -1119,6 +1123,25 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             print(f"❌ Error saving generated image: {e}")
             return None
+
+    def _upload_image_to_dropbox(self, local_path: str, filename: str):
+        """Upload image to Dropbox"""
+        try:
+            from dashboard.core.dropbox_integration import dropbox_exporter
+
+            if dropbox_exporter and dropbox_exporter.dropbox_client:
+                dropbox_path = f"/thesis_exports/generated_images/{filename}"
+                result = dropbox_exporter.upload_to_dropbox(local_path, dropbox_path)
+
+                if result.get("success"):
+                    print(f"✅ Image uploaded to Dropbox: {dropbox_path}")
+                else:
+                    print(f"❌ Dropbox upload failed: {result.get('error', 'Unknown error')}")
+            else:
+                print("⚠️ Dropbox client not available for image upload")
+
+        except Exception as e:
+            print(f"❌ Error uploading image to Dropbox: {e}")
 
     def _display_generated_phase_image(self, generated_image: dict):
         """Display the generated phase image and ask for user feedback"""
