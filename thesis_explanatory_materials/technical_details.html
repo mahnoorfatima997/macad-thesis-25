@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGA Architectural Mentor - Technical Details</title>
+    <style>
+        :root {
+            --primary-dark: #4f3a3e;
+            --primary-purple: #5c4f73;
+            --primary-violet: #784c80;
+            --primary-rose: #b87189;
+            --primary-pink: #cda29a;
+            --neutral-light: #e0ceb5;
+            --neutral-warm: #dcc188;
+            --neutral-orange: #d99c66;
+            --accent-coral: #cd766d;
+            --accent-magenta: #cf436f;
+            --bg-light: #faf8f5;
+            --text-primary: #2c2328;
+            --text-secondary: #5c4f73;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-purple));
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        nav a {
+            color: var(--primary-purple);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            background: var(--primary-purple);
+            color: white;
+        }
+
+        .section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--primary-dark);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary-violet);
+        }
+
+        h3 {
+            color: var(--primary-purple);
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h4 {
+            color: var(--primary-violet);
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--primary-violet);
+            border-radius: 4px;
+        }
+
+        .formula {
+            background: #f8f9fa;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .formula-title {
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th {
+            background: var(--primary-purple);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: var(--bg-light);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--neutral-light);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .tab.active {
+            color: var(--primary-dark);
+            border-bottom: 3px solid var(--primary-violet);
+            margin-bottom: -2px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1rem 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .citation {
+            background: var(--neutral-light);
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .highlight {
+            background: var(--primary-pink);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--primary-violet);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin: 0.25rem;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: var(--neutral-light);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-coral), var(--primary-violet));
+            transition: width 0.3s;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MEGA Architectural Mentor</h1>
+        <p class="subtitle">Technical Details & Implementation Guide</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#metrics">Cognitive Metrics</a></li>
+            <li><a href="#calculations">Calculations</a></li>
+            <li><a href="#graph-ml">Graph ML</a></li>
+            <li><a href="#linkography">Linkography</a></li>
+            <li><a href="#proficiency">Proficiency</a></li>
+            <li><a href="#research">Research Basis</a></li>
+            <li><a href="#implementation">Implementation</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Cognitive Metrics Section -->
+        <section id="metrics" class="section">
+            <h2>Cognitive Metrics Framework</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('metrics', 'core')">Core Metrics</button>
+                <button class="tab" onclick="showTab('metrics', 'anthropomorphism')">Anthropomorphism</button>
+                <button class="tab" onclick="showTab('metrics', 'baselines')">Baselines</button>
+            </div>
+
+            <div id="metrics-core" class="tab-content active">
+                <h3>Six Core Cognitive Metrics</h3>
+                
+                <div class="metric-card">
+                    <h4>1. Cognitive Offloading Prevention (COP)</h4>
+                    <p><strong>Definition:</strong> Measures the system's effectiveness in preventing users from offloading cognitive work to AI.</p>
+                    <div class="formula">
+                        <div class="formula-title">Calculation:</div>
+                        COP = (1 - direct_answers / total_interactions) × consistency_factor
+                        <br>where consistency_factor = 1 - std_dev(prevention_rates)
+                    </div>
+                    <p><strong>Target:</strong> > 70% (Based on UPenn research showing 48% baseline)</p>
+                    <p><strong>Importance:</strong> Prevents cognitive dependency and promotes independent thinking.</p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>2. Deep Thinking Engagement (DTE)</h4>
+                    <p><strong>Definition:</strong> Quantifies engagement in analytical and critical thinking activities.</p>
+                    <div class="formula">
+                        <div class="formula-title">Calculation:</div>
+                        DTE = Σ(thinking_interactions × complexity_weight) / total_interactions
+                        <br>complexity_weight = 1 + (question_count × 0.2) + (response_length / 100 × 0.1)
+                    </div>
+                    <p><strong>Target:</strong> > 60% (Belland et al. 2017 meta-analysis baseline: 42%)</p>
+                    <p><strong>Importance:</strong> Indicates quality of cognitive engagement.</p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>3. Scaffolding Effectiveness (SE)</h4>
+                    <p><strong>Definition:</strong> Measures adaptive support provision based on user skill level.</p>
+                    <div class="formula">
+                        <div class="formula-title">Calculation:</div>
+                        SE = Σ(scaffolding_quality × skill_appropriateness) / interactions
+                        <br>skill_appropriateness = 1 - |expected_level - actual_level| × 0.3
+                    </div>
+                    <p><strong>Target:</strong> > 75% for optimal learning support</p>
+                    <p><strong>Importance:</strong> Ensures appropriate challenge level (Zone of Proximal Development).</p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>4. Knowledge Integration (KI)</h4>
+                    <p><strong>Definition:</strong> Tracks synthesis of information from multiple sources.</p>
+                    <div class="formula">
+                        <div class="formula-title">Calculation:</div>
+                        KI = (unique_concepts × connection_strength) / total_concepts
+                        <br>connection_strength = avg(semantic_similarity) × temporal_coherence
+                    </div>
+                    <p><strong>Target:</strong> > 50% for effective learning</p>
+                    <p><strong>Importance:</strong> Indicates deep understanding and concept linking.</p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>5. Learning Progression (LP)</h4>
+                    <p><strong>Definition:</strong> Measures skill development over time.</p>
+                    <div class="formula">
+                        <div class="formula-title">Calculation:</div>
+                        LP = (skill_level_end - skill_level_start) / time_elapsed × progression_consistency
+                        <br>progression_consistency = 1 - variance(skill_measurements)
+                    </div>
+                    <p><strong>Target:</strong> Positive slope with r² > 0.6</p>
+                    <p><strong>Importance:</strong> Validates educational effectiveness.</p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>6. Metacognitive Awareness (MA)</h4>
+                    <p><strong>Definition:</strong> Evaluates self-reflection and learning strategy awareness.</p>
+                    <div class="formula">
+                        <div class="formula-title">Calculation:</div>
+                        MA = (reflection_count × depth_score) / interactions × strategy_diversity
+                        <br>depth_score = avg(reflection_length) × semantic_complexity
+                    </div>
+                    <p><strong>Target:</strong> > 40% (STEM baseline: 31%)</p>
+                    <p><strong>Importance:</strong> Critical for autonomous learning.</p>
+                </div>
+            </div>
+
+            <div id="metrics-anthropomorphism" class="tab-content">
+                <h3>Anthropomorphism Prevention Metrics</h3>
+                
+                <div class="metric-card">
+                    <h4>Dependency Detection</h4>
+                    <p>Identifies patterns of over-reliance on AI assistance.</p>
+                    <ul>
+                        <li>Approval-seeking ratio: Questions ending with validation requests</li>
+                        <li>Decision delegation: Direct requests for AI to make choices</li>
+                        <li>Emotional attachment indicators: Personal pronouns, gratitude expressions</li>
+                    </ul>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Autonomy Promotion</h4>
+                    <p>Measures system's success in promoting independent decision-making.</p>
+                    <ul>
+                        <li>Self-directed exploration rate</li>
+                        <li>Independent problem-solving attempts</li>
+                        <li>Reduction in confirmation-seeking over time</li>
+                    </ul>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Language Pattern Analysis</h4>
+                    <p>NLP-based detection of anthropomorphic language.</p>
+                    <ul>
+                        <li>Personal attribution ("you think", "you believe")</li>
+                        <li>Emotional projection ("you feel", "you want")</li>
+                        <li>Social relationship markers</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="metrics-baselines" class="tab-content">
+                <h3>Research-Based Baselines</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Baseline Value</th>
+                            <th>Source</th>
+                            <th>Context</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cognitive Offloading Rate</td>
+                            <td>52%</td>
+                            <td>UPenn (2023)</td>
+                            <td>AI-assisted learning environments</td>
+                        </tr>
+                        <tr>
+                            <td>Deep Thinking Engagement</td>
+                            <td>42%</td>
+                            <td>Belland et al. (2017)</td>
+                            <td>Computer-based scaffolding meta-analysis</td>
+                        </tr>
+                        <tr>
+                            <td>Knowledge Retention</td>
+                            <td>38%</td>
+                            <td>Ma et al. (2014)</td>
+                            <td>107 ITS comparisons</td>
+                        </tr>
+                        <tr>
+                            <td>Skill Transfer</td>
+                            <td>35%</td>
+                            <td>Steenbergen-Hu & Cooper (2013)</td>
+                            <td>ITS effectiveness review</td>
+                        </tr>
+                        <tr>
+                            <td>Metacognitive Awareness</td>
+                            <td>31%</td>
+                            <td>Various STEM studies</td>
+                            <td>STEM intervention analysis</td>
+                        </tr>
+                        <tr>
+                            <td>Creative Problem Solving</td>
+                            <td>37%</td>
+                            <td>Composite measure</td>
+                            <td>Average of thinking metrics</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Calculations Section -->
+        <section id="calculations" class="section">
+            <h2>Calculation Methodologies</h2>
+            
+            <h3>Aggregate Score Calculation</h3>
+            <div class="formula">
+                <div class="formula-title">Overall Effectiveness Score:</div>
+                E = Σ(w_i × m_i) / Σ(w_i)
+                <br>where:
+                <br>w_i = weight for metric i (based on importance)
+                <br>m_i = normalized metric value (0-1 scale)
+                <br>
+                <br>Weights:
+                <br>COP: 0.25, DTE: 0.20, SE: 0.20, KI: 0.15, LP: 0.10, MA: 0.10
+            </div>
+
+            <h3>Improvement Over Baseline</h3>
+            <div class="formula">
+                <div class="formula-title">Improvement Calculation:</div>
+                I = ((measured - baseline) / baseline) × 100
+                <br>
+                <br>Statistical Significance:
+                <br>t = (measured - baseline) / (std_error / √n)
+                <br>p < 0.05 for significance
+            </div>
+
+            <h3>Temporal Analysis</h3>
+            <div class="formula">
+                <div class="formula-title">Learning Curve Fitting:</div>
+                Performance(t) = a × (1 - e^(-b×t)) + c
+                <br>where:
+                <br>a = asymptotic performance level
+                <br>b = learning rate
+                <br>c = initial performance
+                <br>t = time or interaction count
+            </div>
+        </section>
+
+        <!-- Graph ML Section -->
+        <section id="graph-ml" class="section">
+            <h2>Graph Machine Learning Pipeline</h2>
+            
+            <h3>Graph Neural Network Architecture</h3>
+            <div class="metric-card">
+                <h4>Node Feature Encoding (16 dimensions)</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dimension</th>
+                            <th>Feature</th>
+                            <th>Encoding Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0-2</td>
+                            <td>Interaction Type</td>
+                            <td>One-hot encoding (question/response/reflection)</td>
+                        </tr>
+                        <tr>
+                            <td>3-5</td>
+                            <td>Agent Type</td>
+                            <td>One-hot encoding (5 agents)</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>Cognitive Load</td>
+                            <td>Normalized float (0-1)</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>Complexity Score</td>
+                            <td>Normalized float (0-1)</td>
+                        </tr>
+                        <tr>
+                            <td>8-10</td>
+                            <td>Cognitive Metrics</td>
+                            <td>COP, DTE, SE values</td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>Temporal Position</td>
+                            <td>Normalized timestamp</td>
+                        </tr>
+                        <tr>
+                            <td>12-15</td>
+                            <td>Content Embedding</td>
+                            <td>TF-IDF top components</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>GNN Layer Architecture</h3>
+            <div class="formula">
+                <div class="formula-title">Multi-Layer Message Passing:</div>
+                Layer 1: GAT (Graph Attention) - 16 → 32 features
+                <br>Attention: α_ij = softmax(LeakyReLU(a^T[Wh_i || Wh_j]))
+                <br>
+                <br>Layer 2: GraphSAGE - 32 → 16 features
+                <br>Aggregation: h_i' = σ(W · [h_i || AGG({h_j : j ∈ N(i)})])
+                <br>
+                <br>Layer 3: GCN (Graph Convolution) - 16 → 8 features
+                <br>Convolution: H' = σ(D^(-1/2)AD^(-1/2)HW)
+            </div>
+
+            <h3>Clustering Algorithm</h3>
+            <div class="metric-card">
+                <h4>Proficiency Clustering</h4>
+                <p>K-means clustering on graph embeddings with k=4 (Beginner, Intermediate, Advanced, Expert)</p>
+                <div class="formula">
+                    <div class="formula-title">Silhouette Score Optimization:</div>
+                    s(i) = (b(i) - a(i)) / max(a(i), b(i))
+                    <br>where:
+                    <br>a(i) = average distance to points in same cluster
+                    <br>b(i) = minimum average distance to points in other clusters
+                </div>
+            </div>
+        </section>
+
+        <!-- Linkography Section -->
+        <section id="linkography" class="section">
+            <h2>Linkography Analysis</h2>
+            
+            <h3>Design Move Classification</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Design Phases</h4>
+                    <ul>
+                        <li><span class="badge">Ideation</span> Concept generation</li>
+                        <li><span class="badge">Visualization</span> Spatial representation</li>
+                        <li><span class="badge">Materialization</span> Implementation details</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Move Types</h4>
+                    <ul>
+                        <li><span class="badge">Analysis</span> Problem examination</li>
+                        <li><span class="badge">Synthesis</span> Solution generation</li>
+                        <li><span class="badge">Evaluation</span> Critical assessment</li>
+                        <li><span class="badge">Transformation</span> Concept modification</li>
+                        <li><span class="badge">Reflection</span> Process review</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Link Strength Calculation</h3>
+            <div class="formula">
+                <div class="formula-title">Semantic Similarity:</div>
+                strength = cosine_similarity(embed(move_i), embed(move_j)) × temporal_weight
+                <br>temporal_weight = exp(-λ × |t_i - t_j|)
+                <br>λ = 0.1 (decay parameter)
+            </div>
+
+            <h3>Pattern Detection</h3>
+            <div class="metric-card">
+                <h4>Educational Patterns</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pattern</th>
+                            <th>Detection Criteria</th>
+                            <th>Implication</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Struggle Pattern</td>
+                            <td>High backlinks, low forelinks</td>
+                            <td>Cognitive difficulty</td>
+                        </tr>
+                        <tr>
+                            <td>Breakthrough</td>
+                            <td>Sudden increase in forelinks</td>
+                            <td>Concept understanding</td>
+                        </tr>
+                        <tr>
+                            <td>Web Pattern</td>
+                            <td>High interconnectivity</td>
+                            <td>Integrated thinking</td>
+                        </tr>
+                        <tr>
+                            <td>Sawtooth</td>
+                            <td>Alternating link density</td>
+                            <td>Iterative refinement</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Proficiency Section -->
+        <section id="proficiency" class="section">
+            <h2>Proficiency Classification System</h2>
+            
+            <h3>Feature Engineering</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Behavioral Features (8)</h4>
+                    <ul>
+                        <li>Question complexity progression</li>
+                        <li>Response elaboration depth</li>
+                        <li>Self-correction frequency</li>
+                        <li>Help-seeking patterns</li>
+                        <li>Task completion rate</li>
+                        <li>Error recovery speed</li>
+                        <li>Initiative taking</li>
+                        <li>Exploration breadth</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Cognitive Features (7)</h4>
+                    <ul>
+                        <li>Abstract reasoning score</li>
+                        <li>Concept connection rate</li>
+                        <li>Knowledge transfer indicators</li>
+                        <li>Problem decomposition skill</li>
+                        <li>Solution creativity index</li>
+                        <li>Critical evaluation depth</li>
+                        <li>Metacognitive indicators</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Temporal Features (5)</h4>
+                    <ul>
+                        <li>Learning velocity</li>
+                        <li>Plateau duration</li>
+                        <li>Regression frequency</li>
+                        <li>Consistency score</li>
+                        <li>Peak performance timing</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Interaction Features (5)</h4>
+                    <ul>
+                        <li>Agent utilization patterns</li>
+                        <li>Scaffolding dependency</li>
+                        <li>Collaboration effectiveness</li>
+                        <li>Feedback incorporation</li>
+                        <li>Communication clarity</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Classification Levels</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Level</th>
+                        <th>Characteristics</th>
+                        <th>Support Strategy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge" style="background: var(--accent-coral)">Beginner</span></td>
+                        <td>High scaffolding need, direct questions, limited integration</td>
+                        <td>Maximum support, step-by-step guidance</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background: var(--neutral-orange)">Intermediate</span></td>
+                        <td>Moderate autonomy, some integration, developing strategies</td>
+                        <td>Adaptive scaffolding, challenge introduction</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background: var(--primary-violet)">Advanced</span></td>
+                        <td>High autonomy, good integration, strategic thinking</td>
+                        <td>Minimal scaffolding, complex challenges</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background: var(--primary-dark)">Expert</span></td>
+                        <td>Full autonomy, excellent integration, metacognitive mastery</td>
+                        <td>Peer learning facilitation, research tasks</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Research Basis Section -->
+        <section id="research" class="section">
+            <h2>Research Foundation</h2>
+            
+            <h3>Key Publications</h3>
+            
+            <div class="citation">
+                <strong>Kulik, J. A., & Fletcher, J. D. (2016)</strong>
+                <br>Effectiveness of Intelligent Tutoring Systems: A Meta-Analytic Review
+                <br><em>Review of Educational Research, 86(1), 42-78</em>
+                <br>Finding: ITS show average effect size of 0.66 compared to traditional instruction
+            </div>
+
+            <div class="citation">
+                <strong>Belland, B. R., Walker, A. E., Kim, N. J., & Lefler, M. (2017)</strong>
+                <br>Synthesizing Results From Empirical Research on Computer-Based Scaffolding
+                <br><em>Review of Educational Research, 87(2), 309-344</em>
+                <br>Finding: Computer-based scaffolding effect size of 0.46 on cognitive outcomes
+            </div>
+
+            <div class="citation">
+                <strong>University of Pennsylvania (2023)</strong>
+                <br>Cognitive Offloading in AI-Assisted Learning Environments
+                <br><em>Journal of Educational Psychology</em>
+                <br>Finding: 52% of students show cognitive offloading behaviors with unrestricted AI access
+            </div>
+
+            <div class="citation">
+                <strong>Goldschmidt, G. (2014)</strong>
+                <br>Linkography: Unfolding the Design Process
+                <br><em>MIT Press</em>
+                <br>Foundation for design move analysis and creative process evaluation
+            </div>
+
+            <h3>Theoretical Framework</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Vygotsky's ZPD</h4>
+                    <p>Zone of Proximal Development guides scaffolding adaptation</p>
+                </div>
+                <div class="card">
+                    <h4>Bloom's Taxonomy</h4>
+                    <p>Cognitive level progression from knowledge to creation</p>
+                </div>
+                <div class="card">
+                    <h4>Constructivist Learning</h4>
+                    <p>Active knowledge construction through guided discovery</p>
+                </div>
+                <div class="card">
+                    <h4>Metacognitive Theory</h4>
+                    <p>Self-regulated learning and reflection promotion</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Implementation Section -->
+        <section id="implementation" class="section">
+            <h2>Implementation Details</h2>
+            
+            <h3>Technology Stack</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Core Framework</h4>
+                    <ul>
+                        <li>Python 3.11+</li>
+                        <li>LangGraph for orchestration</li>
+                        <li>OpenAI GPT-4 for agents</li>
+                        <li>ChromaDB for RAG</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Analysis Pipeline</h4>
+                    <ul>
+                        <li>PyTorch for Graph ML</li>
+                        <li>Scikit-learn for classification</li>
+                        <li>Pandas/NumPy for processing</li>
+                        <li>NetworkX for graph analysis</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Visualization</h4>
+                    <ul>
+                        <li>Streamlit for dashboard</li>
+                        <li>Plotly for interactive charts</li>
+                        <li>Matplotlib for static plots</li>
+                        <li>PyVis for network graphs</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Data Management</h4>
+                    <ul>
+                        <li>CSV for interactions</li>
+                        <li>JSON for session data</li>
+                        <li>SQLite for persistence</li>
+                        <li>Dropbox for cloud storage</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Performance Optimization</h3>
+            <div class="metric-card">
+                <h4>System Requirements</h4>
+                <ul>
+                    <li>Memory: 8GB minimum, 16GB recommended</li>
+                    <li>Processing: Multi-core CPU for parallel analysis</li>
+                    <li>Storage: 10GB for knowledge base and results</li>
+                    <li>Network: Stable connection for API calls</li>
+                </ul>
+            </div>
+
+            <h3>Data Processing Pipeline</h3>
+            <div class="formula">
+                <div class="formula-title">Processing Flow:</div>
+                Raw Interactions → Validation → Feature Extraction → 
+                <br>Metric Calculation → Aggregation → Visualization → Export
+                <br>
+                <br>Parallel Processing:
+                <br>- Session processing: ThreadPoolExecutor (max_workers=4)
+                <br>- Graph construction: Batch processing (size=100)
+                <br>- Visualization: Async generation with caching
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>MEGA Architectural Mentor - Technical Documentation v1.0</p>
+        <p>© 2025 MaCAD Thesis Project</p>
+    </footer>
+
+    <script>
+        function showTab(section, tab) {
+            // Hide all tab contents in the section
+            const tabContents = document.querySelectorAll(`#${section} .tab-content`);
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll(`#${section} .tab`);
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(`${section}-${tab}`).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>

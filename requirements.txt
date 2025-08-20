@@ -64,7 +64,7 @@ vtk
 # VECTOR DATABASE & EMBEDDINGS
 # =============================================================================
 chromadb
-pysqlite3-binary
+# pysqlite3-binary  # Not available on Windows - using built-in sqlite3 instead
 sentence-transformers
 faiss-cpu
 
