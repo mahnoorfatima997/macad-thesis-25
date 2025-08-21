@@ -148,8 +148,13 @@ class DomainExpertAgent:
                 from knowledge_base.knowledge_manager import KnowledgeManager
                 km = KnowledgeManager(domain="architecture")
 
-                # Create knowledge-focused search query
-                db_query = f"{user_topic} {building_type} architecture principles guidelines requirements"
+                # Create knowledge-focused search query - IMPROVED
+                # Clean building type and avoid redundancy
+                building_type_clean = building_type.replace('_', ' ')
+                if user_topic.lower() in building_type_clean.lower():
+                    db_query = f"{user_topic} architecture design"
+                else:
+                    db_query = f"{user_topic} {building_type_clean} architecture"
                 print(f"   🗄️  DB search query: {db_query}")
 
                 db_results = km.search_knowledge(db_query, n_results=5)
@@ -321,10 +326,35 @@ class DomainExpertAgent:
         return self.context_processor.analyze_conversation_context_internal(state)
     
     def create_knowledge_request(self, topic: str, context: Dict, state: ArchMentorState) -> Dict[str, Any]:
-        """Create knowledge request (simplified implementation)."""
+        """Create knowledge request with enhanced context."""
+        # Extract user's actual question from conversation
+        user_question = topic
+        project_context = ""
+
+        if state and hasattr(state, 'messages') and state.messages:
+            # Get the latest user message
+            for msg in reversed(state.messages):
+                if msg.get('role') == 'user':
+                    user_question = msg.get('content', topic)
+                    break
+
+            # Extract project context from conversation history
+            project_mentions = []
+            for msg in state.messages[-5:]:  # Look at last 5 messages
+                if msg.get('role') == 'user':
+                    content = msg.get('content', '').lower()
+                    # Look for project-specific mentions
+                    if any(keyword in content for keyword in ['warehouse', 'copenhagen', 'skylight', 'garden', 'transform', 'existing']):
+                        project_mentions.append(msg.get('content', ''))
+
+            if project_mentions:
+                project_context = " ".join(project_mentions[-2:])  # Last 2 relevant mentions
+
         return {
             'topic': topic,
             'context': context,
+            'user_question': user_question,
+            'project_context': project_context,
             'building_type': context.get('building_type', 'general'),
             'complexity_level': context.get('complexity_level', 'intermediate'),
             'user_intent': context.get('user_intent', 'learning')
@@ -830,9 +860,18 @@ What questions do you have about your design?"""
             "inspiration", "references", "approaches", "strategies"
         ]
 
-        # Check what type of example request this is
-        is_project_example_request = any(keyword in user_input_lower for keyword in project_example_keywords)
-        is_general_example_request = any(keyword in user_input_lower for keyword in general_example_keywords)
+        # Check for negative context (user explicitly saying they DON'T want examples)
+        negative_patterns = ["don't want", "dont want", "not want", "no examples", "no projects", "not examples", "not projects"]
+        has_negative_context = any(pattern in user_input_lower for pattern in negative_patterns)
+
+        # Check what type of example request this is (only if no negative context)
+        if has_negative_context:
+            is_project_example_request = False
+            is_general_example_request = False
+            print(f"🚫 Negative context detected - user explicitly doesn't want examples")
+        else:
+            is_project_example_request = any(keyword in user_input_lower for keyword in project_example_keywords)
+            is_general_example_request = any(keyword in user_input_lower for keyword in general_example_keywords)
 
         print(f"🔍 Project example request: {is_project_example_request} (keywords: {[k for k in project_example_keywords if k in user_input_lower]})")
         print(f"🔍 General example request: {is_general_example_request} (keywords: {[k for k in general_example_keywords if k in user_input_lower]})")
@@ -905,7 +944,7 @@ What questions do you have about your design?"""
 
         # Extract building type and topic
         building_type = self._extract_building_type_from_context(state)
-        user_topic = self._extract_topic_from_user_input(user_input)
+        user_topic = await self._extract_topic_from_user_input(user_input)
         project_context = getattr(state, 'current_design_brief', '') or ''
 
         print(f"   🏗️  Building type: {building_type}")
@@ -921,7 +960,16 @@ What questions do you have about your design?"""
             "actual projects", "specific projects", "project references"
         ]
 
-        is_project_example_request = any(keyword in user_input_lower for keyword in project_example_keywords)
+        # Check for negative context (user explicitly saying they DON'T want examples)
+        negative_patterns = ["don't want", "dont want", "not want", "no examples", "no projects", "not examples", "not projects"]
+        has_negative_context = any(pattern in user_input_lower for pattern in negative_patterns)
+
+        if has_negative_context:
+            is_project_example_request = False
+            print(f"🚫 Negative context detected - treating as general knowledge request")
+        else:
+            is_project_example_request = any(keyword in user_input_lower for keyword in project_example_keywords)
+
         request_type = "project_examples" if is_project_example_request else "general_examples"
 
         print(f"   📋 Request type: {request_type}")
@@ -935,9 +983,17 @@ What questions do you have about your design?"""
                 from knowledge_base.knowledge_manager import KnowledgeManager
                 km = KnowledgeManager(domain="architecture")
                 
-                # Create specific database search query based on user's actual request
-                db_query = self._create_specific_db_query(user_input, building_type, request_type)
-                
+                # Create specific database search query using AI-powered query generation
+                try:
+                    db_query = await self._create_smart_search_query(user_input, user_topic, building_type, request_type, "database")
+                    # Ensure db_query is a string
+                    if not isinstance(db_query, str):
+                        db_query = str(db_query) if db_query else f"{user_topic} {building_type} architecture"
+                except Exception as query_error:
+                    print(f"   ⚠️ Smart query generation failed: {query_error}")
+                    # Fallback to simple query
+                    db_query = f"{user_topic} {building_type} architecture"
+
                 print(f"   🗄️  DB search query: {db_query}")
                 db_results = km.search_knowledge(db_query, n_results=8)
                 
@@ -968,18 +1024,18 @@ What questions do you have about your design?"""
             has_relevant_db_results = False
 
             if knowledge_results:
-                # Check if database results are relevant by looking at similarity scores
+                # Check if database results are relevant by looking at similarity scores - BALANCED THRESHOLD
                 avg_similarity = sum(r.get('similarity', 0) for r in knowledge_results) / len(knowledge_results)
-                has_relevant_db_results = avg_similarity > 0.3  # Threshold for relevance
-                print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.3)")
+                has_relevant_db_results = avg_similarity > 0.25  # BALANCED: 0.25 for good relevance without being too strict
+                print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.25)")
 
             if not has_sufficient_db_results or not has_relevant_db_results:
                 if request_type == "project_examples":
                     # PROJECT EXAMPLES: Database → Web search (NO AI generation)
                     print(f"   🏗️ PROJECT EXAMPLES: Trying web search for specific built projects")
                     try:
-                        # Create specific web search query based on user's actual request
-                        context_query = self._create_specific_web_query(user_input, building_type, request_type)
+                        # Create specific web search query using AI-powered query generation
+                        context_query = await self._create_smart_search_query(user_input, user_topic, building_type, request_type, "web")
                         print(f"   🌐 Web search query: {context_query}")
 
                         web_results = await self.search_processor.search_web_for_knowledge(context_query, state)
@@ -1278,66 +1334,74 @@ What questions do you have about your design?"""
 
         return related_terms_map.get(topic, [])
 
-    def _extract_topic_from_user_input(self, user_input: str) -> str:
-        """Extract the main architectural topic from user input"""
-        
-        # Common architectural topics
-        topic_keywords = {
-            "flexible spaces": ["flexible", "flexibility", "adaptable", "multi-use"],
-            "lighting": ["light", "lighting", "daylight", "illumination"],
-            "circulation": ["circulation", "flow", "movement", "path"],
-            "accessibility": ["access", "accessible", "universal design"],
-            "sustainability": ["sustainable", "green", "environmental", "eco"],
-            "materials": ["material", "finish", "texture", "surface"],
-            "structure": ["structure", "structural", "support", "frame"],
-            "acoustics": ["acoustic", "sound", "noise", "audio"],
-            "ventilation": ["ventilation", "air", "breathing", "fresh air"],
-            "shading": ["shade", "shading", "sun protection", "overhang"],
-            "social spaces": ["social interaction", "gathering spaces", "public areas"],
-            "office design": ["office", "workplace", "work", "desk"],
-            "open plan": ["open plan", "open space", "open office"],
-            "private spaces": ["private", "quiet", "focus", "individual"],
-            "adaptive reuse": ["adaptive reuse", "adaptive", "reuse", "renovation", "retrofit", "conversion", "repurposing"],
-            "energy efficiency": ["energy", "efficient", "efficiency", "thermal", "insulation"],
-            "natural ventilation": ["natural ventilation", "cross ventilation", "passive cooling"],
-            "daylighting": ["daylighting", "daylight", "natural light", "sunlight"],
-            "passive design": ["passive", "passive design", "passive solar"],
-            "biophilic design": ["biophilic", "nature", "natural elements", "green walls"],
-            "universal design": ["universal design", "inclusive design", "accessibility"],
-            "modular design": ["modular", "modular design", "prefabricated", "prefab"],
-            "smart building": ["smart", "intelligent", "automation", "technology"],
-            "historic preservation": ["historic", "preservation", "heritage", "conservation"],
-            "urban design": ["urban", "city", "street", "public space"],
-            "landscape architecture": ["landscape", "garden", "outdoor", "green space"],
-            "interior design": ["interior", "furniture", "furnishings", "spatial design"],
-            "parametric design": ["parametric", "algorithmic", "computational", "digital fabrication"],
-            "prefabrication": ["prefabrication", "prefab", "modular construction", "off-site"],
-            "mass timber": ["mass timber", "cross laminated timber", "clt", "wood construction"],
-            "net zero": ["net zero", "zero energy", "carbon neutral", "sustainable"],
-            "green building": ["green building", "leed", "sustainable building", "eco-friendly"]
-        }
-        
-        user_input_lower = user_input.lower()
-        
-        # Find the most specific topic match (prioritize longer/more specific terms first)
-        # Sort topics by specificity (longer topic names first)
-        sorted_topics = sorted(topic_keywords.items(), key=lambda x: len(x[0]), reverse=True)
+    async def _extract_topic_from_user_input(self, user_input: str) -> str:
+        """Extract the main topic from user input using AI - TRULY FLEXIBLE for ANY topic"""
 
-        # Check all topics for matches
-        for topic, keywords in sorted_topics:
-            if any(keyword in user_input_lower for keyword in keywords):
-                return topic
-        
-        # If no specific topic found, extract from user input
-        words = user_input_lower.split()
-        # Look for architectural terms
-        architectural_terms = ["space", "design", "building", "room", "area", "zone", "layout"]
-        for word in words:
-            if word in architectural_terms:
-                return f"{word} design"
-        
-        # Default to the gap_type if nothing specific found
-        return "design approach"
+        try:
+            # Use AI to intelligently extract the topic and search intent
+            prompt = f"""
+            Analyze this user question and extract the main architectural topic they're asking about.
+
+            User question: "{user_input}"
+
+            Instructions:
+            1. Identify what the user is specifically asking about
+            2. Extract the core architectural topic/concept
+            3. If it's about sizing/capacity, include that aspect
+            4. If it's about examples, focus on the subject they want examples of
+            5. Return a concise search-friendly topic (2-4 words max)
+
+            Examples:
+            - "organic forms examples" → "organic forms"
+            - "event space size for 200 people" → "event space capacity"
+            - "sustainable materials for hospitals" → "sustainable materials"
+            - "how to design flexible spaces" → "flexible spaces"
+            - "parametric design in museums" → "parametric design"
+            - "lighting requirements for offices" → "office lighting"
+
+            Topic:"""
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are an expert at understanding architectural questions and extracting search topics. Be concise and specific."),
+                self.client.create_user_message(prompt)
+            ])
+
+            if response and response.get("content"):
+                extracted_topic = response["content"].strip()
+
+                # Clean up the response (remove quotes, extra text)
+                if extracted_topic.startswith('"') and extracted_topic.endswith('"'):
+                    extracted_topic = extracted_topic[1:-1]
+
+                # Take only the first line if multiple lines
+                extracted_topic = extracted_topic.split('\n')[0].strip()
+
+                # Validate it's reasonable (not too long, not empty)
+                if extracted_topic and len(extracted_topic.split()) <= 5:
+                    print(f"🧠 AI extracted topic: '{extracted_topic}'")
+                    return extracted_topic
+
+            # Fallback to simple extraction if AI fails
+            print("⚠️ AI extraction failed, using fallback")
+            return self._simple_topic_fallback(user_input)
+
+        except Exception as e:
+            print(f"⚠️ AI topic extraction error: {e}")
+            return self._simple_topic_fallback(user_input)
+
+    def _simple_topic_fallback(self, user_input: str) -> str:
+        """Simple fallback topic extraction when AI fails"""
+        # Remove question words and get meaningful terms
+        words = user_input.lower().split()
+        stop_words = {"what", "how", "why", "when", "where", "which", "who", "can", "could", "would", "should", "do", "does", "is", "are", "the", "a", "an", "of", "for", "in", "on", "at", "to", "from", "with", "about", "me", "you", "i", "we", "they"}
+
+        meaningful_words = [word for word in words if word not in stop_words and len(word) > 2]
+
+        # Return first few meaningful words
+        if meaningful_words:
+            return " ".join(meaningful_words[:3])
+        else:
+            return "architectural design"
 
     async def _synthesize_examples_from_results(self, knowledge_results: List[Dict], user_topic: str, building_type: str, project_context: str) -> str:
         """Synthesize examples with titles and links; avoid truncation and ellipses; use how-phrasing."""
@@ -1621,14 +1685,14 @@ What questions do you have about your design?"""
 
         print(f"   🔍 Input words: {words}")
 
-        # Remove only essential stop words (keep architectural terms)
+        # Remove only essential stop words (keep ALL domain-specific terms for any topic)
         stop_words = {
             'can', 'you', 'give', 'me', 'show', 'find', 'get', 'what', 'how', 'where', 'when', 'why',
             'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
             'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did',
             'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall',
             'this', 'that', 'these', 'those', 'i', 'we', 'they', 'it', 'he', 'she',
-            'example', 'examples'  # Only remove generic request words, keep architectural terms
+            'example', 'examples', 'provide', 'need', 'want'  # Generic request words only
         }
 
         # Extract meaningful keywords (keep all architectural and descriptive terms)
@@ -1637,24 +1701,60 @@ What questions do you have about your design?"""
             if len(word) > 2 and word not in stop_words:
                 meaningful_words.append(word)
 
+        # Remove building type components to avoid redundancy
+        building_type_words = building_type.replace('_', ' ').lower().split()
+        meaningful_words = [word for word in meaningful_words if word not in building_type_words]
+
         print(f"   🎯 Extracted keywords: {meaningful_words}")
 
         # Build query using the actual user keywords
         if meaningful_words:
             # Take the most relevant keywords (limit to avoid over-specification)
-            key_terms = meaningful_words[:4]
+            key_terms = meaningful_words[:3]  # Reduced from 4 to 3 to avoid over-specification
             if request_type == "project_examples":
-                query = f"{building_type} {' '.join(key_terms)} project case study"
+                query = f"{building_type.replace('_', ' ')} {' '.join(key_terms)} project"
             else:
-                query = f"{building_type} {' '.join(key_terms)} design"
+                query = f"{building_type.replace('_', ' ')} {' '.join(key_terms)}"
         else:
             # Fallback if no meaningful words extracted
             if request_type == "project_examples":
-                query = f"{building_type} project case study"
+                query = f"{building_type.replace('_', ' ')} project case study"
             else:
-                query = f"{building_type} design"
+                query = f"{building_type.replace('_', ' ')} design"
 
         print(f"   🎯 Final DB query: {query}")
+        return query
+
+    def _create_specific_db_query_with_topic(self, user_topic: str, building_type: str, request_type: str) -> str:
+        """Create a specific database search query using the extracted topic."""
+
+        print(f"   🎯 Using extracted topic: '{user_topic}' for {building_type}")
+
+        # Build query using the extracted topic
+        if user_topic and user_topic.strip():
+            # Clean the topic
+            topic_clean = user_topic.strip()
+
+            if request_type == "project_examples":
+                # For project examples: "organic forms architecture project" or "event space community center project"
+                if building_type and building_type != "unknown":
+                    query = f"{topic_clean} {building_type.replace('_', ' ')} project"
+                else:
+                    query = f"{topic_clean} architecture project"
+            else:
+                # For general examples: "organic forms architecture" or "event space design"
+                if building_type and building_type != "unknown":
+                    query = f"{topic_clean} {building_type.replace('_', ' ')}"
+                else:
+                    query = f"{topic_clean} architecture"
+        else:
+            # Fallback if no topic extracted
+            if request_type == "project_examples":
+                query = f"{building_type.replace('_', ' ')} project case study"
+            else:
+                query = f"{building_type.replace('_', ' ')} design"
+
+        print(f"   🎯 Final DB query with topic: {query}")
         return query
 
     def _create_specific_web_query(self, user_input: str, building_type: str, request_type: str) -> str:
@@ -1702,6 +1802,100 @@ What questions do you have about your design?"""
 
         print(f"   🌐 Final web query: {query}")
         return query
+
+    def _create_specific_web_query_with_topic(self, user_topic: str, building_type: str, request_type: str) -> str:
+        """Create a specific web search query using the extracted topic."""
+
+        print(f"   🌐 Using extracted topic: '{user_topic}' for web search")
+
+        # Build web search query using the extracted topic
+        if user_topic and user_topic.strip():
+            topic_clean = user_topic.strip()
+
+            if request_type == "project_examples":
+                # For project examples: search for specific built projects
+                if building_type and building_type != "unknown":
+                    query = f'"{building_type}" {topic_clean} architect project built site:archdaily.com OR site:dezeen.com'
+                else:
+                    query = f'{topic_clean} architecture project built site:archdaily.com OR site:dezeen.com'
+            else:
+                # For general examples: broader search for strategies/approaches
+                if building_type and building_type != "unknown":
+                    query = f'{building_type} {topic_clean} architecture design'
+                else:
+                    query = f'{topic_clean} architecture design'
+        else:
+            # Fallback if no topic extracted
+            if request_type == "project_examples":
+                query = f'"{building_type}" architect project built site:archdaily.com OR site:dezeen.com'
+            else:
+                query = f'{building_type} architecture design'
+
+        print(f"   🌐 Final web query with topic: {query}")
+        return query
+
+    async def _create_smart_search_query(self, user_input: str, extracted_topic: str, building_type: str, request_type: str, search_type: str) -> str:
+        """Create intelligent search queries using AI to understand user intent"""
+
+        try:
+            # Use AI to create the best search query
+            prompt = f"""
+            Create an optimal search query for finding architectural information.
+
+            User's original question: "{user_input}"
+            Extracted topic: "{extracted_topic}"
+            Building type: "{building_type}"
+            Request type: "{request_type}"
+            Search platform: "{search_type}"
+
+            Instructions:
+            1. Understand what the user is specifically looking for
+            2. Create a search query that will find the most relevant information
+            3. For sizing/capacity questions, include relevant terms like "requirements", "standards", "guidelines"
+            4. For examples, include terms like "case study", "project", "precedent"
+            5. Keep it concise but specific (3-6 words)
+
+            Examples:
+            - User asks about "event space size for 200 people" → "event space capacity 200 occupancy requirements"
+            - User asks about "organic forms examples" → "organic architecture biomorphic design projects"
+            - User asks about "sustainable materials" → "sustainable building materials green construction"
+
+            Search query:"""
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are an expert at creating effective search queries for architectural information. Be specific and use professional terminology."),
+                self.client.create_user_message(prompt)
+            ])
+
+            if response and response.get("content"):
+                smart_query = response["content"].strip()
+
+                # Clean up the response
+                if smart_query.startswith('"') and smart_query.endswith('"'):
+                    smart_query = smart_query[1:-1]
+
+                smart_query = smart_query.split('\n')[0].strip()
+
+                if smart_query and len(smart_query.split()) <= 8:
+                    print(f"🧠 AI generated {search_type} query: '{smart_query}'")
+                    return smart_query
+
+            # Fallback to topic-based query
+            print(f"⚠️ AI query generation failed, using topic fallback")
+            return self._create_fallback_query(extracted_topic, building_type, request_type)
+
+        except Exception as e:
+            print(f"⚠️ AI query generation error: {e}")
+            return self._create_fallback_query(extracted_topic, building_type, request_type)
+
+    def _create_fallback_query(self, topic: str, building_type: str, request_type: str) -> str:
+        """Simple fallback query when AI fails"""
+        if topic and building_type:
+            return f"{topic} {building_type.replace('_', ' ')}"
+        elif topic:
+            return f"{topic} architecture"
+        else:
+            return f"{building_type.replace('_', ' ')} design"
 
     async def _synthesize_examples_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
         """Use the simple, working approach from the old repository - let LLM intelligently process all results."""

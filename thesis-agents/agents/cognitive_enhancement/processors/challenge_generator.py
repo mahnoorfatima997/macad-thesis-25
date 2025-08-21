@@ -26,7 +26,36 @@ class ChallengeGeneratorProcessor:
         self.telemetry.log_agent_start("select_enhancement_strategy")
         
         try:
-            # Strategy selection based on cognitive state
+            # CRITICAL FIX: Check for specific gamification triggers first to get correct game types
+            if state:
+                user_message = self._get_latest_user_message(state).lower().strip()
+
+                # Map specific trigger patterns to strategies for correct game types
+                if any(pattern in user_message for pattern in [
+                    'how would', 'what would', 'from a', 'perspective', 'feel', 'think', 'experience'
+                ]):
+                    print(f"🎮 STRATEGY: Role-play trigger detected → increase_engagement → perspective_challenge → role_play")
+                    return "increase_engagement"  # → perspective_challenge → role_play
+
+                elif any(pattern in user_message for pattern in [
+                    'stuck', 'constraint', 'limited', 'challenge', 'difficult', 'problem'
+                ]):
+                    print(f"🎮 STRATEGY: Constraint trigger detected → increase_challenge → constraint_challenge → constraint")
+                    return "increase_challenge"  # → constraint_challenge → constraint
+
+                elif any(pattern in user_message for pattern in [
+                    'wonder', 'what if', 'alternative', 'different', 'other way'
+                ]):
+                    print(f"🎮 STRATEGY: Alternative trigger detected → stimulate_curiosity → alternative_challenge → perspective_shift")
+                    return "stimulate_curiosity"  # → alternative_challenge → perspective_shift
+
+                elif any(pattern in user_message for pattern in [
+                    'why', 'understand', 'reason', 'analyze', 'investigate'
+                ]):
+                    print(f"🎮 STRATEGY: Detective trigger detected → challenge_assumptions → metacognitive_challenge → detective")
+                    return "challenge_assumptions"  # → metacognitive_challenge → detective
+
+            # Fallback to cognitive state-based selection
             if cognitive_state.get("overconfidence_level") == "high":
                 return "challenge_assumptions"
             elif cognitive_state.get("passivity_level") == "high":
@@ -94,25 +123,45 @@ class ChallengeGeneratorProcessor:
     async def _generate_constraint_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, constraint_type: str = "spatial") -> Dict[str, Any]:
         """Generate constraint-based cognitive challenge."""
         self.telemetry.log_agent_start("_generate_constraint_challenge")
-        
+
         try:
-            # Get challenge templates for constraint type
-            challenges = CHALLENGE_TEMPLATES.get("constraint_challenge", {}).get(constraint_type, [])
-            if not challenges:
-                challenges = ["How would your design change under different constraints?"]
-            
-            base_challenge = random.choice(challenges)
-            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "constraint_challenge", constraint_type)
-            
-            return {
-                "challenge_text": contextualized_challenge,
-                "challenge_type": "constraint_challenge",
-                "constraint_type": constraint_type,
-                "pedagogical_intent": "Challenge design assumptions through constraint exploration",
-                "cognitive_target": "flexibility_and_adaptation",
-                "expected_outcome": "Increased design flexibility and creative problem-solving"
-            }
-            
+            # Check if gamification should be applied
+            should_gamify = self._should_apply_gamification(state, constraint_type, "constraint_challenge")
+
+            if should_gamify:
+                # Pass original user message for flexible content generation
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "constraint_challenge",
+                    "constraint_type": constraint_type,
+                    "building_type": building_type,
+                    "pedagogical_intent": "Challenge design assumptions through constraint exploration",
+                    "cognitive_target": "flexibility_and_adaptation",
+                    "expected_outcome": "Increased design flexibility and creative problem-solving",
+                    "gamification_applied": True
+                }
+            else:
+                # Use traditional challenge generation
+                challenges = CHALLENGE_TEMPLATES.get("constraint_challenge", {}).get(constraint_type, [])
+                if not challenges:
+                    challenges = ["How would your design change under different constraints?"]
+
+                base_challenge = random.choice(challenges)
+                contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "constraint_challenge", constraint_type)
+
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "constraint_challenge",
+                    "constraint_type": constraint_type,
+                    "pedagogical_intent": "Challenge design assumptions through constraint exploration",
+                    "cognitive_target": "flexibility_and_adaptation",
+                    "expected_outcome": "Increased design flexibility and creative problem-solving",
+                    "gamification_applied": False
+                }
+
         except Exception as e:
             self.telemetry.log_error("_generate_constraint_challenge", str(e))
             return {
@@ -120,7 +169,8 @@ class ChallengeGeneratorProcessor:
                 "challenge_type": "constraint_challenge",
                 "constraint_type": constraint_type,
                 "pedagogical_intent": "Encourage adaptive thinking",
-                "cognitive_target": "flexibility"
+                "cognitive_target": "flexibility",
+                "gamification_applied": False
             }
     
     async def _generate_perspective_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, perspective_type: str = "user_perspective") -> Dict[str, Any]:
@@ -140,21 +190,30 @@ class ChallengeGeneratorProcessor:
             should_gamify = self._should_apply_gamification(state, perspective_type, "perspective_challenge")
 
             if should_gamify:
-                gamified_challenge = await self._add_gamification_elements(contextualized_challenge, perspective_type, state)
-                gamification_applied = True
-            else:
-                gamified_challenge = contextualized_challenge
-                gamification_applied = False
+                # Pass the original user message for flexible content generation
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
 
-            return {
-                "challenge_text": gamified_challenge,
-                "challenge_type": "perspective_challenge",
-                "perspective_type": perspective_type,
-                "pedagogical_intent": "Expand perspective and empathy in design thinking",
-                "cognitive_target": "perspective_taking",
-                "expected_outcome": "Enhanced empathy and user-centered design thinking",
-                "gamification_applied": gamification_applied
-            }
+                return {
+                    "challenge_text": user_message,  # Pass original message for flexible generation
+                    "challenge_type": "perspective_challenge",
+                    "perspective_type": perspective_type,
+                    "building_type": building_type,
+                    "pedagogical_intent": "Expand perspective and empathy in design thinking",
+                    "cognitive_target": "perspective_taking",
+                    "expected_outcome": "Enhanced empathy and user-centered design thinking",
+                    "gamification_applied": True
+                }
+            else:
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "perspective_challenge",
+                    "perspective_type": perspective_type,
+                    "pedagogical_intent": "Expand perspective and empathy in design thinking",
+                    "cognitive_target": "perspective_taking",
+                    "expected_outcome": "Enhanced empathy and user-centered design thinking",
+                    "gamification_applied": False
+                }
             
         except Exception as e:
             self.telemetry.log_error("_generate_perspective_challenge", str(e))
@@ -166,58 +225,18 @@ class ChallengeGeneratorProcessor:
                 "cognitive_target": "empathy"
             }
 
-    async def _add_gamification_elements(self, base_challenge: str, challenge_type: str, state: ArchMentorState) -> str:
-        """Add interactive gamification elements to challenges."""
+    # Removed old hardcoded gamification method - now using flexible content generation system
+
+    def _get_latest_user_message(self, state: ArchMentorState) -> str:
+        """Get the latest user message from conversation history."""
         try:
-            # Get project context
-            project_context = getattr(state, 'current_design_brief', 'architectural project')
-            building_type = self._extract_building_type(project_context)
-
-            # Gamification templates with nice formatting for UI
-            gamification_templates = {
-                "user_perspective": [
-                    "🎭 ROLE-PLAY CHALLENGE: Step into someone else's shoes!\n\n*You are now a {user_type} entering your {building_type} for the first time.*\n\n{base_challenge}\n\nWalk me through your first 60 seconds - what do you see, feel, and think?",
-                    "🎯 PERSPECTIVE SHIFT: Time for a reality check!\n\n*Plot twist: You're designing for someone completely different than you imagined.*\n\n{base_challenge}\n\nTell me: How does this change everything?",
-                    "🔍 USER DETECTIVE: Let's solve a mystery!\n\n*Your {building_type} has a secret - different users experience it completely differently.*\n\n{base_challenge}\n\nWhat clues in your design reveal these hidden experiences?"
-                ],
-                "spatial": [
-                    "🏗️ SPACE TRANSFORMATION: Your design just got interesting!\n\n*Imagine your {building_type} could shape-shift based on user needs.*\n\n{base_challenge}\n\nDescribe the transformation - what changes and why?",
-                    "🎨 SPATIAL STORYTELLING: Every space tells a story!\n\n*Your {building_type} is the main character in an architectural narrative.*\n\n{base_challenge}\n\nWhat story does your space want to tell?",
-                    "⚡ DESIGN CHALLENGE: Time for a creative constraint!\n\n*Your {building_type} just got a plot twist that changes everything.*\n\n{base_challenge}\n\nHow do you turn this constraint into your design's superpower?"
-                ],
-                "temporal_perspective": [
-                    "⏰ TIME TRAVEL CHALLENGE: Your building through the ages!\n\n*Fast-forward 20 years - your {building_type} has evolved with its community.*\n\n{base_challenge}\n\nWhat story does this future version tell about adaptability?",
-                    "🔄 LIFECYCLE ADVENTURE: From birth to rebirth!\n\n*Your {building_type} is about to go through a major life change.*\n\n{base_challenge}\n\nHow does good design prepare for transformation?",
-                    "🌅 DAILY RHYTHM CHALLENGE: 24 hours in the life!\n\n*Your {building_type} experiences dawn, noon, dusk, and midnight differently.*\n\n{base_challenge}\n\nHow does your design dance with time?"
-                ]
-            }
-
-            # Select appropriate template
-            templates = gamification_templates.get(challenge_type, gamification_templates["spatial"])
-            template = self.text_processor.select_random(templates)
-
-            # Context-specific user types
-            user_types = {
-                "community center": ["busy parent", "elderly community member", "teenager", "person with mobility challenges"],
-                "hospital": ["anxious patient", "worried family member", "exhausted healthcare worker", "first-time visitor"],
-                "office": ["new employee", "client visitor", "maintenance worker", "executive"],
-                "school": ["nervous student", "visiting parent", "substitute teacher", "administrator"]
-            }
-
-            user_type = self.text_processor.select_random(user_types.get(building_type, ["community member", "visitor", "user", "person"]))
-
-            # Format the gamified challenge
-            gamified_challenge = template.format(
-                base_challenge=base_challenge,
-                building_type=building_type,
-                user_type=user_type
-            )
-
-            return gamified_challenge
-
-        except Exception as e:
-            self.telemetry.log_error("_add_gamification_elements", str(e))
-            return base_challenge  # Return original if gamification fails
+            messages = getattr(state, 'messages', [])
+            user_messages = [msg for msg in messages if msg.get('role') == 'user']
+            if user_messages:
+                return user_messages[-1].get('content', '').strip()
+            return "How would different users experience this space?"
+        except Exception:
+            return "How would different users experience this space?"
 
     def _should_apply_gamification(self, state: ArchMentorState, challenge_type: str, context: str) -> bool:
         """
@@ -243,13 +262,23 @@ class ChallengeGeneratorProcessor:
 
             latest_message = user_messages[-1].get('content', '').lower().strip()
 
-            # 1. ROLE-PLAY TRIGGERS (from routing test lines 12-16, 36-40)
+            # 1. ROLE-PLAY TRIGGERS - FIXED: More specific patterns to avoid false positives
             role_play_patterns = [
-                'how would a visitor feel', 'how would', 'what would', 'from the perspective of',
-                'how do users feel', 'what would an elderly person', 'what would a child'
+                # Specific role-play questions about feelings/experiences
+                'how would a visitor feel', 'how would a user feel', 'how would someone feel',
+                'how would they feel', 'what would a visitor think', 'what would a user think',
+                'how do users feel', 'what would an elderly person', 'what would a child',
+                'how would an elderly', 'how would a child', 'how would an adult',
+                # Specific feeling/experience patterns (more precise)
+                'feel in this space', 'feel when they enter', 'feel in the space', 'experience in this',
+                'member feel when', 'user feel when', 'visitor feel when', 'person feel when',
+                # Perspective patterns (more specific to avoid "how should I approach")
+                'from a user\'s perspective', 'from a visitor\'s perspective', 'as a user would',
+                'teenager\'s perspective', 'child\'s perspective', 'user\'s perspective',
+                'elderly person\'s perspective', 'visitor\'s perspective'
             ]
             if any(pattern in latest_message for pattern in role_play_patterns):
-                print(f"🎮 GAMIFICATION TRIGGER: Role-play question detected")
+                print(f"🎮 GAMIFICATION TRIGGER: Role-play question detected - '{latest_message}'")
                 return True
 
             # 2. CURIOSITY AMPLIFICATION (line 18)
@@ -258,10 +287,42 @@ class ChallengeGeneratorProcessor:
                 print(f"🎮 GAMIFICATION TRIGGER: Curiosity amplification detected")
                 return True
 
-            # 3. CREATIVE CONSTRAINTS (line 21)
-            constraint_patterns = ['i\'m stuck on', 'stuck on', 'having trouble', 'not sure how']
-            if any(pattern in latest_message for pattern in constraint_patterns):
-                print(f"🎮 GAMIFICATION TRIGGER: Creative constraint detected")
+            # 2.5. PERSPECTIVE SHIFT REQUESTS - Broader patterns
+            perspective_shift_patterns = [
+                # Original patterns
+                'help me see this from a different angle', 'different angle', 'see this differently',
+                'think about this differently', 'different perspective', 'another way to think',
+                'alternative viewpoint', 'fresh perspective',
+                # NEW: Simpler patterns
+                'different angle', 'differently', 'another way', 'alternative',
+                'fresh perspective', 'new perspective', 'see this', 'think about this'
+            ]
+            if any(pattern in latest_message for pattern in perspective_shift_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Perspective shift request detected - '{latest_message}'")
+                return True
+
+            # 3. CREATIVE CONSTRAINTS - Only for actual stuck/blocked situations
+            # FIXED: Removed "not sure how" - this is often part of thoughtful design questions
+            constraint_patterns = [
+                # Actual stuck/blocked patterns
+                'i\'m stuck on', 'stuck on', 'having trouble', 'i\'m stuck',
+                'completely stuck', 'really stuck', 'totally stuck',
+                # Fresh ideas patterns (when explicitly asking for ideas)
+                'i need fresh ideas', 'need fresh ideas', 'fresh ideas', 'new ideas',
+                'creative ideas', 'need ideas', 'ideas for', 'inspire me', 'inspiration',
+                'help me think', 'new approach', 'different approach'
+            ]
+
+            # ADDITIONAL CHECK: Don't trigger for thoughtful design questions
+            thoughtful_design_indicators = [
+                'how should i approach', 'how should i', 'what would be the best way',
+                'considering', 'thinking about', 'exploring', 'approach this'
+            ]
+
+            is_thoughtful_question = any(indicator in latest_message for indicator in thoughtful_design_indicators)
+
+            if any(pattern in latest_message for pattern in constraint_patterns) and not is_thoughtful_question:
+                print(f"🎮 GAMIFICATION TRIGGER: Creative constraint detected - '{latest_message}'")
                 return True
 
             # 4. REALITY CHECK / OVERCONFIDENCE (lines 24, 33)
@@ -288,6 +349,19 @@ class ChallengeGeneratorProcessor:
                 print(f"🎮 GAMIFICATION TRIGGER: Cognitive offloading detected")
                 return True
 
+            # ADDITIONAL CHECK: Skip gamification for design exploration questions
+            design_exploration_indicators = [
+                'i am thinking about', 'i\'m thinking about', 'thinking about',
+                'considering', 'exploring', 'approach this', 'how should i',
+                'what would be the best', 'how might i', 'spatial organization',
+                'design approach', 'design strategy', 'user flow', 'circulation',
+                'organize spaces', 'layout', 'planning'
+            ]
+
+            if any(indicator in latest_message for indicator in design_exploration_indicators):
+                print(f"🎮 GAMIFICATION SKIP: Design exploration question - should get direct guidance")
+                return False
+
             # Default: no gamification for normal design statements, technical questions, etc.
             print(f"🎮 GAMIFICATION SKIP: Normal design statement/question (no trigger patterns)")
             return False
@@ -310,25 +384,45 @@ class ChallengeGeneratorProcessor:
     async def _generate_alternative_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, alternative_type: str = "structural") -> Dict[str, Any]:
         """Generate alternative exploration cognitive challenge."""
         self.telemetry.log_agent_start("_generate_alternative_challenge")
-        
+
         try:
-            # Get challenge templates for alternative type
-            challenges = CHALLENGE_TEMPLATES.get("alternative_challenge", {}).get(alternative_type, [])
-            if not challenges:
-                challenges = ["What alternative approaches could you explore?"]
-            
-            base_challenge = random.choice(challenges)
-            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "alternative_challenge", alternative_type)
-            
-            return {
-                "challenge_text": contextualized_challenge,
-                "challenge_type": "alternative_challenge",
-                "alternative_type": alternative_type,
-                "pedagogical_intent": "Encourage exploration of design alternatives",
-                "cognitive_target": "divergent_thinking",
-                "expected_outcome": "Increased creative exploration and solution diversity"
-            }
-            
+            # Check if gamification should be applied
+            should_gamify = self._should_apply_gamification(state, alternative_type, "alternative_challenge")
+
+            if should_gamify:
+                # Pass original user message for flexible content generation
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "alternative_challenge",
+                    "alternative_type": alternative_type,
+                    "building_type": building_type,
+                    "pedagogical_intent": "Encourage exploration of design alternatives",
+                    "cognitive_target": "divergent_thinking",
+                    "expected_outcome": "Increased creative exploration and solution diversity",
+                    "gamification_applied": True
+                }
+            else:
+                # Use traditional challenge generation
+                challenges = CHALLENGE_TEMPLATES.get("alternative_challenge", {}).get(alternative_type, [])
+                if not challenges:
+                    challenges = ["What alternative approaches could you explore?"]
+
+                base_challenge = random.choice(challenges)
+                contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "alternative_challenge", alternative_type)
+
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "alternative_challenge",
+                    "alternative_type": alternative_type,
+                    "pedagogical_intent": "Encourage exploration of design alternatives",
+                    "cognitive_target": "divergent_thinking",
+                    "expected_outcome": "Increased creative exploration and solution diversity",
+                    "gamification_applied": False
+                }
+
         except Exception as e:
             self.telemetry.log_error("_generate_alternative_challenge", str(e))
             return {
@@ -336,7 +430,8 @@ class ChallengeGeneratorProcessor:
                 "challenge_type": "alternative_challenge",
                 "alternative_type": alternative_type,
                 "pedagogical_intent": "Encourage creative exploration",
-                "cognitive_target": "creativity"
+                "cognitive_target": "creativity",
+                "gamification_applied": False
             }
     
     async def _generate_metacognitive_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, metacognitive_type: str = "process_reflection") -> Dict[str, Any]:
@@ -356,21 +451,30 @@ class ChallengeGeneratorProcessor:
             should_gamify = self._should_apply_gamification(state, metacognitive_type, "metacognitive_challenge")
 
             if should_gamify:
-                gamified_challenge = await self._add_gamification_elements(contextualized_challenge, metacognitive_type, state)
-                gamification_applied = True
-            else:
-                gamified_challenge = contextualized_challenge
-                gamification_applied = False
+                # Pass original user message for flexible content generation
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
 
-            return {
-                "challenge_text": gamified_challenge,
-                "challenge_type": "metacognitive_challenge",
-                "metacognitive_type": metacognitive_type,
-                "pedagogical_intent": "Foster metacognitive awareness and self-evaluation" + (" with focus on increasing engagement" if gamification_applied else ""),
-                "cognitive_target": "metacognition",
-                "expected_outcome": "Enhanced self-awareness and reflective practice",
-                "gamification_applied": gamification_applied
-            }
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "metacognitive_challenge",
+                    "metacognitive_type": metacognitive_type,
+                    "building_type": building_type,
+                    "pedagogical_intent": "Foster metacognitive awareness and self-evaluation with focus on increasing engagement",
+                    "cognitive_target": "metacognition",
+                    "expected_outcome": "Enhanced self-awareness and reflective practice",
+                    "gamification_applied": True
+                }
+            else:
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "metacognitive_challenge",
+                    "metacognitive_type": metacognitive_type,
+                    "pedagogical_intent": "Foster metacognitive awareness and self-evaluation",
+                    "cognitive_target": "metacognition",
+                    "expected_outcome": "Enhanced self-awareness and reflective practice",
+                    "gamification_applied": False
+                }
             
         except Exception as e:
             self.telemetry.log_error("_generate_metacognitive_challenge", str(e))

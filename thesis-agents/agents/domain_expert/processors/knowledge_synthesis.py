@@ -336,35 +336,58 @@ class KnowledgeSynthesisProcessor:
         """Extract meaningful keywords from the user's topic for better filtering."""
         # Remove common architectural words to focus on the specific topic
         common_words = {
-            'design', 'architecture', 'building', 'space', 'project', 'the', 'a', 'an', 'and', 'or', 
+            'design', 'architecture', 'building', 'space', 'project', 'the', 'a', 'an', 'and', 'or',
             'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'are', 'was', 'were', 'be', 'been',
             'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may',
             'might', 'can', 'must', 'shall', 'this', 'that', 'these', 'those', 'it', 'its', 'they',
-            'them', 'their', 'we', 'our', 'you', 'your', 'me', 'my', 'i', 'am', 'im'
+            'them', 'their', 'we', 'our', 'you', 'your', 'me', 'my', 'i', 'am', 'im', 'some', 'provide',
+            'give', 'show', 'tell', 'help', 'about', 'how', 'what', 'where', 'when', 'why', 'which'
         }
-        
+
         # Split topic into words and filter
         words = topic.lower().split()
         keywords = []
-        
+
+        # Extract all meaningful words without hardcoded preferences
         for word in words:
             # Remove punctuation and clean
             clean_word = word.strip('.,!?;:()[]{}"\'').lower()
-            
+
             # Skip common words and very short words
-            if (clean_word not in common_words and 
-                len(clean_word) > 2 and 
+            if (clean_word not in common_words and
+                len(clean_word) > 2 and
                 clean_word.isalpha()):
                 keywords.append(clean_word)
-        
-        # If no keywords found, use the original topic words (excluding very common ones)
+
+        # Extract compound terms and phrases dynamically
+        topic_lower = topic.lower()
+
+        # Look for any compound architectural terms (not hardcoded)
+        compound_patterns = [
+            r'(\w+)\s+(center|centre|building|facility|space|hall|complex)',
+            r'(\w+)\s+(climate|weather|environment|condition)',
+            r'(\w+)\s+(design|architecture|planning|layout)',
+            r'(sustainable|green|eco|energy)\s+(\w+)',
+            r'(\w+)\s+(material|construction|structure)'
+        ]
+
+        import re
+        for pattern in compound_patterns:
+            matches = re.findall(pattern, topic_lower)
+            for match in matches:
+                if isinstance(match, tuple):
+                    keywords.extend([word for word in match if word not in common_words and len(word) > 2])
+
+        # If no meaningful keywords found, use any non-common words
         if not keywords:
             for word in words:
                 clean_word = word.strip('.,!?;:()[]{}"\'').lower()
-                if clean_word not in {'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with'}:
+                if clean_word not in {'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'can', 'you', 'some', 'provide', 'give', 'show'}:
                     keywords.append(clean_word)
-        
-        return keywords[:5]  # Limit to top 5 keywords
+
+        final_keywords = keywords
+
+        return final_keywords[:5]  # Limit to top 5 keywords
     
     def _calculate_topic_relevance(self, title: str, snippet: str, topic_keywords: List[str]) -> float:
         """Calculate how relevant an example is to the user's specific topic."""
@@ -508,29 +531,35 @@ class KnowledgeSynthesisProcessor:
             return [f"Would you like to learn more about {topic}?"]
     
     async def _generate_educational_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
-        """Generate educational-style response."""
+        """Generate contextual, specific educational response based on user's actual question."""
         try:
+            # Extract user's actual question and context
+            user_question = context.get('user_question', topic) if context else topic
+            building_type = context.get('building_type', 'architectural project') if context else 'architectural project'
+            project_context = context.get('project_context', '') if context else ''
+
+            # Create a more specific, contextual prompt
             prompt = f"""
-            Create a clean, educational response about {topic} in architecture.
+            A student is working on a {building_type} and asked: "{user_question}"
 
-            Knowledge available: {knowledge.get('summary', 'General architectural knowledge')}
-            Context: {context if context else 'General architectural learning'}
+            Their project context: {project_context}
+            Available knowledge: {knowledge.get('summary', 'General architectural knowledge')}
 
-            Requirements:
-            - Write in clear, flowing paragraphs without markdown headers
-            - No ### or ## headers - use natural paragraph breaks instead
-            - Introduce the topic clearly
-            - Explain key concepts in an accessible way
-            - Provide practical applications
-            - Include architectural considerations
-            - Keep the tone informative but conversational
-            - Maximum 300 words
+            Provide a specific, helpful response that:
+            1. Directly addresses their question with concrete examples
+            2. Gives practical, actionable guidance for their specific project type
+            3. Includes specific spatial organization strategies
+            4. Mentions real architectural precedents or approaches when relevant
+            5. Provides step-by-step thinking process they can follow
+            6. Avoids generic "Architecture 101" advice
 
-            Format as clean text with paragraph breaks, not markdown.
+            Be specific to their {building_type} project and give them practical next steps they can immediately apply.
+            Write in clear paragraphs without markdown headers.
+            Maximum 250 words.
             """
 
             response = await self.client.generate_completion([
-                self.client.create_system_message("You are an expert architecture educator. Write clean, flowing text without markdown headers."),
+                self.client.create_system_message("You are an expert architecture mentor providing specific, contextual guidance. Avoid generic advice."),
                 self.client.create_user_message(prompt)
             ])
 
@@ -538,12 +567,13 @@ class KnowledgeSynthesisProcessor:
                 # Clean any markdown headers that might have been generated
                 clean_response = self._clean_markdown_headers(response["content"])
                 return clean_response
-            
-            return f"Educational information about {topic} in architectural design and practice."
-            
+
+            # Fallback with more specific guidance
+            return f"For your {building_type}, consider how {topic} can be specifically applied to your project context. What are the unique spatial requirements and user needs you're addressing?"
+
         except Exception as e:
             self.telemetry.log_error("_generate_educational_response", str(e))
-            return f"Educational content about {topic} in architecture."
+            return f"Let's explore how {topic} applies specifically to your {building_type if context and context.get('building_type') else 'project'}."
     
     async def _generate_practical_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate practical-focused response."""

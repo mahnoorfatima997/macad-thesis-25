@@ -1065,13 +1065,20 @@ class LangGraphOrchestrator:
         except Exception:
             pass
 
+        # CRITICAL FIX: Extract gamification metadata from response_metadata and add to top level
+        response_metadata = final_state.get("response_metadata", {})
+        gamification_metadata = response_metadata.get("gamification", {})
+
         return {
             "response": final_state.get("final_response", ""),
-            "metadata": final_state.get("response_metadata", {}),
+            "metadata": response_metadata,
             "routing_path": final_state.get("routing_decision", {}).get("path", "unknown"),
             "classification": final_state.get("student_classification", {}),
             "conversation_progression": progression_analysis,
             "milestone_guidance": milestone_guidance,
+            # CRITICAL FIX: Add gamification metadata to top level for UI access
+            "gamification": gamification_metadata,
+            "gamification_display": gamification_metadata,  # Also add as gamification_display for compatibility
         }
 
     def _print_enhanced_process_summary(self, final_state: Dict, processing_time: float, user_input: str):

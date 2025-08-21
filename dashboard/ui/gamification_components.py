@@ -971,13 +971,26 @@ def render_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
     """Render a gamified challenge with enhanced visuals."""
     try:
         print(f"🎮 GAMIFICATION: Starting render with data: {list(challenge_data.keys())}")
+
+        # Validate required data fields
+        required_fields = ["challenge_text", "challenge_type"]
+        missing_fields = [field for field in required_fields if field not in challenge_data]
+
+        if missing_fields:
+            print(f"🎮 GAMIFICATION WARNING: Missing fields {missing_fields}, using fallback")
+            _render_simple_gamified_challenge(challenge_data)
+            return
+
         display = GamificationDisplay()
         display.render_gamified_challenge(challenge_data)
         print(f"🎮 GAMIFICATION: Render completed successfully")
 
         # Track the challenge
-        tracker = GamificationTracker()
-        # Note: In real implementation, call add_challenge_completion when user responds
+        try:
+            tracker = GamificationTracker()
+            # Note: In real implementation, call add_challenge_completion when user responds
+        except Exception as tracker_error:
+            print(f"🎮 GAMIFICATION: Tracker error (non-critical): {tracker_error}")
 
     except Exception as e:
         print(f"🎮 GAMIFICATION ERROR: {e}")
@@ -988,12 +1001,26 @@ def render_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
         _render_simple_gamified_challenge(challenge_data)
 
 def _render_simple_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
-    """Simple fallback gamification display."""
-    import streamlit as st
+    """Simple fallback gamification display with robust error handling."""
+    try:
+        import streamlit as st
 
-    challenge_text = challenge_data.get("challenge_text", "")
-    challenge_type = challenge_data.get("challenge_type", "challenge")
-    difficulty = challenge_data.get("difficulty_level", "medium")
+        # Safe data extraction with fallbacks
+        challenge_text = challenge_data.get("challenge_text", "Let's explore your design challenge!")
+        challenge_type = challenge_data.get("challenge_type", "challenge")
+        difficulty = challenge_data.get("difficulty_level", "medium")
+
+        # Ensure we have some content to display
+        if not challenge_text or challenge_text.strip() == "":
+            challenge_text = "Continue exploring your design ideas!"
+
+    except Exception as e:
+        print(f"🎮 SIMPLE GAMIFICATION ERROR: {e}")
+        # Ultra-safe fallback
+        import streamlit as st
+        challenge_text = "Continue with your design exploration!"
+        challenge_type = "challenge"
+        difficulty = "medium"
 
     st.markdown(f"""
     <div style="
