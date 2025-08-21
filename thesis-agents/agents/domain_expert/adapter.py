@@ -142,20 +142,19 @@ class DomainExpertAgent:
 
             # Step 1: Try database search first
             knowledge_results = []
-            user_topic = self._extract_topic_from_user_input(user_input)
+            user_topic = await self._extract_topic_from_user_input(user_input)
 
             try:
                 from knowledge_base.knowledge_manager import KnowledgeManager
                 km = KnowledgeManager(domain="architecture")
 
-                # Create knowledge-focused search query - IMPROVED
-                # Clean building type and avoid redundancy
+                # Create flexible, context-aware search query
                 building_type_clean = building_type.replace('_', ' ')
-                if user_topic.lower() in building_type_clean.lower():
-                    db_query = f"{user_topic} architecture design"
-                else:
-                    db_query = f"{user_topic} {building_type_clean} architecture"
-                print(f"   🗄️  DB search query: {db_query}")
+
+                # Use flexible query construction
+                db_query = self._create_flexible_db_query(user_topic, building_type_clean)
+
+                print(f"   🗄️  Flexible DB search query: {db_query}")
 
                 db_results = km.search_knowledge(db_query, n_results=5)
                 if db_results:
@@ -1249,11 +1248,18 @@ What questions do you have about your design?"""
             # Calculate relevance score
             relevance_score = 0
 
-            # 1. Topic relevance (30% weight)
+            # 1. Topic relevance (30% weight) - MORE FLEXIBLE
             topic_mentions = full_text.count(user_topic_lower)
+
+            # Break down topic into individual words for better matching
+            topic_words = user_topic_lower.split()
+            word_mentions = sum(full_text.count(word) for word in topic_words if len(word) > 2)
+
             related_terms = self._get_related_terms(user_topic_lower)
             related_mentions = sum(full_text.count(term) for term in related_terms)
-            topic_score = min(1.0, (topic_mentions * 0.5 + related_mentions * 0.3) / 3)
+
+            # More generous scoring - if any topic words are found, give some credit
+            topic_score = min(1.0, (topic_mentions * 1.0 + word_mentions * 0.3 + related_mentions * 0.2) / max(1, len(topic_words)))
             relevance_score += topic_score * 0.3
 
             # 2. Building type relevance (40% weight)
@@ -1265,11 +1271,16 @@ What questions do you have about your design?"""
                 building_score = min(1.0, (building_mentions * 0.7 + synonym_mentions * 0.3) / 2)
             relevance_score += building_score * 0.4
 
-            # 3. Feature relevance (30% weight)
+            # 3. Feature relevance (30% weight) - MORE FLEXIBLE
             feature_score = 0
             if features:
                 feature_mentions = sum(full_text.count(feature.lower()) for feature in features)
                 feature_score = min(1.0, feature_mentions / len(features))
+            else:
+                # If no specific features, give some credit for general architectural terms
+                general_arch_terms = ['design', 'space', 'building', 'architecture', 'structure']
+                general_mentions = sum(1 for term in general_arch_terms if term in full_text)
+                feature_score = min(0.5, general_mentions * 0.1)  # Max 0.5 for general terms
             relevance_score += feature_score * 0.3
 
             # 4. Use similarity score if available
@@ -1277,12 +1288,13 @@ What questions do you have about your design?"""
             if similarity > 0:
                 relevance_score = max(relevance_score, similarity)
 
-            # Consider relevant if score is above threshold
-            if relevance_score > 0.4:  # Adjusted threshold
+            # BALANCED THRESHOLD - not too strict, not too permissive
+            # Require either good similarity OR good relevance score, but with reasonable minimums
+            if (similarity > 0.25 and relevance_score > 0.15) or relevance_score > 0.35:
                 relevant_results.append(result)
-                print(f"   ✅ Relevant result: {title[:50]}... (score: {relevance_score:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
+                print(f"   ✅ Relevant result: {title[:50]}... (score: {relevance_score:.3f}, similarity: {similarity:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
             else:
-                print(f"   ❌ Filtered out: {title[:50]}... (score: {relevance_score:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
+                print(f"   ❌ Filtered out: {title[:50]}... (score: {relevance_score:.3f}, similarity: {similarity:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
 
         return relevant_results
 
@@ -1803,6 +1815,55 @@ What questions do you have about your design?"""
         print(f"   🌐 Final web query: {query}")
         return query
 
+    def _create_flexible_db_query(self, user_topic: str, building_type: str) -> str:
+        """Create flexible database query based on semantic analysis"""
+
+        # Start with core terms
+        query_parts = []
+
+        # Add user topic (always include)
+        if user_topic and user_topic.strip():
+            query_parts.append(user_topic.strip())
+
+        # Add building type if different from topic
+        if building_type and building_type.lower() not in user_topic.lower():
+            query_parts.append(building_type)
+
+        # Analyze topic for architectural concepts and add related terms
+        topic_lower = user_topic.lower()
+
+        # Spatial/dimensional queries
+        if any(term in topic_lower for term in ['size', 'dimension', 'area', 'capacity']):
+            query_parts.extend(['area', 'square feet', 'dimensions'])
+
+        # Construction/material queries
+        elif any(term in topic_lower for term in ['construction', 'steel', 'concrete', 'material']):
+            query_parts.extend(['building', 'structure', 'materials'])
+
+        # Spatial element queries
+        elif any(term in topic_lower for term in ['courtyard', 'atrium', 'plaza']):
+            query_parts.extend(['outdoor space', 'central court'])
+
+        # Meeting/conference space queries
+        elif any(term in topic_lower for term in ['conference', 'meeting', 'hall']):
+            query_parts.extend(['meeting room', 'assembly', 'auditorium'])
+
+        # Always add architecture context
+        query_parts.append('architecture')
+
+        # Join and clean
+        query = ' '.join(query_parts)
+
+        # Remove duplicates while preserving order
+        words = []
+        seen = set()
+        for word in query.split():
+            if word.lower() not in seen:
+                words.append(word)
+                seen.add(word.lower())
+
+        return ' '.join(words)
+
     def _create_specific_web_query_with_topic(self, user_topic: str, building_type: str, request_type: str) -> str:
         """Create a specific web search query using the extracted topic."""
 
@@ -2028,7 +2089,7 @@ What questions do you have about your design?"""
         print(f"⚖️ Generating balanced guidance strategies for: {user_input}")
 
         # Extract topic from user input
-        user_topic = self._extract_topic_from_user_input(user_input)
+        user_topic = await self._extract_topic_from_user_input(user_input)
 
         try:
             # Generate specific strategies using LLM

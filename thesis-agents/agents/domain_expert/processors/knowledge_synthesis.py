@@ -538,22 +538,21 @@ class KnowledgeSynthesisProcessor:
             building_type = context.get('building_type', 'architectural project') if context else 'architectural project'
             project_context = context.get('project_context', '') if context else ''
 
-            # Create a more specific, contextual prompt
+            # Create a focused, question-specific prompt
             prompt = f"""
-            A student is working on a {building_type} and asked: "{user_question}"
+            A student asked: "{user_question}"
 
-            Their project context: {project_context}
-            Available knowledge: {knowledge.get('summary', 'General architectural knowledge')}
+            Available architectural knowledge from database: {knowledge.get('summary', 'General architectural knowledge')}
 
-            Provide a specific, helpful response that:
-            1. Directly addresses their question with concrete examples
-            2. Gives practical, actionable guidance for their specific project type
-            3. Includes specific spatial organization strategies
-            4. Mentions real architectural precedents or approaches when relevant
-            5. Provides step-by-step thinking process they can follow
-            6. Avoids generic "Architecture 101" advice
+            Provide a focused response that:
+            1. DIRECTLY answers their specific question first (no generic introductions)
+            2. Uses the database information to provide concrete facts, dimensions, or standards
+            3. Gives practical, actionable information relevant to their question
+            4. Focuses on the specific aspect they asked about
+            5. Provides specific numbers, dimensions, or standards when available
+            6. Avoids generic background about {building_type}s
 
-            Be specific to their {building_type} project and give them practical next steps they can immediately apply.
+            Start your response by directly addressing their question with specific information.
             Write in clear paragraphs without markdown headers.
             Maximum 250 words.
             """

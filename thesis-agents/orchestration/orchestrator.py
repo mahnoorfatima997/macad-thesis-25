@@ -602,17 +602,52 @@ class LangGraphOrchestrator:
         if hasattr(analysis_result, 'to_dict'):
             analysis_result = analysis_result.to_dict()
 
-        # Prioritize socratic for comprehensive analysis
+        # ENHANCED: Create contextual response that addresses user's specific input
+        responses = []
+
+        # Add domain expertise if available and relevant
+        if domain_result and domain_result.get("response_text"):
+            domain_text = domain_result.get("response_text", "").strip()
+            if domain_text and len(domain_text) > 50:  # Ensure substantial content
+                responses.append(domain_text)
+
+        # Add socratic guidance if available and different from domain
         if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "multi_agent_comprehensive"
-        elif domain_result and domain_result.get("response_text"):
-            return domain_result.get("response_text", ""), "multi_agent_comprehensive"
+            socratic_text = socratic_result.get("response_text", "").strip()
+            if socratic_text and len(socratic_text) > 50:
+                # Only add if significantly different from domain response
+                if not responses or not self._responses_too_similar(socratic_text, responses[0]):
+                    responses.append(socratic_text)
+
+        # Synthesize multiple perspectives if available
+        if len(responses) >= 2:
+            return f"{responses[0]}\n\n{responses[1]}", "multi_agent_comprehensive"
+        elif len(responses) == 1:
+            return responses[0], "multi_agent_comprehensive"
         elif cognitive_result and cognitive_result.get("response_text"):
             return cognitive_result.get("response_text", ""), "multi_agent_comprehensive"
+
         return (
-            "I'd be happy to provide comprehensive feedback on your project. What specific aspects would you like me to focus on?",
+            f"I'd be happy to provide comprehensive feedback on your approach. Your idea about {user_input.lower()[:50]}... shows thoughtful consideration. What specific aspects would you like me to focus on?",
             "multi_agent_comprehensive",
         )
+
+    def _responses_too_similar(self, response1: str, response2: str) -> bool:
+        """Check if two responses are too similar to warrant combining"""
+        # Simple similarity check based on common words
+        words1 = set(response1.lower().split())
+        words2 = set(response2.lower().split())
+
+        if len(words1) == 0 or len(words2) == 0:
+            return False
+
+        # Calculate Jaccard similarity
+        intersection = len(words1.intersection(words2))
+        union = len(words1.union(words2))
+        similarity = intersection / union if union > 0 else 0
+
+        # Consider responses too similar if >70% overlap
+        return similarity > 0.7
 
     def _synthesize_socratic_clarification_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
         """Synthesize Socratic clarification response"""

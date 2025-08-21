@@ -508,14 +508,18 @@ class KnowledgeManager:
         return chunks
 
     def search_knowledge(self, query: str, n_results: int = 5, min_similarity: float = 0.0) -> List[Dict]:
-        """Search knowledge base with proper distance handling"""
-        
+        """Search knowledge base with improved query processing and lower thresholds"""
+
         print(f"🔍 Searching knowledge for: '{query}'")
-        
+
+        # Expand query with synonyms for better matching
+        expanded_query = self._expand_query_with_synonyms(query)
+        print(f"   🔍 Expanded query: '{expanded_query}'")
+
         try:
             results = self.collection.query(
-                query_texts=[query],
-                n_results=min(n_results, self.collection.count())
+                query_texts=[expanded_query],
+                n_results=min(n_results * 2, self.collection.count())  # Get more results to filter
             )
             
             knowledge_results = []
@@ -544,7 +548,13 @@ class KnowledgeManager:
             print(f"📊 Found {len(knowledge_results)} relevant results")
             
             for result in knowledge_results[:2]:
-                print(f"   📄 Distance: {result['distance']:.3f} | Source: {result['metadata']['title']}")
+                # Fix metadata display - handle different metadata formats
+                metadata = result.get('metadata', {})
+                source = (metadata.get('file_name') or
+                         metadata.get('source') or
+                         metadata.get('title') or
+                         'Unknown')
+                print(f"   📄 Distance: {result['distance']:.3f} | Source: {source}")
                 print(f"      Content: {result['content'][:80]}...")
             
             return knowledge_results
@@ -552,6 +562,109 @@ class KnowledgeManager:
         except Exception as e:
             print(f"❌ Knowledge search failed: {e}")
             return []
+
+    def _expand_query_with_synonyms(self, query: str) -> str:
+        """Flexible, dynamic query expansion using semantic analysis"""
+        try:
+            return self._generate_flexible_search_terms(query)
+        except Exception as e:
+            print(f"   ⚠️ Flexible expansion failed: {e}, using original query")
+            return query
+
+    def _generate_flexible_search_terms(self, query: str) -> str:
+        """Generate flexible search terms based on semantic analysis of the query"""
+        query_lower = query.lower().strip()
+
+        # Extract key concepts dynamically
+        concepts = self._extract_architectural_concepts(query_lower)
+
+        # Generate related terms for each concept
+        expanded_terms = [query]  # Always include original
+
+        for concept in concepts:
+            related_terms = self._get_related_architectural_terms(concept)
+            if related_terms:
+                expanded_terms.extend(related_terms[:2])  # Limit to avoid over-expansion
+
+        # Join and clean
+        expanded_query = " ".join(expanded_terms)
+
+        # Remove duplicates while preserving order
+        words = []
+        seen = set()
+        for word in expanded_query.split():
+            if word.lower() not in seen:
+                words.append(word)
+                seen.add(word.lower())
+
+        final_query = " ".join(words)
+
+        # Limit length
+        if len(final_query) > 150:
+            final_query = final_query[:150].rsplit(' ', 1)[0]  # Cut at word boundary
+
+        return final_query
+
+    def _extract_architectural_concepts(self, query: str) -> list:
+        """Extract architectural concepts from query dynamically"""
+        concepts = []
+        words = query.split()
+
+        # Building types - look for patterns like "X center", "X hall", etc.
+        building_indicators = ['center', 'hall', 'building', 'house', 'facility', 'structure', 'room']
+        for i, word in enumerate(words):
+            if word in building_indicators and i > 0:
+                building_type = f"{words[i-1]} {word}"
+                concepts.append(('building_type', building_type))
+
+        # Spatial concepts
+        spatial_terms = ['courtyard', 'atrium', 'plaza', 'space', 'area', 'zone']
+        for term in spatial_terms:
+            if term in query:
+                concepts.append(('spatial_element', term))
+
+        # Construction/material concepts
+        construction_terms = ['construction', 'steel', 'concrete', 'wood', 'material', 'structural']
+        for term in construction_terms:
+            if term in query:
+                concepts.append(('construction', term))
+
+        # Dimensional concepts
+        size_terms = ['size', 'dimension', 'area', 'capacity', 'square', 'feet']
+        for term in size_terms:
+            if term in query:
+                concepts.append(('dimension', term))
+
+        return concepts
+
+    def _get_related_architectural_terms(self, concept_tuple) -> list:
+        """Get related terms for a concept dynamically"""
+        concept_type, concept_value = concept_tuple
+
+        if concept_type == 'building_type':
+            if 'community' in concept_value:
+                return ['civic', 'cultural', 'recreation']
+            elif 'conference' in concept_value or 'meeting' in concept_value:
+                return ['meeting', 'boardroom', 'assembly', 'auditorium']
+            elif 'hall' in concept_value:
+                return ['auditorium', 'assembly', 'meeting']
+
+        elif concept_type == 'spatial_element':
+            if concept_value == 'courtyard':
+                return ['atrium', 'plaza', 'outdoor']
+            elif concept_value in ['room', 'space']:
+                return ['area', 'chamber']
+
+        elif concept_type == 'construction':
+            if concept_value == 'steel':
+                return ['structural', 'metal', 'frame']
+            elif concept_value == 'construction':
+                return ['building', 'structure']
+
+        elif concept_type == 'dimension':
+            return ['area', 'capacity', 'floor']
+
+        return []
 
     def get_collection_stats(self):
         """Get statistics about the knowledge base"""

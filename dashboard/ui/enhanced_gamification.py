@@ -173,29 +173,72 @@ class FlexibleContentGenerator:
 
         return personas
 
-    def generate_constraints_from_context(self, building_type: str, user_message: str) -> Dict[str, Dict[str, Any]]:
-        """Generate contextual constraints based on user message."""
+    def generate_constraints_from_context(self, building_type: str, user_message: str, challenge_data: Dict = None) -> Dict[str, Dict[str, Any]]:
+        """Generate highly contextual constraints based on user message and challenge data."""
         constraints = {}
 
-        # Analyze message for constraint keywords
-        constraint_keywords = {
-            "budget": ["budget", "cost", "money", "expensive", "cheap", "funding"],
-            "site": ["site", "location", "terrain", "flood", "small", "limited space"],
-            "time": ["time", "schedule", "deadline", "fast", "quick", "delay"],
-            "program": ["requirements", "needs", "users", "function", "multi-use"]
-        }
+        # Use rich context data if available
+        context_data = challenge_data or {}
+        specific_constraint = context_data.get("specific_constraint", "").lower()
+        context_keywords = context_data.get("context_keywords", [])
+        specific_elements = context_data.get("specific_elements", [])
 
+        # CONTEXT-AWARE CONSTRAINT GENERATION
         detected_constraints = []
-        for category, keywords in constraint_keywords.items():
-            if any(keyword in user_message.lower() for keyword in keywords):
-                detected_constraints.append(category)
+
+        # Check for circulation-specific constraints
+        if "circulation" in specific_constraint or any("circulation" in str(kw).lower() for kw in context_keywords):
+            detected_constraints.extend(["circulation", "flow"])
+
+        # Check for warehouse conversion constraints
+        elif "warehouse" in user_message.lower() or "conversion" in specific_constraint:
+            detected_constraints.extend(["conversion", "structure"])
+
+        # Check for space planning constraints
+        elif "layout" in user_message.lower() or "space" in specific_constraint:
+            detected_constraints.extend(["space", "program"])
+
+        # Fallback to keyword detection
+        else:
+            constraint_keywords = {
+                "budget": ["budget", "cost", "money", "expensive", "cheap", "funding"],
+                "site": ["site", "location", "terrain", "flood", "small", "limited space"],
+                "time": ["time", "schedule", "deadline", "fast", "quick", "delay"],
+                "program": ["requirements", "needs", "users", "function", "multi-use"]
+            }
+
+            for category, keywords in constraint_keywords.items():
+                if any(keyword in user_message.lower() for keyword in keywords):
+                    detected_constraints.append(category)
 
         # If no specific constraints detected, use general ones
         if not detected_constraints:
             detected_constraints = ["budget", "site", "program"]
 
-        # Generate constraint data
+        # Generate constraint data with context-aware options
         constraint_options = {
+            # CONTEXT-SPECIFIC CONSTRAINTS
+            "circulation": {
+                "Entrance Bottleneck": {"impact": f"Main entrance creates congestion in {building_type}", "color": "#cd766d", "challenge": "How to distribute arrival flows?", "icon": "◐"},
+                "Vertical Circulation": {"impact": "Stairs interrupt horizontal flow", "color": "#d99c66", "challenge": "How to integrate vertical movement seamlessly?", "icon": "◐"}
+            },
+            "flow": {
+                "Dead-End Spaces": {"impact": "Some areas become isolated", "color": "#b87189", "challenge": "How to create continuous circulation loops?", "icon": "◐"},
+                "Conflicting Paths": {"impact": "Different user groups cross paths", "color": "#5c4f73", "challenge": "How to separate incompatible flows?", "icon": "◐"}
+            },
+            "conversion": {
+                "Industrial Scale": {"impact": f"Warehouse spaces feel overwhelming for {building_type}", "color": "#4f3a3e", "challenge": "How to create human-scale spaces within large volume?", "icon": "◐"},
+                "Existing Structure": {"impact": "Concrete columns limit layout flexibility", "color": "#e0ceb5", "challenge": "How to work with structural constraints?", "icon": "◐"}
+            },
+            "structure": {
+                "Column Grid": {"impact": "Structural grid doesn't match program needs", "color": "#dcc188", "challenge": "How to align structure with function?", "icon": "◐"},
+                "Load Limitations": {"impact": "Floor can't support heavy loads", "color": "#cda29a", "challenge": "How to distribute weight effectively?", "icon": "◐"}
+            },
+            "space": {
+                "Irregular Shape": {"impact": "Odd building geometry creates challenges", "color": "#cd766d", "challenge": "How to make awkward spaces functional?", "icon": "◐"},
+                "Low Ceiling Height": {"impact": "Limited vertical space", "color": "#d99c66", "challenge": "How to maximize spatial quality with height limits?", "icon": "◐"}
+            },
+            # GENERIC CONSTRAINTS (fallback)
             "budget": {
                 "Budget Cut": {"impact": "50% reduction in funds", "color": "#cd766d", "challenge": "How to maintain quality with less money?", "icon": "◐"},
                 "Value Engineering": {"impact": "Cost optimization required", "color": "#d99c66", "challenge": "What can be simplified without losing function?", "icon": "◐"}
@@ -469,6 +512,9 @@ class EnhancedGamificationRenderer:
         challenge_type = challenge_data.get("challenge_type", "role_play")
         challenge_text = challenge_data.get("challenge_text", "")
         building_type = challenge_data.get("building_type", "community center")
+
+        # Store challenge data in session state for context-aware rendering
+        st.session_state['current_challenge_data'] = challenge_data
 
         # CRITICAL: Get user's original message for contextual content generation
         user_message = challenge_data.get("user_message", "")
@@ -1304,7 +1350,8 @@ class EnhancedGamificationRenderer:
         """, unsafe_allow_html=True)
 
         # Generate dynamic constraints based on context
-        constraints = self.content_generator.generate_constraints_from_context(building_type, challenge_text)
+        challenge_data = getattr(st.session_state, 'current_challenge_data', {})
+        constraints = self.content_generator.generate_constraints_from_context(building_type, challenge_text, challenge_data)
 
         # Initialize constraint selection
         constraint_key = f"constraints_{building_type}_{hash(challenge_text)}"
