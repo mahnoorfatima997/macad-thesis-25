@@ -425,6 +425,14 @@ class AdvancedRoutingDecisionTree:
 
 
             # SOCRATIC EXPLORATION ROUTES
+            "design_exploration": {
+                "priority": 6,
+                "route": RouteType.SOCRATIC_EXPLORATION,
+                "conditions": ["user_intent == 'design_exploration'"],
+                "description": "Design exploration - Socratic questioning and guided discovery",
+                "context_agent_override": False,
+                "agents": ["socratic_tutor", "context_agent", "domain_expert"]
+            },
             "design_exploration_high_engagement": {
                 "priority": 7,
                 "route": RouteType.SOCRATIC_EXPLORATION,
@@ -865,16 +873,11 @@ class AdvancedRoutingDecisionTree:
             # Update classification reference for exception handler
             classification = enhanced_classification
             
-            # SMART ROUTING: Handle example requests - FIXED to route to SOCRATIC_EXPLORATION
+            # SMART ROUTING: Handle example requests - ALL go to KNOWLEDGE_ONLY
             if user_intent == "example_request":
-                # CRITICAL FIX: Example requests should go to SOCRATIC_EXPLORATION for better learning
-                # This allows for example analysis and follow-up questions
-                # CRITICAL FIX: Example requests should go to KNOWLEDGE routes for direct examples
-                # Check if it's asking for project examples vs general examples
-                if self._is_project_example_request(enhanced_classification, context):
-                    route = RouteType.KNOWLEDGE_ONLY  # Project examples need database/web search
-                else:
-                    route = RouteType.KNOWLEDGE_WITH_CHALLENGE  # General examples with follow-up
+                # FIXED: ALL example requests go to KNOWLEDGE_ONLY so domain expert can handle them properly
+                # Domain expert will determine if it's project examples (database/web) or general examples (AI)
+                route = RouteType.KNOWLEDGE_ONLY
 
                 decision = RoutingDecision(
                     route=route,

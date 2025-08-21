@@ -265,64 +265,86 @@ class FlexibleContentGenerator:
         return constraints
 
     def generate_mystery_from_context(self, building_type: str, user_message: str) -> Dict[str, Any]:
-        """Generate contextual mystery based on user message."""
+        """Generate FLEXIBLE contextual mystery based on ANY architectural topic in user message."""
 
-        # Analyze message for problem keywords
-        problem_keywords = {
-            "avoid": "People are avoiding certain areas",
-            "confusing": "Users seem confused about navigation",
-            "uncomfortable": "Spaces feel uncomfortable to users",
-            "underused": "Spaces are not being used as intended",
-            "crowded": "Some areas get too crowded",
-            "noisy": "Acoustic problems are evident",
-            "dark": "Lighting issues are apparent"
+        # Extract the main architectural topic from user message
+        user_lower = user_message.lower()
+
+        # Flexible topic detection for ANY architectural element
+        architectural_topics = {
+            # Spatial
+            "circulation": "circulation patterns", "flow": "movement flow", "wayfinding": "navigation",
+            "entrance": "entry experience", "lobby": "arrival sequence", "corridor": "circulation paths",
+
+            # Building Systems
+            "facade": "building exterior", "envelope": "building skin", "exterior": "building facade",
+            "landscape": "site design", "garden": "outdoor spaces", "courtyard": "landscape integration",
+            "structure": "structural system", "foundation": "structural support", "frame": "building structure",
+
+            # Environmental
+            "lighting": "illumination", "acoustic": "sound environment", "ventilation": "air quality",
+            "thermal": "temperature comfort", "daylight": "natural lighting", "shadow": "light and shadow",
+
+            # Materials & Finishes
+            "material": "material selection", "finish": "surface treatments", "texture": "tactile qualities",
+            "color": "color palette", "pattern": "visual patterns",
+
+            # Program & Function
+            "program": "functional requirements", "space": "spatial organization", "room": "space planning",
+            "function": "functional design", "activity": "programmatic needs"
         }
 
-        detected_problem = "People are behaving unexpectedly in your space"
-        for keyword, problem in problem_keywords.items():
-            if keyword in user_message.lower():
-                detected_problem = problem
+        detected_topic = "design challenge"
+        for keyword, topic in architectural_topics.items():
+            if keyword in user_lower:
+                detected_topic = topic
                 break
 
-        # Generate contextual clues
-        clue_templates = {
-            "avoid": [
-                "The main entrance has poor visibility from the street",
-                "There's a steep ramp that's difficult to navigate",
-                "The entrance door is heavy and hard to open",
-                "Lighting near the entrance is inadequate",
-                "The entrance lacks weather protection"
+        # Generate flexible problem statement
+        detected_problem = f"There's an unexpected issue with the {detected_topic} in your {building_type}"
+
+
+
+        # Generate FLEXIBLE clues based on detected topic
+        topic_clue_templates = {
+            "circulation patterns": [
+                "The main pathways create bottlenecks during peak hours",
+                "Users are taking unexpected routes through the space",
+                "Key destinations are not clearly connected"
             ],
-            "confusing": [
-                "Signage is inconsistent throughout the building",
-                "Similar-looking corridors create confusion",
-                "The layout doesn't follow intuitive circulation patterns",
-                "Key destinations are not visible from main paths",
-                "Floor materials don't help with wayfinding"
+            "building exterior": [
+                "The facade doesn't respond to local climate conditions",
+                "Material choices don't align with the building's function",
+                "The building's scale feels inappropriate for the context"
             ],
-            "uncomfortable": [
-                "Seating arrangements don't encourage social interaction",
-                "Ceiling height feels oppressive in some areas",
-                "Natural light is blocked by poor window placement",
-                "Acoustic design doesn't control noise properly",
-                "Temperature control is inadequate"
+            "site design": [
+                "The landscape doesn't support the building's program",
+                "Outdoor spaces lack clear connections to interior functions",
+                "Site drainage and grading create accessibility issues"
+            ],
+            "structural system": [
+                "The structural grid doesn't align with programmatic needs",
+                "Column placement interferes with spatial flexibility",
+                "The structural expression doesn't match the architectural intent"
+            ],
+            "illumination": [
+                "Natural light distribution is uneven throughout the day",
+                "Artificial lighting doesn't support different activities",
+                "Glare and shadows create visual discomfort"
+            ],
+            "material selection": [
+                "Material performance doesn't match environmental conditions",
+                "Surface treatments don't support the intended use patterns",
+                "Material transitions create maintenance challenges"
             ]
         }
 
-        # Select appropriate clues
-        clues = []
-        for keyword in problem_keywords.keys():
-            if keyword in user_message.lower() and keyword in clue_templates:
-                clues = clue_templates[keyword][:3]  # Take first 3 clues
-                break
-
-        if not clues:
-            # Default clues for general mystery
-            clues = [
-                f"The {building_type} layout doesn't match user expectations",
-                f"Environmental factors affect comfort in the {building_type}",
-                f"Wayfinding in the {building_type} needs improvement"
-            ]
+        # Find matching clues or generate generic ones
+        clues = topic_clue_templates.get(detected_topic, [
+            f"The {detected_topic} doesn't meet user expectations",
+            f"Environmental factors affect the {detected_topic}",
+            f"The {detected_topic} needs better integration with other systems"
+        ])
 
         # Add red herrings
         red_herrings = [
@@ -509,7 +531,7 @@ class EnhancedGamificationRenderer:
         
     def render_enhanced_challenge(self, challenge_data: Dict[str, Any]) -> None:
         """Render an enhanced visual challenge experience with CONTEXTUAL content generation."""
-        challenge_type = challenge_data.get("challenge_type", "role_play")
+        challenge_type = challenge_data.get("challenge_type", "alternative_challenge")  # FIXED: Use correct default
         challenge_text = challenge_data.get("challenge_text", "")
         building_type = challenge_data.get("building_type", "community center")
 
@@ -540,7 +562,9 @@ class EnhancedGamificationRenderer:
             "daily_rhythm_challenge": "time_travel"
         }
 
-        enhanced_type = type_mapping.get(challenge_type, challenge_type) or "role_play"
+        enhanced_type = type_mapping.get(challenge_type, challenge_type)
+        if not enhanced_type:  # Only fallback if truly empty/None
+            enhanced_type = "constraint"
         theme = self.themes.get(enhanced_type, self.themes["role_play"])
 
         # Inject enhanced CSS
@@ -1048,6 +1072,14 @@ class EnhancedGamificationRenderer:
                     persona_state['response_given'] = True
                     persona_state['persona_points'] += 30
 
+                    # INTEGRATE WITH MENTOR: Send game response back to conversation
+                    game_response = f"🎭 Role-Play Experience: {user_response.strip()}"
+                    if 'messages' not in st.session_state:
+                        st.session_state.messages = []
+                    st.session_state.messages.append({"role": "user", "content": game_response})
+                    st.session_state.should_process_message = True
+                    st.rerun()
+
         # Show insights after submission
         if persona_state.get('response_given', False):
             # Compact insights display
@@ -1174,6 +1206,14 @@ class EnhancedGamificationRenderer:
                     wheel_state['response_given'] = True
                     wheel_state['perspective_points'] += 20
 
+                    # INTEGRATE WITH MENTOR: Send game response back to conversation
+                    game_response = f"🎡 Perspective Shift: {response.strip()}"
+                    if 'messages' not in st.session_state:
+                        st.session_state.messages = []
+                    st.session_state.messages.append({"role": "user", "content": game_response})
+                    st.session_state.should_process_message = True
+                    st.rerun()
+
         # Show progress after submission
         if wheel_state.get('response_given', False):
             # Show only contextual progress (no success message)
@@ -1295,6 +1335,14 @@ class EnhancedGamificationRenderer:
                     investigation_state['mystery_solved'] = True
                     investigation_state['detective_points'] += 20
 
+                    # INTEGRATE WITH MENTOR: Send game response back to conversation
+                    game_response = f"🕵️ Investigation Complete: {hypothesis.strip()}"
+                    if 'messages' not in st.session_state:
+                        st.session_state.messages = []
+                    st.session_state.messages.append({"role": "user", "content": game_response})
+                    st.session_state.should_process_message = True
+                    st.rerun()
+
         # Show solution after mystery is solved
         if investigation_state.get('mystery_solved', False):
             st.markdown(f"""
@@ -1411,6 +1459,14 @@ class EnhancedGamificationRenderer:
                     constraint_state['completed'] = True
                     constraint_state['solution'] = solution
                     constraint_state['points'] += len(constraint_state['selected_constraints']) * 15
+
+                    # INTEGRATE WITH MENTOR: Send game response back to conversation
+                    game_response = f"🎯 Constraint Solution: {solution.strip()}"
+                    if 'messages' not in st.session_state:
+                        st.session_state.messages = []
+                    st.session_state.messages.append({"role": "user", "content": game_response})
+                    st.session_state.should_process_message = True
+                    st.rerun()
 
         # Show progress after completion
         if constraint_state.get('completed', False):
@@ -1624,6 +1680,13 @@ class EnhancedGamificationRenderer:
                     challenge_state['response'] = response
                     challenge_state['submitted'] = True
                     challenge_state['points'] = 25
+
+                    # INTEGRATE WITH MENTOR: Send game response back to conversation
+                    game_response = f"📚 Storytelling Reflection: {response.strip()}"
+                    if 'messages' not in st.session_state:
+                        st.session_state.messages = []
+                    st.session_state.messages.append({"role": "user", "content": game_response})
+                    st.session_state.should_process_message = True
                     st.rerun()
         else:
             # Show submitted response
@@ -1914,7 +1977,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
         # Ensure required fields exist with safe defaults
         safe_challenge_data = {
             "challenge_text": challenge_data.get("challenge_text", "Let's explore your design challenge!"),
-            "challenge_type": challenge_data.get("challenge_type", "role_play"),
+            "challenge_type": challenge_data.get("challenge_type", "constraint_challenge"),  # FIXED: Use correct default
             "building_type": challenge_data.get("building_type", "community center"),
             "user_message": challenge_data.get("user_message", ""),
             "gamification_applied": challenge_data.get("gamification_applied", True),

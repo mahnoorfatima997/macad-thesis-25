@@ -849,14 +849,17 @@ What questions do you have about your design?"""
             "example projects", "project examples", "examples of projects",
             "precedent", "precedents", "case study", "case studies",
             "similar projects", "real project", "built project", "built projects",
-            "actual projects", "specific projects", "project references"
+            "actual projects", "specific projects", "project references",
+            "show me specific", "specific.*projects", "examples of.*projects",
+            "real examples", "built examples", "actual examples"
         ]
 
-        # GENERAL EXAMPLES: Strategies, approaches, concepts, methods
+        # GENERAL EXAMPLES: Strategies, approaches, concepts, methods (FLEXIBLE MATCHING)
         general_example_keywords = [
-            "show me examples", "give me examples", "provide examples", "need examples",
+            "show me examples", "give me examples", "give some examples", "provide examples", "need examples",
+            "can you give examples", "can you show examples", "can you provide examples",
             "examples of", "example of", "for example", "such as",
-            "inspiration", "references", "approaches", "strategies"
+            "inspiration", "references", "approaches", "strategies", "for inspiration"
         ]
 
         # Check for negative context (user explicitly saying they DON'T want examples)
@@ -871,6 +874,19 @@ What questions do you have about your design?"""
         else:
             is_project_example_request = any(keyword in user_input_lower for keyword in project_example_keywords)
             is_general_example_request = any(keyword in user_input_lower for keyword in general_example_keywords)
+
+            # ADDITIONAL FLEXIBLE MATCHING for common patterns
+            if not is_general_example_request:
+                # Check for flexible patterns like "give [some/any] examples"
+                import re
+                flexible_patterns = [
+                    r"give\s+(some|any|me)?\s*examples",
+                    r"show\s+(some|any|me)?\s*examples",
+                    r"provide\s+(some|any|me)?\s*examples",
+                    r"can you give.*examples",
+                    r"examples.*for inspiration"
+                ]
+                is_general_example_request = any(re.search(pattern, user_input_lower) for pattern in flexible_patterns)
 
         print(f"🔍 Project example request: {is_project_example_request} (keywords: {[k for k in project_example_keywords if k in user_input_lower]})")
         print(f"🔍 General example request: {is_general_example_request} (keywords: {[k for k in general_example_keywords if k in user_input_lower]})")
@@ -956,7 +972,9 @@ What questions do you have about your design?"""
             "example projects", "project examples", "examples of projects",
             "precedent", "precedents", "case study", "case studies",
             "similar projects", "real project", "built project", "built projects",
-            "actual projects", "specific projects", "project references"
+            "actual projects", "specific projects", "project references",
+            "show me specific", "specific.*projects", "examples of.*projects",
+            "real examples", "built examples", "actual examples"
         ]
 
         # Check for negative context (user explicitly saying they DON'T want examples)
@@ -1023,10 +1041,10 @@ What questions do you have about your design?"""
             has_relevant_db_results = False
 
             if knowledge_results:
-                # Check if database results are relevant by looking at similarity scores - BALANCED THRESHOLD
+                # Check if database results are relevant by looking at similarity scores - LOWERED THRESHOLD
                 avg_similarity = sum(r.get('similarity', 0) for r in knowledge_results) / len(knowledge_results)
-                has_relevant_db_results = avg_similarity > 0.25  # BALANCED: 0.25 for good relevance without being too strict
-                print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.25)")
+                has_relevant_db_results = avg_similarity > 0.15  # LOWERED: Was 0.25, now 0.15 to capture more relevant results
+                print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.15)")
 
             if not has_sufficient_db_results or not has_relevant_db_results:
                 if request_type == "project_examples":
@@ -1074,17 +1092,44 @@ What questions do you have about your design?"""
 
             # SYNTHESIS LOGIC: Different strategies based on request type and available data
             if knowledge_results:
-                # We have database or web search results - synthesize them
-                examples_text = await self._synthesize_examples_with_llm(
-                    user_topic, knowledge_results, building_type
-                )
+                # Skip relevance check for web search results (already relevant from search engine)
+                has_web_results = any(r.get('source') == 'web_search' for r in knowledge_results)
+                relevance_threshold = 0.15  # LOWERED: Was 0.25, now 0.15 to capture more relevant results
 
-                return {
-                    "response_text": examples_text,
-                    "response_type": "focused_examples",
-                    "sources": knowledge_results,
-                    "examples_provided": True
-                }
+                if has_web_results:
+                    # Web search results are already relevant - proceed directly to synthesis
+                    should_synthesize = True
+                    avg_relevance = 1.0  # Assume web results are relevant
+                else:
+                    # Check if database results are relevant enough for synthesis
+                    avg_relevance = sum(result.get('similarity', 0) for result in knowledge_results) / len(knowledge_results)
+                    should_synthesize = avg_relevance >= relevance_threshold
+
+                if should_synthesize:
+                    # We have good database or web search results - synthesize them
+                    if request_type == "project_examples":
+                        examples_text = await self._synthesize_examples_with_llm(
+                            user_topic, knowledge_results, building_type
+                        )
+                    else:
+                        # GENERAL EXAMPLES: Use general knowledge synthesis
+                        examples_text = await self._synthesize_general_knowledge_with_llm(
+                            user_topic, knowledge_results, building_type
+                        )
+
+                    return {
+                        "response_text": examples_text,
+                        "response_type": "focused_examples",
+                        "sources": knowledge_results,
+                        "examples_provided": True
+                    }
+                else:
+                    # Results are too low relevance - treat as no results and use AI generation
+                    if not has_web_results:
+                        print(f"   📊 Results too low relevance ({avg_relevance:.3f} < {relevance_threshold}) - using AI generation")
+                    else:
+                        print(f"   📊 Web results filtered out - using AI generation")
+                    knowledge_results = []  # Clear results to trigger AI generation below
             else:
                 # NO RESULTS FOUND - Apply different fallback strategies
                 if request_type == "project_examples":
@@ -1288,9 +1333,9 @@ What questions do you have about your design?"""
             if similarity > 0:
                 relevance_score = max(relevance_score, similarity)
 
-            # BALANCED THRESHOLD - not too strict, not too permissive
+            # LOWERED THRESHOLD - not too strict, not too permissive
             # Require either good similarity OR good relevance score, but with reasonable minimums
-            if (similarity > 0.25 and relevance_score > 0.15) or relevance_score > 0.35:
+            if (similarity > 0.15 and relevance_score > 0.10) or relevance_score > 0.25:
                 relevant_results.append(result)
                 print(f"   ✅ Relevant result: {title[:50]}... (score: {relevance_score:.3f}, similarity: {similarity:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
             else:
@@ -1910,16 +1955,23 @@ What questions do you have about your design?"""
             Search platform: "{search_type}"
 
             Instructions:
-            1. Understand what the user is specifically looking for
-            2. Create a search query that will find the most relevant information
-            3. For sizing/capacity questions, include relevant terms like "requirements", "standards", "guidelines"
-            4. For examples, include terms like "case study", "project", "precedent"
-            5. Keep it concise but specific (3-6 words)
+            1. Create queries optimized for the specific search platform and request type
+            2. For DATABASE searches: Use broader architectural concepts + building type
+            3. For WEB searches: Add "projects", "examples", or "case studies" for findability
+            4. For GENERAL EXAMPLES: Focus on design approaches and strategies
+            5. For PROJECT EXAMPLES: Include "buildings", "projects", "case studies"
+            6. Keep queries 3-5 words for optimal performance
 
-            Examples:
-            - User asks about "event space size for 200 people" → "event space capacity 200 occupancy requirements"
-            - User asks about "organic forms examples" → "organic architecture biomorphic design projects"
-            - User asks about "sustainable materials" → "sustainable building materials green construction"
+            Query Strategy Examples:
+            DATABASE (broader concepts):
+            - "circulation examples" → "circulation design community centers"
+            - "facade materials" → "facade materials residential architecture"
+            - "sustainable design" → "sustainable architecture green design"
+
+            WEB (project-focused):
+            - "circulation examples" → "community center circulation design projects"
+            - "facade materials" → "residential facade materials case studies"
+            - "sustainable design" → "sustainable architecture projects examples"
 
             Search query:"""
 

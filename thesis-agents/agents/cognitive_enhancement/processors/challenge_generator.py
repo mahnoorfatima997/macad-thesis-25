@@ -93,6 +93,30 @@ class ChallengeGeneratorProcessor:
                     print(f"🎮 STRATEGY: Role-play trigger detected → increase_engagement → perspective_challenge → role_play")
                     return "increase_engagement"  # → perspective_challenge → role_play
 
+            # FIXED: Add missing strategy detection based on trigger patterns
+            if state:
+                user_message = self._get_latest_user_message(state).lower().strip()
+
+                # Check for storytelling patterns
+                storytelling_patterns = ['tell me a story', 'story about', 'narrative', 'imagine a story']
+                if any(pattern in user_message for pattern in storytelling_patterns):
+                    return "spatial_storytelling"
+
+                # Check for time travel patterns
+                time_travel_patterns = ['time travel', 'different era', 'future', 'past', 'over time', 'through time']
+                if any(pattern in user_message for pattern in time_travel_patterns):
+                    return "temporal_exploration"
+
+                # Check for transformation patterns
+                transformation_patterns = ['transform', 'adapt', 'change', 'evolve', 'different uses']
+                if any(pattern in user_message for pattern in transformation_patterns):
+                    return "transformation_design"
+
+                # Check for creative constraint patterns
+                constraint_patterns = ['stuck', 'struggling', 'need inspiration', 'creative', 'ideas']
+                if any(pattern in user_message for pattern in constraint_patterns):
+                    return "creative_constraint_challenge"
+
             # Fallback to cognitive state-based selection
             if cognitive_state.get("overconfidence_level") == "high":
                 return "challenge_assumptions"
@@ -126,6 +150,8 @@ class ChallengeGeneratorProcessor:
                 "increase_challenge": ("constraint_challenge", "spatial"),
                 "stimulate_curiosity": ("alternative_challenge", "structural"),
                 "balanced_development": ("perspective_challenge", "temporal_perspective"),
+                # FIXED: Add missing creative constraint mapping
+                "creative_constraint_challenge": ("constraint_challenge", "structural"),
                 # NEW: Additional game types
                 "spatial_storytelling": ("spatial_storytelling", "narrative"),
                 "temporal_exploration": ("time_travel_challenge", "temporal"),
@@ -183,8 +209,16 @@ class ChallengeGeneratorProcessor:
                 building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
                 context_data = self._extract_challenge_context(user_message, building_type, "constraint")
 
+                # FIXED: Generate proper constraint challenge instead of echoing user input
+                if "structural" in user_message.lower() or constraint_type == "structural":
+                    challenge_text = f"Given the tight site constraints of your {building_type} project, explore how different structural systems (e.g., steel frame, timber, or concrete) impact the interior space organization. Consider how each system might influence spatial flexibility, ceiling heights, and natural light penetration. Create a layout for each scenario, focusing on how structural elements like columns or load-bearing walls affect the flow and usability of spaces. How do these structural choices align with your design goals for community interaction and accessibility within the limited site footprint?"
+                elif "spatial" in user_message.lower() or constraint_type == "spatial":
+                    challenge_text = f"Your {building_type} has a challenging irregular site boundary. Design three different spatial configurations that maximize usable area while maintaining code compliance. Consider how circulation, natural lighting, and programmatic adjacencies change with each approach. Which configuration best supports the intended community activities while addressing the site constraints?"
+                else:
+                    challenge_text = f"Working within budget and zoning constraints for your {building_type}, explore how material choices impact both design expression and functional performance. Compare three different material strategies and their implications for maintenance, sustainability, and user experience."
+
                 return {
-                    "challenge_text": user_message,
+                    "challenge_text": challenge_text,
                     "challenge_type": "constraint_challenge",
                     "constraint_type": constraint_type,
                     "building_type": building_type,

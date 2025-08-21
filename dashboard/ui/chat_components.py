@@ -347,16 +347,29 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             unsafe_allow_html=True,
         )
 
-        # STEP 1: Show the agent's cognitive challenge response FIRST
+        # STEP 1: Show the agent's response in normal chat bubble format
         agent_response = message.get("content", "")
         if agent_response and agent_response.strip():
             # Clean the agent response from any HTML artifacts
             clean_agent_response = _clean_agent_response(agent_response)
 
             if clean_agent_response:
-                st.markdown("### 🧠 Cognitive Challenge")
-                st.markdown(clean_agent_response)
-                st.markdown("---")
+                # Render as normal chat message bubble
+                st.markdown(
+                    f"""
+                    <div class="message agent-message">
+                        <div class="message-avatar agent-avatar"></div>
+                        <div class="message-content agent-content">
+                            <div class="message-header">
+                                <span class="agent-name">{mentor_label}</span>
+                            </div>
+                            <div class="message-text">{safe_markdown_to_html(clean_agent_response)}</div>
+                            <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
         # STEP 2: Then show the interactive game as an ENHANCEMENT
         gamification_info = message.get("gamification", {})
@@ -379,7 +392,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
 
         challenge_data.update({
             "user_message": user_message,  # Pass user's actual question for contextual games
-            "challenge_type": gamification_info.get("challenge_type", "role_play"),
+            "challenge_type": challenge_data.get("challenge_type") or gamification_info.get("challenge_type", "constraint_challenge"),  # FIXED: Don't override existing challenge_type
             "building_type": gamification_info.get("building_type", "community center"),
             "mentor_label": mentor_label,
             "gamification_applied": True  # Ensure games are contextual, not hardcoded
@@ -388,8 +401,8 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
         print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
         print(f"🎮 DEBUG: About to call enhanced gamification renderer")
 
-        # STEP 4: Render contextual interactive game
-        st.markdown("### 🎮 Interactive Challenge")
+        # STEP 4: Render contextual interactive game (more subtle)
+        st.markdown("**◉ Interactive Challenge**")
         st.markdown("*Explore this concept through an interactive experience:*")
 
         # Use enhanced gamification system for contextual games
@@ -418,7 +431,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
         st.markdown(
             f"""
             <div style="text-align: right; color: #888; font-size: 0.8em; margin-top: 10px;">
-                {_format_timestamp(message.get("timestamp"))}
+                {_format_timestamp(message.get("timestamp", ""))}
             </div>
             """,
             unsafe_allow_html=True,
@@ -440,7 +453,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
                         <span class="agent-name">🎮 {mentor_label}</span>
                     </div>
                     <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
-                    <div class="message-time">{_format_timestamp(message.get("timestamp"))}</div>
+                    <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
                 </div>
             </div>
             """,
