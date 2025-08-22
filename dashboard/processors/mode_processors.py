@@ -13,6 +13,7 @@ from typing import Dict, Any, Optional
 # Import required components
 from .raw_gpt_processor import get_raw_gpt_response
 from .no_ai_processor import get_no_ai_response
+from .question_validator import validate_user_question
 from thesis_tests.data_models import InteractionData, TestPhase
 
 
@@ -28,6 +29,19 @@ class ModeProcessor:
     async def process_input(self, user_input: str, mode: str, image_path: str = None) -> str:
         """Process user input based on the selected mode with optional image."""
         try:
+            # First, validate the question for appropriateness
+            conversation_context = getattr(st.session_state, 'messages', [])[-5:]  # Last 5 messages for context
+            validation_result = await validate_user_question(user_input, conversation_context)
+
+            print(f"🔍 QUESTION VALIDATION: {validation_result}")
+
+            # If question is inappropriate or off-topic, return redirection
+            if not validation_result.get('is_appropriate', True) or not validation_result.get('is_on_topic', True):
+                suggested_response = validation_result.get('suggested_response')
+                if suggested_response:
+                    print(f"🚫 REDIRECTING: Question deemed inappropriate/off-topic")
+                    return suggested_response
+
             # Enhance user input with image context if available
             enhanced_input = self._enhance_input_with_image_context(user_input)
 
@@ -49,41 +63,8 @@ class ModeProcessor:
             return f"An error occurred: {str(e)}"
 
     def _enhance_input_with_image_context(self, user_input: str) -> str:
-        """Enhance user input with context from stored images."""
-        if not self.image_database:
-            return user_input
-
-        try:
-            # Get conversation images for context
-            conversation_images = self.image_database.get_conversation_images()
-
-            if not conversation_images:
-                return user_input
-
-            # Check if user is referencing images in their input
-            image_references = []
-            input_lower = user_input.lower()
-
-            # Look for image references
-            if any(word in input_lower for word in ['image', 'drawing', 'sketch', 'plan', 'elevation', 'section', 'uploaded', 'picture']):
-                # Add context about available images
-                recent_images = conversation_images[:3]  # Most recent 3 images
-
-                context_parts = []
-                for img in recent_images:
-                    drawing_type = img.get('drawing_type', 'drawing')
-                    context = img.get('user_context', '')[:50] + '...' if len(img.get('user_context', '')) > 50 else img.get('user_context', '')
-                    context_parts.append(f"- {drawing_type}" + (f" ({context})" if context else ""))
-
-                if context_parts:
-                    image_context = f"\n\n[Context: You have access to these images from our conversation: {', '.join(context_parts)}]"
-                    return user_input + image_context
-
-            return user_input
-
-        except Exception as e:
-            print(f"❌ Error enhancing input with image context: {e}")
-            return user_input
+        """Image context is now bundled at dashboard level - no enhancement needed here."""
+        return user_input
     
     async def _process_mentor_mode(self, user_input: str, image_path: str = None) -> str:
         """Process using the full mentor system."""
@@ -138,30 +119,15 @@ class ModeProcessor:
             phase_info=current_phase_info
         )
 
-        # Handle image if provided
-        if image_path:
-            print(f"📷 MODE_PROCESSOR: Adding image to state: {image_path}")
-            from state_manager import VisualArtifact
+        # Image processing is now handled at the dashboard level and bundled with user input
+        # No separate image processing needed here - the orchestrator receives the complete message
 
-            artifact = VisualArtifact(
-                id="user_uploaded_image",
-                type="sketch",
-                image_path=image_path
-            )
-            state.current_sketch = artifact
-            state.visual_artifacts.append(artifact)
-
-        # Ensure we don't duplicate the same user message
-        if not state.messages or state.messages[-1].get("role") != "user" or state.messages[-1].get("content") != user_input:
-            user_message = {
-                "role": "user",
-                "content": user_input
-            }
-            # Add image reference to message if present
-            if image_path:
-                user_message["image_path"] = image_path
-
-            state.messages.append(user_message)
+        # Add user message to state (image analysis is already bundled in user_input)
+        user_message = {
+            "role": "user",
+            "content": user_input
+        }
+        state.messages.append(user_message)
         
         # Process with orchestrator
         print(f"🎯 MODE_PROCESSOR: Calling orchestrator with phase: {current_phase_info.get('current_phase', 'unknown') if current_phase_info else 'no_phase_info'}")
@@ -269,9 +235,9 @@ class ModeProcessor:
         # Get conversation history for phase calculation and context
         messages = st.session_state.get('messages', [])
 
-        # Call Pure Raw GPT processor
+        # Call Pure Raw GPT processor with image support
         try:
-            result = await get_raw_gpt_response(user_input, messages, st.session_state.session_id)
+            result = await get_raw_gpt_response(user_input, messages, st.session_state.session_id, image_path)
         except Exception as e:
             return f"I apologize, but I encountered an error calling Raw GPT: {e}"
 
@@ -340,9 +306,9 @@ class ModeProcessor:
         # Get conversation history for phase calculation
         messages = st.session_state.get('messages', [])
 
-        # Call No AI processor
+        # Call No AI processor with image acknowledgment
         try:
-            result = await get_no_ai_response(user_input, messages, st.session_state.session_id)
+            result = await get_no_ai_response(user_input, messages, st.session_state.session_id, image_path)
         except Exception as e:
             return f"I apologize, but I encountered an error: {e}"
 

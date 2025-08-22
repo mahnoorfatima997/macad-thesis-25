@@ -147,7 +147,7 @@ no_ai_processor = NoAIProcessor()
 
 
 async def get_no_ai_response(user_input: str, messages: List[Dict[str, Any]] = None,
-                            session_id: str = None) -> Dict[str, Any]:
+                            session_id: str = None, image_path: str = None) -> Dict[str, Any]:
     """
     Get a hardcoded response for the no AI control group.
 
@@ -155,6 +155,7 @@ async def get_no_ai_response(user_input: str, messages: List[Dict[str, Any]] = N
         user_input: The user's input (acknowledged but not processed)
         messages: Conversation history for phase calculation
         session_id: Session identifier for tracking question progression
+        image_path: Optional path to uploaded image (acknowledged but not analyzed)
 
     Returns:
         Dict containing the hardcoded response and metadata
@@ -165,4 +166,14 @@ async def get_no_ai_response(user_input: str, messages: List[Dict[str, Any]] = N
     if messages is None:
         messages = []
 
-    return no_ai_processor.get_response_to_user_input(user_input, messages, session_id)
+    # For No AI mode, we acknowledge the image but don't analyze it
+    response = no_ai_processor.get_response_to_user_input(user_input, messages, session_id)
+
+    # Add image acknowledgment if image was provided
+    if image_path:
+        original_response = response.get("response", "")
+        image_acknowledgment = "Thank you for sharing the image. "
+        response["response"] = image_acknowledgment + original_response
+        print(f"📷 NO_AI: Acknowledged image upload without analysis")
+
+    return response

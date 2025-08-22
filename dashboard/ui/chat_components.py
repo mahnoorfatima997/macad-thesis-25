@@ -6,7 +6,7 @@ import streamlit as st
 import re
 from html import escape
 from typing import Dict, Any, List
-from ..config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
+from dashboard.config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
 
 
 def safe_markdown_to_html(text: str) -> str:
@@ -263,12 +263,7 @@ def render_single_message(message: Dict[str, Any]):
             unsafe_allow_html=True,
         )
 
-        # Display image if present
-        if message.get("image_path"):
-            try:
-                st.image(message["image_path"], caption="Uploaded image", use_container_width=True)
-            except Exception as e:
-                st.error(f"Could not display image: {e}")
+        # Image display removed - images are now bundled with text content
     else:
         # Agent message - left side
         mentor_type = message.get("mentor_type", "Multi-Agent System")

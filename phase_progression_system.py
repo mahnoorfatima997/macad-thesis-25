@@ -1821,26 +1821,45 @@ class PhaseProgressionSystem:
         """Compute a meaningful completion percent (0-100) for the current phase.
 
         Uses a balanced approach that progresses at reasonable pace:
-        - Interaction engagement (50%) - based on meaningful exchanges
+        - Interaction engagement (50%) - based on meaningful exchanges IN CURRENT PHASE
         - Quality of responses (30%) - based on actual grading scores
         - Concept coverage (20%) - checklist items completed
         """
         print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value}:")
 
-        # 1. INTERACTION ENGAGEMENT (50%) - Based on meaningful exchanges
-        interactions = len(session.conversation_history)
+        # 1. INTERACTION ENGAGEMENT (50%) - Based on meaningful exchanges IN CURRENT PHASE ONLY
+        # Count interactions since this phase started, not total session interactions
+        phase_start_time = phase_progress.start_time
+        current_phase_interactions = 0
+
+        for interaction in session.conversation_history:
+            interaction_time = interaction.get('timestamp')
+            if interaction_time and isinstance(interaction_time, str):
+                try:
+                    from datetime import datetime
+                    interaction_dt = datetime.fromisoformat(interaction_time.replace('Z', '+00:00'))
+                    if interaction_dt >= phase_start_time:
+                        current_phase_interactions += 1
+                except:
+                    # If timestamp parsing fails, count all interactions (fallback)
+                    current_phase_interactions = len(session.conversation_history)
+                    break
+            elif not interaction_time:
+                # If no timestamps, use completed steps as proxy for phase-specific interactions
+                current_phase_interactions = len(phase_progress.completed_steps)
+                break
 
         # More generous progression - each meaningful interaction adds significant value
-        if interactions >= 3:
+        if current_phase_interactions >= 3:
             engagement_ratio = 1.0  # Full credit after 3 interactions
-        elif interactions >= 2:
+        elif current_phase_interactions >= 2:
             engagement_ratio = 0.75  # Good progress after 2 interactions
-        elif interactions >= 1:
+        elif current_phase_interactions >= 1:
             engagement_ratio = 0.5   # Decent start after 1 interaction
         else:
             engagement_ratio = 0.0
 
-        print(f"   💬 Engagement: {interactions} interactions = {engagement_ratio:.2f} ({engagement_ratio*50:.1f}% of total)")
+        print(f"   💬 Engagement: {current_phase_interactions} interactions in current phase = {engagement_ratio:.2f} ({engagement_ratio*50:.1f}% of total)")
 
         # 2. QUALITY OF RESPONSES (30%) - Based on actual grading scores
         if phase_progress.grades:
@@ -1873,12 +1892,29 @@ class PhaseProgressionSystem:
                     completed_required += 1
 
         concept_ratio = (completed_required / total_required) if total_required > 0 else 0.5  # Give some baseline credit
-        print(f"   ✅ Concepts: {completed_required}/{total_required} = {concept_ratio:.2f} ({concept_ratio*20:.1f}% of total)")
+        print(f"   ✅ Concepts: {completed_required}/{total_required} = {concept_ratio:.2f} ({concept_ratio*15:.1f}% of total)")
 
-        # Combine all factors with new weights
-        percent = 100.0 * (0.50 * engagement_ratio + 0.30 * quality_ratio + 0.20 * concept_ratio)
-        print(f"   🧮 CALCULATION: (50% × {engagement_ratio:.2f}) + (30% × {quality_ratio:.2f}) + (20% × {concept_ratio:.2f})")
-        print(f"   🧮 CALCULATION: {0.50 * engagement_ratio:.2f} + {0.30 * quality_ratio:.2f} + {0.20 * concept_ratio:.2f} = {percent/100:.2f}")
+        # 4. VISUAL ENGAGEMENT (5%) - Based on visual artifacts and analysis
+        visual_ratio = 0.0
+        if hasattr(session, 'visual_artifacts') and session.visual_artifacts:
+            # Check if there are visual artifacts in the current phase
+            phase_visual_count = 0
+            for artifact in session.visual_artifacts:
+                if hasattr(artifact, 'timestamp') and artifact.timestamp >= phase_start_time:
+                    phase_visual_count += 1
+
+            if phase_visual_count > 0:
+                visual_ratio = min(1.0, phase_visual_count / 2.0)  # Full credit for 2+ visual artifacts
+                print(f"   🖼️ Visual: {phase_visual_count} artifacts in current phase = {visual_ratio:.2f} ({visual_ratio*5:.1f}% of total)")
+            else:
+                print(f"   🖼️ Visual: No visual artifacts in current phase = 0.0 (0.0% of total)")
+        else:
+            print(f"   🖼️ Visual: No visual artifacts available = 0.0 (0.0% of total)")
+
+        # Combine all factors with adjusted weights (50% + 30% + 15% + 5% = 100%)
+        percent = 100.0 * (0.50 * engagement_ratio + 0.30 * quality_ratio + 0.15 * concept_ratio + 0.05 * visual_ratio)
+        print(f"   🧮 CALCULATION: (50% × {engagement_ratio:.2f}) + (30% × {quality_ratio:.2f}) + (15% × {concept_ratio:.2f}) + (5% × {visual_ratio:.2f})")
+        print(f"   🧮 CALCULATION: {0.50 * engagement_ratio:.2f} + {0.30 * quality_ratio:.2f} + {0.15 * concept_ratio:.2f} + {0.05 * visual_ratio:.2f} = {percent/100:.2f}")
 
         # Clamp to [0, 100]
         percent = max(0.0, min(100.0, percent))

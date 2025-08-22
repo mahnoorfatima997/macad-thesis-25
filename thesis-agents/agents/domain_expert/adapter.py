@@ -513,6 +513,23 @@ class DomainExpertAgent:
 
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+        # Check if visual analysis is available
+        visual_context = ""
+        visual_insights = state.agent_context.get('visual_insights', {})
+        if visual_insights.get('has_visual_analysis'):
+            strengths = visual_insights.get('design_strengths', [])
+            improvements = visual_insights.get('improvement_opportunities', [])
+            elements = visual_insights.get('identified_elements', [])
+
+            visual_context = f"""
+        VISUAL ANALYSIS AVAILABLE:
+        - Design strengths noted: {', '.join(strengths[:3]) if strengths else 'None'}
+        - Areas for improvement: {', '.join(improvements[:3]) if improvements else 'None'}
+        - Elements identified: {', '.join(elements[:4]) if elements else 'None'}
+
+        IMPORTANT: Reference and build upon these visual observations in your response. The student has shared visual material that should inform your guidance.
+        """
+
         prompt = f"""
         You are a distinguished architectural scholar and mentor with expertise in design theory, building science, and critical practice. Your role is to provide academically rigorous knowledge that stimulates intellectual inquiry rather than passive consumption.
 
@@ -520,6 +537,7 @@ class DomainExpertAgent:
         BUILDING TYPOLOGY: {building_type}
         PROJECT CONTEXT: {project_context}
         KNOWLEDGE DOMAIN: {gap_type}
+        {visual_context}
 
         CRITICAL REQUIREMENT: You MUST provide EXACTLY the number of strategies you promise. If you say "three strategies," you MUST provide THREE complete strategies.
 
@@ -696,6 +714,23 @@ class DomainExpertAgent:
 
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+        # Check if visual analysis is available for fallback too
+        visual_context = ""
+        visual_insights = state.agent_context.get('visual_insights', {})
+        if visual_insights.get('has_visual_analysis'):
+            strengths = visual_insights.get('design_strengths', [])
+            improvements = visual_insights.get('improvement_opportunities', [])
+            elements = visual_insights.get('identified_elements', [])
+
+            visual_context = f"""
+        VISUAL ANALYSIS AVAILABLE:
+        - Design strengths: {', '.join(strengths[:2]) if strengths else 'None'}
+        - Improvement areas: {', '.join(improvements[:2]) if improvements else 'None'}
+        - Elements seen: {', '.join(elements[:3]) if elements else 'None'}
+
+        Reference these visual observations in your response.
+        """
+
         prompt = f"""
         You are an architectural domain expert. Your main LLM generation failed, so you need to provide a helpful fallback response.
 
@@ -703,13 +738,15 @@ class DomainExpertAgent:
         BUILDING TYPE: {building_type}
         PROJECT CONTEXT: {project_context}
         KNOWLEDGE DOMAIN: {gap_type}
+        {visual_context}
 
         Provide a helpful response that:
         1. Acknowledges their specific question about {gap_type}
         2. Offers 2-3 concrete principles or approaches they can consider
         3. Relates specifically to their {building_type} project
-        4. Ends with a thoughtful question that builds on the guidance provided
-        5. Avoids saying you "don't have information" - instead provide what you can
+        4. References any visual elements they've shared (if visual analysis is available)
+        5. Ends with a thoughtful question that builds on the guidance provided
+        6. Avoids saying you "don't have information" - instead provide what you can
 
         Keep it educational and specific to their situation (150-200 words).
         """
