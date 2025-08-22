@@ -503,11 +503,12 @@ class UnifiedArchitecturalDashboard:
             # Clear pending images after use
             st.session_state.pending_images = []
 
-        # Add user message to chat history (clean message without image processing artifacts)
+        # Add user message to chat history (display only the original user input, not the bundled analysis)
         user_message = {
             "role": "user",
-            "content": enhanced_user_input,  # This now contains both text and image analysis
-            "timestamp": datetime.now().isoformat()
+            "content": user_input,  # Display only original user input to user
+            "timestamp": datetime.now().isoformat(),
+            "enhanced_content": enhanced_user_input  # Store enhanced content for system processing
         }
 
         st.session_state.messages.append(user_message)

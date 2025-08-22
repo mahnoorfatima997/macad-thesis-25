@@ -305,39 +305,43 @@ class ComprehensiveVisionAnalyzer:
             # Encode image
             base64_image = self.encode_image(image_path)
 
-            # Create detailed understanding prompt
+            # Create detailed understanding prompt for comprehensive visual description
             understanding_prompt = f"""
-            You are an expert architectural analyst. Analyze this image with extreme detail and specificity.
+            You are an expert architectural analyst. Analyze this image and provide an extremely detailed visual description.
 
-            PROVIDE DETAILED UNDERSTANDING:
+            PROVIDE A COMPREHENSIVE VISUAL DESCRIPTION:
 
-            1. WHAT EXACTLY IS SHOWN:
-            - Precisely identify what type of architectural representation this is
-            - Describe the specific building type, scale, and program
-            - Identify the drawing style, medium, and level of development
+            1. IMMEDIATE VISUAL DESCRIPTION:
+            - Describe exactly what you see in rich visual detail (like describing to someone who cannot see the image)
+            - Include colors, textures, materials, lighting, shadows, and spatial qualities
+            - Describe the viewpoint, perspective, and framing of the image
+            - Note the overall composition and visual hierarchy
 
-            2. SPECIFIC ARCHITECTURAL CONTENT:
-            - List all visible architectural elements with precise descriptions
-            - Describe spatial relationships, proportions, and organization
-            - Identify circulation patterns, entries, and functional zones
-            - Note any structural systems, materials, or construction details shown
+            2. ARCHITECTURAL ELEMENTS AND SPACES:
+            - Describe all visible architectural elements with specific details (walls, floors, ceilings, openings, etc.)
+            - Identify and describe any furniture, fixtures, or objects present
+            - Describe spatial relationships, proportions, and scale indicators
+            - Note circulation paths, entries, transitions between spaces
 
-            3. DESIGN CHARACTERISTICS:
-            - Describe the architectural style, approach, or design philosophy evident
-            - Identify key design moves, spatial strategies, or organizational concepts
-            - Note any unique or notable design features
+            3. MATERIALS AND FINISHES:
+            - Identify and describe all visible materials (concrete, wood, tile, glass, metal, etc.)
+            - Describe surface treatments, textures, patterns, and finishes
+            - Note any material combinations or contrasts
+            - Describe how materials contribute to the overall aesthetic
 
-            4. TECHNICAL QUALITY:
-            - Assess the drawing quality, completeness, and professional level
-            - Note any dimensions, annotations, or technical information
-            - Evaluate clarity of communication and graphic standards
+            4. LIGHTING AND ATMOSPHERE:
+            - Describe the lighting conditions (natural, artificial, quality of light)
+            - Note shadows, reflections, and how light interacts with surfaces
+            - Describe the overall mood or atmosphere created
+            - Identify light sources and their effects
 
-            5. SPECIFIC OBSERVATIONS:
-            - Point out any particular strengths in the design or drawing
-            - Identify areas that could be developed further or improved
-            - Note any interesting or innovative aspects
+            5. SPECIFIC DETAILS AND FEATURES:
+            - Point out any distinctive design features, details, or elements
+            - Describe any visible technology, systems, or equipment
+            - Note any text, signage, or graphic elements
+            - Identify any people, activities, or signs of use
 
-            Be extremely specific and detailed. Avoid generic statements. Focus on what you can actually see and analyze.
+            Write as if you are describing the scene to someone who cannot see it. Be extremely specific about what you observe. Use rich, descriptive language that captures both the technical and experiential qualities of the space.
             """
 
             if context:
@@ -389,51 +393,81 @@ class ComprehensiveVisionAnalyzer:
             }
 
     def _extract_key_insights(self, analysis: str) -> Dict[str, str]:
-        """Extract key insights from detailed analysis"""
+        """Extract key insights from detailed visual analysis"""
         insights = {}
 
-        # Look for specific sections and extract key information
+        # Store the full detailed analysis for rich context
+        insights["detailed_visual_description"] = analysis
+
+        # Extract specific visual elements for system understanding
         sections = {
-            "image_type": ["WHAT EXACTLY IS SHOWN", "type of architectural representation"],
-            "building_program": ["building type", "program", "function"],
-            "design_approach": ["design philosophy", "architectural style", "design moves"],
-            "spatial_organization": ["spatial relationships", "organization", "circulation"],
-            "key_features": ["unique", "notable", "interesting", "innovative"],
-            "technical_level": ["drawing quality", "professional level", "completeness"]
+            "space_type": ["room", "space", "interior", "exterior", "view of"],
+            "materials": ["material", "concrete", "wood", "tile", "glass", "metal", "stone", "brick"],
+            "lighting": ["light", "lighting", "illuminated", "bright", "shadow", "natural light"],
+            "colors": ["color", "white", "grey", "black", "brown", "blue", "green", "red"],
+            "textures": ["texture", "smooth", "rough", "polished", "matte", "glossy"],
+            "furniture": ["furniture", "chair", "table", "desk", "sofa", "bed", "cabinet"],
+            "architectural_elements": ["wall", "floor", "ceiling", "window", "door", "column", "beam"],
+            "key_features": ["features", "notable", "distinctive", "prominent", "visible"]
         }
 
         analysis_lower = analysis.lower()
 
         for key, search_terms in sections.items():
-            for term in search_terms:
-                if term in analysis_lower:
-                    # Find sentences containing this term
-                    sentences = analysis.split('.')
-                    for sentence in sentences:
-                        if term.lower() in sentence.lower() and len(sentence.strip()) > 20:
-                            insights[key] = sentence.strip()
-                            break
-                    if key in insights:
+            descriptive_parts = []
+            sentences = analysis.split('.')
+
+            for sentence in sentences:
+                sentence_lower = sentence.lower()
+                for term in search_terms:
+                    if term in sentence_lower and len(sentence.strip()) > 15:
+                        # Clean and add descriptive sentence
+                        clean_sentence = sentence.strip()
+                        if clean_sentence and clean_sentence not in descriptive_parts:
+                            descriptive_parts.append(clean_sentence)
                         break
+
+            if descriptive_parts:
+                # Take the most descriptive sentence for this category
+                insights[key] = descriptive_parts[0]
 
         return insights
 
     def _create_chat_summary(self, insights: Dict[str, str]) -> str:
-        """Create a specific chat summary from key insights"""
+        """Create a detailed visual description for system understanding"""
 
-        # Extract the most important information for chat
-        image_type = insights.get("image_type", "architectural drawing")
-        building_program = insights.get("building_program", "building design")
-        design_approach = insights.get("design_approach", "design approach")
+        # Instead of a generic template, use the full detailed analysis
+        # This provides rich context for the routing system to understand the image
+        detailed_description = insights.get("detailed_visual_description", "")
 
-        # Clean up the text to be more conversational
-        image_type_clean = self._clean_insight_text(image_type)
-        building_program_clean = self._clean_insight_text(building_program)
-        design_approach_clean = self._clean_insight_text(design_approach)
+        if detailed_description:
+            # Extract the most descriptive parts for system context
+            # Take first few sentences that contain the most visual detail
+            sentences = detailed_description.split('. ')
 
-        summary = f"I can see this is {image_type_clean} showing {building_program_clean}. The design demonstrates {design_approach_clean}."
+            # Select sentences that contain rich visual descriptions
+            descriptive_sentences = []
+            for sentence in sentences[:5]:  # Take up to 5 sentences
+                if any(keyword in sentence.lower() for keyword in [
+                    'shows', 'displays', 'features', 'contains', 'reveals', 'depicts',
+                    'room', 'space', 'wall', 'floor', 'ceiling', 'window', 'door',
+                    'material', 'texture', 'color', 'light', 'shadow'
+                ]):
+                    descriptive_sentences.append(sentence.strip())
 
-        return summary
+            if descriptive_sentences:
+                return '. '.join(descriptive_sentences) + '.'
+
+        # Fallback to extracting key visual elements
+        visual_elements = []
+        for key, value in insights.items():
+            if key in ['space_type', 'materials', 'lighting', 'key_features'] and value:
+                visual_elements.append(value)
+
+        if visual_elements:
+            return f"The image shows {', '.join(visual_elements[:3])}."
+
+        return "A detailed architectural image with specific design elements and spatial qualities."
 
     def _clean_insight_text(self, text: str) -> str:
         """Clean insight text for conversational use"""

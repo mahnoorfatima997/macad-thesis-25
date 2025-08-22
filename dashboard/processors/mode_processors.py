@@ -122,10 +122,16 @@ class ModeProcessor:
         # Image processing is now handled at the dashboard level and bundled with user input
         # No separate image processing needed here - the orchestrator receives the complete message
 
-        # Add user message to state (image analysis is already bundled in user_input)
+        # Check if the last message has enhanced content (with image analysis)
+        enhanced_content = user_input
+        if st.session_state.messages and st.session_state.messages[-1].get("enhanced_content"):
+            enhanced_content = st.session_state.messages[-1]["enhanced_content"]
+            print(f"🔍 MODE_PROCESSOR: Using enhanced content with image analysis")
+
+        # Add user message to state using enhanced content for system processing
         user_message = {
             "role": "user",
-            "content": user_input
+            "content": enhanced_content  # Use enhanced content with image analysis for orchestrator
         }
         state.messages.append(user_message)
         
