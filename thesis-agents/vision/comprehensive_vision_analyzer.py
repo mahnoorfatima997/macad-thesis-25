@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 from PIL import Image
 from openai import OpenAI
+from .image_analysis_cache import get_image_cache
 
 
 class ComprehensiveVisionAnalyzer:
@@ -22,22 +23,31 @@ class ComprehensiveVisionAnalyzer:
     - Improvement recommendations
     """
     
-    def __init__(self, domain: str = "architecture"):
+    def __init__(self, domain: str = "architecture", use_cache: bool = True):
         self.domain = domain
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        
+        self.use_cache = use_cache
+
+        # Initialize cache if enabled
+        if self.use_cache:
+            self.cache = get_image_cache()
+            print("🗄️ Vision analyzer initialized with caching enabled")
+        else:
+            self.cache = None
+            print("⚠️ Vision analyzer initialized with caching disabled")
+
         # Image classification categories
         self.image_types = [
-            "floor_plan", "elevation", "section", "axonometric", "perspective", 
+            "floor_plan", "elevation", "section", "axonometric", "perspective",
             "3d_rendering", "sketch", "photograph", "technical_drawing", "site_plan"
         ]
-        
+
         self.drawing_mediums = [
             "hand_drawn", "digital_cad", "mixed_media", "photograph", "rendering", "pencil_sketch"
         ]
-        
+
         self.detail_levels = [
-            "conceptual_sketch", "schematic_design", "design_development", 
+            "conceptual_sketch", "schematic_design", "design_development",
             "construction_document", "presentation_drawing"
         ]
 
@@ -49,26 +59,34 @@ class ComprehensiveVisionAnalyzer:
     async def analyze_image_comprehensive(self, image_path: str, context: str = "") -> Dict[str, Any]:
         """
         Perform comprehensive image analysis with structured output
-        
+
         Args:
             image_path: Path to the image file
             context: Optional project context
-            
+
         Returns:
             Comprehensive analysis dictionary with structured data
         """
-        
+
         print(f"🔍 Starting comprehensive image analysis: {image_path}")
-        
+
+        # Check cache first if enabled
+        if self.use_cache and self.cache:
+            cache_key = f"comprehensive_{context}"
+            cached_result = self.cache.get_cached_analysis(image_path)
+            if cached_result and cache_key in cached_result:
+                print("⚡ Using cached comprehensive analysis")
+                return cached_result[cache_key]
+
         try:
             # Encode image
             base64_image = self.encode_image(image_path)
-            
+
             # Create comprehensive analysis prompt
             analysis_prompt = self._create_comprehensive_prompt(context)
-            
+
             print("📤 Sending comprehensive analysis request to GPT-4V...")
-            
+
             # Call GPT-4V for analysis
             response = self.client.chat.completions.create(
                 model="gpt-4o",
@@ -90,15 +108,22 @@ class ComprehensiveVisionAnalyzer:
                 max_tokens=3000,
                 temperature=0.2
             )
-            
+
             raw_analysis = response.choices[0].message.content
             print("✅ Comprehensive analysis complete")
-            
+
             # Structure the analysis
             structured_analysis = self._structure_analysis(raw_analysis, image_path)
-            
+
+            # Cache the result if caching is enabled
+            if self.use_cache and self.cache:
+                cache_key = f"comprehensive_{context}"
+                cached_result = self.cache.get_cached_analysis(image_path) or {}
+                cached_result[cache_key] = structured_analysis
+                self.cache.cache_analysis(image_path, cached_result)
+
             return structured_analysis
-            
+
         except Exception as e:
             print(f"❌ Error in comprehensive analysis: {e}")
             return {
@@ -301,6 +326,14 @@ class ComprehensiveVisionAnalyzer:
             Detailed understanding dictionary with specific insights
         """
 
+        # Check cache first if enabled
+        if self.use_cache and self.cache:
+            cache_key = f"detailed_{context}"
+            cached_result = self.cache.get_cached_analysis(image_path)
+            if cached_result and cache_key in cached_result:
+                print("⚡ Using cached detailed understanding")
+                return cached_result[cache_key]
+
         try:
             # Encode image
             base64_image = self.encode_image(image_path)
@@ -377,13 +410,22 @@ class ComprehensiveVisionAnalyzer:
             # Extract key insights for chat integration
             key_insights = self._extract_key_insights(detailed_understanding)
 
-            return {
+            result = {
                 "detailed_analysis": detailed_understanding,
                 "key_insights": key_insights,
                 "chat_summary": self._create_chat_summary(key_insights),
                 "timestamp": datetime.now().isoformat(),
                 "confidence": self._calculate_understanding_confidence(detailed_understanding)
             }
+
+            # Cache the result if caching is enabled
+            if self.use_cache and self.cache:
+                cache_key = f"detailed_{context}"
+                cached_result = self.cache.get_cached_analysis(image_path) or {}
+                cached_result[cache_key] = result
+                self.cache.cache_analysis(image_path, cached_result)
+
+            return result
 
         except Exception as e:
             print(f"❌ Error in detailed understanding: {e}")
@@ -537,3 +579,18 @@ class ComprehensiveVisionAnalyzer:
 
         except Exception as e:
             return f"Unable to analyze image: {str(e)}"
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Get cache statistics if caching is enabled."""
+        if self.use_cache and self.cache:
+            return self.cache.get_cache_stats()
+        else:
+            return {"caching": "disabled"}
+
+    def clear_cache(self):
+        """Clear the image analysis cache if caching is enabled."""
+        if self.use_cache and self.cache:
+            self.cache.clear_cache()
+            print("🗑️ Vision analyzer cache cleared")
+        else:
+            print("⚠️ Caching is disabled, nothing to clear")

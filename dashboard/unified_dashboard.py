@@ -486,8 +486,16 @@ class UnifiedArchitecturalDashboard:
         if uploaded_image:
             image_path = self._process_uploaded_image(uploaded_image)
             if image_path:
-                # Extract comprehensive image analysis and bundle with text
-                enhanced_user_input = self._bundle_image_with_text(user_input, image_path, uploaded_image.name)
+                # Check if this image was already processed to avoid redundant analysis
+                if not self._is_image_already_processed(image_path):
+                    # Extract comprehensive image analysis and bundle with text
+                    enhanced_user_input = self._bundle_image_with_text(user_input, image_path, uploaded_image.name)
+                    # Mark image as processed
+                    self._mark_image_as_processed(image_path, uploaded_image.name)
+                else:
+                    print(f"⚡ DASHBOARD: Image already processed, using existing analysis")
+                    # Get existing analysis from session state
+                    enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
 
         # Check for pending images from previous uploads
         pending_images = st.session_state.get('pending_images', [])
@@ -497,8 +505,16 @@ class UnifiedArchitecturalDashboard:
             image_path = latest_image['path']
             print(f"📷 DASHBOARD: Using pending image: {latest_image['filename']}")
 
-            # Extract comprehensive image analysis and bundle with text
-            enhanced_user_input = self._bundle_image_with_text(user_input, image_path, latest_image['filename'])
+            # Check if this image was already processed to avoid redundant analysis
+            if not self._is_image_already_processed(image_path):
+                # Extract comprehensive image analysis and bundle with text
+                enhanced_user_input = self._bundle_image_with_text(user_input, image_path, latest_image['filename'])
+                # Mark image as processed
+                self._mark_image_as_processed(image_path, latest_image['filename'])
+            else:
+                print(f"⚡ DASHBOARD: Image already processed, using existing analysis")
+                # Get existing analysis from session state
+                enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
 
             # Clear pending images after use
             st.session_state.pending_images = []
@@ -610,18 +626,28 @@ class UnifiedArchitecturalDashboard:
         try:
             print(f"🔍 DASHBOARD: Bundling image analysis with text for: {image_filename}")
 
-            # Get comprehensive image analysis using GPT Vision
+            # Get comprehensive image analysis using GPT Vision with caching
             import sys
             import os
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
             from vision.comprehensive_vision_analyzer import ComprehensiveVisionAnalyzer
 
-            analyzer = ComprehensiveVisionAnalyzer(domain="architecture")
+            # Initialize analyzer with caching enabled (default)
+            analyzer = ComprehensiveVisionAnalyzer(domain="architecture", use_cache=True)
 
             # Get project context from session state if available
             project_context = st.session_state.get('project_description', user_input)
 
-            # Perform comprehensive image analysis
+            # Check if we already have this analysis cached in session state
+            session_analyses = st.session_state.get('image_analyses', [])
+            for analysis in session_analyses:
+                if analysis['path'] == image_path and analysis.get('project_context') == project_context:
+                    print(f"⚡ DASHBOARD: Using session-cached analysis for: {image_filename}")
+                    image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
+                    bundled_message = f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+                    return bundled_message
+
+            # Perform comprehensive image analysis (will use cache if available)
             import asyncio
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -647,6 +673,7 @@ class UnifiedArchitecturalDashboard:
                     "filename": image_filename,
                     "path": image_path,
                     "detailed_analysis": detailed_understanding,
+                    "project_context": project_context,
                     "timestamp": datetime.now().isoformat()
                 })
 
@@ -1260,6 +1287,29 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             st.error(f"Error displaying generated image: {e}")
             print(f"❌ Error displaying generated image: {e}")
+
+    def _is_image_already_processed(self, image_path: str) -> bool:
+        """Check if an image has already been processed in this session."""
+        processed_images = st.session_state.get('processed_images', set())
+        return image_path in processed_images
+
+    def _mark_image_as_processed(self, image_path: str, filename: str):
+        """Mark an image as processed to avoid redundant analysis."""
+        if 'processed_images' not in st.session_state:
+            st.session_state.processed_images = set()
+        st.session_state.processed_images.add(image_path)
+        print(f"📝 DASHBOARD: Marked image as processed: {filename}")
+
+    def _get_existing_image_analysis(self, user_input: str, image_path: str) -> str:
+        """Get existing image analysis from session state."""
+        session_analyses = st.session_state.get('image_analyses', [])
+        for analysis in session_analyses:
+            if analysis['path'] == image_path:
+                image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
+                return f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+
+        # Fallback if no analysis found
+        return f"{user_input}\n\n[UPLOADED IMAGE: Analysis not available]"
 
 
 def main():
