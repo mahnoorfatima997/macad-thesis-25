@@ -355,6 +355,8 @@ class ChallengeGeneratorProcessor:
             # Check for strong triggers that should override frequency control
             strong_trigger_patterns = [
                 'i\'m stuck on', 'stuck on', 'completely stuck', 'really stuck', 'totally stuck',
+                # FIXED: Add inspiration patterns to strong triggers
+                'need inspiration', 'inspiration for', 'inspire me', 'creative ideas', 'need ideas',
                 'convert', 'converting', 'transform', 'transforming', 'warehouse to', 'adaptive reuse',
                 'user journey', 'journey through', 'story of', 'narrative',
                 'over time', 'through time', 'evolve', 'evolution', 'future'
@@ -364,11 +366,13 @@ class ChallengeGeneratorProcessor:
 
             # FREQUENCY CONTROL: Apply gamification every 4 messages (20% rate) - BUT allow strong triggers to override
             total_user_messages = len(user_messages)
-            if not has_strong_trigger and total_user_messages % 4 != 0:
-                print(f"🎮 FREQUENCY CONTROL: Skipping gamification (message {total_user_messages}, next at {((total_user_messages // 4) + 1) * 4})")
-                return False
-            elif has_strong_trigger and total_user_messages % 4 != 0:
-                print(f"🎮 FREQUENCY OVERRIDE: Strong trigger '{latest_message[:50]}...' detected, overriding frequency control")
+            # TESTING: Commented out frequency control to test all gamification triggers
+            # if not has_strong_trigger and total_user_messages % 4 != 0:
+            #     print(f"🎮 FREQUENCY CONTROL: Skipping gamification (message {total_user_messages}, next at {((total_user_messages // 4) + 1) * 4})")
+            #     return False
+            # elif has_strong_trigger and total_user_messages % 4 != 0:
+            #     print(f"🎮 FREQUENCY OVERRIDE: Strong trigger '{latest_message[:50]}...' detected, overriding frequency control")
+            print(f"🎮 TESTING MODE: Frequency control disabled - checking all triggers for message {total_user_messages}")
 
             # 1. ROLE-PLAY TRIGGERS - FIXED: More specific patterns to avoid false positives
             role_play_patterns = [
@@ -1162,3 +1166,51 @@ class ChallengeGeneratorProcessor:
                 "user_intent": "general",
                 "specific_elements": []
             }
+
+    async def _generate_storytelling_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
+        """Generate spatial storytelling challenge"""
+        user_message = self._get_latest_user_message(state)
+        building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+        story_prompt = f"Imagine your {building_type} as a character in a story. What would it say about the people who visit? How would it describe the daily rhythms and seasonal changes it experiences? Write a short narrative from the building's perspective, focusing on how the spaces you're designing will support community life and human connection."
+
+        return {
+            "challenge_text": story_prompt,
+            "challenge_type": "spatial_storytelling",
+            "story_type": subtype,
+            "building_type": building_type,
+            "narrative_focus": "building_perspective",
+            "gamification_applied": True
+        }
+
+    async def _generate_time_travel_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
+        """Generate time travel challenge"""
+        user_message = self._get_latest_user_message(state)
+        building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+        time_prompt = f"Travel through time with your {building_type} design. Imagine visiting it in 1950, today, and 2050. How would the same spaces be used differently in each era? What technologies, social patterns, and community needs would shape the experience? Design adaptations for each time period while maintaining the core architectural concept."
+
+        return {
+            "challenge_text": time_prompt,
+            "challenge_type": "time_travel_challenge",
+            "temporal_type": subtype,
+            "building_type": building_type,
+            "time_periods": ["1950", "2024", "2050"],
+            "gamification_applied": True
+        }
+
+    async def _generate_transformation_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
+        """Generate space transformation challenge"""
+        user_message = self._get_latest_user_message(state)
+        building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+        transform_prompt = f"Your {building_type} needs to transform throughout the day and seasons. Design a space that can adapt from morning yoga classes to evening community meetings, from summer festivals to winter workshops. What moveable elements, flexible systems, and adaptive features would enable these transformations while maintaining spatial quality?"
+
+        return {
+            "challenge_text": transform_prompt,
+            "challenge_type": "space_transformation",
+            "transformation_type": subtype,
+            "building_type": building_type,
+            "adaptation_scenarios": ["daily", "seasonal", "programmatic"],
+            "gamification_applied": True
+        }

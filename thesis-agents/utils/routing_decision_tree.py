@@ -169,6 +169,10 @@ class AdvancedRoutingDecisionTree:
                 r"can you (tell|show|explain) me about", r"tell me about", r"explain.*about",
                 r"^define", r"definition of", r"meaning of", r"concept of",
                 r"principles of", r"information about", r"details about", r"facts about",
+                # FIXED: Add quantitative questions that were being misclassified as feedback_request
+                r"how many", r"how much", r"what size", r"what dimensions",
+                r"should I consider", r"should I include", r"should I have",
+                r"recommended.*number", r"typical.*number", r"standard.*size",
                 # MERGED: Technical questions are now knowledge requests (per gamified_routing.md)
                 r"specifications?", r"technical.*requirements?", r"codes?",
                 r"regulations?", r"ada.*requirements?", r"accessibility.*requirements?",
