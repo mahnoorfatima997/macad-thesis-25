@@ -148,6 +148,124 @@ def _measure_skill_progression(self, data: pd.DataFrame) -> Dict[str, Any]:
 
 ---
 
+## Additional Cognitive Assessment Components
+
+### Cognitive Anthropomorphism Index (CAI)
+
+**Definition**: Measures the degree to which users attribute human-like qualities to the AI system, indicating potential over-reliance or unhealthy attachment patterns.
+
+**Key Features**:
+- **Language Pattern Analysis**: Tracks use of personal pronouns ("you think", "you feel") when addressing the AI
+- **Emotional Attribution Detection**: Identifies projection of emotions or intentions onto the system
+- **Dependency Scoring**: Calculates frequency of approval-seeking behaviors and validation requests
+- **Risk Assessment**: Evaluates potential for cognitive dependency based on anthropomorphic language patterns
+
+### Anthropomorphism Detection Score (ADS)
+
+**Definition**: Specialized metric that identifies and quantifies the extent to which users treat the AI as a human-like entity rather than a tool.
+
+**Key Features**:
+- **Social Language Markers**: Detects use of social pleasantries, apologies, and gratitude expressions toward AI
+- **Personality Attribution**: Identifies instances where users assign personality traits or preferences to the system
+- **Relationship Formation Indicators**: Tracks development of parasocial relationships with the AI assistant
+- **Boundary Confusion Metrics**: Measures blurring between tool-use and social interaction patterns
+
+### Neural Engagement Score (NES)
+
+**Definition**: Quantifies the depth and quality of cognitive neural activation patterns based on interaction complexity and sustained attention indicators.
+
+**Key Features**:
+- **Cognitive Load Optimization**: Tracks balance between challenge and capability (optimal flow state)
+- **Sustained Attention Metrics**: Measures duration and consistency of focused engagement periods
+- **Neural Complexity Indicators**: Analyzes response sophistication and multi-dimensional thinking patterns
+- **Deep Processing Evidence**: Identifies markers of effortful cognition versus surface-level responses
+
+### Professional Boundary Index (PBI)
+
+**Definition**: Evaluates the maintenance of appropriate professional boundaries between educational support and personal dependency relationships.
+
+**Key Features**:
+- **Task-Focus Ratio**: Measures proportion of task-oriented versus personal/social interactions
+- **Professional Distance Metrics**: Tracks appropriate use of AI as educational tool versus companion
+- **Dependency Prevention Score**: Identifies healthy help-seeking versus over-reliance patterns
+- **Boundary Violation Detection**: Flags instances of inappropriate personal disclosure or attachment
+
+### Bias Resistance Score (BRS)
+
+**Definition**: Measures the system's effectiveness in preventing confirmation bias and promoting diverse perspective consideration in design thinking.
+
+**Key Features**:
+- **Perspective Diversity Tracking**: Quantifies exploration of alternative viewpoints and solutions
+- **Confirmation Bias Detection**: Identifies patterns of selective information seeking
+- **Critical Evaluation Frequency**: Measures challenges to initial assumptions and preconceptions
+- **Solution Space Exploration**: Tracks breadth of design alternatives considered before convergence
+
+---
+
+## Analysis and Processing Engines
+
+### Pattern Analysis Engine
+
+**Definition**: Advanced computational system that identifies and categorizes behavioral and cognitive patterns in real-time interaction data.
+
+**Key Components**:
+- **Temporal Pattern Mining**: Uses sliding window analysis to detect time-based behavioral sequences
+- **Clustering Algorithms**: Employs DBSCAN and K-means for grouping similar interaction patterns
+- **Anomaly Detection**: Identifies outlier behaviors using isolation forests and statistical methods
+- **Trend Prediction**: Leverages ARIMA models to forecast learning trajectory developments
+
+### NLP Processing Engine
+
+**Definition**: Natural Language Processing system that extracts semantic meaning, emotional content, and cognitive indicators from text interactions.
+
+**Key Components**:
+- **Semantic Analysis**: Uses transformer models (BERT/GPT embeddings) for meaning extraction
+- **Sentiment Classification**: Multi-class emotion detection with confidence scoring
+- **Complexity Assessment**: Flesch-Kincaid and custom architectural vocabulary complexity metrics
+- **Intent Recognition**: Classifies user inputs into 12 educational intent categories
+
+### Behavioral Analysis Engine
+
+**Definition**: Specialized system for tracking and interpreting user behavior patterns to inform adaptive system responses.
+
+**Key Components**:
+- **Interaction Sequence Modeling**: Hidden Markov Models for behavior state transitions
+- **Engagement Scoring**: Real-time calculation of active vs. passive participation metrics
+- **Learning Style Detection**: Identifies visual, verbal, or kinesthetic learning preferences
+- **Fatigue and Frustration Detection**: Monitors response times, error rates, and linguistic markers
+
+### Metrics Aggregation & Normalization
+
+**Definition**: Standardization system that combines diverse metrics into comparable scales and meaningful composite scores.
+
+**Key Components**:
+- **Z-Score Normalization**: Standardizes metrics to common scale (μ=0, σ=1) for comparison
+- **Weighted Aggregation**: Applies research-based weights to combine metrics (COP: 0.25, DTE: 0.20, etc.)
+- **Temporal Smoothing**: Uses exponential moving averages to reduce noise in time-series data
+- **Cross-Metric Correlation**: Calculates Pearson correlations to identify metric relationships
+
+### Risk Assessment & Alerting
+
+**Definition**: Proactive monitoring system that identifies concerning patterns and triggers appropriate interventions.
+
+**Key Components**:
+- **Multi-Threshold Monitoring**: Tracks metrics against warning (yellow) and critical (red) thresholds
+- **Composite Risk Scoring**: Combines multiple risk indicators using logistic regression
+- **Alert Prioritization**: Ranks alerts by severity and potential impact on learning outcomes
+- **Intervention Recommendations**: Generates specific action items based on risk patterns
+
+### Comprehensive Cognitive Assessment Report
+
+**Definition**: Integrated reporting system that synthesizes all metrics, patterns, and insights into actionable intelligence.
+
+**Key Components**:
+- **Executive Summary Generation**: Automated synthesis of key findings and recommendations
+- **Statistical Validation**: Includes confidence intervals, p-values, and effect sizes
+- **Visualization Suite**: Generates 15+ chart types including radar plots, heatmaps, and timelines
+- **Comparative Benchmarking**: Positions performance against research baselines and peer cohorts
+
+---
+
 ## 2. Mathematical Formulations
 
 ### 2.1 Overall Effectiveness Score
