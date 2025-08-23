@@ -955,16 +955,8 @@ class GamificationTracker:
     def render_progress_sidebar(self) -> None:
         """Render gamification progress in sidebar - DISABLED."""
         # Progress display has been moved to contextual inline display
+        # FIXED: Remove unreachable code that references undefined 'stats'
         pass
-
-        # Achievements
-        if stats['achievements']:
-            st.sidebar.markdown("**Achievements:**")
-            for achievement in stats['achievements']:
-                if achievement == 'first_challenge':
-                    st.sidebar.markdown("🏅 Challenge Accepted")
-                elif achievement == 'perspective_master':
-                    st.sidebar.markdown("🎭 Perspective Master")
 
 # Convenience functions for easy integration
 def render_gamified_challenge(challenge_data: Dict[str, Any]) -> None:

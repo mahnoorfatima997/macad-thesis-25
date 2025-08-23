@@ -288,18 +288,20 @@ def render_single_message(message: Dict[str, Any]):
         is_gamified = gamification_info.get("is_gamified", False)
         display_type = gamification_info.get("display_type", "")
 
-        print(f"🎮 DEBUG: Message gamification check:")
-        print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
-        print(f"🎮 DEBUG: Is gamified: {is_gamified}")
-        print(f"🎮 DEBUG: Display type: {display_type}")
-        print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Message gamification check:")
+        # print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
+        # print(f"🎮 DEBUG: Is gamified: {is_gamified}")
+        # print(f"🎮 DEBUG: Display type: {display_type}")
+        # print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
 
         if is_gamified and display_type == "enhanced_visual":
-            print(f"🎮 DEBUG: Calling _render_gamified_message")
+            # print(f"🎮 DEBUG: Calling _render_gamified_message")
             # Render enhanced gamified challenge
             _render_gamified_message(message, mentor_label)
         else:
-            print(f"🎮 DEBUG: Rendering normal message")
+            # print(f"🎮 DEBUG: Rendering normal message")
+            pass
             # Render normal message
             st.markdown(
                 f"""
@@ -325,9 +327,10 @@ def render_single_message(message: Dict[str, Any]):
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
     """Render a gamified challenge message with BOTH agent response AND interactive game."""
     try:
-        print(f"🎮 DEBUG: Starting gamified message rendering")
-        print(f"🎮 DEBUG: Message keys: {list(message.keys())}")
-        print(f"🎮 DEBUG: Gamification info: {message.get('gamification', {})}")
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Starting gamified message rendering")
+        # print(f"🎮 DEBUG: Message keys: {list(message.keys())}")
+        # print(f"🎮 DEBUG: Gamification info: {message.get('gamification', {})}")
 
         # Import the gamification components
         from dashboard.ui.gamification_components import render_gamified_challenge
@@ -398,8 +401,9 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             "gamification_applied": True  # Ensure games are contextual, not hardcoded
         })
 
-        print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
-        print(f"🎮 DEBUG: About to call enhanced gamification renderer")
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
+        # print(f"🎮 DEBUG: About to call enhanced gamification renderer")
 
         # STEP 4: Render contextual interactive game (more subtle)
         st.markdown("**◉ Interactive Challenge**")
@@ -414,14 +418,15 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
 
             # Render enhanced gamification with user's context
             render_enhanced_gamified_challenge(challenge_data)
-            print(f"🎮 DEBUG: Enhanced gamification rendered successfully")
+            # print(f"🎮 DEBUG: Enhanced gamification rendered successfully")
+            pass
 
         except ImportError as e:
             # Fallback to original system
-            print(f"🎮 DEBUG: Enhanced gamification not available ({e}), using fallback")
+            # print(f"🎮 DEBUG: Enhanced gamification not available ({e}), using fallback")
             render_gamified_challenge(challenge_data)
 
-        print(f"🎮 DEBUG: Gamification rendering completed successfully")
+        # print(f"🎮 DEBUG: Gamification rendering completed successfully")
 
         # STEP 5: Add conversation continuity prompt
         st.markdown("---")
@@ -437,7 +442,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             unsafe_allow_html=True,
         )
 
-        print(f"🎮 DEBUG: Gamified message rendering completed successfully")
+        # print(f"🎮 DEBUG: Gamified message rendering completed successfully")
 
     except Exception as e:
         print(f"⚠️ Error rendering gamified message: {e}")

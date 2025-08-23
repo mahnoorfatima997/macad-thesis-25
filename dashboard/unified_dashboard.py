@@ -420,6 +420,18 @@ class UnifiedArchitecturalDashboard:
             # PHASE QUESTION DISPLAY: Show current phase question if available
             self._render_current_phase_question()
 
+            # FIXED: Check for game responses that need processing
+            if st.session_state.get('should_process_message', False):
+                # Get the last message (which should be the game response)
+                if st.session_state.get('messages') and len(st.session_state.messages) > 0:
+                    last_message = st.session_state.messages[-1]
+                    if last_message.get('role') == 'user':
+                        print(f"🎮 PROCESSING GAME RESPONSE: {last_message['content'][:50]}...")
+                        # Process the game response through the normal chat pipeline
+                        self._handle_chat_input(last_message['content'])
+                        # Clear the flag
+                        st.session_state.should_process_message = False
+
             # Chat input with seamless image upload
             user_input, uploaded_image = get_chat_input()
 

@@ -619,9 +619,42 @@ class LangGraphOrchestrator:
                 if not responses or not self._responses_too_similar(socratic_text, responses[0]):
                     responses.append(socratic_text)
 
-        # Synthesize multiple perspectives if available
+        # FIXED: Synthesize multiple perspectives into one cohesive response
         if len(responses) >= 2:
-            return f"{responses[0]}\n\n{responses[1]}", "multi_agent_comprehensive"
+            # Create a cohesive synthesis instead of just concatenating
+            synthesis_prompt = f"""
+            Synthesize these two expert perspectives into one cohesive, comprehensive response that addresses the user's question: "{user_input}"
+
+            Domain Expert Response: {responses[0]}
+
+            Socratic Tutor Response: {responses[1]}
+
+            Create a unified response that:
+            1. Directly addresses the user's specific question
+            2. Integrates the best insights from both perspectives
+            3. Maintains a natural, conversational flow
+            4. Avoids repetition or fragmentation
+            5. Provides actionable guidance
+
+            Write as a single, cohesive response (not separate sections):
+            """
+
+            try:
+                import openai
+                client = openai.OpenAI()
+                synthesis_response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": synthesis_prompt}],
+                    max_tokens=800,
+                    temperature=0.7
+                )
+                synthesized_text = synthesis_response.choices[0].message.content.strip()
+                return synthesized_text, "multi_agent_comprehensive"
+            except Exception as e:
+                print(f"⚠️ Synthesis failed, using fallback: {e}")
+                # Fallback to better concatenation
+                return f"{responses[0]}\n\n{responses[1]}", "multi_agent_comprehensive"
+
         elif len(responses) == 1:
             return responses[0], "multi_agent_comprehensive"
         elif cognitive_result and cognitive_result.get("response_text"):

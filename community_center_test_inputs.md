@@ -57,6 +57,7 @@ I need to investigate this circulation issue
 Something feels off about the spatial organization
 ```
 
+
 ### **🎡 Perspective Shift Games**
 ```
 What if we flipped the program arrangement?
@@ -354,7 +355,6 @@ Message 8: I'm converting a warehouse (🎮 Should trigger gamification)
 - [x] **Foundational_Building** - Ground-up knowledge building
 - [x] **Knowledge_With_Challenge** - Information with cognitive push
 - [x] **Balanced_Guidance** - Comprehensive project guidance
-- [x] **Design_Guidance** - Specific design help (merged into balanced)
 - [x] **Cognitive_Intervention** - Cognitive offloading prevention
 - [x] **Error/Fallback** - System error handling
 

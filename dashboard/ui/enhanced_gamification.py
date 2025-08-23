@@ -103,165 +103,293 @@ class FlexibleContentGenerator:
         }
 
     def generate_personas_from_context(self, building_type: str, user_message: str) -> Dict[str, Dict[str, Any]]:
-        """Generate contextual personas based on user message and building type."""
+        """Generate contextual personas using AI for flexible content generation."""
+        # PERFORMANCE: Check cache first to avoid repeated API calls
+        cache_key = f"personas_{building_type}_{hash(user_message)}"
+        if hasattr(st.session_state, 'game_cache') and cache_key in st.session_state.game_cache:
+            print(f"🚀 CACHE HIT: Using cached personas for {building_type}")
+            return st.session_state.game_cache[cache_key]
 
-        # Analyze user message to understand what they're asking about
-        user_message_lower = user_message.lower()
+        # FLEXIBLE AI-POWERED: Generate contextual personas for ANY topic
+        try:
+            result = self._generate_ai_contextual_personas(building_type, user_message)
+            # Cache the result
+            if not hasattr(st.session_state, 'game_cache'):
+                st.session_state.game_cache = {}
+            st.session_state.game_cache[cache_key] = result
+            return result
+        except Exception as e:
+            print(f"⚠️ AI persona generation failed: {e}")
+            # Fallback to basic personas
+            return self._generate_fallback_personas(building_type, user_message)
 
-        # Extract personas mentioned in the user's actual question
-        mentioned_personas = []
+    def _generate_ai_contextual_personas(self, building_type: str, user_message: str) -> Dict[str, Dict[str, Any]]:
+        """Generate contextual personas using AI for any architectural topic"""
+        import openai
+        client = openai.OpenAI()
 
-        # Dynamic persona extraction based on user's words
-        persona_indicators = {
-            # Age groups
-            "child": "Child", "kid": "Child", "children": "Children", "baby": "Parent with Baby",
-            "elderly": "Senior Citizen", "senior": "Senior Citizen", "old": "Older Adult", "aging": "Senior",
-            "teen": "Teenager", "young": "Young Adult", "youth": "Young Person",
-            "adult": "Adult", "parent": "Parent", "family": "Family Member",
+        persona_prompt = f"""
+        Generate 3-4 diverse user personas for an architecture student working on a {building_type} project.
 
-            # Abilities
-            "disabled": "Person with Disability", "wheelchair": "Wheelchair User",
-            "blind": "Visually Impaired Person", "deaf": "Hearing Impaired Person",
-            "mobility": "Person with Mobility Needs",
+        User's question/context: "{user_message}"
+        Building type: "{building_type}"
 
-            # Roles/Activities
-            "visitor": "Visitor", "tourist": "Tourist", "guest": "Guest", "newcomer": "First-time Visitor",
-            "staff": "Staff Member", "employee": "Employee", "worker": "Worker",
-            "volunteer": "Volunteer", "organizer": "Event Organizer",
+        Create personas that:
+        1. Relate specifically to the user's question/topic
+        2. Represent diverse users of the {building_type}
+        3. Have different needs, perspectives, and experiences
+        4. Are realistic and specific (not generic)
+        5. Help the student think about user-centered design
 
-            # Context-specific
-            "student": "Student", "teacher": "Educator", "artist": "Artist", "performer": "Performer"
-        }
+        Return as JSON with this exact format:
+        {{
+            "persona1_name": {{
+                "description": "Brief description of who they are",
+                "mission": "What they want to achieve in this space and how it relates to the topic",
+                "insights": ["Insight 1 about their experience", "Insight 2 about design implications"]
+            }},
+            "persona2_name": {{
+                "description": "Brief description",
+                "mission": "Their goals and needs",
+                "insights": ["Insight 1", "Insight 2"]
+            }}
+        }}
 
-        # Find personas mentioned in user's question
-        for indicator, persona in persona_indicators.items():
-            if indicator in user_message_lower:
-                mentioned_personas.append(persona)
+        Make persona names specific and relatable (not generic like "User 1").
+        """
 
-        # If no specific personas mentioned, infer from question context
-        if not mentioned_personas:
-            if "different" in user_message_lower or "various" in user_message_lower:
-                # User asking about different types of users
-                mentioned_personas = ["Community Member", "Visitor", "Regular User", "Occasional User"]
-            elif "experience" in user_message_lower:
-                # User asking about user experience
-                mentioned_personas = ["First-time User", "Regular User", "Staff Member"]
-            else:
-                # Default to building-appropriate personas
-                building_defaults = {
-                    "community center": ["Community Member", "Parent", "Senior", "Youth"],
-                    "library": ["Student", "Researcher", "Parent with Child", "Senior"],
-                    "school": ["Student", "Teacher", "Parent", "Visitor"],
-                    "hospital": ["Patient", "Visitor", "Staff", "Emergency User"],
-                    "museum": ["Tourist", "Art Enthusiast", "Student", "Researcher"]
-                }
-                mentioned_personas = building_defaults.get(building_type, ["User", "Visitor", "Staff"])
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": persona_prompt}],
+            max_tokens=500,
+            temperature=0.7
+        )
 
-        # Limit to 5 personas
-        all_personas = mentioned_personas[:5]
+        import json
+        personas_json = response.choices[0].message.content.strip()
 
-        # Generate persona data with all required fields
-        personas = {}
-        for i, persona_name in enumerate(all_personas):
-            personas[persona_name] = {
-                "description": f"Experience your {building_type} as a {persona_name.lower()}",
-                "mission": f"Navigate and use this {building_type} effectively as a {persona_name.lower()}",
-                "icon": ["👤", "👥", "🧑", "👨", "👩"][i % 5],
-                "challenge": f"How does a {persona_name.lower()} navigate and use this space?",
-                "insights": [f"{persona_name} has unique needs in this space", "Consider accessibility and comfort"]
+        # Clean up JSON if it has markdown formatting
+        if "```json" in personas_json:
+            personas_json = personas_json.split("```json")[1].split("```")[0].strip()
+        elif "```" in personas_json:
+            personas_json = personas_json.split("```")[1].strip()
+
+        # FIXED: Better JSON parsing with error handling
+        try:
+            return json.loads(personas_json)
+        except json.JSONDecodeError as e:
+            print(f"⚠️ JSON parsing failed: {e}")
+            print(f"Raw response: {personas_json[:200]}...")
+            # Try to fix common JSON issues
+            try:
+                # Remove any trailing commas and fix quotes
+                fixed_json = personas_json.replace(',}', '}').replace(',]', ']')
+                # Replace any unescaped quotes in strings
+                import re
+                fixed_json = re.sub(r'(?<!\\)"(?=.*".*:)', '\\"', fixed_json)
+                return json.loads(fixed_json)
+            except:
+                # If all else fails, return fallback
+                raise Exception("JSON parsing failed completely")
+
+    def _generate_fallback_personas(self, building_type: str, user_message: str) -> Dict[str, Dict[str, Any]]:
+        """Fallback persona generation when AI fails"""
+        return {
+            "Regular User": {
+                "description": f"Someone who frequently uses the {building_type}",
+                "mission": f"Navigate and use the {building_type} effectively for their needs",
+                "insights": ["Familiar with the space", "Has established routines and preferences"]
+            },
+            "First-time Visitor": {
+                "description": f"Someone visiting the {building_type} for the first time",
+                "mission": f"Find their way and understand how to use the {building_type}",
+                "insights": ["Needs clear wayfinding", "May feel overwhelmed or confused"]
+            },
+            "Staff Member": {
+                "description": f"Someone who works at the {building_type}",
+                "mission": f"Efficiently manage operations and assist users",
+                "insights": ["Knows operational challenges", "Understands user patterns"]
             }
-
-        return personas
+        }
 
     def generate_constraints_from_context(self, building_type: str, user_message: str, challenge_data: Dict = None) -> Dict[str, Dict[str, Any]]:
-        """Generate highly contextual constraints based on user message and challenge data."""
+        """Generate highly contextual constraints using AI for flexible content generation."""
+        # PERFORMANCE: Check cache first to avoid repeated API calls
+        cache_key = f"constraints_{building_type}_{hash(user_message)}"
+        if hasattr(st.session_state, 'game_cache') and cache_key in st.session_state.game_cache:
+            # PERFORMANCE: Disable debug prints
+            # print(f"🚀 CACHE HIT: Using cached constraints for {building_type}")
+            return st.session_state.game_cache[cache_key]
+
+        # FLEXIBLE AI-POWERED: Generate contextual constraints for ANY topic
+        try:
+            result = self._generate_ai_contextual_constraints(building_type, user_message, challenge_data)
+            # Cache the result
+            if not hasattr(st.session_state, 'game_cache'):
+                st.session_state.game_cache = {}
+            st.session_state.game_cache[cache_key] = result
+            return result
+        except Exception as e:
+            print(f"⚠️ AI constraint generation failed: {e}")
+            # Fallback to basic constraints
+            return self._generate_fallback_constraints(building_type, user_message)
+
+    def _generate_ai_contextual_constraints(self, building_type: str, user_message: str, challenge_data: Dict = None) -> Dict[str, Dict[str, Any]]:
+        """Generate contextual constraints using AI for any architectural topic"""
+        # PERFORMANCE: Skip AI if no API key available
+        import os
+        if not os.getenv("OPENAI_API_KEY"):
+            print("⚠️ No OpenAI API key - using fallback constraints")
+            raise Exception("No API key available")
+
+        try:
+            import openai
+            client = openai.OpenAI()
+
+            constraint_prompt = f"""
+            Generate 3-4 realistic design constraints for an architecture student working on a {building_type} project.
+
+            User's question/context: "{user_message}"
+            Building type: "{building_type}"
+
+            Create constraints that:
+            1. Relate specifically to the user's question/topic
+            2. Are realistic challenges architects face
+            3. Force creative problem-solving
+            4. Are specific to the building type and context
+            5. Have clear impacts on design decisions
+
+            Return as JSON with this exact format:
+            {{
+                "constraint1_name": {{
+                    "impact": "Brief description of how this constraint affects the design",
+                    "challenge": "Question that challenges the student to solve it",
+                    "color": "#cd766d",
+                    "icon": "◐"
+                }},
+                "constraint2_name": {{
+                    "impact": "Brief description of impact",
+                    "challenge": "Challenging question",
+                    "color": "#d99c66",
+                    "icon": "◐"
+                }}
+            }}
+
+            Make constraint names specific and relevant (not generic like "Budget" or "Site").
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": constraint_prompt}],
+                max_tokens=400,
+                temperature=0.7,
+                timeout=10  # PERFORMANCE: Add timeout to prevent hanging
+            )
+
+            import json
+            constraints_json = response.choices[0].message.content.strip()
+
+            # Clean up JSON if it has markdown formatting
+            if "```json" in constraints_json:
+                constraints_json = constraints_json.split("```json")[1].split("```")[0].strip()
+            elif "```" in constraints_json:
+                constraints_json = constraints_json.split("```")[1].strip()
+
+            # FIXED: Better JSON parsing with error handling
+            try:
+                result = json.loads(constraints_json)
+                # VALIDATION: Ensure result has proper structure
+                if not isinstance(result, dict) or len(result) == 0:
+                    raise Exception("Invalid constraint structure")
+                return result
+            except json.JSONDecodeError as e:
+                print(f"⚠️ Constraint JSON parsing failed: {e}")
+                print(f"Raw response: {constraints_json[:200]}...")
+                # Try to fix common JSON issues
+                try:
+                    # Remove any trailing commas and fix quotes
+                    fixed_json = constraints_json.replace(',}', '}').replace(',]', ']')
+                    result = json.loads(fixed_json)
+                    if not isinstance(result, dict) or len(result) == 0:
+                        raise Exception("Invalid constraint structure after fix")
+                    return result
+                except:
+                    # If all else fails, return fallback
+                    raise Exception("Constraint JSON parsing failed completely")
+        except Exception as e:
+            print(f"⚠️ AI constraint generation completely failed: {e}")
+            raise e
+
+    def _generate_fallback_constraints(self, building_type: str, user_message: str) -> Dict[str, Dict[str, Any]]:
+        """ENHANCED fallback constraint generation when AI fails - ensures interactivity"""
+        # CONTEXTUAL: Generate better fallbacks based on user message
+        user_lower = user_message.lower()
+
         constraints = {}
 
-        # Use rich context data if available
-        context_data = challenge_data or {}
-        specific_constraint = context_data.get("specific_constraint", "").lower()
-        context_keywords = context_data.get("context_keywords", [])
-        specific_elements = context_data.get("specific_elements", [])
-
-        # CONTEXT-AWARE CONSTRAINT GENERATION
-        detected_constraints = []
-
-        # Check for circulation-specific constraints
-        if "circulation" in specific_constraint or any("circulation" in str(kw).lower() for kw in context_keywords):
-            detected_constraints.extend(["circulation", "flow"])
-
-        # Check for warehouse conversion constraints
-        elif "warehouse" in user_message.lower() or "conversion" in specific_constraint:
-            detected_constraints.extend(["conversion", "structure"])
-
-        # Check for space planning constraints
-        elif "layout" in user_message.lower() or "space" in specific_constraint:
-            detected_constraints.extend(["space", "program"])
-
-        # Fallback to keyword detection
-        else:
-            constraint_keywords = {
-                "budget": ["budget", "cost", "money", "expensive", "cheap", "funding"],
-                "site": ["site", "location", "terrain", "flood", "small", "limited space"],
-                "time": ["time", "schedule", "deadline", "fast", "quick", "delay"],
-                "program": ["requirements", "needs", "users", "function", "multi-use"]
+        # Add contextual constraints based on user message
+        if "circulation" in user_lower or "flow" in user_lower:
+            constraints["Circulation Bottleneck"] = {
+                "impact": f"Main pathways create congestion in {building_type}",
+                "challenge": "How to distribute movement flows effectively?",
+                "color": "#cd766d",
+                "icon": "◐"
             }
 
-            for category, keywords in constraint_keywords.items():
-                if any(keyword in user_message.lower() for keyword in keywords):
-                    detected_constraints.append(category)
-
-        # If no specific constraints detected, use general ones
-        if not detected_constraints:
-            detected_constraints = ["budget", "site", "program"]
-
-        # Generate constraint data with context-aware options
-        constraint_options = {
-            # CONTEXT-SPECIFIC CONSTRAINTS
-            "circulation": {
-                "Entrance Bottleneck": {"impact": f"Main entrance creates congestion in {building_type}", "color": "#cd766d", "challenge": "How to distribute arrival flows?", "icon": "◐"},
-                "Vertical Circulation": {"impact": "Stairs interrupt horizontal flow", "color": "#d99c66", "challenge": "How to integrate vertical movement seamlessly?", "icon": "◐"}
-            },
-            "flow": {
-                "Dead-End Spaces": {"impact": "Some areas become isolated", "color": "#b87189", "challenge": "How to create continuous circulation loops?", "icon": "◐"},
-                "Conflicting Paths": {"impact": "Different user groups cross paths", "color": "#5c4f73", "challenge": "How to separate incompatible flows?", "icon": "◐"}
-            },
-            "conversion": {
-                "Industrial Scale": {"impact": f"Warehouse spaces feel overwhelming for {building_type}", "color": "#4f3a3e", "challenge": "How to create human-scale spaces within large volume?", "icon": "◐"},
-                "Existing Structure": {"impact": "Concrete columns limit layout flexibility", "color": "#e0ceb5", "challenge": "How to work with structural constraints?", "icon": "◐"}
-            },
-            "structure": {
-                "Column Grid": {"impact": "Structural grid doesn't match program needs", "color": "#dcc188", "challenge": "How to align structure with function?", "icon": "◐"},
-                "Load Limitations": {"impact": "Floor can't support heavy loads", "color": "#cda29a", "challenge": "How to distribute weight effectively?", "icon": "◐"}
-            },
-            "space": {
-                "Irregular Shape": {"impact": "Odd building geometry creates challenges", "color": "#cd766d", "challenge": "How to make awkward spaces functional?", "icon": "◐"},
-                "Low Ceiling Height": {"impact": "Limited vertical space", "color": "#d99c66", "challenge": "How to maximize spatial quality with height limits?", "icon": "◐"}
-            },
-            # GENERIC CONSTRAINTS (fallback)
-            "budget": {
-                "Budget Cut": {"impact": "50% reduction in funds", "color": "#cd766d", "challenge": "How to maintain quality with less money?", "icon": "◐"},
-                "Value Engineering": {"impact": "Cost optimization required", "color": "#d99c66", "challenge": "What can be simplified without losing function?", "icon": "◐"}
-            },
-            "site": {
-                "Small Site": {"impact": "Limited building footprint", "color": "#b87189", "challenge": "How to fit the program in less space?", "icon": "◐"},
-                "Difficult Access": {"impact": "Construction challenges", "color": "#5c4f73", "challenge": "How to build with limited access?", "icon": "◐"}
-            },
-            "program": {
-                "Multi-Use Requirements": {"impact": "Spaces must serve multiple functions", "color": "#4f3a3e", "challenge": "How to design flexible spaces?", "icon": "◐"},
-                "Accessibility Compliance": {"impact": "Full universal design", "color": "#e0ceb5", "challenge": "How to include everyone?", "icon": "◐"}
-            },
-            "time": {
-                "Tight Schedule": {"impact": "Accelerated timeline", "color": "#dcc188", "challenge": "How to design faster without compromising quality?", "icon": "◐"},
-                "Phased Construction": {"impact": "Building in stages", "color": "#cda29a", "challenge": "How to maintain functionality during construction?", "icon": "◐"}
+        if "lighting" in user_lower or "natural light" in user_lower:
+            constraints["Limited Natural Light"] = {
+                "impact": f"North-facing windows limit daylight in {building_type}",
+                "challenge": "How to maximize natural light penetration?",
+                "color": "#d99c66",
+                "icon": "◐"
             }
-        }
 
-        # Select constraints based on detected categories
-        for category in detected_constraints[:3]:  # Limit to 3 categories
-            if category in constraint_options:
-                constraints.update(constraint_options[category])
+        if "space" in user_lower or "layout" in user_lower:
+            constraints["Space Limitations"] = {
+                "impact": f"Compact footprint restricts {building_type} layout",
+                "challenge": "How to create spacious feeling in limited area?",
+                "color": "#b87189",
+                "icon": "◐"
+            }
 
+        # Always include at least 3 constraints for interactivity
+        if len(constraints) < 3:
+            fallback_constraints = {
+                "Budget Limitation": {
+                    "impact": f"Reduced funding affects {building_type} design choices",
+                    "challenge": "How to maintain quality with limited resources?",
+                    "color": "#cd766d",
+                    "icon": "◐"
+                },
+                "Site Constraints": {
+                    "impact": f"Physical site limitations for {building_type}",
+                    "challenge": "How to work within site boundaries?",
+                    "color": "#d99c66",
+                    "icon": "◐"
+                },
+                "Program Requirements": {
+                    "impact": f"Complex functional needs for {building_type}",
+                    "challenge": "How to accommodate all required functions?",
+                    "color": "#b87189",
+                    "icon": "◐"
+                },
+                "Accessibility Compliance": {
+                    "impact": f"ADA requirements affect {building_type} design",
+                    "challenge": "How to integrate accessibility elegantly?",
+                    "color": "#8b7ca6",
+                    "icon": "◐"
+                }
+            }
+
+            # Add fallbacks until we have at least 3 total
+            for name, data in fallback_constraints.items():
+                if len(constraints) >= 4:
+                    break
+                if name not in constraints:
+                    constraints[name] = data
+
+        # PERFORMANCE: Disable debug prints
+        # print(f"🔧 FALLBACK CONSTRAINTS: Generated {len(constraints)} interactive constraints")
         return constraints
 
     def generate_mystery_from_context(self, building_type: str, user_message: str) -> Dict[str, Any]:
@@ -361,39 +489,81 @@ class FlexibleContentGenerator:
         }
 
     def generate_perspectives_from_context(self, building_type: str, user_message: str) -> List[str]:
-        """Generate contextual perspectives based on user message."""
+        """Generate contextual perspectives using AI for flexible content generation."""
+        # PERFORMANCE: Check cache first to avoid repeated API calls
+        cache_key = f"perspectives_{building_type}_{hash(user_message)}"
+        if hasattr(st.session_state, 'game_cache') and cache_key in st.session_state.game_cache:
+            print(f"🚀 CACHE HIT: Using cached perspectives for {building_type}")
+            return st.session_state.game_cache[cache_key]
 
-        # Base perspectives for different building types
-        base_perspectives = {
-            "community center": ["Community Leader", "Local Resident", "Youth Program Coordinator", "Senior Citizen", "Parent"],
-            "library": ["Librarian", "Student", "Researcher", "Parent with Children", "Senior Reader"],
-            "school": ["Teacher", "Student", "Principal", "Parent", "Maintenance Staff"],
-            "hospital": ["Doctor", "Nurse", "Patient", "Visitor", "Administrator"],
-            "museum": ["Curator", "Visitor", "Tour Guide", "Security", "Researcher"]
-        }
+        # FLEXIBLE AI-POWERED: Generate contextual perspectives for ANY topic
+        try:
+            result = self._generate_ai_contextual_perspectives(building_type, user_message)
+            # Cache the result
+            if not hasattr(st.session_state, 'game_cache'):
+                st.session_state.game_cache = {}
+            st.session_state.game_cache[cache_key] = result
+            return result
+        except Exception as e:
+            print(f"⚠️ AI perspective generation failed: {e}")
+            # Fallback to basic perspectives
+            return self._generate_fallback_perspectives(building_type, user_message)
 
-        # Analyze message for specific perspectives mentioned
-        perspective_keywords = {
-            "accessibility": "Accessibility Advocate",
-            "sustainability": "Environmental Consultant",
-            "safety": "Safety Inspector",
-            "technology": "IT Specialist",
-            "budget": "Financial Planner",
-            "maintenance": "Facility Manager",
-            "community": "Community Organizer",
-            "design": "Design Critic",
-            "user": "User Experience Expert",
-            "function": "Functional Analyst"
-        }
+    def _generate_ai_contextual_perspectives(self, building_type: str, user_message: str) -> List[str]:
+        """Generate contextual perspectives using AI for any architectural topic"""
+        import openai
+        client = openai.OpenAI()
 
-        perspectives = base_perspectives.get(building_type, ["User", "Designer", "Manager", "Visitor", "Expert"])
+        perspective_prompt = f"""
+        Generate 4-6 diverse user perspectives for an architecture student working on a {building_type} project.
 
-        # Add contextual perspectives based on message
-        for keyword, perspective in perspective_keywords.items():
-            if keyword in user_message.lower():
-                perspectives.append(perspective)
+        User's question/context: "{user_message}"
+        Building type: "{building_type}"
 
-        return perspectives[:6]  # Limit to 6 perspectives
+        Create perspectives that:
+        1. Relate specifically to the user's question/topic
+        2. Represent different user types who would use the {building_type}
+        3. Include diverse ages, abilities, and roles
+        4. Are specific and realistic (not generic)
+        5. Help the student think about different user needs
+
+        Return as a simple JSON array of perspective names:
+        ["Perspective 1", "Perspective 2", "Perspective 3", "Perspective 4"]
+
+        Make perspective names specific and relatable (like "Working Parent", "Wheelchair User", "Local Artist").
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": perspective_prompt}],
+            max_tokens=200,
+            temperature=0.7
+        )
+
+        import json
+        perspectives_json = response.choices[0].message.content.strip()
+
+        # Clean up JSON if it has markdown formatting
+        if "```json" in perspectives_json:
+            perspectives_json = perspectives_json.split("```json")[1].split("```")[0].strip()
+        elif "```" in perspectives_json:
+            perspectives_json = perspectives_json.split("```")[1].strip()
+
+        # FIXED: Better JSON parsing with error handling
+        try:
+            return json.loads(perspectives_json)
+        except json.JSONDecodeError as e:
+            print(f"⚠️ Perspective JSON parsing failed: {e}")
+            # Try to fix common JSON issues
+            try:
+                fixed_json = perspectives_json.replace(',]', ']')
+                return json.loads(fixed_json)
+            except:
+                raise Exception("Perspective JSON parsing failed completely")
+
+    def _generate_fallback_perspectives(self, building_type: str, user_message: str) -> List[str]:
+        """Fallback perspective generation when AI fails"""
+        return ["Regular User", "First-time Visitor", "Staff Member", "Community Leader", "Senior Citizen", "Young Adult"]
 
     def generate_story_chapters_from_context(self, building_type: str, user_message: str) -> Dict[str, str]:
         """Generate contextual story chapters based on user message and building type."""
@@ -453,33 +623,80 @@ class FlexibleContentGenerator:
             }
 
     def generate_transformations_from_context(self, building_type: str, user_message: str) -> Dict[str, str]:
-        """Generate contextual transformation types based on user message."""
+        """Generate contextual transformation types using AI for flexible content generation."""
+        # PERFORMANCE: Check cache first to avoid repeated API calls
+        cache_key = f"transformations_{building_type}_{hash(user_message)}"
+        if hasattr(st.session_state, 'game_cache') and cache_key in st.session_state.game_cache:
+            print(f"🚀 CACHE HIT: Using cached transformations for {building_type}")
+            return st.session_state.game_cache[cache_key]
 
-        transformations = {}
+        # FLEXIBLE AI-POWERED: Generate contextual transformations for ANY topic
+        try:
+            result = self._generate_ai_contextual_transformations(building_type, user_message)
+            # Cache the result
+            if not hasattr(st.session_state, 'game_cache'):
+                st.session_state.game_cache = {}
+            st.session_state.game_cache[cache_key] = result
+            return result
+        except Exception as e:
+            print(f"⚠️ AI transformation generation failed: {e}")
+            # Fallback to basic transformations
+            return self._generate_fallback_transformations(building_type, user_message)
 
-        # Analyze message for transformation keywords
-        if "flexible" in user_message.lower() or "multi" in user_message.lower():
-            transformations["Flexible"] = f"Your {building_type} adapts to multiple uses throughout the day"
+    def _generate_ai_contextual_transformations(self, building_type: str, user_message: str) -> Dict[str, str]:
+        """Generate contextual transformations using AI for any architectural topic"""
+        import openai
+        client = openai.OpenAI()
 
-        if "season" in user_message.lower() or "weather" in user_message.lower():
-            transformations["Seasonal"] = f"Your {building_type} transforms with the changing seasons"
+        transformation_prompt = f"""
+        Generate 3-4 transformation scenarios for an architecture student working on a {building_type} project.
 
-        if "community" in user_message.lower() or "grow" in user_message.lower():
-            transformations["Community"] = f"Your {building_type} evolves as the community grows"
+        User's question/context: "{user_message}"
+        Building type: "{building_type}"
 
-        if "technology" in user_message.lower() or "digital" in user_message.lower():
-            transformations["Digital"] = f"Your {building_type} integrates new technologies over time"
+        Create transformation scenarios that:
+        1. Relate specifically to the user's question/topic
+        2. Show how spaces can adapt and change
+        3. Are realistic and achievable
+        4. Encourage creative thinking about flexibility
+        5. Are specific to the building type and context
 
-        # Default transformations if none detected
-        if not transformations:
-            transformations = {
-                "Adaptive": f"Your {building_type} changes based on user needs",
-                "Functional": f"Your {building_type} shifts between different uses",
-                "Responsive": f"Your {building_type} responds to community feedback",
-                "Evolutionary": f"Your {building_type} grows and develops organically"
-            }
+        Return as JSON with this exact format:
+        {{
+            "The Warm Welcome Entrance": "Brief description of how the space transforms",
+            "Interactive Learning Lab": "Brief description of transformation",
+            "Community Gathering Hub": "Brief description of transformation"
+        }}
 
-        return transformations
+        Use descriptive, engaging names (not generic like "transformation1_name" or "Flexible").
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": transformation_prompt}],
+            max_tokens=300,
+            temperature=0.7
+        )
+
+        import json
+        transformations_json = response.choices[0].message.content.strip()
+
+        # Clean up JSON if it has markdown formatting
+        if "```json" in transformations_json:
+            transformations_json = transformations_json.split("```json")[1].split("```")[0].strip()
+        elif "```" in transformations_json:
+            transformations_json = transformations_json.split("```")[1].strip()
+
+        return json.loads(transformations_json)
+
+    def _generate_fallback_transformations(self, building_type: str, user_message: str) -> Dict[str, str]:
+        """Fallback transformation generation when AI fails"""
+        return {
+            "Day-Night Shift": f"Your {building_type} transforms from day to night activities",
+            "Seasonal Adaptation": f"Your {building_type} adapts to different seasons",
+            "Multi-Use Flexibility": f"Your {building_type} serves multiple functions",
+            "Community Growth": f"Your {building_type} evolves with community needs"
+        }
 
 class EnhancedGamificationRenderer:
     """Enhanced visual gamification with creative interactive elements."""
@@ -542,9 +759,10 @@ class EnhancedGamificationRenderer:
         user_message = challenge_data.get("user_message", "")
         gamification_applied = challenge_data.get("gamification_applied", False)
 
-        print(f"🎮 CONTEXTUAL RENDERING: User message = '{user_message}'")
-        print(f"🎮 CONTEXTUAL RENDERING: Challenge type = '{challenge_type}'")
-        print(f"🎮 CONTEXTUAL RENDERING: Building type = '{building_type}'")
+        # PERFORMANCE: Disable debug prints to improve speed
+        # print(f"🎮 CONTEXTUAL RENDERING: User message = '{user_message}'")
+        # print(f"🎮 CONTEXTUAL RENDERING: Challenge type = '{challenge_type}'")
+        # print(f"🎮 CONTEXTUAL RENDERING: Building type = '{building_type}'")
 
         # Check for cognitive enhancement patterns in the text
         is_cognitive_enhancement = self._is_cognitive_enhancement_challenge(challenge_text)
@@ -1803,16 +2021,53 @@ class EnhancedGamificationRenderer:
                 story_state['story_points'] += 10
                 story_state['narrative_choices'].append(story_response)
                 st.session_state['storytelling_state'] = story_state
-                st.success("Story continues! Your narrative has been recorded.")
-                self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 40)
+
+                # FIXED: Add completion logic when reaching 100 points
+                if story_state['story_points'] >= 100:
+                    st.success("🎉 **STORY COMPLETE!** You've crafted a comprehensive narrative!")
+                    st.balloons()
+
+                    # Show final story summary
+                    with st.expander("📖 Your Complete Story", expanded=True):
+                        st.write("**Your Narrative Journey:**")
+                        for i, choice in enumerate(story_state['narrative_choices'], 1):
+                            st.write(f"**Chapter {i}:** {choice}")
+
+                    # Reset for new story
+                    if st.button("🔄 Start New Story", key="new_story"):
+                        st.session_state['storytelling_state'] = {
+                            'chapter': 1,
+                            'story_points': 0,
+                            'narrative_choices': []
+                        }
+                        st.rerun()
+
+                    # Trigger message processing for follow-up
+                    st.session_state.should_process_message = True
+                    st.session_state.messages.append({
+                        "role": "user",
+                        "content": f"I completed the storytelling challenge! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
+                    })
+                else:
+                    st.success("Story continues! Your narrative has been recorded.")
+                    self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
 
     def _render_time_travel_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render interactive time travel challenge."""
         time_state = st.session_state.get('time_travel_state', {
             'current_era': 'present',
             'time_points': 0,
-            'temporal_insights': []
+            'temporal_insights': [],
+            'completed': False
         })
+
+        # FIXED: Check if game is completed to prevent regeneration
+        if time_state.get('completed', False):
+            st.success("✅ **Time Travel Challenge Completed!**")
+            with st.expander("⏰ Your Temporal Journey", expanded=False):
+                for i, insight in enumerate(time_state['temporal_insights'], 1):
+                    st.write(f"**{i}. {insight['era']}:** {insight['insight']}")
+            return
 
         st.markdown(f"""
         <div style="
@@ -1832,7 +2087,8 @@ class EnhancedGamificationRenderer:
                 padding: 15px;
                 margin: 10px 0;
             ">
-                {challenge_text}
+                Explore how your {building_type} design evolves across different time periods.
+                Consider how changing needs, technologies, and social patterns affect architectural decisions.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1877,17 +2133,35 @@ class EnhancedGamificationRenderer:
                     'era': time_state['current_era'],
                     'insight': temporal_response
                 })
-                st.session_state['time_travel_state'] = time_state
-                st.success("Temporal insight recorded! Time reveals new perspectives.")
-                self._show_contextual_progress("Time Travel Challenge", time_state['time_points'], 45)
+
+                # FIXED: Add completion logic
+                if time_state['time_points'] >= 45:
+                    time_state['completed'] = True
+                    st.session_state['time_travel_state'] = time_state
+                    st.success("🎉 **TIME TRAVEL COMPLETE!** You've mastered temporal design thinking!")
+                    st.balloons()
+
+                    # Show temporal insights summary
+                    with st.expander("⏰ Your Temporal Journey", expanded=True):
+                        for i, insight in enumerate(time_state['temporal_insights'], 1):
+                            st.write(f"**{i}. {insight['era']}:** {insight['insight']}")
+
+                    # Trigger message processing for follow-up
+                    st.session_state.should_process_message = True
+                    st.session_state.messages.append({
+                        "role": "user",
+                        "content": f"I completed the time travel challenge! I explored: {', '.join([i['era'] for i in time_state['temporal_insights']])}"
+                    })
+                else:
+                    st.session_state['time_travel_state'] = time_state
+                    st.success("Temporal insight recorded! Time reveals new perspectives.")
+                    self._show_contextual_progress("Time Travel Challenge", time_state['time_points'], 45)
 
     def _render_transformation_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render interactive transformation challenge."""
-        transform_state = st.session_state.get('transformation_state', {
-            'transformation_type': None,
-            'transform_points': 0,
-            'transformations': []
-        })
+
+        # FIXED: Use proper game description instead of user message - ensure no HTML tags
+        game_description = f"Design your {building_type} to adapt and transform for different uses, times, and seasons. Explore how spaces can change to serve multiple functions while maintaining their architectural integrity."
 
         st.markdown(f"""
         <div style="
@@ -1907,7 +2181,7 @@ class EnhancedGamificationRenderer:
                 padding: 15px;
                 margin: 10px 0;
             ">
-                {challenge_text}
+                {game_description}
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1915,64 +2189,111 @@ class EnhancedGamificationRenderer:
         # Generate dynamic transformations based on context
         transformations_dict = self.content_generator.generate_transformations_from_context(building_type, challenge_text)
 
-        # Format for display with theme symbols
-        transformations = {}
-        for key, description in transformations_dict.items():
-            transformations[key.lower().replace(' ', '_')] = f"{theme['symbol']} {key}: {description}"
+        # Initialize transformation state properly
+        transform_key = f"transform_{building_type}_{hash(challenge_text)}"
+        if transform_key not in st.session_state:
+            st.session_state[transform_key] = {
+                'selected_transformation': None,
+                'transformation_data': None,
+                'response_given': False,
+                'transform_points': 0
+            }
 
-        # Transformation selector
-        st.markdown("**Choose your transformation type:**")
+        transform_state = st.session_state[transform_key]
 
-        for key, description in transformations.items():
-            if st.button(description, key=f"transform_{key}", use_container_width=True):
-                transform_state['transformation_type'] = key
-                st.session_state['transformation_state'] = transform_state
+        # Show transformation options (like roleplay personas)
+        st.markdown("**Choose your transformation approach:**")
 
-        # Show selected transformation
-        if transform_state['transformation_type']:
-            selected = transformations.get(transform_state['transformation_type'], "Transformation selected")
+        for i, (transform_name, transform_description) in enumerate(transformations_dict.items()):
+            is_selected = transform_state['selected_transformation'] == transform_name
+
+            # Show transformation button with preview (like roleplay)
+            if st.button(
+                f"{theme['symbol']} {transform_name}: {transform_description[:60]}...",
+                key=f"select_transform_{i}_{hash(challenge_text)}",
+                type="primary" if is_selected else "secondary",
+                use_container_width=True
+            ):
+                transform_state['selected_transformation'] = transform_name
+                transform_state['transformation_data'] = transform_description
+                transform_state['response_given'] = False
+                st.rerun()
+
+        # Show selected transformation challenge (like roleplay experience)
+        if transform_state['selected_transformation'] and transform_state['transformation_data']:
+            transform_name = transform_state['selected_transformation']
+            transform_description = transform_state['transformation_data']
+
+            # Show full challenge description
             st.markdown(f"""
             <div style="
-                background: rgba(255,255,255,0.1);
-                border-radius: 10px;
+                background: {theme['accent']};
                 padding: 15px;
+                border-radius: 10px;
                 margin: 10px 0;
-                border-left: 3px solid {theme['accent']};
+                border-left: 4px solid {theme['primary']};
             ">
-                <strong>Selected:</strong> {selected}
+                <strong style="color: {theme['primary']};">{theme['symbol']} {transform_name}:</strong><br>
+                <span style="color: #2c2328;">{transform_description}</span>
             </div>
             """, unsafe_allow_html=True)
 
-            # Transformation description
+            # Response area (like roleplay)
             transform_response = st.text_area(
-                "Describe how your space transforms. What changes and why?",
-                key="transformation_response",
-                height=100
+                "Your transformation approach:",
+                placeholder=f"To implement {transform_name.lower()}, I would...",
+                height=100,
+                key=f"response_{transform_key}",
+                help="Describe your design strategy, specific elements, and how they enable transformation"
             )
 
-            if st.button(f"{theme['symbol']} Apply Transformation", key="apply_transform", use_container_width=True):
-                if transform_response:
-                    transform_state['transform_points'] += 20
-                    transform_state['transformations'].append({
-                        'type': transform_state['transformation_type'],
-                        'description': transform_response
-                    })
-                    st.session_state['transformation_state'] = transform_state
-                    st.success("Transformation applied! Your space has evolved.")
-                    self._show_contextual_progress("Transformation Challenge", transform_state['transform_points'], 60)
+            if st.button(f"{theme['symbol']} Submit Transformation", key=f"submit_{transform_key}", type="primary"):
+                if transform_response.strip():
+                    transform_state['response_given'] = True
+                    transform_state['transform_points'] += 30
+
+                    # INTEGRATE WITH MENTOR: Send game response back to conversation (like roleplay)
+                    game_response = f"🔄 Transformation Approach: {transform_response.strip()}"
+                    if 'messages' not in st.session_state:
+                        st.session_state.messages = []
+                    st.session_state.messages.append({"role": "user", "content": game_response})
+                    st.session_state.should_process_message = True
+                    st.rerun()
+
+        # Show completion feedback (like roleplay)
+        if transform_state['response_given']:
+            st.markdown(f"""
+            <div style="
+                background: {theme['accent']};
+                padding: 10px;
+                border-radius: 8px;
+                margin: 10px 0;
+                border-left: 4px solid {theme['primary']};
+            ">
+                <span style="color: #2c2328; line-height: 1.5;">✅ Transformation approach submitted! Your response will be processed by the mentor.</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Show only contextual progress (no success message)
+            self._show_contextual_progress("Transformation Challenge", transform_state['transform_points'], 30)
 
 
 # Global functions for integration
 def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
     """Main entry point for rendering enhanced gamified challenges."""
     try:
-        print(f"🎮 ENHANCED GAMIFICATION: Starting render with data: {list(challenge_data.keys())}")
+        # PERFORMANCE: Disable debug prints to improve speed
+        # print(f"🎮 ENHANCED GAMIFICATION: Starting render with data: {list(challenge_data.keys())}")
 
         # Validate essential data
         if not challenge_data:
             print("🎮 ENHANCED GAMIFICATION: No challenge data provided")
             st.info("💭 Continue exploring your design ideas!")
             return
+
+        # FIXED: Remove aggressive duplicate prevention that was causing games to disappear
+        # Let individual games handle their own completion logic
+        # This allows games to re-render when users interact with them
 
         # Ensure required fields exist with safe defaults
         safe_challenge_data = {
@@ -1990,7 +2311,8 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
         # Render the challenge
         renderer.render_enhanced_challenge(safe_challenge_data)
 
-        print(f"🎮 ENHANCED GAMIFICATION: Render completed successfully")
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 ENHANCED GAMIFICATION: Render completed successfully")
 
     except Exception as e:
         print(f"🎮 ENHANCED GAMIFICATION ERROR: {e}")

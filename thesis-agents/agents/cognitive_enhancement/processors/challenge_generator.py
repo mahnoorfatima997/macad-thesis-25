@@ -364,15 +364,15 @@ class ChallengeGeneratorProcessor:
 
             has_strong_trigger = any(pattern in latest_message for pattern in strong_trigger_patterns)
 
-            # FREQUENCY CONTROL: Apply gamification every 4 messages (20% rate) - BUT allow strong triggers to override
+            # FIXED: FREQUENCY CONTROL: Apply gamification every 3 messages (2 message break) - BUT allow strong triggers to override
             total_user_messages = len(user_messages)
-            # TESTING: Commented out frequency control to test all gamification triggers
-            # if not has_strong_trigger and total_user_messages % 4 != 0:
-            #     print(f"🎮 FREQUENCY CONTROL: Skipping gamification (message {total_user_messages}, next at {((total_user_messages // 4) + 1) * 4})")
-            #     return False
-            # elif has_strong_trigger and total_user_messages % 4 != 0:
-            #     print(f"🎮 FREQUENCY OVERRIDE: Strong trigger '{latest_message[:50]}...' detected, overriding frequency control")
-            print(f"🎮 TESTING MODE: Frequency control disabled - checking all triggers for message {total_user_messages}")
+            print(f"🎮 FREQUENCY DEBUG: Message {total_user_messages}, has_strong_trigger: {has_strong_trigger}")
+            if not has_strong_trigger and total_user_messages % 3 != 0:
+                print(f"🎮 FREQUENCY CONTROL: Skipping gamification (message {total_user_messages}, next at {((total_user_messages // 3) + 1) * 3})")
+                return False
+            elif has_strong_trigger and total_user_messages % 3 != 0:
+                print(f"🎮 FREQUENCY OVERRIDE: Strong trigger '{latest_message[:50]}...' detected, overriding frequency control")
+            print(f"🎮 FREQUENCY CONTROL: Allowing gamification for message {total_user_messages}")
 
             # 1. ROLE-PLAY TRIGGERS - FIXED: More specific patterns to avoid false positives
             role_play_patterns = [
@@ -439,28 +439,44 @@ class ChallengeGeneratorProcessor:
                 'experience as they move', 'path through', 'spatial story'
             ]
 
-            # 6. TIME TRAVEL TRIGGERS - NEW
+            # 6. TIME TRAVEL TRIGGERS - ENHANCED with more specific patterns
             time_travel_patterns = [
                 'over time', 'through time', 'years from now', 'in the future',
-                'decades', 'generations', 'evolve', 'evolution', 'lifecycle',
-                'aging', 'changing needs', 'future use', 'long-term'
+                'decades', 'generations', 'evolve over time', 'evolution', 'lifecycle',
+                'aging', 'changing needs', 'future use', 'long-term',
+                # ADDED: More specific temporal patterns
+                'future community needs', 'adapt to future', 'evolve.*future',
+                '10.*years', '20.*years', 'next decade', 'coming years',
+                'digital.*future', 'technological.*future', 'future.*formats'
             ]
 
-            # ADDITIONAL CHECK: Don't trigger for thoughtful design questions
+            # ADDITIONAL CHECK: Don't trigger for thoughtful design questions or example requests
             thoughtful_design_indicators = [
                 'how should i approach', 'how should i', 'what would be the best way',
                 'considering', 'thinking about', 'exploring', 'approach this'
             ]
 
+            # FIXED: Don't trigger gamification for example requests
+            example_request_indicators = [
+                'give example', 'show example', 'example project', 'project example',
+                'can you give', 'can you show', 'can you provide', 'provide example'
+            ]
+
             is_thoughtful_question = any(indicator in latest_message for indicator in thoughtful_design_indicators)
+            is_example_request = any(indicator in latest_message for indicator in example_request_indicators)
+
+            # FIXED: Skip gamification for example requests
+            if is_example_request:
+                print(f"🎮 GAMIFICATION SKIP: Example request detected - no gamification needed")
+                return False
 
             if any(pattern in latest_message for pattern in constraint_patterns) and not is_thoughtful_question:
                 print(f"🎮 GAMIFICATION TRIGGER: Creative constraint detected - '{latest_message}'")
                 return True
 
-            # Check transformation patterns
-            if any(pattern in latest_message for pattern in transformation_patterns):
-                print(f"🎮 GAMIFICATION TRIGGER: Transformation challenge detected - '{latest_message}'")
+            # FIXED: Check time travel patterns FIRST (higher priority than transformation)
+            if any(pattern in latest_message for pattern in time_travel_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Time travel challenge detected - '{latest_message}'")
                 return True
 
             # Check storytelling patterns
@@ -468,9 +484,9 @@ class ChallengeGeneratorProcessor:
                 print(f"🎮 GAMIFICATION TRIGGER: Storytelling challenge detected - '{latest_message}'")
                 return True
 
-            # Check time travel patterns
-            if any(pattern in latest_message for pattern in time_travel_patterns):
-                print(f"🎮 GAMIFICATION TRIGGER: Time travel challenge detected - '{latest_message}'")
+            # Check transformation patterns (lower priority than time travel)
+            if any(pattern in latest_message for pattern in transformation_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Transformation challenge detected - '{latest_message}'")
                 return True
 
             # 4. REALITY CHECK / OVERCONFIDENCE (lines 24, 33)
@@ -1168,11 +1184,12 @@ class ChallengeGeneratorProcessor:
             }
 
     async def _generate_storytelling_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
-        """Generate spatial storytelling challenge"""
+        """Generate spatial storytelling challenge using AI for flexible content generation"""
         user_message = self._get_latest_user_message(state)
         building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
 
-        story_prompt = f"Imagine your {building_type} as a character in a story. What would it say about the people who visit? How would it describe the daily rhythms and seasonal changes it experiences? Write a short narrative from the building's perspective, focusing on how the spaces you're designing will support community life and human connection."
+        # FLEXIBLE AI-POWERED: Generate contextual story prompt for ANY topic
+        story_prompt = await self._generate_ai_contextual_story_prompt(user_message, building_type)
 
         return {
             "challenge_text": story_prompt,
@@ -1184,11 +1201,12 @@ class ChallengeGeneratorProcessor:
         }
 
     async def _generate_time_travel_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
-        """Generate time travel challenge"""
+        """Generate time travel challenge using AI for flexible content generation"""
         user_message = self._get_latest_user_message(state)
         building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
 
-        time_prompt = f"Travel through time with your {building_type} design. Imagine visiting it in 1950, today, and 2050. How would the same spaces be used differently in each era? What technologies, social patterns, and community needs would shape the experience? Design adaptations for each time period while maintaining the core architectural concept."
+        # FLEXIBLE AI-POWERED: Generate contextual time travel prompt for ANY topic
+        time_prompt = await self._generate_ai_contextual_time_travel_prompt(user_message, building_type)
 
         return {
             "challenge_text": time_prompt,
@@ -1200,11 +1218,12 @@ class ChallengeGeneratorProcessor:
         }
 
     async def _generate_transformation_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
-        """Generate space transformation challenge"""
+        """Generate space transformation challenge using AI for flexible content generation"""
         user_message = self._get_latest_user_message(state)
         building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
 
-        transform_prompt = f"Your {building_type} needs to transform throughout the day and seasons. Design a space that can adapt from morning yoga classes to evening community meetings, from summer festivals to winter workshops. What moveable elements, flexible systems, and adaptive features would enable these transformations while maintaining spatial quality?"
+        # FLEXIBLE AI-POWERED: Generate contextual transformation prompt for ANY topic
+        transform_prompt = await self._generate_ai_contextual_transformation_prompt(user_message, building_type)
 
         return {
             "challenge_text": transform_prompt,
@@ -1214,3 +1233,142 @@ class ChallengeGeneratorProcessor:
             "adaptation_scenarios": ["daily", "seasonal", "programmatic"],
             "gamification_applied": True
         }
+
+    async def _generate_ai_contextual_story_prompt(self, user_message: str, building_type: str) -> str:
+        """Generate flexible story prompt using AI for any architectural topic"""
+        try:
+            import openai
+            client = openai.OpenAI()
+
+            # Extract the main architectural topic from user message
+            topic_extraction_prompt = f"""
+            Extract the main architectural topic/concept from this user message: "{user_message}"
+
+            Examples:
+            - "circulation strategies" → "circulation"
+            - "lighting design" → "lighting"
+            - "sustainable materials" → "sustainability"
+            - "acoustic performance" → "acoustics"
+            - "accessibility features" → "accessibility"
+            - "landscape integration" → "landscape"
+            - "structural systems" → "structure"
+
+            Return only the main topic (1-2 words):
+            """
+
+            topic_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": topic_extraction_prompt}],
+                max_tokens=50,
+                temperature=0.3
+            )
+
+            main_topic = topic_response.choices[0].message.content.strip().lower()
+
+            # Generate contextual story prompt
+            story_generation_prompt = f"""
+            Create a creative storytelling challenge for an architecture student working on a {building_type} project.
+
+            User's question/context: "{user_message}"
+            Main architectural topic: "{main_topic}"
+            Building type: "{building_type}"
+
+            Generate a storytelling prompt that:
+            1. Relates specifically to the topic "{main_topic}" in the context of a {building_type}
+            2. Uses narrative perspective (from building's POV, user's POV, or element's POV)
+            3. Encourages creative thinking about how {main_topic} affects user experience
+            4. Is engaging and imaginative, not generic
+            5. Connects to real architectural design considerations
+
+            Format: Write a 2-3 sentence storytelling prompt that starts with an engaging hook.
+
+            Example format: "Tell the story of [perspective] in your {building_type}. How does [topic-specific element] [specific action/impact]? What [specific questions about user experience/design impact]?"
+            """
+
+            story_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": story_generation_prompt}],
+                max_tokens=200,
+                temperature=0.7
+            )
+
+            return story_response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ AI story generation failed: {e}")
+            # Fallback to generic prompt
+            return f"Imagine your {building_type} as a character in a story. What would it say about the people who visit and the experiences it creates? Write a short narrative from the building's perspective, focusing on how your design decisions shape daily life and community interaction."
+
+    async def _generate_ai_contextual_time_travel_prompt(self, user_message: str, building_type: str) -> str:
+        """Generate flexible time travel prompt using AI for any architectural topic"""
+        try:
+            import openai
+            client = openai.OpenAI()
+
+            time_travel_prompt = f"""
+            Create a time travel challenge for an architecture student working on a {building_type} project.
+
+            User's question/context: "{user_message}"
+            Building type: "{building_type}"
+
+            Generate a time travel prompt that:
+            1. Relates specifically to the user's question/topic
+            2. Explores how the topic would differ across three time periods: 1950, 2024, 2050
+            3. Considers technological, social, and cultural changes
+            4. Encourages thinking about adaptation and evolution
+            5. Is specific to the architectural topic, not generic
+
+            Format: 2-3 sentences that guide the student through time periods with specific considerations.
+
+            Example structure: "Travel through time with your {building_type}'s [specific topic]. In 1950, [period-specific consideration]. Today, [current consideration]. In 2050, [future consideration]."
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": time_travel_prompt}],
+                max_tokens=200,
+                temperature=0.7
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ AI time travel generation failed: {e}")
+            return f"Travel through time with your {building_type} design. Imagine visiting it in 1950, today, and 2050. How would the same spaces be used differently in each era? What technologies, social patterns, and community needs would shape the experience?"
+
+    async def _generate_ai_contextual_transformation_prompt(self, user_message: str, building_type: str) -> str:
+        """Generate flexible transformation prompt using AI for any architectural topic"""
+        try:
+            import openai
+            client = openai.OpenAI()
+
+            transformation_prompt = f"""
+            Create a transformation challenge for an architecture student working on a {building_type} project.
+
+            User's question/context: "{user_message}"
+            Building type: "{building_type}"
+
+            Generate a transformation prompt that:
+            1. Relates specifically to the user's question/topic
+            2. Explores how spaces can adapt and transform
+            3. Considers different scenarios (daily, seasonal, programmatic, or functional changes)
+            4. Encourages thinking about flexibility and adaptability
+            5. Is specific to the architectural topic and building type
+
+            Format: 2-3 sentences that challenge the student to think about transformation scenarios.
+
+            Example structure: "Your {building_type} needs to [specific transformation challenge]. [Specific scenarios]. What [specific design elements] would enable these transformations?"
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": transformation_prompt}],
+                max_tokens=200,
+                temperature=0.7
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ AI transformation generation failed: {e}")
+            return f"Your {building_type} needs to transform throughout the day and seasons. Design a space that can adapt to different uses and user needs. What moveable elements, flexible systems, and adaptive features would enable these transformations while maintaining spatial quality?"

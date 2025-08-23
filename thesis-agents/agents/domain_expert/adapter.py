@@ -201,9 +201,57 @@ class DomainExpertAgent:
                 # Not enough database results - fall through to AI generation
                 agent_response = None
 
-            # Step 3: Use AI generation if database was insufficient or irrelevant
+            # Step 3: Try web search for project examples if database was insufficient
+            if agent_response is None and ("example projects" in user_input.lower() or "project examples" in user_input.lower()):
+                print(f"   🌐 Database insufficient for project examples - trying web search")
+                try:
+                    # Use existing knowledge search processor for web search
+                    from .processors.knowledge_search import KnowledgeSearchProcessor
+                    knowledge_search = KnowledgeSearchProcessor()
+
+                    # Create web search query for project examples
+                    search_topic = f"{building_type} adaptive reuse projects examples"
+                    print(f"   🔍 Web search topic: {search_topic}")
+
+                    web_results = await knowledge_search.search_web_for_knowledge(search_topic, state)
+
+                    if web_results and len(web_results) > 0:
+                        print(f"   ✅ Found {len(web_results)} web search results")
+
+                        # Synthesize web results into response
+                        web_response = await self._synthesize_knowledge_with_llm(
+                            search_topic, web_results, building_type, synthesis_type="project_examples"
+                        )
+
+                        response_metadata = {
+                            "agent": self.name,
+                            "response_type": "web_search_knowledge",
+                            "knowledge_gap_addressed": gap_type,
+                            "building_type": building_type,
+                            "user_input_addressed": user_input[:100] + "..." if len(user_input) > 100 else user_input,
+                            "sources": web_results,
+                            "processing_method": "web_search"
+                        }
+
+                        # Convert web results to source format
+                        web_sources = [result.get('metadata', {}).get('url', 'Web Search') for result in web_results]
+
+                        agent_response = ResponseBuilder.create_knowledge_response(
+                            response_text=web_response,
+                            sources_used=web_sources,
+                            metadata=response_metadata
+                        )
+                    else:
+                        print(f"   ⚠️ Web search also returned no results")
+                        agent_response = None
+
+                except Exception as e:
+                    print(f"   ⚠️ Web search failed: {e}")
+                    agent_response = None
+
+            # Step 4: Use AI generation as final fallback
             if agent_response is None:
-                print(f"   🤖 Database insufficient or irrelevant - using AI generation as fallback")
+                print(f"   🤖 Database and web search insufficient - using AI generation as final fallback")
                 ai_response = await self._generate_contextual_knowledge_response(
                     user_input, building_type, project_context, gap_type, state
                 )
@@ -245,24 +293,23 @@ class DomainExpertAgent:
             building_type = self._extract_building_type_from_context(state)
             project_context = state.current_design_brief or "architectural project"
 
-            # Create gamified knowledge prompt
+            # FIXED: Create more integrated knowledge-challenge response
             prompt = f"""
-            Provide rich, contextual knowledge about the user's question, then create an engaging application challenge.
+            Address the user's specific question with contextual knowledge that flows seamlessly into practical application.
 
             User's question: "{user_input}"
             Building type: {building_type}
             Project context: {project_context}
 
-            Structure your response as:
-            1. Rich knowledge explanation with real-world relevance
-            2. Connect directly to their project context
-            3. Quick application challenge with 3-4 options (A, B, C, D format with emojis)
-            4. Ask for their choice and reasoning
-            5. Set up exploration of implications
+            Structure your response as ONE COHESIVE FLOW:
+            1. Start by directly addressing their specific question
+            2. Provide relevant knowledge that connects to their project context
+            3. Seamlessly transition into practical considerations for their {building_type}
+            4. End with thought-provoking questions that encourage deeper exploration
 
-            Make the knowledge engaging and the challenge thought-provoking.
-            Use emojis strategically for visual appeal but maintain professional depth.
-            Include research backing or examples where relevant.
+            AVOID: Generic introductions or separate "knowledge section" + "challenge section"
+            FOCUS: Make it feel like a natural conversation that builds from their question
+            Keep it engaging but maintain professional architectural depth.
             """
 
             response = await self._generate_llm_response(prompt, state, analysis_result)
@@ -1046,10 +1093,27 @@ What questions do you have about your design?"""
                 has_relevant_db_results = avg_similarity > 0.15  # LOWERED: Was 0.25, now 0.15 to capture more relevant results
                 print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.15)")
 
-            if not has_sufficient_db_results or not has_relevant_db_results:
+            # FIXED: For project examples, always try web search if database doesn't have specific project names
+            should_try_web_search = False
+            if request_type == "project_examples":
+                # Check if database results contain actual project names/architects
+                has_project_names = False
+                if knowledge_results:
+                    combined_text = " ".join([r.get('content', '') + r.get('snippet', '') for r in knowledge_results]).lower()
+                    project_indicators = ['architect:', 'designed by', 'project:', 'building name:', 'center by', 'designed for']
+                    has_project_names = any(indicator in combined_text for indicator in project_indicators)
+
+                if not has_project_names:
+                    should_try_web_search = True
+                    print(f"   🏗️ PROJECT EXAMPLES: Database lacks specific project names - trying web search")
+            elif not has_sufficient_db_results or not has_relevant_db_results:
+                should_try_web_search = True
+                print(f"   🌐 Database insufficient - trying web search")
+
+            if should_try_web_search:
                 if request_type == "project_examples":
                     # PROJECT EXAMPLES: Database → Web search (NO AI generation)
-                    print(f"   🏗️ PROJECT EXAMPLES: Trying web search for specific built projects")
+                    print(f"   🏗️ PROJECT EXAMPLES: Searching web for specific built projects")
                     try:
                         # Create specific web search query using AI-powered query generation
                         context_query = await self._create_smart_search_query(user_input, user_topic, building_type, request_type, "web")
