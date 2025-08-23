@@ -318,8 +318,12 @@ def render_single_message(message: Dict[str, Any]):
             )
 
             # Display generated image if present in assistant message
+            print(f"🎨 DEBUG: Checking for generated_image in message: {bool(message.get('generated_image'))}")
             if message.get("generated_image"):
+                print(f"🎨 DEBUG: Found generated_image in message, calling render function")
                 _render_generated_image_in_chat(message["generated_image"])
+            else:
+                print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
 
 
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
@@ -395,7 +399,15 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
 def _render_generated_image_in_chat(generated_image: dict):
     """Render a generated image within the chat interface."""
     try:
-        if not generated_image or not generated_image.get('url'):
+        print(f"🎨 DEBUG: Attempting to render generated image")
+        print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys()) if generated_image else 'None'}")
+
+        if not generated_image:
+            print(f"❌ DEBUG: No generated_image data provided")
+            return
+
+        if not generated_image.get('url') and not generated_image.get('local_path'):
+            print(f"❌ DEBUG: No URL or local_path found in generated_image")
             return
 
         # Display the image with a nice caption
@@ -410,12 +422,19 @@ def _render_generated_image_in_chat(generated_image: dict):
         </div>
         """, unsafe_allow_html=True)
 
-        # Display the actual image
-        st.image(
-            generated_image['url'],
-            caption=f"AI-generated {phase} visualization ({style})",
-            use_container_width=True
-        )
+        # Display the actual image - prefer local path over URL for reliability
+        image_source = generated_image.get('local_path') or generated_image.get('url')
+
+        if image_source:
+            st.image(
+                image_source,
+                caption=f"AI-generated {phase} visualization ({style})",
+                use_container_width=True
+            )
+            print(f"✅ Displayed generated image from: {'local file' if generated_image.get('local_path') else 'URL'}")
+        else:
+            st.error("❌ Generated image could not be displayed - no valid source found")
+            print(f"❌ No valid image source found in generated_image: {list(generated_image.keys())}")
 
         # Add feedback buttons in a compact layout
         st.markdown("**Does this visualization match your design thinking?**")

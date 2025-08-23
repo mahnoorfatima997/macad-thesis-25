@@ -768,6 +768,10 @@ class UnifiedArchitecturalDashboard:
                 phase_result = st.session_state.get('last_phase_result', {})
                 generated_image_data = None
 
+                print(f"🎨 DEBUG: Checking for phase transitions...")
+                print(f"🎨 DEBUG: Phase result keys: {list(phase_result.keys()) if phase_result else 'None'}")
+                print(f"🎨 DEBUG: Phase transition: {phase_result.get('phase_transition', False)}")
+
                 if phase_result.get('phase_transition'):
                     transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
                     response_content += transition_msg
@@ -775,15 +779,22 @@ class UnifiedArchitecturalDashboard:
 
                     # Handle generated image if available
                     generated_image = phase_result.get('generated_image')
+                    print(f"🎨 DEBUG: Generated image from phase result: {bool(generated_image)}")
                     if generated_image:
+                        print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys())}")
+                        print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
+
                         # Save the image to thesis data
                         saved_path = self._save_generated_image(generated_image)
                         if saved_path:
                             generated_image['local_path'] = saved_path
+                            print(f"🎨 DEBUG: Added local_path to generated_image: {saved_path}")
 
                         # Store image data for inclusion in chat message
                         generated_image_data = generated_image
                         print(f"✅ Generated image will be included in chat message")
+                    else:
+                        print(f"❌ DEBUG: No generated_image found in phase_result")
 
                 # Add Socratic question if needed (only for MENTOR mode)
                 combined_response = self._add_socratic_question_if_needed(response_content, st.session_state.current_mode)
@@ -816,9 +827,13 @@ class UnifiedArchitecturalDashboard:
                 }
 
                 # Include generated image data if available
+                print(f"🎨 DEBUG: Checking if generated_image_data should be added to message: {bool(generated_image_data)}")
                 if generated_image_data:
                     assistant_message["generated_image"] = generated_image_data
                     print(f"✅ Added generated image to assistant message")
+                    print(f"🎨 DEBUG: Assistant message now has generated_image: {bool(assistant_message.get('generated_image'))}")
+                else:
+                    print(f"❌ DEBUG: No generated_image_data to add to assistant message")
 
                 st.session_state.messages.append(assistant_message)
                 
