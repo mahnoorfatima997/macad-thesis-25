@@ -1,30 +1,29 @@
 {
-  "generated_at": "2025-08-08T14:32:02.532006",
+  "generated_at": "2025-08-19T15:45:40.287118",
   "benchmark_profiles": {
-    "beginner": {
-      "proficiency_level": "beginner",
+    "advanced": {
+      "proficiency_level": "advanced",
       "target_metrics": {
         "cognitive_load_range": [
           0.85,
           1
         ],
-        "learning_effectiveness_min": 0.31599999999999995,
-        "engagement_min": 0.5066666666666667,
-        "cognitive_offloading_prevention_min": 0.11999999999999997,
-        "deep_thinking_rate_min": 0.2666666666666667,
-        "scaffolding_effectiveness_min": 0.45999999999999985
+        "learning_effectiveness_min": 0.7000000000000001,
+        "engagement_min": 0.7333333333333334,
+        "cognitive_offloading_prevention_min": 0.9,
+        "deep_thinking_rate_min": 0.9,
+        "scaffolding_effectiveness_min": 0
       },
       "recommended_strategies": [
-        "Increase Socratic questioning to prevent direct answer seeking",
-        "Incorporate more 'why' and 'how' questions to encourage reflection"
+        "Provide more structured guidance with progressive complexity"
       ],
       "progression_indicators": {
-        "next_level": "intermediate",
+        "next_level": "expert",
         "requirements": {
-          "sustained_deep_thinking": 0.6,
-          "reduced_cognitive_offloading": 0.7,
-          "independent_problem_solving": 0.5,
-          "conceptual_connections": 0.4
+          "sustained_deep_thinking": 0.9,
+          "reduced_cognitive_offloading": 0.95,
+          "independent_problem_solving": 0.85,
+          "conceptual_connections": 0.85
         }
       }
     },
@@ -54,29 +53,30 @@
         }
       }
     },
-    "advanced": {
-      "proficiency_level": "advanced",
+    "beginner": {
+      "proficiency_level": "beginner",
       "target_metrics": {
         "cognitive_load_range": [
-          0.5737500000000001,
-          0.8737500000000001
+          0.33000000000000007,
+          0.63
         ],
-        "learning_effectiveness_min": 0.7000000000000001,
-        "engagement_min": 0.6958333333333334,
+        "learning_effectiveness_min": 0.20000000000000004,
+        "engagement_min": 0.65,
         "cognitive_offloading_prevention_min": 0.9,
-        "deep_thinking_rate_min": 0.775,
-        "scaffolding_effectiveness_min": 0.15
+        "deep_thinking_rate_min": 0,
+        "scaffolding_effectiveness_min": 0
       },
       "recommended_strategies": [
+        "Incorporate more 'why' and 'how' questions to encourage reflection",
         "Provide more structured guidance with progressive complexity"
       ],
       "progression_indicators": {
-        "next_level": "expert",
+        "next_level": "intermediate",
         "requirements": {
-          "sustained_deep_thinking": 0.9,
-          "reduced_cognitive_offloading": 0.95,
-          "independent_problem_solving": 0.85,
-          "conceptual_connections": 0.85
+          "sustained_deep_thinking": 0.6,
+          "reduced_cognitive_offloading": 0.7,
+          "independent_problem_solving": 0.5,
+          "conceptual_connections": 0.4
         }
       }
     }
@@ -84,9 +84,9 @@
   "cluster_analysis": {
     "n_clusters": 3,
     "proficiency_distribution": {
-      "beginner": 1,
+      "advanced": 1,
       "intermediate": 1,
-      "advanced": 1
+      "beginner": 1
     }
   },
   "recommendations": {
