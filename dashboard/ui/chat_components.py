@@ -495,16 +495,67 @@ def _render_generated_image_in_chat(generated_image: dict):
         </div>
         """, unsafe_allow_html=True)
 
-        # Display the actual image - prefer local path over URL for reliability
-        image_source = generated_image.get('local_path') or generated_image.get('url')
+        # Display the actual image - handle cloud vs local deployment
+        image_source = None
+        source_type = "unknown"
+
+        # Check if we're running on Streamlit Cloud
+        is_cloud = (
+            os.environ.get('STREAMLIT_SHARING_MODE') or
+            'streamlit.app' in os.environ.get('HOSTNAME', '') or
+            os.environ.get('STREAMLIT_SERVER_PORT') or
+            'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
+        )
+
+        if is_cloud:
+            # On Streamlit Cloud, prefer URL over local path since local files don't persist
+            image_source = generated_image.get('url') or generated_image.get('local_path')
+            source_type = "URL (cloud)" if generated_image.get('url') else "local (cloud)"
+        else:
+            # On local deployment, prefer local path over URL for reliability
+            image_source = generated_image.get('local_path') or generated_image.get('url')
+            source_type = "local file" if generated_image.get('local_path') else "URL"
+
+        print(f"🎨 DEBUG: Cloud deployment: {is_cloud}")
+        print(f"🎨 DEBUG: Image source: {image_source}")
+        print(f"🎨 DEBUG: Source type: {source_type}")
+
+        # Validate URL accessibility if using URL source
+        if image_source and image_source.startswith('http'):
+            try:
+                import requests
+                response = requests.head(image_source, timeout=5)
+                print(f"🎨 DEBUG: URL accessibility check: {response.status_code}")
+                if response.status_code != 200:
+                    print(f"⚠️ WARNING: Image URL may not be accessible: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ WARNING: Could not verify URL accessibility: {e}")
 
         if image_source:
-            st.image(
-                image_source,
-                caption=f"AI-generated {phase} visualization ({style})",
-                use_container_width=True
-            )
-            print(f"✅ Displayed generated image from: {'local file' if generated_image.get('local_path') else 'URL'}")
+            try:
+                st.image(
+                    image_source,
+                    caption=f"AI-generated {phase} visualization ({style})",
+                    use_container_width=True
+                )
+                print(f"✅ Displayed generated image from: {source_type}")
+            except Exception as e:
+                print(f"❌ Error displaying image from {source_type}: {e}")
+                # Fallback: try the other source if available
+                fallback_source = generated_image.get('url') if source_type.startswith('local') else generated_image.get('local_path')
+                if fallback_source:
+                    try:
+                        st.image(
+                            fallback_source,
+                            caption=f"AI-generated {phase} visualization ({style})",
+                            use_container_width=True
+                        )
+                        print(f"✅ Displayed generated image from fallback source")
+                    except Exception as e2:
+                        st.error("❌ Generated image could not be displayed - both sources failed")
+                        print(f"❌ Both image sources failed: {e}, {e2}")
+                else:
+                    st.error("❌ Generated image could not be displayed - primary source failed and no fallback available")
         else:
             st.error("❌ Generated image could not be displayed - no valid source found")
             print(f"❌ No valid image source found in generated_image: {list(generated_image.keys())}")

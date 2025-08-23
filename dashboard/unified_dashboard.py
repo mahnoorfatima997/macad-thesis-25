@@ -733,6 +733,13 @@ class UnifiedArchitecturalDashboard:
 
             # Store phase result for UI display
             st.session_state.last_phase_result = phase_result
+            print(f"🎨 DEBUG: Stored phase_result in session_state with keys: {list(phase_result.keys())}")
+            if phase_result.get('phase_transition'):
+                print(f"🎨 DEBUG: Phase transition detected in phase processing")
+                if 'generated_image' in phase_result:
+                    print(f"🎨 DEBUG: Generated image present in phase_result: {bool(phase_result['generated_image'])}")
+                else:
+                    print(f"🎨 DEBUG: No generated_image in phase_result")
 
             # Display nudge if available
             if phase_result.get('nudge'):
@@ -801,15 +808,28 @@ class UnifiedArchitecturalDashboard:
                         print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys())}")
                         print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
 
-                        # Save the image to thesis data
-                        saved_path = self._save_generated_image(generated_image)
-                        if saved_path:
-                            generated_image['local_path'] = saved_path
-                            print(f"🎨 DEBUG: Added local_path to generated_image: {saved_path}")
+                        # Check if we're running on Streamlit Cloud
+                        is_cloud = (
+                            os.environ.get('STREAMLIT_SHARING_MODE') or
+                            'streamlit.app' in os.environ.get('HOSTNAME', '') or
+                            os.environ.get('STREAMLIT_SERVER_PORT') or
+                            'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
+                        )
+                        print(f"🎨 DEBUG: Running on cloud: {is_cloud}")
+
+                        if not is_cloud:
+                            # Only try to save locally if not on cloud
+                            saved_path = self._save_generated_image(generated_image)
+                            if saved_path:
+                                generated_image['local_path'] = saved_path
+                                print(f"🎨 DEBUG: Added local_path to generated_image: {saved_path}")
+                        else:
+                            print(f"🎨 DEBUG: Skipping local save on cloud deployment")
 
                         # Store image data for inclusion in chat message
                         generated_image_data = generated_image
                         print(f"✅ Generated image will be included in chat message")
+                        print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
                     else:
                         print(f"❌ DEBUG: No generated_image found in phase_result")
 
@@ -849,8 +869,17 @@ class UnifiedArchitecturalDashboard:
                     assistant_message["generated_image"] = generated_image_data
                     print(f"✅ Added generated image to assistant message")
                     print(f"🎨 DEBUG: Assistant message now has generated_image: {bool(assistant_message.get('generated_image'))}")
+                    print(f"🎨 DEBUG: Generated image URL in message: {assistant_message.get('generated_image', {}).get('url', 'No URL')}")
                 else:
                     print(f"❌ DEBUG: No generated_image_data to add to assistant message")
+                    # Check if there was a phase result but no image data made it through
+                    if phase_result.get('phase_transition'):
+                        print(f"🎨 DEBUG: Phase transition occurred but no image data - phase_result keys: {list(phase_result.keys())}")
+                        if 'generated_image' in phase_result:
+                            print(f"🎨 DEBUG: Phase result has generated_image but it didn't make it to generated_image_data")
+                            print(f"🎨 DEBUG: Phase result generated_image: {phase_result.get('generated_image')}")
+                        else:
+                            print(f"🎨 DEBUG: Phase result has no generated_image key")
 
                 st.session_state.messages.append(assistant_message)
                 
