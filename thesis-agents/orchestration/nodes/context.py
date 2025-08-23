@@ -25,11 +25,9 @@ def make_context_node(context_agent, progression_manager, first_response_generat
         logger.info(f"Context node: user_messages count: {len(user_messages)}, assistant_messages count: {len(assistant_messages)}")
         logger.info(f"Context node: last_message: {last_message[:100]}...")
         
-        # Check if this is truly the first meaningful interaction
+        # Check if this is truly the first meaningful interaction - FIXED: Only first user message
         is_first_message = (
-            len(user_messages) <= 1 or  # First or only user message
-            (len(user_messages) == 1 and len(assistant_messages) == 0) or  # First user message, no assistant response yet
-            (len(user_messages) == 2 and len(assistant_messages) == 0)  # Second user message but no assistant response
+            len(user_messages) == 1 and len(assistant_messages) == 0  # Only the very first user message with no assistant response
         )
         
         # Additional check: if the message contains clear project description patterns, treat as first message
