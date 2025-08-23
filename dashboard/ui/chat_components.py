@@ -4,8 +4,13 @@ Chat components and message rendering for the dashboard.
 
 import streamlit as st
 import re
+import sys
+import os
 from html import escape
 from typing import Dict, Any, List
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dashboard.config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
 
 

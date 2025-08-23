@@ -5,10 +5,14 @@ Provides pure, direct GPT responses for research comparison purposes.
 """
 
 import os
+import sys
 import streamlit as st
 from typing import Dict, Any, List
 from datetime import datetime
-from .phase_calculator import phase_calculator
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from processors.phase_calculator import phase_calculator
 
 
 class PureRawGPTProcessor:

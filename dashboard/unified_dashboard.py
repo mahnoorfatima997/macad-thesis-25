@@ -13,6 +13,8 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Import configuration and utilities
+import sys
+
 from dashboard.config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, MENTOR_TYPES, get_api_key
 from dashboard.ui.styles import apply_dashboard_styles
 from dashboard.core.session_manager import initialize_session_state, ensure_session_started
@@ -31,6 +33,7 @@ from dashboard.analysis.phase_analyzer import PhaseAnalyzer
 from dashboard.core.image_database import ImageDatabase
 
 # Import external dependencies
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from phase_progression_system import PhaseProgressionSystem
 from thesis_tests.test_dashboard import TestDashboard
 from thesis_tests.data_models import InteractionData, TestPhase
@@ -433,7 +436,6 @@ class UnifiedArchitecturalDashboard:
             elif uploaded_image:
                 # Store image but don't process until user provides input
                 self._store_uploaded_image(uploaded_image)
-                st.info("📷 Image uploaded! Type a message or question and press Enter to analyze it.")
 
     def _render_current_phase_question(self):
         """Render the current phase question if available."""
@@ -1187,8 +1189,8 @@ class UnifiedArchitecturalDashboard:
 
                 print(f"✅ Image metadata saved to: {metadata_file}")
 
-                # Upload to Dropbox
-                self._upload_image_to_dropbox(filepath, filename)
+                # Skip Dropbox upload here - image generator already uploaded it
+                print(f"ℹ️ Skipping Dropbox upload (already uploaded by image generator)")
 
                 return filepath
             else:

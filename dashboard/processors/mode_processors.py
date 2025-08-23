@@ -11,9 +11,13 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Import required components
-from .raw_gpt_processor import get_raw_gpt_response
-from .no_ai_processor import get_no_ai_response
-from .question_validator import validate_user_question
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from processors.raw_gpt_processor import get_raw_gpt_response
+from processors.no_ai_processor import get_no_ai_response
+from processors.question_validator import validate_user_question
 from thesis_tests.data_models import InteractionData, TestPhase
 
 

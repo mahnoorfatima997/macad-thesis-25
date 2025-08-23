@@ -18,7 +18,11 @@ except ImportError:
     print("⚠️ Dropbox package not installed. Run: pip install dropbox")
 
 import streamlit as st
-from ..config.settings import SecretsManager
+import sys
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from dashboard.config.settings import SecretsManager
 
 logger = logging.getLogger(__name__)
 
