@@ -135,21 +135,27 @@ class BenchmarkingPipeline:
         self._print_summary()
     
     def _load_session_data(self) -> List[Path]:
-        """Load all available session data files"""
+        """Load all valid session data files with required columns"""
         
-        session_files = list(self.data_dir.glob("interactions_*.csv"))
+        # Import session validator
+        from session_validator import get_valid_session_files
         
-        # Validate files
-        valid_files = []
-        for file in session_files:
+        # Get only valid files with all required columns
+        valid_files = get_valid_session_files(self.data_dir)
+        
+        # Additional check for non-empty files
+        final_valid_files = []
+        for file in valid_files:
             try:
                 df = pd.read_csv(file)
                 if len(df) > 0:
-                    valid_files.append(file)
+                    final_valid_files.append(file)
+                else:
+                    print(f"  [!]  Skipping empty file {file.name}")
             except Exception as e:
                 print(f"  [!]  Skipping invalid file {file.name}: {str(e)}")
         
-        return valid_files
+        return final_valid_files
     
     def _process_interaction_graphs(self, session_files: List[Path]) -> List[InteractionGraph]:
         """Process session data into interaction graphs"""
@@ -493,9 +499,13 @@ class BenchmarkingPipeline:
         
         # 4. Cognitive flow diagram
         if graphs:
-            # Combine data from all sessions for flow analysis
+            # Import session validator
+            from session_validator import get_valid_session_files
+            
+            # Combine data from valid sessions only for flow analysis
             all_data = []
-            for session_file in self.data_dir.glob("interactions_*.csv"):
+            valid_files = get_valid_session_files(self.data_dir)
+            for session_file in valid_files:
                 df = pd.read_csv(session_file)
                 all_data.append(df)
             

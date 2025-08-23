@@ -288,18 +288,20 @@ def render_single_message(message: Dict[str, Any]):
         is_gamified = gamification_info.get("is_gamified", False)
         display_type = gamification_info.get("display_type", "")
 
-        print(f"🎮 DEBUG: Message gamification check:")
-        print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
-        print(f"🎮 DEBUG: Is gamified: {is_gamified}")
-        print(f"🎮 DEBUG: Display type: {display_type}")
-        print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Message gamification check:")
+        # print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
+        # print(f"🎮 DEBUG: Is gamified: {is_gamified}")
+        # print(f"🎮 DEBUG: Display type: {display_type}")
+        # print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
 
         if is_gamified and display_type == "enhanced_visual":
-            print(f"🎮 DEBUG: Calling _render_gamified_message")
+            # print(f"🎮 DEBUG: Calling _render_gamified_message")
             # Render enhanced gamified challenge
             _render_gamified_message(message, mentor_label)
         else:
-            print(f"🎮 DEBUG: Rendering normal message")
+            # print(f"🎮 DEBUG: Rendering normal message")
+            pass
             # Render normal message
             st.markdown(
                 f"""
@@ -327,11 +329,12 @@ def render_single_message(message: Dict[str, Any]):
 
 
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
-    """Render a gamified challenge message with enhanced visuals."""
+    """Render a gamified challenge message with BOTH agent response AND interactive game."""
     try:
-        print(f"🎮 DEBUG: Starting gamified message rendering")
-        print(f"🎮 DEBUG: Message keys: {list(message.keys())}")
-        print(f"🎮 DEBUG: Gamification info: {message.get('gamification', {})}")
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Starting gamified message rendering")
+        # print(f"🎮 DEBUG: Message keys: {list(message.keys())}")
+        # print(f"🎮 DEBUG: Gamification info: {message.get('gamification', {})}")
 
         # Import the gamification components
         from dashboard.ui.gamification_components import render_gamified_challenge
@@ -343,7 +346,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
                 <div class="message-avatar agent-avatar"></div>
                 <div class="message-content agent-content">
                     <div class="message-header">
-                        <span class="agent-name">🎮 {mentor_label} - Challenge Mode!</span>
+                        <span class="agent-name">🎮 {mentor_label} - Enhanced Challenge!</span>
                     </div>
                 </div>
             </div>
@@ -351,29 +354,99 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             unsafe_allow_html=True,
         )
 
-        # Render the enhanced gamified challenge
+        # STEP 1: Show the agent's response in normal chat bubble format
+        agent_response = message.get("content", "")
+        if agent_response and agent_response.strip():
+            # Clean the agent response from any HTML artifacts
+            clean_agent_response = _clean_agent_response(agent_response)
+
+            if clean_agent_response:
+                # Render as normal chat message bubble
+                st.markdown(
+                    f"""
+                    <div class="message agent-message">
+                        <div class="message-avatar agent-avatar"></div>
+                        <div class="message-content agent-content">
+                            <div class="message-header">
+                                <span class="agent-name">{mentor_label}</span>
+                            </div>
+                            <div class="message-text">{safe_markdown_to_html(clean_agent_response)}</div>
+                            <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+        # STEP 2: Then show the interactive game as an ENHANCEMENT
         gamification_info = message.get("gamification", {})
         challenge_data = gamification_info.get("challenge_data", {})
-        challenge_data["challenge_text"] = message["content"]
 
-        print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
-        print(f"🎮 DEBUG: About to call render_gamified_challenge")
+        # STEP 3: Prepare contextual challenge data for the game
+        # Extract user's original message for contextual game generation
+        user_message = challenge_data.get("user_message", "")
+        if not user_message:
+            # Try to get from session state or message history
+            if hasattr(st.session_state, 'messages') and st.session_state.messages:
+                for msg in reversed(st.session_state.messages):
+                    if msg.get("role") == "user":
+                        user_message = msg.get("content", "")
+                        break
 
-        render_gamified_challenge(challenge_data)
+        # Ensure challenge_data has all required fields for CONTEXTUAL game generation
+        if not challenge_data:
+            challenge_data = {}
 
-        print(f"🎮 DEBUG: render_gamified_challenge completed successfully")
+        challenge_data.update({
+            "user_message": user_message,  # Pass user's actual question for contextual games
+            "challenge_type": challenge_data.get("challenge_type") or gamification_info.get("challenge_type", "constraint_challenge"),  # FIXED: Don't override existing challenge_type
+            "building_type": gamification_info.get("building_type", "community center"),
+            "mentor_label": mentor_label,
+            "gamification_applied": True  # Ensure games are contextual, not hardcoded
+        })
+
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
+        # print(f"🎮 DEBUG: About to call enhanced gamification renderer")
+
+        # STEP 4: Render contextual interactive game (more subtle)
+        st.markdown("**◉ Interactive Challenge**")
+        st.markdown("*Explore this concept through an interactive experience:*")
+
+        # Use enhanced gamification system for contextual games
+        try:
+            from dashboard.ui.enhanced_gamification import render_enhanced_gamified_challenge, inject_gamification_css
+
+            # Inject CSS for animations
+            inject_gamification_css()
+
+            # Render enhanced gamification with user's context
+            render_enhanced_gamified_challenge(challenge_data)
+            # print(f"🎮 DEBUG: Enhanced gamification rendered successfully")
+            pass
+
+        except ImportError as e:
+            # Fallback to original system
+            # print(f"🎮 DEBUG: Enhanced gamification not available ({e}), using fallback")
+            render_gamified_challenge(challenge_data)
+
+        # print(f"🎮 DEBUG: Gamification rendering completed successfully")
+
+        # STEP 5: Add conversation continuity prompt
+        st.markdown("---")
+        st.markdown("💬 **Continue the conversation by sharing your thoughts, questions, or insights from this challenge.**")
 
         # Add timestamp
         st.markdown(
             f"""
             <div style="text-align: right; color: #888; font-size: 0.8em; margin-top: 10px;">
-                {_format_timestamp(message.get("timestamp"))}
+                {_format_timestamp(message.get("timestamp", ""))}
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        print(f"🎮 DEBUG: Gamified message rendering completed successfully")
+        # print(f"🎮 DEBUG: Gamified message rendering completed successfully")
 
     except Exception as e:
         print(f"⚠️ Error rendering gamified message: {e}")
@@ -389,7 +462,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
                         <span class="agent-name">🎮 {mentor_label}</span>
                     </div>
                     <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
-                    <div class="message-time">{_format_timestamp(message.get("timestamp"))}</div>
+                    <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
                 </div>
             </div>
             """,
@@ -713,3 +786,47 @@ def validate_input(project_description: str, uploaded_file) -> tuple[bool, str]:
     if not project_description.strip() and not uploaded_file:
         return False, "📝 Please provide either a project description or upload an image to get started"
     return True, ""
+
+
+def _clean_agent_response(agent_response: str) -> str:
+    """Clean agent response from HTML artifacts and return meaningful content."""
+    if not agent_response:
+        return ""
+
+    # Remove HTML artifacts that might have been captured
+    import re
+
+    # Remove HTML comments
+    clean_content = re.sub(r'<!--.*?-->', '', agent_response, flags=re.DOTALL)
+
+    # Remove HTML tags
+    clean_content = re.sub(r'<[^>]+>', '', clean_content)
+
+    # Remove lines that are just CSS properties or HTML attributes
+    lines = clean_content.split('\n')
+    clean_lines = []
+
+    for line in lines:
+        line = line.strip()
+        # Skip empty lines
+        if not line:
+            continue
+        # Skip lines that are just CSS properties or HTML attributes
+        if (line.startswith('font-size:') or line.startswith('margin:') or
+            line.startswith('color:') or line.startswith('background:') or
+            line.startswith('border:') or line.startswith('padding:') or
+            line.startswith('text-shadow:') or line.startswith('animation:') or
+            line.startswith('width:') or line.startswith('height:') or
+            line.startswith('border-radius:') or line.startswith('letter-spacing:') or
+            'style=' in line or line.startswith('">') or line == '>' or line == '"):'):
+            continue
+        # Keep meaningful content lines
+        clean_lines.append(line)
+
+    clean_content = '\n'.join(clean_lines)
+
+    # If content is too short or seems like artifacts, return empty
+    if len(clean_content.strip()) < 10 or clean_content.strip().lower() in ['challenge', 'game', 'interactive']:
+        return ""
+
+    return clean_content.strip()

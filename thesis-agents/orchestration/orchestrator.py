@@ -152,6 +152,12 @@ class LangGraphOrchestrator:
         decision = self.routing_decision_tree.decide_route(routing_context)
         self.last_routing_decision = decision  # for reasoning access
 
+        # CRITICAL FIX: Update state with enhanced classification from routing decision
+        # This ensures the metadata uses the correct user_intent (not design_problem)
+        if hasattr(decision, 'classification') and decision.classification:
+            state["student_classification"] = decision.classification
+            print(f"🔧 FIXED: Updated classification with user_intent = {decision.classification.get('user_intent', 'unknown')}")
+
         # Update conversation context with routing decision
         if student_state:
             user_input = state.get("last_message", "")
@@ -596,17 +602,85 @@ class LangGraphOrchestrator:
         if hasattr(analysis_result, 'to_dict'):
             analysis_result = analysis_result.to_dict()
 
-        # Prioritize socratic for comprehensive analysis
+        # ENHANCED: Create contextual response that addresses user's specific input
+        responses = []
+
+        # Add domain expertise if available and relevant
+        if domain_result and domain_result.get("response_text"):
+            domain_text = domain_result.get("response_text", "").strip()
+            if domain_text and len(domain_text) > 50:  # Ensure substantial content
+                responses.append(domain_text)
+
+        # Add socratic guidance if available and different from domain
         if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "multi_agent_comprehensive"
-        elif domain_result and domain_result.get("response_text"):
-            return domain_result.get("response_text", ""), "multi_agent_comprehensive"
+            socratic_text = socratic_result.get("response_text", "").strip()
+            if socratic_text and len(socratic_text) > 50:
+                # Only add if significantly different from domain response
+                if not responses or not self._responses_too_similar(socratic_text, responses[0]):
+                    responses.append(socratic_text)
+
+        # FIXED: Synthesize multiple perspectives into one cohesive response
+        if len(responses) >= 2:
+            # Create a cohesive synthesis instead of just concatenating
+            synthesis_prompt = f"""
+            Synthesize these two expert perspectives into one cohesive, comprehensive response that addresses the user's question: "{user_input}"
+
+            Domain Expert Response: {responses[0]}
+
+            Socratic Tutor Response: {responses[1]}
+
+            Create a unified response that:
+            1. Directly addresses the user's specific question
+            2. Integrates the best insights from both perspectives
+            3. Maintains a natural, conversational flow
+            4. Avoids repetition or fragmentation
+            5. Provides actionable guidance
+
+            Write as a single, cohesive response (not separate sections):
+            """
+
+            try:
+                import openai
+                client = openai.OpenAI()
+                synthesis_response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": synthesis_prompt}],
+                    max_tokens=800,
+                    temperature=0.7
+                )
+                synthesized_text = synthesis_response.choices[0].message.content.strip()
+                return synthesized_text, "multi_agent_comprehensive"
+            except Exception as e:
+                print(f"⚠️ Synthesis failed, using fallback: {e}")
+                # Fallback to better concatenation
+                return f"{responses[0]}\n\n{responses[1]}", "multi_agent_comprehensive"
+
+        elif len(responses) == 1:
+            return responses[0], "multi_agent_comprehensive"
         elif cognitive_result and cognitive_result.get("response_text"):
             return cognitive_result.get("response_text", ""), "multi_agent_comprehensive"
+
         return (
-            "I'd be happy to provide comprehensive feedback on your project. What specific aspects would you like me to focus on?",
+            f"I'd be happy to provide comprehensive feedback on your approach. Your idea about {user_input.lower()[:50]}... shows thoughtful consideration. What specific aspects would you like me to focus on?",
             "multi_agent_comprehensive",
         )
+
+    def _responses_too_similar(self, response1: str, response2: str) -> bool:
+        """Check if two responses are too similar to warrant combining"""
+        # Simple similarity check based on common words
+        words1 = set(response1.lower().split())
+        words2 = set(response2.lower().split())
+
+        if len(words1) == 0 or len(words2) == 0:
+            return False
+
+        # Calculate Jaccard similarity
+        intersection = len(words1.intersection(words2))
+        union = len(words1.union(words2))
+        similarity = intersection / union if union > 0 else 0
+
+        # Consider responses too similar if >70% overlap
+        return similarity > 0.7
 
     def _synthesize_socratic_clarification_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
         """Synthesize Socratic clarification response"""
@@ -1059,13 +1133,20 @@ class LangGraphOrchestrator:
         except Exception:
             pass
 
+        # CRITICAL FIX: Extract gamification metadata from response_metadata and add to top level
+        response_metadata = final_state.get("response_metadata", {})
+        gamification_metadata = response_metadata.get("gamification", {})
+
         return {
             "response": final_state.get("final_response", ""),
-            "metadata": final_state.get("response_metadata", {}),
+            "metadata": response_metadata,
             "routing_path": final_state.get("routing_decision", {}).get("path", "unknown"),
             "classification": final_state.get("student_classification", {}),
             "conversation_progression": progression_analysis,
             "milestone_guidance": milestone_guidance,
+            # CRITICAL FIX: Add gamification metadata to top level for UI access
+            "gamification": gamification_metadata,
+            "gamification_display": gamification_metadata,  # Also add as gamification_display for compatibility
         }
 
     def _print_enhanced_process_summary(self, final_state: Dict, processing_time: float, user_input: str):

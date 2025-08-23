@@ -1224,28 +1224,41 @@ Generate a contextual response that builds on their input:
 
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+        # FIXED: Extract the specific topic from the student's message for topic-specific questions
+        topic_keywords = self._extract_topic_keywords(last_message)
+        main_topic = topic_keywords[0] if topic_keywords else "design approach"
+
         prompt = f"""
         You are a distinguished architectural educator using the Socratic method to challenge and deepen student thinking.
 
         STUDENT'S MESSAGE: "{last_message}"
         BUILDING TYPE: {building_type}
+        MAIN TOPIC: {main_topic}
+
+        CRITICAL: Your question must be directly related to the MAIN TOPIC ({main_topic}), not generic architectural concepts.
 
         Craft a complete scholarly response that:
         1. ACKNOWLEDGES THEIR THINKING: Recognize the validity of their approach while identifying areas for deeper consideration
-        2. INTRODUCES COMPLEXITY: Present 2-3 additional factors or constraints they should consider
-        3. PROVIDES THEORETICAL CONTEXT: Reference relevant design principles or architectural theory
-        4. CHALLENGES ASSUMPTIONS: Question underlying assumptions in a constructive way
-        5. OFFERS ALTERNATIVE PERSPECTIVES: Show different ways to approach the same problem
+        2. INTRODUCES COMPLEXITY: Present 2-3 additional factors or constraints they should consider SPECIFICALLY about {main_topic}
+        3. PROVIDES THEORETICAL CONTEXT: Reference relevant design principles or architectural theory RELATED TO {main_topic}
+        4. CHALLENGES ASSUMPTIONS: Question underlying assumptions in a constructive way ABOUT {main_topic}
+        5. OFFERS ALTERNATIVE PERSPECTIVES: Show different ways to approach {main_topic}
         6. ENDS NATURALLY: Conclude with a complete synthesis before asking your question
 
         RESPONSE STRUCTURE:
-        - Acknowledge their approach and its merits
-        - Introduce additional complexity or considerations specific to their building type
-        - Provide theoretical grounding or precedent examples
-        - End with a complete thought that synthesizes the challenges
-        - THEN ask ONE specific, challenging question that requires them to defend or refine their reasoning
+        - Acknowledge their approach and its merits regarding {main_topic}
+        - Introduce additional complexity or considerations specific to {main_topic} in {building_type} projects
+        - Provide theoretical grounding or precedent examples RELATED TO {main_topic}
+        - End with a complete thought that synthesizes the {main_topic} challenges
+        - THEN ask ONE specific, challenging question about {main_topic} that requires them to defend or refine their reasoning
 
-        Write a complete response (200-250 words) that challenges them constructively while providing educational value.
+        EXAMPLES OF TOPIC-SPECIFIC QUESTIONS:
+        - If topic is "circulation": Ask about circulation patterns, wayfinding, flow, movement, accessibility
+        - If topic is "lighting": Ask about natural light, artificial lighting, mood, visibility, energy
+        - If topic is "materials": Ask about material properties, sustainability, aesthetics, durability
+        - If topic is "structure": Ask about structural systems, loads, spans, construction methods
+
+        Write a complete response (200-250 words) that challenges them constructively while providing educational value SPECIFICALLY about {main_topic}.
         """
 
         try:
@@ -2096,6 +2109,35 @@ Generate a comprehensive answer (3-4 sentences):
         except Exception as e:
             print(f"⚠️ Error extracting project details: {e}")
             return "architectural project"
+
+    def _extract_topic_keywords(self, message: str) -> List[str]:
+        """Extract key architectural topics from the message for topic-specific questions."""
+        message_lower = message.lower()
+
+        # Define topic keywords in order of specificity
+        topic_keywords = {
+            "circulation": ["circulation", "movement", "flow", "wayfinding", "pathways", "corridors"],
+            "lighting": ["lighting", "light", "illumination", "daylight", "natural light", "artificial light"],
+            "materials": ["materials", "material", "finishes", "surfaces", "textures", "cladding"],
+            "structure": ["structure", "structural", "frame", "columns", "beams", "foundation"],
+            "acoustics": ["acoustics", "sound", "noise", "acoustic", "reverberation"],
+            "sustainability": ["sustainable", "sustainability", "green", "energy", "environmental"],
+            "accessibility": ["accessibility", "accessible", "ada", "universal design", "barrier-free"],
+            "programming": ["program", "programming", "functions", "activities", "uses"],
+            "spatial organization": ["spatial", "organization", "layout", "arrangement", "zoning"],
+            "facade": ["facade", "exterior", "envelope", "skin", "cladding"],
+            "landscape": ["landscape", "outdoor", "garden", "courtyard", "plaza"],
+            "technology": ["technology", "smart", "digital", "systems", "automation"]
+        }
+
+        # Find matching topics
+        found_topics = []
+        for topic, keywords in topic_keywords.items():
+            if any(keyword in message_lower for keyword in keywords):
+                found_topics.append(topic)
+
+        # Return most specific topics first, or default to "design approach"
+        return found_topics if found_topics else ["design approach"]
 
     # Cleanup
     def __del__(self) -> None:

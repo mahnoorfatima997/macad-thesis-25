@@ -533,7 +533,7 @@ class InputClassificationProcessor:
         describing_project = any(indicator in input_lower for indicator in project_description_indicators)
 
         if describing_project:
-            return "design_problem"  # User is describing their design approach
+            return "design_exploration"  # User is describing their design approach - changed from design_problem
 
         # Check for other response types
         if any(word in input_lower for word in ["confused", "don't understand", "unclear", "help"]):
@@ -991,7 +991,7 @@ class InputClassificationProcessor:
         Classify the student's input into these clear categories:
 
         1. INTERACTION TYPE (most important for routing):
-        - design_problem: Describing design actions/decisions: "I'm designing", "I will place", "I would organize", "My approach is", "I'd design", "I'll create", "I plan to"
+        - design_exploration: Describing design actions/decisions: "I'm designing", "I will place", "I would organize", "My approach is", "I'd design", "I'll create", "I plan to"
         - example_request: ANY mention of "example", "examples", "project", "projects", "precedent", "case study", "show me", "can you provide", "real project", "built project"
         - feedback_request: Asks for review, feedback, thoughts, critique, evaluation, "what do you think", "how does this look"
         - technical_question: Asks about specific standards, requirements, codes, procedures, "what are the requirements", "how many", "what size", "how do I calculate"
@@ -1018,14 +1018,13 @@ class InputClassificationProcessor:
 
         Respond in valid JSON format:
         {{
-            "interaction_type": "design_problem|example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|direct_answer_request|knowledge_seeking|general_statement",
+            "interaction_type": "design_exploration|example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|direct_answer_request|knowledge_seeking|general_statement",
             "confidence_level": "overconfident|uncertain|confident",
             "understanding_level": "low|medium|high",
             "engagement_level": "low|medium|high",
             "is_example_request": true/false,
             "is_feedback_request": true/false,
             "is_technical_question": true/false,
-            "is_design_problem": true/false,
             "shows_confusion": true/false,
             "requests_help": true/false,
             "demonstrates_overconfidence": true/false,
@@ -1192,24 +1191,10 @@ class InputClassificationProcessor:
         ]
         improvement_seeking = any(indicator in input_lower for indicator in improvement_indicators)
 
-        # Check for design problem patterns (FROMOLDREPO style)
-        design_problem_indicators = [
-            "i'm designing", "i will place", "i would place", "i'd place", "i'll place",
-            "i will organize", "i would organize", "i'd organize", "i'll organize",
-            "i will design", "i would design", "i'd design", "i'll design",
-            "my approach is", "my strategy is", "my plan is", "i plan to",
-            # Enhanced patterns for spatial organization and design decisions
-            "spatial organization", "organize", "arrangement", "layout",
-            "what can i do", "what else can i", "how can i", "how should i",
-            "decide about", "decisions about", "choices for", "options for",
-            "placement", "positioning", "circulation", "flow"
-        ]
-        is_design_problem = any(indicator in input_lower for indicator in design_problem_indicators)
+        # REMOVED: design_problem patterns - these should be classified as design_exploration instead
 
-        # DETERMINE INTERACTION TYPE - PRIORITIZE DESIGN PROBLEMS
-        if is_design_problem:
-            interaction_type = "design_problem"
-        elif is_example_request:
+        # DETERMINE INTERACTION TYPE - REMOVED DESIGN_PROBLEM PRIORITY
+        if is_example_request:
             interaction_type = "example_request"
         elif is_feedback_request:
             interaction_type = "feedback_request"
@@ -1262,7 +1247,7 @@ class InputClassificationProcessor:
             "is_technical_question": is_technical_question,
             "is_feedback_request": is_feedback_request,
             "is_example_request": is_example_request,
-            "is_design_problem": is_design_problem,  # ← ADDED THIS
+            # REMOVED: "is_design_problem" - no longer used
             "shows_confusion": shows_confusion,
             "requests_help": requests_help,
             "demonstrates_overconfidence": overconfidence_score >= 1,

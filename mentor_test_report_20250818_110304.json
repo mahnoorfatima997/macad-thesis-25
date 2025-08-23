@@ -1,0 +1,490 @@
+{
+  "timestamp": "20250818_110304",
+  "summary": {
+    "total_tests": 30,
+    "passed_tests": 0,
+    "failed_tests": 30,
+    "routes_tested": [],
+    "gamification_rate": 0.0,
+    "avg_response_time": 2.0130475362141928e-05
+  },
+  "test_results": [
+    {
+      "test_name": "Route Coverage: progressive_opening",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: knowledge_only",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: socratic_exploration",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: cognitive_challenge",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: multi_agent_comprehensive",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: socratic_clarification",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: supportive_scaffolding",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: foundational_building",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: knowledge_with_challenge",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Route Coverage: balanced_guidance",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Progressive Opening \u2192 Design Guidance with Gamification - Message 1",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Progressive Opening \u2192 Design Guidance with Gamification - Message 2",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Progressive Opening \u2192 Design Guidance with Gamification - Message 3",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Knowledge Request \u2192 Project Examples - Message 1",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Knowledge Request \u2192 Project Examples - Message 2",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Knowledge Request \u2192 Project Examples - Message 3",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Confusion Expression \u2192 Clarification - Message 1",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Confusion Expression \u2192 Clarification - Message 2",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Confusion Expression \u2192 Clarification - Message 3",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Multi-Agent Comprehensive \u2192 Evaluation - Message 1",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Multi-Agent Comprehensive \u2192 Evaluation - Message 2",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Multi-Agent Comprehensive \u2192 Evaluation - Message 3",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0006039142608642578,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Cognitive Challenge Triggers - Message 1",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Cognitive Challenge Triggers - Message 2",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Cognitive Challenge Triggers - Message 3",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Edge Case: ...",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Edge Case: a...",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Edge Case: ????????????????????...",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Edge Case: \ud83c\udfd7\ufe0f\ud83c\udfa8\ud83c\udf1f...",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    },
+    {
+      "test_name": "Edge Case: HELP HELP HELP...",
+      "passed": false,
+      "route_taken": "error",
+      "response_type": "error",
+      "gamification_triggered": false,
+      "building_type_extracted": "unknown",
+      "response_time": 0.0,
+      "error_message": "'LangGraphOrchestrator' object has no attribute 'process_interaction'",
+      "routing_reasoning": ""
+    }
+  ],
+  "conversation_results": {
+    "Progressive Opening \u2192 Design Guidance with Gamification": [
+      {
+        "test_name": "Progressive Opening \u2192 Design Guidance with Gamification - Message 1",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Progressive Opening \u2192 Design Guidance with Gamification - Message 2",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Progressive Opening \u2192 Design Guidance with Gamification - Message 3",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      }
+    ],
+    "Knowledge Request \u2192 Project Examples": [
+      {
+        "test_name": "Knowledge Request \u2192 Project Examples - Message 1",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Knowledge Request \u2192 Project Examples - Message 2",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Knowledge Request \u2192 Project Examples - Message 3",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      }
+    ],
+    "Confusion Expression \u2192 Clarification": [
+      {
+        "test_name": "Confusion Expression \u2192 Clarification - Message 1",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Confusion Expression \u2192 Clarification - Message 2",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Confusion Expression \u2192 Clarification - Message 3",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      }
+    ],
+    "Multi-Agent Comprehensive \u2192 Evaluation": [
+      {
+        "test_name": "Multi-Agent Comprehensive \u2192 Evaluation - Message 1",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Multi-Agent Comprehensive \u2192 Evaluation - Message 2",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Multi-Agent Comprehensive \u2192 Evaluation - Message 3",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0006039142608642578
+      }
+    ],
+    "Cognitive Challenge Triggers": [
+      {
+        "test_name": "Cognitive Challenge Triggers - Message 1",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Cognitive Challenge Triggers - Message 2",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      },
+      {
+        "test_name": "Cognitive Challenge Triggers - Message 3",
+        "passed": false,
+        "route_taken": "error",
+        "response_type": "error",
+        "gamification_triggered": false,
+        "building_type_extracted": "unknown",
+        "response_time": 0.0
+      }
+    ]
+  }
+}
