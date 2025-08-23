@@ -3,7 +3,12 @@ CSS styles and theme management for the dashboard.
 """
 
 import streamlit as st
+import sys
+import os
 from string import Template
+
+# Add parent directory to path for benchmarking import
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from benchmarking.thesis_colors import THESIS_COLORS
 
 def get_dashboard_css() -> str:

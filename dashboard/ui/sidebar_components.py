@@ -4,12 +4,17 @@ Sidebar components for the dashboard.
 
 import streamlit as st
 import json
+import sys
+import os
 from datetime import datetime
 from typing import Optional
 
-from ..config.settings import get_api_key
-from ..core.session_manager import get_session_info, reset_session
-from ..core.dropbox_integration import dropbox_exporter
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from dashboard.config.settings import get_api_key
+from dashboard.core.session_manager import get_session_info, reset_session
+from dashboard.core.dropbox_integration import dropbox_exporter
 
 
 def render_api_status():

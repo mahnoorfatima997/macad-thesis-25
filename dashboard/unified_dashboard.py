@@ -13,24 +13,27 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Import configuration and utilities
-from .config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, MENTOR_TYPES, get_api_key
-from .ui.styles import apply_dashboard_styles
-from .core.session_manager import initialize_session_state, ensure_session_started
-from .ui.chat_components import (
+import sys
+
+from dashboard.config.settings import PAGE_CONFIG, TEMPLATE_PROMPTS, TESTING_MODES, SKILL_LEVELS, MENTOR_TYPES, get_api_key
+from dashboard.ui.styles import apply_dashboard_styles
+from dashboard.core.session_manager import initialize_session_state, ensure_session_started
+from dashboard.ui.chat_components import (
     render_welcome_section, render_mode_configuration, render_chat_history,
     get_chat_input, render_chat_message, response_contains_questions,
     render_mentor_type_selection, render_template_selection,
     render_skill_level_selection, render_project_description_input, validate_input,
     render_chat_interface
 )
-from .ui.sidebar_components import render_complete_sidebar
-from .ui.analysis_components import render_cognitive_analysis_dashboard, render_metrics_summary, render_phase_progress_section
-from .ui.phase_circles import render_phase_circles, render_phase_metrics
-from .processors.mode_processors import ModeProcessor
-from .analysis.phase_analyzer import PhaseAnalyzer
-from .core.image_database import ImageDatabase
+from dashboard.ui.sidebar_components import render_complete_sidebar
+from dashboard.ui.analysis_components import render_cognitive_analysis_dashboard, render_metrics_summary, render_phase_progress_section
+from dashboard.ui.phase_circles import render_phase_circles, render_phase_metrics
+from dashboard.processors.mode_processors import ModeProcessor
+from dashboard.analysis.phase_analyzer import PhaseAnalyzer
+from dashboard.core.image_database import ImageDatabase
 
 # Import external dependencies
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from phase_progression_system import PhaseProgressionSystem
 from thesis_tests.test_dashboard import TestDashboard
 from thesis_tests.data_models import InteractionData, TestPhase
@@ -45,6 +48,11 @@ def get_cached_orchestrator():
     """Get cached orchestrator instance."""
     import sys
     import os
+
+    # Set environment variable to prevent GUI dependencies
+    os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '0'
+    os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+
     # Add thesis-agents to path
     thesis_agents_path = os.path.join(os.path.dirname(__file__), '../thesis-agents')
     if thesis_agents_path not in sys.path:
@@ -54,7 +62,12 @@ def get_cached_orchestrator():
         from orchestration.langgraph_orchestrator import LangGraphOrchestrator
         return LangGraphOrchestrator(domain="architecture")
     except ImportError as e:
-        st.error(f"Failed to import LangGraphOrchestrator: {e}")
+        st.warning(f"LangGraphOrchestrator not available: {e}")
+        st.info("Running in fallback mode without multi-agent orchestration.")
+        return None
+    except Exception as e:
+        st.warning(f"Failed to initialize LangGraphOrchestrator: {e}")
+        st.info("Running in fallback mode without multi-agent orchestration.")
         return None
 
 
@@ -440,7 +453,6 @@ class UnifiedArchitecturalDashboard:
             elif uploaded_image:
                 # Store image but don't process until user provides input
                 self._store_uploaded_image(uploaded_image)
-                st.info("📷 Image uploaded! Type a message or question and press Enter to analyze it.")
 
     def _render_current_phase_question(self):
         """Render the current phase question if available."""
@@ -486,10 +498,23 @@ class UnifiedArchitecturalDashboard:
         if uploaded_image:
             print(f"📷 DASHBOARD: Image uploaded: {uploaded_image.name}")
 
-        # Process image if uploaded
+        # Process image if uploaded and extract comprehensive analysis
+        enhanced_user_input = user_input
         image_path = None
+
         if uploaded_image:
             image_path = self._process_uploaded_image(uploaded_image)
+            if image_path:
+                # Check if this image was already processed to avoid redundant analysis
+                if not self._is_image_already_processed(image_path):
+                    # Extract comprehensive image analysis and bundle with text
+                    enhanced_user_input = self._bundle_image_with_text(user_input, image_path, uploaded_image.name)
+                    # Mark image as processed
+                    self._mark_image_as_processed(image_path, uploaded_image.name)
+                else:
+                    print(f"⚡ DASHBOARD: Image already processed, using existing analysis")
+                    # Get existing analysis from session state
+                    enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
 
         # Check for pending images from previous uploads
         pending_images = st.session_state.get('pending_images', [])
@@ -499,31 +524,27 @@ class UnifiedArchitecturalDashboard:
             image_path = latest_image['path']
             print(f"📷 DASHBOARD: Using pending image: {latest_image['filename']}")
 
+            # Check if this image was already processed to avoid redundant analysis
+            if not self._is_image_already_processed(image_path):
+                # Extract comprehensive image analysis and bundle with text
+                enhanced_user_input = self._bundle_image_with_text(user_input, image_path, latest_image['filename'])
+                # Mark image as processed
+                self._mark_image_as_processed(image_path, latest_image['filename'])
+            else:
+                print(f"⚡ DASHBOARD: Image already processed, using existing analysis")
+                # Get existing analysis from session state
+                enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
+
             # Clear pending images after use
             st.session_state.pending_images = []
 
-        # Add user message to chat history
+        # Add user message to chat history (display only the original user input, not the bundled analysis)
         user_message = {
             "role": "user",
-            "content": user_input,
-            "timestamp": datetime.now().isoformat()
+            "content": user_input,  # Display only original user input to user
+            "timestamp": datetime.now().isoformat(),
+            "enhanced_content": enhanced_user_input  # Store enhanced content for system processing
         }
-
-        # Add image path if present and analyze with database
-        if image_path:
-            user_message["image_path"] = image_path
-
-            # Analyze image and store in database
-            image_analysis = self.image_database.analyze_image(image_path, user_input)
-            image_id = self.image_database.store_image_analysis(image_path, image_analysis)
-
-            # Add image info to message
-            image_filename = uploaded_image.name if uploaded_image else pending_images[-1]['filename'] if pending_images else "image"
-            user_message["content"] += f"\n\n[Image uploaded: {image_filename}]"
-            user_message["image_id"] = image_id
-            user_message["image_analysis"] = image_analysis
-
-            print(f"📁 Image analyzed and stored with ID: {image_id}")
 
         st.session_state.messages.append(user_message)
 
@@ -618,6 +639,72 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             print(f"❌ Error storing image: {e}")
             return None
+
+    def _bundle_image_with_text(self, user_input: str, image_path: str, image_filename: str) -> str:
+        """Bundle comprehensive image analysis with user text as a unified message."""
+        try:
+            print(f"🔍 DASHBOARD: Bundling image analysis with text for: {image_filename}")
+
+            # Get comprehensive image analysis using GPT Vision with caching
+            import sys
+            import os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
+            from vision.comprehensive_vision_analyzer import ComprehensiveVisionAnalyzer
+
+            # Initialize analyzer with caching enabled (default)
+            analyzer = ComprehensiveVisionAnalyzer(domain="architecture", use_cache=True)
+
+            # Get project context from session state if available
+            project_context = st.session_state.get('project_description', user_input)
+
+            # Check if we already have this analysis cached in session state
+            session_analyses = st.session_state.get('image_analyses', [])
+            for analysis in session_analyses:
+                if analysis['path'] == image_path and analysis.get('project_context') == project_context:
+                    print(f"⚡ DASHBOARD: Using session-cached analysis for: {image_filename}")
+                    image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
+                    bundled_message = f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+                    return bundled_message
+
+            # Perform comprehensive image analysis (will use cache if available)
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+            try:
+                # Get detailed image understanding for chat context
+                detailed_understanding = loop.run_until_complete(
+                    analyzer.get_detailed_image_understanding(image_path, project_context)
+                )
+
+                # Extract the chat-ready description
+                image_description = detailed_understanding.get('chat_summary', 'Image analysis completed.')
+
+                print(f"✅ DASHBOARD: Image analysis complete - {len(image_description)} chars")
+
+                # Bundle the text and image analysis as one unified message
+                bundled_message = f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+
+                # Store the detailed analysis for potential future reference
+                if 'image_analyses' not in st.session_state:
+                    st.session_state.image_analyses = []
+                st.session_state.image_analyses.append({
+                    "filename": image_filename,
+                    "path": image_path,
+                    "detailed_analysis": detailed_understanding,
+                    "project_context": project_context,
+                    "timestamp": datetime.now().isoformat()
+                })
+
+                return bundled_message
+
+            finally:
+                loop.close()
+
+        except Exception as e:
+            print(f"⚠️ DASHBOARD: Image analysis failed, using basic bundling: {e}")
+            # Fallback to basic image reference
+            return f"{user_input}\n\n[Image uploaded: {image_filename} - Analysis unavailable]"
 
     def _process_user_response_for_phases(self, user_input: str):
         """Process user response through the phase progression system."""
@@ -1118,6 +1205,10 @@ class UnifiedArchitecturalDashboard:
                     json.dump(metadata, f, indent=2)
 
                 print(f"✅ Image metadata saved to: {metadata_file}")
+
+                # Skip Dropbox upload here - image generator already uploaded it
+                print(f"ℹ️ Skipping Dropbox upload (already uploaded by image generator)")
+
                 return filepath
             else:
                 print(f"❌ Failed to download image: HTTP {response.status_code}")
@@ -1126,6 +1217,25 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             print(f"❌ Error saving generated image: {e}")
             return None
+
+    def _upload_image_to_dropbox(self, local_path: str, filename: str):
+        """Upload image to Dropbox"""
+        try:
+            from dashboard.core.dropbox_integration import dropbox_exporter
+
+            if dropbox_exporter and dropbox_exporter.dropbox_client:
+                dropbox_path = f"/thesis_exports/generated_images/{filename}"
+                result = dropbox_exporter.upload_to_dropbox(local_path, dropbox_path)
+
+                if result.get("success"):
+                    print(f"✅ Image uploaded to Dropbox: {dropbox_path}")
+                else:
+                    print(f"❌ Dropbox upload failed: {result.get('error', 'Unknown error')}")
+            else:
+                print("⚠️ Dropbox client not available for image upload")
+
+        except Exception as e:
+            print(f"❌ Error uploading image to Dropbox: {e}")
 
     def _display_generated_phase_image(self, generated_image: dict):
         """Display the generated phase image and ask for user feedback"""
@@ -1196,6 +1306,29 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             st.error(f"Error displaying generated image: {e}")
             print(f"❌ Error displaying generated image: {e}")
+
+    def _is_image_already_processed(self, image_path: str) -> bool:
+        """Check if an image has already been processed in this session."""
+        processed_images = st.session_state.get('processed_images', set())
+        return image_path in processed_images
+
+    def _mark_image_as_processed(self, image_path: str, filename: str):
+        """Mark an image as processed to avoid redundant analysis."""
+        if 'processed_images' not in st.session_state:
+            st.session_state.processed_images = set()
+        st.session_state.processed_images.add(image_path)
+        print(f"📝 DASHBOARD: Marked image as processed: {filename}")
+
+    def _get_existing_image_analysis(self, user_input: str, image_path: str) -> str:
+        """Get existing image analysis from session state."""
+        session_analyses = st.session_state.get('image_analyses', [])
+        for analysis in session_analyses:
+            if analysis['path'] == image_path:
+                image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
+                return f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+
+        # Fallback if no analysis found
+        return f"{user_input}\n\n[UPLOADED IMAGE: Analysis not available]"
 
 
 def main():

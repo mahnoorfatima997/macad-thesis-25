@@ -5,10 +5,14 @@ Provides pure, direct GPT responses for research comparison purposes.
 """
 
 import os
+import sys
 import streamlit as st
 from typing import Dict, Any, List
 from datetime import datetime
-from .phase_calculator import phase_calculator
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from processors.phase_calculator import phase_calculator
 
 
 class PureRawGPTProcessor:
@@ -36,7 +40,7 @@ class PureRawGPTProcessor:
         return ""
 
     async def process_input(self, user_input: str, messages: List[Dict[str, Any]],
-                           session_id: str = None) -> Dict[str, Any]:
+                           session_id: str = None, image_path: str = None) -> Dict[str, Any]:
         """
         Process user input with pure, unfiltered GPT response - completely raw like ChatGPT.
 
@@ -44,6 +48,7 @@ class PureRawGPTProcessor:
             user_input: The user's input
             messages: Conversation history for context only
             session_id: Session identifier
+            image_path: Optional path to uploaded image
 
         Returns:
             Dict containing pure GPT response and metadata
@@ -80,13 +85,39 @@ User: {user_input}"""
                     if content:
                         messages_for_api.append({"role": role, "content": content})
 
-            # Add current user input
-            messages_for_api.append({"role": "user", "content": user_input})
+            # Add current user input with image if provided
+            if image_path:
+                # For raw GPT, we include the image directly without analysis - just like ChatGPT
+                import base64
+
+                try:
+                    with open(image_path, "rb") as image_file:
+                        base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+                    messages_for_api.append({
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": user_input},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}",
+                                    "detail": "high"
+                                }
+                            }
+                        ]
+                    })
+                    print(f"📷 RAW_GPT: Added image to raw GPT request")
+                except Exception as e:
+                    print(f"⚠️ RAW_GPT: Failed to process image, using text only: {e}")
+                    messages_for_api.append({"role": "user", "content": user_input})
+            else:
+                messages_for_api.append({"role": "user", "content": user_input})
 
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=messages_for_api,
-                max_tokens=1000,
+                max_tokens=1500,  # Increased for image responses
                 temperature=0.7  # Higher temperature for more natural responses
             )
 
@@ -148,7 +179,7 @@ pure_raw_gpt_processor = PureRawGPTProcessor()
 
 
 async def get_raw_gpt_response(user_input: str, messages: List[Dict[str, Any]] = None,
-                              session_id: str = None) -> Dict[str, Any]:
+                              session_id: str = None, image_path: str = None) -> Dict[str, Any]:
     """
     Get a completely unfiltered Raw GPT response like ChatGPT app.
 
@@ -156,6 +187,7 @@ async def get_raw_gpt_response(user_input: str, messages: List[Dict[str, Any]] =
         user_input: The user's input
         messages: Conversation history for context only
         session_id: Session identifier
+        image_path: Optional path to uploaded image
 
     Returns:
         Dict containing raw GPT response and metadata
@@ -166,4 +198,4 @@ async def get_raw_gpt_response(user_input: str, messages: List[Dict[str, Any]] =
         messages = []
 
     # Use the pure processor
-    return await pure_raw_gpt_processor.process_input(user_input, messages, session_id)
+    return await pure_raw_gpt_processor.process_input(user_input, messages, session_id, image_path)

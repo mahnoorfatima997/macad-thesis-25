@@ -53,7 +53,7 @@ class FirstResponseGenerator:
         
         # Generate the opening response
         logger.info("Step 2: Generating opening response...")
-        opening_response = await self._generate_opening_response(progression_analysis, user_input)
+        opening_response = await self._generate_opening_response(progression_analysis, user_input, state)
         logger.info(f"Opening response type: {type(opening_response)}")
         logger.info(f"Opening response length: {len(opening_response) if opening_response else 0}")
         logger.info(f"Opening response preview: {opening_response[:100] if opening_response else 'None'}...")
@@ -93,7 +93,7 @@ class FirstResponseGenerator:
             }
         }
     
-    async def _generate_opening_response(self, progression_analysis: Dict, user_input: str) -> str:
+    async def _generate_opening_response(self, progression_analysis: Dict, user_input: str, state: ArchMentorState) -> str:
         """Generate the main opening response using AI"""
         
         opening_strategy = progression_analysis.get("opening_strategy", {})
@@ -108,11 +108,33 @@ class FirstResponseGenerator:
             logger.info("Attempting to generate AI opening response...")
             response = await self._generate_ai_response(context)
             logger.info("Successfully generated AI opening response")
+
+            # Check if there's an image and add image analysis to the beginning
+            if state.current_sketch and state.current_sketch.image_path:
+                logger.info("Image detected, adding image analysis to first response")
+                image_analysis_lines = await self._generate_image_analysis_lines(state.current_sketch.image_path)
+                if image_analysis_lines:
+                    response = image_analysis_lines + "\n\n" + response
+                    logger.info("Added image analysis lines to first response")
+
             return response
         except Exception as e:
             logger.error(f"AI generation failed: {e}")
             logger.info("Falling back to template response")
-            return self._generate_fallback_response(progression_analysis)
+            fallback_response = self._generate_fallback_response(progression_analysis)
+
+            # Also check for image in fallback response
+            if state.current_sketch and state.current_sketch.image_path:
+                logger.info("Image detected, adding image analysis to fallback response")
+                try:
+                    image_analysis_lines = await self._generate_image_analysis_lines(state.current_sketch.image_path)
+                    if image_analysis_lines:
+                        fallback_response = image_analysis_lines + "\n\n" + fallback_response
+                        logger.info("Added image analysis lines to fallback response")
+                except Exception as img_error:
+                    logger.error(f"Failed to add image analysis to fallback: {img_error}")
+
+            return fallback_response
     
     def _build_ai_context(self, progression_analysis: Dict, user_input: str) -> str:
         """Build context for AI response generation"""
@@ -551,3 +573,177 @@ Focus on opening the design space rather than providing answers.
         # This method is now deprecated - building type detection is centralized
         # Return unknown to force use of centrally managed building type
         return "unknown"
+
+    async def _generate_image_analysis_lines(self, image_path: str) -> str:
+        """Generate 3 specific lines describing what the system can see in the uploaded image"""
+
+        try:
+            logger.info(f"Generating detailed image analysis lines for: {image_path}")
+
+            # Import the comprehensive vision analyzer
+            import sys
+            import os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '.'))
+            from vision.comprehensive_vision_analyzer import ComprehensiveVisionAnalyzer
+
+            # Create analyzer and get detailed understanding
+            analyzer = ComprehensiveVisionAnalyzer(domain="architecture")
+
+            # Get project context if available (from session state or other sources)
+            project_context = ""
+            try:
+                import streamlit as st
+                if hasattr(st, 'session_state') and hasattr(st.session_state, 'project_description'):
+                    project_context = st.session_state.project_description or ""
+            except:
+                pass
+
+            # Get detailed understanding
+            understanding = await analyzer.get_detailed_image_understanding(image_path, project_context)
+
+            if "error" in understanding:
+                logger.error(f"Image understanding failed: {understanding['error']}")
+                # Fallback to simple acknowledgment
+                return "I can see you've shared an architectural image with me.\nI'm analyzing the visual content to better understand your design.\nLet's explore your project together with this visual reference."
+
+            # Extract specific insights for the 3 lines
+            detailed_analysis = understanding.get("detailed_analysis", "")
+            key_insights = understanding.get("key_insights", {})
+            confidence = understanding.get("confidence", 0.5)
+
+            # Store the detailed analysis for later reference
+            try:
+                import streamlit as st
+                if not hasattr(st.session_state, 'detailed_image_analyses'):
+                    st.session_state.detailed_image_analyses = []
+                st.session_state.detailed_image_analyses.append({
+                    "image_path": image_path,
+                    "analysis": detailed_analysis,
+                    "insights": key_insights,
+                    "confidence": confidence,
+                    "timestamp": understanding.get("timestamp")
+                })
+                logger.info(f"Stored detailed image analysis (confidence: {confidence})")
+            except Exception as storage_error:
+                logger.warning(f"Could not store image analysis: {storage_error}")
+
+            # Create specific 3-line summary based on actual understanding
+            lines = self._create_specific_image_lines(detailed_analysis, key_insights, confidence)
+
+            result = "\n".join(lines)
+            logger.info("Successfully generated specific image analysis lines")
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to generate image analysis lines: {e}")
+            # Fallback to simple acknowledgment
+            return "I can see you've shared an architectural image with me.\nI'm analyzing the visual content to better understand your design.\nLet's explore your project together with this visual reference."
+
+    def _create_specific_image_lines(self, detailed_analysis: str, key_insights: Dict[str, str], confidence: float) -> List[str]:
+        """Create 3 specific lines based on actual image understanding"""
+
+        try:
+            # Extract the most important specific details
+            image_type = self._extract_image_type(detailed_analysis)
+            building_details = self._extract_building_details(detailed_analysis)
+            design_features = self._extract_design_features(detailed_analysis)
+
+            # Create 3 specific lines
+            line1 = f"I can see you've shared {image_type} with me."
+            line2 = f"I observe {building_details} with {design_features}."
+            line3 = f"I'll use these specific visual details to guide our architectural discussion."
+
+            return [line1, line2, line3]
+
+        except Exception as e:
+            logger.warning(f"Could not create specific lines, using fallback: {e}")
+            # Fallback to generic but still informative lines
+            return [
+                "I can see you've shared an architectural drawing with me.",
+                "I'm analyzing the spatial organization, design elements, and architectural details shown.",
+                "I'll reference these visual insights as we explore your design together."
+            ]
+
+    def _extract_image_type(self, analysis: str) -> str:
+        """Extract specific image type from analysis"""
+
+        # Look for specific image type mentions
+        image_types = {
+            "floor plan": "a detailed floor plan",
+            "site plan": "a comprehensive site plan",
+            "elevation": "an architectural elevation",
+            "section": "a building section",
+            "axonometric": "an axonometric drawing",
+            "perspective": "a perspective view",
+            "3d rendering": "a 3D architectural rendering",
+            "sketch": "an architectural sketch",
+            "diagram": "an architectural diagram"
+        }
+
+        analysis_lower = analysis.lower()
+
+        for key, description in image_types.items():
+            if key in analysis_lower:
+                return description
+
+        # Fallback
+        return "an architectural drawing"
+
+    def _extract_building_details(self, analysis: str) -> str:
+        """Extract specific building details from analysis"""
+
+        # Look for building type and program mentions
+        building_types = [
+            "residential", "house", "apartment", "housing",
+            "commercial", "office", "retail", "mixed-use",
+            "institutional", "school", "library", "museum",
+            "healthcare", "hospital", "clinic"
+        ]
+
+        spatial_elements = [
+            "multiple rooms", "open spaces", "circulation areas",
+            "entrance lobby", "corridors", "stairways",
+            "outdoor spaces", "courtyards", "terraces"
+        ]
+
+        analysis_lower = analysis.lower()
+
+        # Find building type
+        building_type = "a building design"
+        for btype in building_types:
+            if btype in analysis_lower:
+                building_type = f"a {btype} project"
+                break
+
+        # Find spatial elements
+        spatial_detail = "organized spaces"
+        for element in spatial_elements:
+            if element in analysis_lower:
+                spatial_detail = element
+                break
+
+        return f"{building_type} featuring {spatial_detail}"
+
+    def _extract_design_features(self, analysis: str) -> str:
+        """Extract specific design features from analysis"""
+
+        # Look for design characteristics
+        design_features = [
+            "clear circulation patterns", "well-defined spatial hierarchy",
+            "efficient layout", "thoughtful organization", "integrated design approach",
+            "sustainable design elements", "innovative spatial solutions",
+            "careful attention to proportions", "strategic use of natural light"
+        ]
+
+        analysis_lower = analysis.lower()
+
+        # Find relevant design features
+        found_features = []
+        for feature in design_features:
+            if any(word in analysis_lower for word in feature.split()):
+                found_features.append(feature)
+
+        if found_features:
+            return found_features[0]  # Return the first relevant feature found
+        else:
+            return "thoughtful architectural design elements"

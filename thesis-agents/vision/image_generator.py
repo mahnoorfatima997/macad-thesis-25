@@ -3,6 +3,7 @@ import os
 import requests
 import time
 import base64
+from datetime import datetime
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 from enum import Enum
@@ -72,9 +73,18 @@ class ReplicateImageGenerator:
             if "error" in result:
                 return result
             
+            # Download and save the image with Dropbox integration
+            image_url = result["image_url"]
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{phase}_{image_style.value}.png"
+
+            local_path = self.download_and_save_image(image_url, filename, save_to_dropbox=True)
+
             return {
                 "success": True,
-                "image_url": result["image_url"],
+                "image_url": image_url,
+                "local_path": local_path,
+                "filename": filename,
                 "prompt": prompt,
                 "style": image_style.value,
                 "phase": phase
@@ -202,30 +212,64 @@ class ReplicateImageGenerator:
         except Exception as e:
             return {"error": f"Unexpected error: {str(e)}"}
 
-    def download_and_save_image(self, image_url: str, filename: str) -> Optional[str]:
-        """Download and save the generated image locally"""
-        
+    def download_and_save_image(self, image_url: str, filename: str, save_to_dropbox: bool = True) -> Optional[str]:
+        """Download and save the generated image locally and optionally to Dropbox"""
+
         try:
             print(f"📥 Downloading image from: {image_url}")
-            
+
             response = requests.get(image_url, timeout=30)
             if response.status_code == 200:
                 # Create directory if it doesn't exist
                 os.makedirs("generated_images", exist_ok=True)
-                
+
                 filepath = os.path.join("generated_images", filename)
                 with open(filepath, 'wb') as f:
                     f.write(response.content)
-                
-                print(f"✅ Image saved to: {filepath}")
+
+                print(f"✅ Image saved locally to: {filepath}")
+
+                # Also save to Dropbox if requested
+                if save_to_dropbox:
+                    self._save_to_dropbox(filepath, filename)
+
                 return filepath
             else:
                 print(f"❌ Failed to download image: {response.status_code}")
                 return None
-                
+
         except Exception as e:
             print(f"❌ Error downloading image: {e}")
             return None
+
+    def _save_to_dropbox(self, local_filepath: str, filename: str) -> bool:
+        """Save image to Dropbox using the existing Dropbox integration"""
+        try:
+            # Import Dropbox integration
+            from dashboard.core.dropbox_integration import dropbox_exporter
+
+            if not dropbox_exporter or not dropbox_exporter.dropbox_client:
+                print("⚠️ Dropbox client not available, skipping Dropbox upload")
+                return False
+
+            # Create Dropbox path for generated images
+            dropbox_path = f"/thesis_exports/generated_images/{filename}"
+
+            print(f"☁️ Uploading image to Dropbox: {dropbox_path}")
+
+            # Upload to Dropbox
+            result = dropbox_exporter.upload_to_dropbox(local_filepath, dropbox_path)
+
+            if result.get("success"):
+                print(f"✅ Image uploaded to Dropbox: {dropbox_path}")
+                return True
+            else:
+                print(f"❌ Dropbox upload failed: {result.get('error', 'Unknown error')}")
+                return False
+
+        except Exception as e:
+            print(f"❌ Error uploading to Dropbox: {e}")
+            return False
 
     def test_connection(self) -> bool:
         """Test if the Replicate API connection is working"""
@@ -328,10 +372,27 @@ class DesignPromptGenerator:
         # Extract user messages and AI responses, focusing on design-related content
         relevant_content = []
 
+        print(f"🔍 Extracting conversation content from {len(conversation_history)} messages")
+
         for message in conversation_history[-10:]:  # Last 10 messages for context
             if isinstance(message, dict):
+                # Handle different conversation history formats
                 role = message.get('role', '')
                 content = message.get('content', '')
+
+                # Also check for phase progression system format
+                if not content:
+                    content = message.get('response', '')  # Phase system uses 'response' key
+                    role = 'user' if not role else role
+
+                # Also check for question/response format
+                if not content and 'question' in message:
+                    question = message.get('question', '')
+                    response = message.get('response', '')
+                    if question and response:
+                        relevant_content.append(f"QUESTION: {question[:150]}...")
+                        relevant_content.append(f"USER: {response[:150]}...")
+                        continue
 
                 if role in ['user', 'assistant'] and content:
                     # Clean and truncate content
@@ -340,6 +401,7 @@ class DesignPromptGenerator:
                         clean_content = clean_content[:200] + "..."
 
                     relevant_content.append(f"{role.upper()}: {clean_content}")
+
             elif isinstance(message, str):
                 # Handle simple string messages
                 clean_content = message.replace('\n', ' ').strip()
@@ -347,4 +409,8 @@ class DesignPromptGenerator:
                     clean_content = clean_content[:200] + "..."
                 relevant_content.append(clean_content)
 
-        return "\n".join(relevant_content) if relevant_content else "No relevant conversation content found"
+        extracted_content = "\n".join(relevant_content) if relevant_content else "No relevant conversation content found"
+        print(f"✅ Extracted {len(relevant_content)} conversation elements")
+        print(f"📝 Sample content: {extracted_content[:100]}...")
+
+        return extracted_content
