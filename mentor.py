@@ -16,6 +16,11 @@ except ImportError:
 import os
 import sys
 
+# Set environment variables to prevent GUI dependencies before any imports
+os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '0'
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ['MPLBACKEND'] = 'Agg'
+
 # Project root
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 

@@ -29,18 +29,26 @@ class SketchAnalyzer:
         self.client = OpenAI(api_key=get_openai_api_key())
         self.domain = domain
         
-        # Domain-specific analysis prompts - Enhanced for detailed analysis
+        # Enhanced domain-specific analysis prompts with structured classification
         self.domain_prompts = {
             "architecture": """
-                You are an expert architectural analyst. Provide a comprehensive, detailed analysis of this architectural drawing/sketch/plan. Be extremely specific and descriptive about what you observe.
+                You are an expert architectural analyst with advanced visual processing capabilities. Provide a comprehensive, systematic analysis of this architectural image.
 
-                ANALYZE IN DETAIL:
+                STEP 1 - IMAGE CLASSIFICATION & TYPE IDENTIFICATION:
+                First, systematically identify:
+                - IMAGE TYPE: Is this a floor plan, elevation, section, axonometric, perspective, 3D rendering, sketch, photograph, or technical drawing?
+                - DRAWING MEDIUM: Hand-drawn, digital CAD, mixed media, photograph, or rendering?
+                - PERSPECTIVE/VIEW: Plan view, elevation view, section cut, isometric, perspective, or other?
+                - SCALE/DETAIL LEVEL: Conceptual sketch, schematic design, design development, or construction document level?
+                - DRAWING CONVENTIONS: Line weights, hatching patterns, symbols, dimensions, annotations used?
 
-                1. DRAWING TYPE & REPRESENTATION:
-                   - Is this a plan view, section, elevation, axonometric, perspective, or sketch?
-                   - What scale or level of detail is shown?
-                   - Is it hand-drawn, digital, or mixed media?
-                   - What drawing conventions are used (line weights, hatching, symbols)?
+                STEP 2 - VISUAL ELEMENTS ANALYSIS:
+                Systematically identify and describe:
+                - SHAPES & GEOMETRY: What geometric forms, shapes, and spatial configurations are present?
+                - COLORS & MATERIALS: What colors, textures, and material representations are shown?
+                - SPATIAL ORGANIZATION: How are spaces arranged and connected?
+                - STRUCTURAL ELEMENTS: Walls, columns, beams, openings, stairs, etc.
+                - CIRCULATION PATTERNS: Movement paths, entrances, connections between spaces?
 
                 2. SPATIAL ORGANIZATION & LAYOUT:
                    - Describe the exact arrangement of spaces - how many rooms/areas?
@@ -92,12 +100,19 @@ class SketchAnalyzer:
                    - Describe any unique or unusual elements
                    - Comment on the overall design intent or concept
 
-                10. AREAS FOR DEVELOPMENT:
-                    - What aspects could be clarified or developed further?
-                    - Are there any functional or design issues to address?
-                    - What questions does this drawing raise about the design?
+                10. DESIGN EVALUATION & RECOMMENDATIONS:
+                    - STRENGTHS: What works well in this design and why?
+                    - IMPROVEMENT OPPORTUNITIES: Specific, actionable suggestions for enhancement
+                    - FUNCTIONAL ASSESSMENT: How well does it serve intended uses and users?
+                    - ACCESSIBILITY CONSIDERATIONS: Universal design and inclusive access
+                    - SUSTAINABILITY POTENTIAL: Environmental design opportunities
+                    - TECHNICAL DEVELOPMENT: Areas needing further technical resolution
 
-                PROVIDE A RICH, DETAILED DESCRIPTION that captures both the technical and experiential qualities of the design. Use specific architectural terminology and be as descriptive as possible about what you actually see in the image.
+                RESPONSE FORMAT:
+                Structure your analysis with clear headers for each section. Use bullet points for specific observations.
+                Be precise and avoid generic statements. Base all observations on what is actually visible in the image.
+                Provide both technical analysis and experiential/qualitative assessment.
+                Include specific recommendations for improvement where appropriate.
             """,
             
             "game_design": """
@@ -380,6 +395,111 @@ class SketchAnalyzer:
         confidence = (length_score * 0.5 + detail_score * 0.3 + structure_score * 0.2)
         return round(max(0.1, min(1.0, confidence)), 2)
 
+    async def classify_and_analyze_image(self, image_path: str, context: str = "") -> Dict[str, Any]:
+        """Comprehensive image classification and analysis with structured output"""
+
+        print(f"🔍 Performing comprehensive image analysis: {image_path}")
+
+        try:
+            # Preprocess image for better analysis
+            processed_path = self.preprocess_image(image_path)
+
+            # Encode image
+            base64_image = self.encode_image(processed_path)
+
+            # Create comprehensive classification and analysis prompt
+            classification_prompt = f"""
+            You are an expert architectural visual analyst. Perform a comprehensive, systematic analysis of this image.
+
+            STEP 1 - IMAGE CLASSIFICATION (Provide specific answers):
+            - IMAGE_TYPE: [floor_plan | elevation | section | axonometric | perspective | 3d_rendering | sketch | photograph | technical_drawing | other]
+            - DRAWING_MEDIUM: [hand_drawn | digital_cad | mixed_media | photograph | rendering | other]
+            - PERSPECTIVE_VIEW: [plan_view | elevation_view | section_cut | isometric | perspective | bird_eye | other]
+            - DETAIL_LEVEL: [conceptual_sketch | schematic_design | design_development | construction_document | presentation_drawing]
+            - DRAWING_STYLE: [architectural_technical | artistic_sketch | presentation_quality | working_drawing | conceptual]
+
+            STEP 2 - VISUAL ELEMENTS EXTRACTION:
+            - DOMINANT_SHAPES: List the main geometric forms and shapes visible
+            - COLOR_PALETTE: Describe colors used (if any) and their significance
+            - LINE_QUALITIES: Describe line weights, styles, and drawing techniques
+            - SPATIAL_ORGANIZATION: How spaces/elements are arranged and connected
+            - SCALE_INDICATORS: Any dimensions, scale bars, or size references
+
+            STEP 3 - ARCHITECTURAL CONTENT ANALYSIS:
+            - BUILDING_ELEMENTS: List specific architectural components (walls, doors, windows, stairs, etc.)
+            - SPATIAL_HIERARCHY: Describe the organization and relationship of spaces
+            - CIRCULATION_PATTERNS: Movement paths and connections
+            - STRUCTURAL_SYSTEMS: Visible structural elements and approaches
+            - FUNCTIONAL_ZONES: Different program areas and their relationships
+
+            STEP 4 - TECHNICAL ASSESSMENT:
+            - DRAWING_COMPLETENESS: How developed and detailed is the drawing?
+            - TECHNICAL_ACCURACY: Proper use of conventions and standards?
+            - CLARITY_COMMUNICATION: How well does it convey design intent?
+            - ANNOTATIONS_DIMENSIONS: Text, labels, measurements present?
+
+            STEP 5 - DESIGN EVALUATION:
+            - DESIGN_STRENGTHS: What works well and why? (be specific)
+            - IMPROVEMENT_AREAS: Specific suggestions for enhancement
+            - FUNCTIONAL_ASSESSMENT: How well does it serve intended purposes?
+            - ACCESSIBILITY_NOTES: Universal design considerations
+            - SUSTAINABILITY_OPPORTUNITIES: Environmental design potential
+
+            FORMAT: Provide your analysis in clear sections with specific, actionable observations. Avoid generic statements.
+            """
+
+            if context:
+                classification_prompt += f"\n\nPROJECT CONTEXT: {context}\nPlease relate your analysis to this specific project context."
+
+            print("📤 Sending comprehensive analysis request to GPT-4V...")
+
+            # Call GPT-4O for comprehensive analysis
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": classification_prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}",
+                                    "detail": "high"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=2500,  # Increased for comprehensive analysis
+                temperature=0.2   # Lower temperature for more factual analysis
+            )
+
+            comprehensive_analysis = response.choices[0].message.content
+            print("✅ Comprehensive image analysis complete")
+
+            # Structure the analysis into categories
+            structured_result = {
+                "raw_comprehensive_analysis": comprehensive_analysis,
+                "image_classification": self._extract_classification_data(comprehensive_analysis),
+                "visual_elements": self._extract_visual_elements(comprehensive_analysis),
+                "architectural_content": self._extract_architectural_content(comprehensive_analysis),
+                "technical_assessment": self._extract_technical_assessment(comprehensive_analysis),
+                "design_evaluation": self._extract_design_evaluation(comprehensive_analysis),
+                "confidence_score": self.estimate_confidence(comprehensive_analysis),
+                "analysis_timestamp": datetime.now().isoformat(),
+                "domain": self.domain
+            }
+
+            return structured_result
+
+        except Exception as e:
+            print(f"❌ Error in comprehensive image analysis: {e}")
+            return {
+                "error": f"Comprehensive analysis failed: {str(e)}",
+                "timestamp": datetime.now().isoformat()
+            }
+
     async def generate_detailed_description(self, image_path: str, context: str = "") -> str:
         """Generate a detailed description of the image for system understanding"""
 
@@ -470,3 +590,150 @@ class SketchAnalyzer:
         except Exception as e:
             print(f"❌ Error generating detailed description: {e}")
             return f"Error generating description: {str(e)}"
+
+    def _extract_classification_data(self, analysis: str) -> Dict[str, str]:
+        """Extract image classification data from comprehensive analysis"""
+        classification = {}
+
+        # Define classification patterns to look for
+        patterns = {
+            "image_type": ["IMAGE_TYPE:", "Type:", "Drawing type:"],
+            "drawing_medium": ["DRAWING_MEDIUM:", "Medium:", "Drawing medium:"],
+            "perspective_view": ["PERSPECTIVE_VIEW:", "View:", "Perspective:"],
+            "detail_level": ["DETAIL_LEVEL:", "Detail level:", "Level of detail:"],
+            "drawing_style": ["DRAWING_STYLE:", "Style:", "Drawing style:"]
+        }
+
+        analysis_lower = analysis.lower()
+
+        for key, search_terms in patterns.items():
+            for term in search_terms:
+                term_lower = term.lower()
+                if term_lower in analysis_lower:
+                    # Find the line containing this term
+                    lines = analysis.split('\n')
+                    for line in lines:
+                        if term_lower in line.lower():
+                            # Extract the value after the term
+                            parts = line.split(':')
+                            if len(parts) > 1:
+                                value = parts[1].strip().split()[0] if parts[1].strip() else "unknown"
+                                classification[key] = value.replace('[', '').replace(']', '').replace('|', '')
+                                break
+                    break
+
+        return classification
+
+    def _extract_visual_elements(self, analysis: str) -> Dict[str, Any]:
+        """Extract visual elements from comprehensive analysis"""
+        visual_elements = {}
+
+        # Look for visual element sections
+        sections = {
+            "dominant_shapes": ["DOMINANT_SHAPES:", "Shapes:", "Geometric forms:"],
+            "color_palette": ["COLOR_PALETTE:", "Colors:", "Color scheme:"],
+            "line_qualities": ["LINE_QUALITIES:", "Line quality:", "Drawing technique:"],
+            "spatial_organization": ["SPATIAL_ORGANIZATION:", "Organization:", "Layout:"],
+            "scale_indicators": ["SCALE_INDICATORS:", "Scale:", "Dimensions:"]
+        }
+
+        for key, search_terms in sections.items():
+            for term in search_terms:
+                if term.lower() in analysis.lower():
+                    # Find and extract the relevant content
+                    lines = analysis.split('\n')
+                    for i, line in enumerate(lines):
+                        if term.lower() in line.lower():
+                            # Get the content after the term
+                            content = line.split(':', 1)[1].strip() if ':' in line else ""
+                            # Also check next few lines for continuation
+                            for j in range(1, 3):
+                                if i + j < len(lines) and lines[i + j].strip() and not any(s in lines[i + j] for s in ['STEP', ':', '-']):
+                                    content += " " + lines[i + j].strip()
+                            visual_elements[key] = content
+                            break
+                    break
+
+        return visual_elements
+
+    def _extract_architectural_content(self, analysis: str) -> Dict[str, Any]:
+        """Extract architectural content from comprehensive analysis"""
+        architectural_content = {}
+
+        sections = {
+            "building_elements": ["BUILDING_ELEMENTS:", "Elements:", "Components:"],
+            "spatial_hierarchy": ["SPATIAL_HIERARCHY:", "Hierarchy:", "Space organization:"],
+            "circulation_patterns": ["CIRCULATION_PATTERNS:", "Circulation:", "Movement:"],
+            "structural_systems": ["STRUCTURAL_SYSTEMS:", "Structure:", "Structural elements:"],
+            "functional_zones": ["FUNCTIONAL_ZONES:", "Functions:", "Program areas:"]
+        }
+
+        for key, search_terms in sections.items():
+            for term in search_terms:
+                if term.lower() in analysis.lower():
+                    lines = analysis.split('\n')
+                    for i, line in enumerate(lines):
+                        if term.lower() in line.lower():
+                            content = line.split(':', 1)[1].strip() if ':' in line else ""
+                            # Check next few lines for continuation
+                            for j in range(1, 4):
+                                if i + j < len(lines) and lines[i + j].strip() and not any(s in lines[i + j] for s in ['STEP', ':']):
+                                    content += " " + lines[i + j].strip()
+                            architectural_content[key] = content
+                            break
+                    break
+
+        return architectural_content
+
+    def _extract_technical_assessment(self, analysis: str) -> Dict[str, str]:
+        """Extract technical assessment from comprehensive analysis"""
+        technical_assessment = {}
+
+        sections = {
+            "drawing_completeness": ["DRAWING_COMPLETENESS:", "Completeness:", "Development level:"],
+            "technical_accuracy": ["TECHNICAL_ACCURACY:", "Accuracy:", "Technical quality:"],
+            "clarity_communication": ["CLARITY_COMMUNICATION:", "Clarity:", "Communication:"],
+            "annotations_dimensions": ["ANNOTATIONS_DIMENSIONS:", "Annotations:", "Labels:"]
+        }
+
+        for key, search_terms in sections.items():
+            for term in search_terms:
+                if term.lower() in analysis.lower():
+                    lines = analysis.split('\n')
+                    for i, line in enumerate(lines):
+                        if term.lower() in line.lower():
+                            content = line.split(':', 1)[1].strip() if ':' in line else ""
+                            technical_assessment[key] = content
+                            break
+                    break
+
+        return technical_assessment
+
+    def _extract_design_evaluation(self, analysis: str) -> Dict[str, Any]:
+        """Extract design evaluation from comprehensive analysis"""
+        design_evaluation = {}
+
+        sections = {
+            "design_strengths": ["DESIGN_STRENGTHS:", "Strengths:", "What works well:"],
+            "improvement_areas": ["IMPROVEMENT_AREAS:", "Improvements:", "Areas for improvement:"],
+            "functional_assessment": ["FUNCTIONAL_ASSESSMENT:", "Functionality:", "Functional quality:"],
+            "accessibility_notes": ["ACCESSIBILITY_NOTES:", "Accessibility:", "Universal design:"],
+            "sustainability_opportunities": ["SUSTAINABILITY_OPPORTUNITIES:", "Sustainability:", "Environmental:"]
+        }
+
+        for key, search_terms in sections.items():
+            for term in search_terms:
+                if term.lower() in analysis.lower():
+                    lines = analysis.split('\n')
+                    for i, line in enumerate(lines):
+                        if term.lower() in line.lower():
+                            content = line.split(':', 1)[1].strip() if ':' in line else ""
+                            # Check next few lines for continuation
+                            for j in range(1, 5):
+                                if i + j < len(lines) and lines[i + j].strip() and not any(s in lines[i + j] for s in ['STEP', ':']):
+                                    content += " " + lines[i + j].strip()
+                            design_evaluation[key] = content
+                            break
+                    break
+
+        return design_evaluation

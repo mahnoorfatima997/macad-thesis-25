@@ -242,6 +242,23 @@ class SocraticTutorAgent:
             # Extract topic from user input
             topic = self._extract_main_topic(user_input)
 
+            # Check if visual analysis is available
+            visual_context = ""
+            visual_insights = state.agent_context.get('visual_insights', {})
+            if visual_insights.get('has_visual_analysis'):
+                strengths = visual_insights.get('design_strengths', [])
+                improvements = visual_insights.get('improvement_opportunities', [])
+                elements = visual_insights.get('identified_elements', [])
+
+                visual_context = f"""
+            VISUAL ANALYSIS AVAILABLE:
+            - Design strengths observed: {', '.join(strengths[:3]) if strengths else 'None'}
+            - Areas for improvement: {', '.join(improvements[:3]) if improvements else 'None'}
+            - Elements identified: {', '.join(elements[:4]) if elements else 'None'}
+
+            IMPORTANT: Reference these visual observations in your Socratic questioning. Build upon what you can see in their design.
+            """
+
             # Generate enhanced visual choice prompt for spatial organization
             prompt = f"""
             Create an engaging Socratic exploration response using visual choices for a {building_type} design project.
@@ -249,6 +266,7 @@ class SocraticTutorAgent:
             User's input: "{user_input}"
             Main topic: {topic}
             Building type: {building_type}
+            {visual_context}
 
             SPECIFIC GUIDANCE FOR SPATIAL ORGANIZATION:
             - Focus on spatial relationships, circulation patterns, and functional zones
@@ -1343,19 +1361,38 @@ Generate a contextual response that builds on their input:
             recent_messages = state.messages[-3:]  # Last 3 messages
             recent_context = " | ".join([f"{msg.get('role', 'unknown')}: {msg.get('content', '')[:50]}" for msg in recent_messages])
 
+        # Check if visual analysis is available for fallback questions too
+        visual_context = ""
+        visual_insights = state.agent_context.get('visual_insights', {})
+        if visual_insights.get('has_visual_analysis'):
+            strengths = visual_insights.get('design_strengths', [])
+            improvements = visual_insights.get('improvement_opportunities', [])
+            elements = visual_insights.get('identified_elements', [])
+
+            visual_context = f"""
+        VISUAL ANALYSIS AVAILABLE:
+        - Design strengths: {', '.join(strengths[:2]) if strengths else 'None'}
+        - Improvement areas: {', '.join(improvements[:2]) if improvements else 'None'}
+        - Elements seen: {', '.join(elements[:3]) if elements else 'None'}
+
+        Reference these visual observations in your question.
+        """
+
         prompt = f"""
         You are a Socratic tutor helping an architecture student. The LLM generation failed, so you need to create a thoughtful fallback question.
 
         STUDENT'S INPUT: "{user_input}"
         BUILDING TYPE: {building_type}
         RECENT CONTEXT: {recent_context}
+        {visual_context}
 
         Generate a thoughtful Socratic question that:
         1. Directly relates to their specific input and building type
         2. Encourages deeper thinking about their design challenge
         3. Builds on the conversation context if available
-        4. Avoids generic templates - be specific to their situation
-        5. Helps them explore the implications or considerations they might have missed
+        4. References any visual elements they've shared (if visual analysis is available)
+        5. Avoids generic templates - be specific to their situation
+        6. Helps them explore the implications or considerations they might have missed
 
         Keep it under 50 words and make it genuinely helpful for their specific situation.
         """

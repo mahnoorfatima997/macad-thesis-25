@@ -4,9 +4,14 @@ Chat components and message rendering for the dashboard.
 
 import streamlit as st
 import re
+import sys
+import os
 from html import escape
 from typing import Dict, Any, List
-from ..config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from dashboard.config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
 
 # COMMENTED AND REPLACED WITH THE FUNCTION BELOW
 # def safe_markdown_to_html(text: str) -> str:
@@ -330,12 +335,7 @@ def render_single_message(message: Dict[str, Any]):
             unsafe_allow_html=True,
         )
 
-        # Display image if present
-        if message.get("image_path"):
-            try:
-                st.image(message["image_path"], caption="Uploaded image", use_container_width=True)
-            except Exception as e:
-                st.error(f"Could not display image: {e}")
+        # Image display removed - images are now bundled with text content
     else:
         # Agent message - left side
         mentor_type = message.get("mentor_type", "Multi-Agent System")
