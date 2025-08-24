@@ -202,11 +202,11 @@ class AdvancedRoutingDecisionTree:
                 r"i'm curious about", r"i want to dive deeper", r"how might i",
                 r"what if i", r"i'm working on understanding", r"help me think through",
                 r"i'm trying to figure out", r"i'm wondering about",
-                # Added former design_problem patterns - these are design exploration, not problems
-                r"i'm stuck", r"having trouble", r"not sure how",
-                r"difficulty with", r"challenge with", r"issue with",
-                r"struggling with", r"can't figure out", r"don't know how",
-                r"layout.*problem", r"spatial.*problem", r"design.*challenge"
+                # ISSUE 1 FIX: More specific design exploration patterns (not specific problems)
+                r"i'm stuck.*understanding", r"having trouble.*understanding", r"not sure how.*works",
+                r"difficulty.*understanding", r"challenge.*understanding", r"issue.*understanding",
+                r"struggling.*understanding", r"can't figure out.*concept", r"don't know how.*works",
+                r"layout.*exploration", r"spatial.*exploration", r"design.*exploration"
             ],
             "creative_exploration": [
                 r"what if", r"imagine", r"suppose",
@@ -222,7 +222,11 @@ class AdvancedRoutingDecisionTree:
                 r"what else can i", r"what else should i", r"what else could i",
                 r"what other", r"what more", r"additional", r"further",
                 r"would like to focus", r"need more help", r"help.*about",
-                r"best approach", r"best way", r"approach.*to"
+                r"best approach", r"best way", r"approach.*to",
+                # ISSUE 1 FIX: Add patterns for specific problems that need solutions
+                r"challenge.*i'm facing", r"challenge.*facing", r"problem.*i'm facing",
+                r"issue.*i'm facing", r"difficulty.*i'm facing", r"struggling.*with.*how to",
+                r"the challenge.*is.*how to", r"my challenge.*is", r"facing.*is.*how to"
             ],
 
             # Feedback and evaluation
@@ -296,7 +300,14 @@ class AdvancedRoutingDecisionTree:
                 r"this is the best", r"my.*is.*best", r"optimal", r"ideal", r"flawless",
                 r"this is the", r"this will", r"my design is",
                 r"just.*randomly", r"doesn't matter", r"any.*will work",
-                r"i will just", r"i'll just", r"simply", r"easy"
+                r"i will just", r"i'll just", r"simply", r"easy",
+                # ADDED: Enhanced patterns for dismissive overconfidence
+                r"my.*approach.*is.*great", r"my.*is.*great", r"approach.*is.*great",
+                r"nothing.*need.*to.*be.*done", r"nothing.*needs.*to.*be.*done",
+                r"nothing.*to.*improve", r"no.*need.*to.*improve", r"don't.*need.*to.*improve",
+                r"already.*perfect", r"already.*good.*enough", r"good.*enough.*as.*is",
+                r"no.*changes.*needed", r"no.*improvements.*needed", r"fine.*as.*it.*is",
+                r"think.*my.*.*is.*great.*and", r"my.*.*is.*great.*and.*nothing"
             ],
 
             # Conversation management
@@ -483,9 +494,9 @@ class AdvancedRoutingDecisionTree:
                 "agents": ["context_agent", "domain_expert", "socratic_tutor", "cognitive_enhancement"]
             },
 
-            # COGNITIVE CHALLENGE ROUTES
+            # COGNITIVE CHALLENGE ROUTES - CRITICAL: High priority for overconfidence detection
             "overconfident_statement": {
-                "priority": 12,
+                "priority": 4.5,  # FIXED: Higher priority to catch overconfident statements before other routes
                 "route": RouteType.COGNITIVE_CHALLENGE,
                 "conditions": ["user_intent == 'overconfident_statement'"],
                 "description": "Overconfident statement - reality check challenge",
@@ -833,9 +844,13 @@ class AdvancedRoutingDecisionTree:
             # Use context agent's interaction_type as user_intent if available
             interaction_type = classification.get("interaction_type", "")
             user_input = classification.get("user_input", "")
+            original_user_intent = classification.get("user_intent", "")
 
             if interaction_type and interaction_type != "unknown":
                 user_intent = interaction_type
+            elif original_user_intent and original_user_intent not in ["unknown", ""]:
+                # FIXED: Preserve original user_intent if it was already correctly classified
+                user_intent = original_user_intent
             else:
                 # Fallback to pattern-based classification
                 user_intent = self.classify_user_intent(user_input, context)
@@ -910,8 +925,9 @@ class AdvancedRoutingDecisionTree:
             # GAMIFICATION: Check for intelligent triggers but RESPECT higher priority routes
             gamification_triggers = cognitive_offloading.get("gamification_triggers", [])
             if gamification_triggers:
-                # CRITICAL FIX: Don't override confusion_expression or other high-priority intents
-                if user_intent not in ["confusion_expression", "example_request"]:
+                # CRITICAL FIX: Don't override confusion_expression, example_request, or knowledge_request
+                high_priority_intents = ["confusion_expression", "example_request", "knowledge_request", "cognitive_offloading"]
+                if user_intent not in high_priority_intents:
                     # Apply gamification-enhanced routing
                     enhanced_route = self._apply_gamification_routing(gamification_triggers, enhanced_classification, context)
                     if enhanced_route:

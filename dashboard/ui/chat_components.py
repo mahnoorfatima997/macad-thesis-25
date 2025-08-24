@@ -8,11 +8,46 @@ from html import escape
 from typing import Dict, Any, List
 from ..config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
 
+# COMMENTED AND REPLACED WITH THE FUNCTION BELOW
+# def safe_markdown_to_html(text: str) -> str:
+#     """
+#     Convert markdown formatting to HTML while safely escaping other content.
+#     Handles **bold** formatting and preserves line breaks.
+#     """
+#     if text is None:
+#         return ""
 
+#     # Normalize newlines and preserve line breaks
+#     normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
+
+#     # Convert markdown bold (**text**) to HTML <strong> while safely escaping other content
+#     html_parts: List[str] = []
+#     last_idx = 0
+
+#     for match in re.finditer(r"\*\*(.+?)\*\*", normalized, flags=re.DOTALL):
+#         start, end = match.span()
+#         inner = match.group(1)
+#         # escape text before bold
+#         html_parts.append(escape(normalized[last_idx:start]))
+#         # add bold with escaped inner text
+#         html_parts.append(f"<strong>{escape(inner)}</strong>")
+#         last_idx = end
+
+#     # Add remaining text
+#     html_parts.append(escape(normalized[last_idx:]))
+#     html = "".join(html_parts)
+
+#     # Convert newlines to <br> tags for proper display
+#     html = html.replace("\n", "<br>")
+
+#     return html
+
+
+#ADDED FOR TRUNCATION
 def safe_markdown_to_html(text: str) -> str:
     """
     Convert markdown formatting to HTML while safely escaping other content.
-    Handles **bold** formatting and preserves line breaks.
+    Handles **bold** formatting, [links](url), and preserves line breaks.
     """
     if text is None:
         return ""
@@ -20,27 +55,59 @@ def safe_markdown_to_html(text: str) -> str:
     # Normalize newlines and preserve line breaks
     normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
 
-    # Convert markdown bold (**text**) to HTML <strong> while safely escaping other content
+    # ISSUE FIX: Process markdown links first, then bold formatting
+    # This prevents links from being broken by bold processing
+
+    # Step 1: Convert markdown links [text](url) to HTML <a> tags
+    def replace_link(match):
+        link_text = match.group(1)
+        link_url = match.group(2)
+        # Escape the link text but keep the URL as-is for functionality
+        return f'<a href="{escape(link_url)}" target="_blank" rel="noopener noreferrer">{escape(link_text)}</a>'
+
+    # Process links first
+    link_processed = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, normalized)
+
+    # Step 2: Convert markdown bold (**text**) to HTML <strong> while safely escaping other content
     html_parts: List[str] = []
     last_idx = 0
 
-    for match in re.finditer(r"\*\*(.+?)\*\*", normalized, flags=re.DOTALL):
+    for match in re.finditer(r"\*\*(.+?)\*\*", link_processed, flags=re.DOTALL):
         start, end = match.span()
         inner = match.group(1)
-        # escape text before bold
-        html_parts.append(escape(normalized[last_idx:start]))
-        # add bold with escaped inner text
-        html_parts.append(f"<strong>{escape(inner)}</strong>")
+        # escape text before bold (but preserve any HTML tags from link processing)
+        before_text = link_processed[last_idx:start]
+        if '<a href=' in before_text or '</a>' in before_text:
+            # Don't escape if it contains HTML link tags
+            html_parts.append(before_text)
+        else:
+            html_parts.append(escape(before_text))
+
+        # For bold content, check if it contains HTML link tags
+        if '<a href=' in inner or '</a>' in inner:
+            # Don't escape if it contains HTML link tags
+            html_parts.append(f"<strong>{inner}</strong>")
+        else:
+            html_parts.append(f"<strong>{escape(inner)}</strong>")
         last_idx = end
 
     # Add remaining text
-    html_parts.append(escape(normalized[last_idx:]))
+    remaining_text = link_processed[last_idx:]
+    if '<a href=' in remaining_text or '</a>' in remaining_text:
+        # Don't escape if it contains HTML link tags
+        html_parts.append(remaining_text)
+    else:
+        html_parts.append(escape(remaining_text))
+
     html = "".join(html_parts)
 
     # Convert newlines to <br> tags for proper display
     html = html.replace("\n", "<br>")
 
     return html
+
+
+
 
 
 def render_chat_message(message: Dict[str, Any]):
@@ -565,7 +632,7 @@ def render_welcome_section():
     st.markdown("""
     <div class="top-section">
     <div class="greeting">
-        Welcome to your AI Mentor!
+        Welcome to Mentor!
     </div>
     <p style="text-align: center; color: #888; margin-top: 1rem;">
         Describe your project or upload an image to get started. You can work with text descriptions, 

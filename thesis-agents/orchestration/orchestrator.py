@@ -892,9 +892,10 @@ class LangGraphOrchestrator:
                     current_phase_progress = phase_progress.get(current_phase_name, {})
                     completion_percent = current_phase_progress.get("completion_percent", 0.0)
 
-                    print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
-                    print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
-                    print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
+                    # DEBUG: PRINT REMOVED
+                    #print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
+                    #print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
+                    #print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
 
                     # Estimate step based on completion
                     if completion_percent < 25:
@@ -995,17 +996,18 @@ class LangGraphOrchestrator:
             if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata:
                 if 'gamification_display' in cognitive_result.metadata:
                     gamification_metadata = cognitive_result.metadata['gamification_display']
-                    print(f"🎮 ORCHESTRATOR: Found gamification metadata from AgentResponse: {gamification_metadata}")
+                    
+                    #print(f"🎮 ORCHESTRATOR: Found gamification metadata from AgentResponse: {gamification_metadata}")
             # If it's a dict, use the old method
             elif isinstance(cognitive_result, dict) and cognitive_result.get("metadata", {}).get("gamification_display"):
                 gamification_metadata = cognitive_result.get("metadata", {}).get("gamification_display", {})
-                print(f"🎮 ORCHESTRATOR: Found gamification metadata from dict: {gamification_metadata}")
+                #print(f"🎮 ORCHESTRATOR: Found gamification metadata from dict: {gamification_metadata}")
 
         # Also check routing decision for gamification triggers
         detailed_routing = routing_decision.get("detailed_routing_decision", {}) or state.get("detailed_routing_decision", {}) if state else {}
         gamification_triggers = detailed_routing.get("metadata", {}).get("gamification_triggers", [])
         if gamification_triggers:
-            print(f"🎮 ORCHESTRATOR: Found gamification triggers: {gamification_triggers}")
+            #print(f"🎮 ORCHESTRATOR: Found gamification triggers: {gamification_triggers}")
             if not gamification_metadata:
                 # Create gamification metadata from triggers
                 gamification_metadata = {

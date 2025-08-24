@@ -1,0 +1,263 @@
+{
+  "timestamp": "2025-08-23 15:47:44",
+  "summary": {
+    "passed": 34,
+    "failed": 0,
+    "warnings": 2,
+    "critical_failures": []
+  },
+  "tests": [
+    {
+      "test": "Environment - API Key",
+      "status": "PASS",
+      "message": "OpenAI API key loaded (164 chars)",
+      "critical": true,
+      "timestamp": "15:47:40"
+    },
+    {
+      "test": "Import - streamlit",
+      "status": "PASS",
+      "message": "Successfully imported streamlit",
+      "critical": false,
+      "timestamp": "15:47:41"
+    },
+    {
+      "test": "Import - EnhancedGamificationRenderer",
+      "status": "PASS",
+      "message": "Successfully imported EnhancedGamificationRenderer",
+      "critical": false,
+      "timestamp": "15:47:41"
+    },
+    {
+      "test": "Import - DomainExpertAgent",
+      "status": "PASS",
+      "message": "Successfully imported DomainExpertAgent",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Import - ChallengeGeneratorProcessor",
+      "status": "PASS",
+      "message": "Successfully imported ChallengeGeneratorProcessor",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Import - render_chat_interface",
+      "status": "PASS",
+      "message": "Successfully imported render_chat_interface",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Gamification - Transformation Names",
+      "status": "PASS",
+      "message": "Transformation generation method available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Gamification - Personas",
+      "status": "PASS",
+      "message": "Method generate_personas_from_context available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Gamification - Constraints",
+      "status": "PASS",
+      "message": "Method generate_constraints_from_context available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Gamification - Perspectives",
+      "status": "PASS",
+      "message": "Method generate_perspectives_from_context available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Gamification - Mystery",
+      "status": "PASS",
+      "message": "Method generate_mystery_from_context available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Gamification - Story_Chapters",
+      "status": "PASS",
+      "message": "Method generate_story_chapters_from_context available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Gamification - Time_Periods",
+      "status": "PASS",
+      "message": "Method generate_time_periods_from_context available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Frequency - Logic",
+      "status": "PASS",
+      "message": "Frequency control logic found (every 3 messages)",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Frequency - Enabled",
+      "status": "PASS",
+      "message": "Frequency control is enabled",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Web Search - Query Detection",
+      "status": "PASS",
+      "message": "'give example projects for comm...' - Should trigger web search",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Web Search - Query Detection",
+      "status": "PASS",
+      "message": "'example projects for adaptive ...' - Should trigger web search",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Web Search - Query Detection",
+      "status": "PASS",
+      "message": "'what are design principles...' - Should not trigger web search",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Web Search - Query Detection",
+      "status": "PASS",
+      "message": "'how to design circulation...' - Should not trigger web search",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Web Search - API Key",
+      "status": "PASS",
+      "message": "Tavily API key available",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "Web Search - Implementation",
+      "status": "PASS",
+      "message": "Web search logic found in domain expert",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "UI - render_chat_interface",
+      "status": "PASS",
+      "message": "Component render_chat_interface is callable",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "UI - get_chat_input",
+      "status": "PASS",
+      "message": "Component get_chat_input is callable",
+      "critical": false,
+      "timestamp": "15:47:42"
+    },
+    {
+      "test": "UI - render_gamified_challenge",
+      "status": "PASS",
+      "message": "Component render_gamified_challenge is callable",
+      "critical": false,
+      "timestamp": "15:47:43"
+    },
+    {
+      "test": "UI - render_enhanced_gamified_challenge",
+      "status": "PASS",
+      "message": "Component render_enhanced_gamified_challenge is callable",
+      "critical": false,
+      "timestamp": "15:47:43"
+    },
+    {
+      "test": "UI - HTML Structure",
+      "status": "PASS",
+      "message": "Game descriptions are clean (no HTML tags)",
+      "critical": false,
+      "timestamp": "15:47:43"
+    },
+    {
+      "test": "Database - Files",
+      "status": "WARN",
+      "message": "No database directory found",
+      "critical": false,
+      "timestamp": "15:47:43"
+    },
+    {
+      "test": "Database - ChromaDB",
+      "status": "PASS",
+      "message": "ChromaDB library available",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Agent - DomainExpertAgent",
+      "status": "PASS",
+      "message": "DomainExpertAgent class found in thesis-agents/agents/domain_expert/adapter.py",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Agent - SocraticTutorAgent",
+      "status": "PASS",
+      "message": "SocraticTutorAgent class found in thesis-agents/agents/socratic_tutor/adapter.py",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Agent - CognitiveEnhancementAgent",
+      "status": "PASS",
+      "message": "CognitiveEnhancementAgent class found in thesis-agents/agents/cognitive_enhancement/adapter.py",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Agent - AnalysisAgent",
+      "status": "PASS",
+      "message": "AnalysisAgent class found in thesis-agents/agents/analysis_agent/adapter.py",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Agent - Orchestrator",
+      "status": "WARN",
+      "message": "Orchestrator file not found",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Performance - chat_components.py",
+      "status": "PASS",
+      "message": "No active debug prints found",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Performance - enhanced_gamification.py",
+      "status": "PASS",
+      "message": "No active debug prints found",
+      "critical": false,
+      "timestamp": "15:47:44"
+    },
+    {
+      "test": "Performance - challenge_generator.py",
+      "status": "PASS",
+      "message": "No active debug prints found",
+      "critical": false,
+      "timestamp": "15:47:44"
+    }
+  ]
+}

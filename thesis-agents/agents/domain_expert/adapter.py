@@ -939,15 +939,34 @@ What questions do you have about your design?"""
         print(f"🔍 General example request: {is_general_example_request} (keywords: {[k for k in general_example_keywords if k in user_input_lower]})")
 
         if is_project_example_request:
-            # Check cognitive offloading protection (minimum 5 messages required)
+            # FIXED: More intelligent cognitive offloading protection (ISSUE 2 FIX)
             if state and hasattr(state, 'messages'):
                 message_count = len([msg for msg in state.messages if msg.get('role') == 'user'])
-                if message_count < 5:
+
+                # Check if user has provided meaningful project context
+                user_messages = [msg['content'].lower() for msg in state.messages if msg.get('role') == 'user']
+                project_context_indicators = [
+                    'designing', 'converting', 'transforming', 'adapting', 'building', 'creating',
+                    'site', 'location', 'program', 'requirements', 'constraints', 'challenges',
+                    'community center', 'warehouse', 'factory', 'building type'
+                ]
+
+                has_project_context = any(
+                    any(indicator in msg for indicator in project_context_indicators)
+                    for msg in user_messages[:-1]  # Exclude current message
+                )
+
+                # Only apply protection if both conditions are true:
+                # 1. Less than 3 messages (reduced from 5)
+                # 2. No meaningful project context provided
+                if message_count < 3 and not has_project_context:
                     analysis["type"] = "premature_project_example_request"
                     analysis["cognitive_risk"] = "high"
-                    analysis["indicators"].append(f"Project example request too early (only {message_count} messages, need 5+)")
+                    analysis["indicators"].append(f"Project example request too early (only {message_count} messages, no project context)")
                     analysis["cognitive_protection"] = "active"
                     return analysis
+                elif message_count >= 3 or has_project_context:
+                    print(f"   ✅ PROJECT CONTEXT: Allowing example request (messages: {message_count}, context: {has_project_context})")
 
             # This is a legitimate PROJECT example request - should provide specific built projects
             analysis["type"] = "legitimate_project_example_request"
@@ -1093,19 +1112,12 @@ What questions do you have about your design?"""
                 has_relevant_db_results = avg_similarity > 0.15  # LOWERED: Was 0.25, now 0.15 to capture more relevant results
                 print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.15)")
 
-            # FIXED: For project examples, always try web search if database doesn't have specific project names
+            # ISSUE 2 FIX: For project examples, ALWAYS use web search - database is unreliable for project names
             should_try_web_search = False
             if request_type == "project_examples":
-                # Check if database results contain actual project names/architects
-                has_project_names = False
-                if knowledge_results:
-                    combined_text = " ".join([r.get('content', '') + r.get('snippet', '') for r in knowledge_results]).lower()
-                    project_indicators = ['architect:', 'designed by', 'project:', 'building name:', 'center by', 'designed for']
-                    has_project_names = any(indicator in combined_text for indicator in project_indicators)
-
-                if not has_project_names:
-                    should_try_web_search = True
-                    print(f"   🏗️ PROJECT EXAMPLES: Database lacks specific project names - trying web search")
+                # Skip database entirely for project examples - go straight to web search
+                should_try_web_search = True
+                print(f"   🏗️ PROJECT EXAMPLES: Using web search directly (database unreliable for project names)")
             elif not has_sufficient_db_results or not has_relevant_db_results:
                 should_try_web_search = True
                 print(f"   🌐 Database insufficient - trying web search")
@@ -1401,9 +1413,12 @@ What questions do you have about your design?"""
             # Require either good similarity OR good relevance score, but with reasonable minimums
             if (similarity > 0.15 and relevance_score > 0.10) or relevance_score > 0.25:
                 relevant_results.append(result)
-                print(f"   ✅ Relevant result: {title[:50]}... (score: {relevance_score:.3f}, similarity: {similarity:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
+                # ISSUE 3 FIX: Commented out verbose debug prints for performance
+                # print(f"   ✅ Relevant result: {title[:50]}... (score: {relevance_score:.3f}, similarity: {similarity:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
             else:
-                print(f"   ❌ Filtered out: {title[:50]}... (score: {relevance_score:.3f}, similarity: {similarity:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
+                pass
+                # ISSUE 3 FIX: Commented out verbose debug prints for performance
+                # print(f"   ❌ Filtered out: {title[:50]}... (score: {relevance_score:.3f}, similarity: {similarity:.3f}, topic: {topic_score:.2f}, building: {building_score:.2f}, features: {feature_score:.2f})")
 
         return relevant_results
 
@@ -1555,9 +1570,9 @@ What questions do you have about your design?"""
                     # Fallback: take first sentence even if short
                     summary = sentences[0].strip() + '.' if sentences else ''
             
-            # Format with clickable link if available
+            # ISSUE 4 FIX: Format with clickable markdown link to prevent truncation
             if url:
-                lines.append(f"{i}. **{title}**\n   🔗 {url}\n   {summary}\n")
+                lines.append(f"{i}. **[{title}]({url})**\n   {summary}\n")
             else:
                 lines.append(f"{i}. **{title}**\n   {summary}\n")
 
@@ -2097,15 +2112,15 @@ What questions do you have about your design?"""
             for r in knowledge_results
         ])
 
-        # DEBUG: Print what content is being passed to synthesis
-        print(f"🔍 DEBUG: Synthesizing {len(knowledge_results)} results")
-        for i, r in enumerate(knowledge_results[:3]):
-            title = r.get('title', 'Unknown')[:50]
-            content = r.get('content', r.get('snippet', ''))[:100]
-            print(f"   📄 Result {i+1}: {title} | Content: {content}...")
-        print(f"🔍 DEBUG: Combined knowledge length: {len(combined_knowledge)} chars")
-        print(f"🔍 DEBUG: User topic: {user_topic}")
-        print(f"🔍 DEBUG: Building type: {building_type}")
+        # DEBUG: Print what content is being passed to synthesis (ISSUE 3 FIX - COMMENTED OUT)
+        # print(f"🔍 DEBUG: Synthesizing {len(knowledge_results)} results")
+        # for i, r in enumerate(knowledge_results[:3]):
+        #     title = r.get('title', 'Unknown')[:50]
+        #     content = r.get('content', r.get('snippet', ''))[:100]
+        #     print(f"   📄 Result {i+1}: {title} | Content: {content}...")
+        # print(f"🔍 DEBUG: Combined knowledge length: {len(combined_knowledge)} chars")
+        # print(f"🔍 DEBUG: User topic: {user_topic}")
+        # print(f"🔍 DEBUG: Building type: {building_type}")
         
         # Use the working prompt from the old repository
         synthesis_prompt = f"""

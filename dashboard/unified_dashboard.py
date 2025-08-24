@@ -200,7 +200,7 @@ class UnifiedArchitecturalDashboard:
         elif not project_description.strip():
             project_description = "Please analyze my architectural project"
         
-        with st.spinner("🧠 Analyzing your design..."):
+        with st.spinner("Analyzing your design..."):
             try:
                 # Initialize session
                 ensure_session_started()
@@ -730,11 +730,11 @@ class UnifiedArchitecturalDashboard:
                     gamification_display = response_metadata.get("gamification", {})
 
                 # DEBUG: Log gamification data for troubleshooting
-                if gamification_display:
-                    print(f"🎮 UI DEBUG: Gamification data found: {gamification_display.get('is_gamified', False)}")
-                    print(f"🎮 UI DEBUG: Display type: {gamification_display.get('display_type', 'none')}")
-                else:
-                    print(f"🎮 UI DEBUG: No gamification data found in metadata keys: {list(response_metadata.keys())}")
+                # if gamification_display:
+                #     #print(f"🎮 UI DEBUG: Gamification data found: {gamification_display.get('is_gamified', False)}")
+                #     print(f"🎮 UI DEBUG: Display type: {gamification_display.get('display_type', 'none')}")
+                # else:
+                #     print(f"🎮 UI DEBUG: No gamification data found in metadata keys: {list(response_metadata.keys())}")
 
                 # Add assistant message with gamification info and generated image
                 assistant_message = {

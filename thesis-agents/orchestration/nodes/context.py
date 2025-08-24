@@ -30,24 +30,20 @@ def make_context_node(context_agent, progression_manager, first_response_generat
             len(user_messages) == 1 and len(assistant_messages) == 0  # Only the very first user message with no assistant response
         )
         
-        # Additional check: if the message contains clear project description patterns, treat as first message
-        if not is_first_message and last_message:
-            project_description_patterns = [
-                "i am designing", "i'm designing", "i am working on", "i'm working on",
-                "i am creating", "i'm creating", "i am building", "i'm building",
-                "my project is", "my design is", "i want to create", "i want to design",
-                "i want to build", "i plan to", "i'm planning to", "my goal is",
-                "i have a project", "i'm working on a", "this is my project"
-            ]
-            if any(pattern in last_message.lower() for pattern in project_description_patterns):
-                is_first_message = True
-                logger.info("Context node: Detected project description pattern, treating as first message")
+        # ISSUE 3 FIX: Only treat as first message if it's ACTUALLY the first message
+        # Remove the project description pattern check that was causing mid-conversation triggers
+        # Progressive opening should ONLY happen on the very first user message
+        if not is_first_message:
+            logger.info("Context node: Not first message - progressive opening will not trigger")
         
         # 1208-If still not first message, try to get input classification to see if it's a project description
         if not is_first_message and last_message:
             try:
-                # Import and use the input classification processor to check if this is a project description
-                from ...agents.context_agent.processors.input_classification import InputClassificationProcessor
+                # FIXED: Use absolute import to avoid relative import warning
+                import sys
+                import os
+                sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+                from agents.context_agent.processors.input_classification import InputClassificationProcessor
                 classifier = InputClassificationProcessor()
                 # Create a minimal state for classification
                 temp_state = type('TempState', (), {'messages': []})()
@@ -56,7 +52,8 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                     is_first_message = True
                     logger.info("Context node: Input classification detected project_description, treating as first message")
             except Exception as e:
-                logger.warning(f"Context node: Could not perform input classification check: {e}")
+                # FIXED: Reduced warning verbosity - this is not critical
+                logger.debug(f"Context node: Input classification check skipped: {e}")
         
         logger.info(f"Context node: is_first_message determined as: {is_first_message}")
 

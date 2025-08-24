@@ -261,10 +261,12 @@ selected_building_type = st.sidebar.selectbox(
 # Test mode selector
 test_modes = [
     "🎮 Game Visualization",
-    "🎯 Trigger Examples", 
+    "🎯 Trigger Examples",
     "🔧 Game Customization",
     "📊 Data Inspector",
-    "🔗 Integration Test"
+    "🔗 Integration Test",
+    "🎯 Live Game Testing",
+    "🎨 Rich Content Testing"
 ]
 
 selected_test_mode = st.sidebar.selectbox(
@@ -844,7 +846,299 @@ elif selected_test_mode == "🔗 Integration Test":
         st.error(f"❌ Rendering pipeline error: {e}")
         st.exception(e)
 
-    # Test all game types
+    # ADDED: Comprehensive conflict testing
+    st.subheader("🔍 Conflict Analysis Test")
+
+    if st.button("🧪 Run Gamification Conflict Analysis", type="primary"):
+        with st.spinner("Running comprehensive conflict analysis..."):
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ["python", "task1_gamification_conflict_analysis.py"],
+                    capture_output=True,
+                    text=True,
+                    cwd="."
+                )
+
+                if result.returncode == 0:
+                    st.success("✅ Conflict analysis completed successfully")
+                    with st.expander("📊 Analysis Results", expanded=True):
+                        st.code(result.stdout, language="text")
+                else:
+                    st.error("❌ Conflict analysis failed")
+                    st.code(result.stderr, language="text")
+
+            except Exception as e:
+                st.error(f"❌ Failed to run conflict analysis: {e}")
+
+elif selected_test_mode == "🎯 Live Game Testing":
+    st.header("🎯 Live Game Testing with Rich Content")
+    st.markdown("Test all gamification types with real user messages and see the rich, contextual content generation in action.")
+
+    # Enhanced test scenarios with rich content validation
+    test_scenarios = {
+        "🎯 Perspective Wheel": {
+            "message": "What if I place the workshops in the brighter central hall and move the market activities into the side wings? Would that create a more engaging flow for people moving through the center?",
+            "expected_game": "alternative_challenge",
+            "expected_ui": "_render_spinning_wheel_game",
+            "building_type": "community center",
+            "context": "warehouse conversion with workshop and market spaces"
+        },
+        "👤 Role-Play Game": {
+            "message": "How would a young visitor feel inside this building since I have been only considered elder people?",
+            "expected_game": "perspective_challenge",
+            "expected_ui": "_render_enhanced_persona_game",
+            "building_type": "community center",
+            "context": "elder-focused design with intergenerational considerations"
+        },
+        "🔍 Detective Mystery": {
+            "message": "Users seem to avoid the main entrance but I can't identify why - something feels off about the space",
+            "expected_game": "metacognitive_challenge",
+            "expected_ui": "_render_animated_mystery_game",
+            "building_type": "community center",
+            "context": "entrance design problem investigation"
+        },
+        "🧩 Constraint Puzzle": {
+            "message": "I'm completely stuck on this design problem and need fresh ideas for my approach",
+            "expected_game": "constraint_challenge",
+            "expected_ui": "_render_interactive_constraint_game",
+            "building_type": "community center",
+            "context": "general design problem with creative constraints"
+        },
+        "🏗️ Transformation Game": {
+            "message": "I'm converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall. The challenge I'm facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+            "expected_game": "space_transformation",
+            "expected_ui": "_render_transformation_game",
+            "building_type": "community center",
+            "context": "warehouse to community center conversion with elder focus"
+        },
+        "⏰ Time Travel": {
+            "message": "How will this building evolve over time as the community's needs change in the future?",
+            "expected_game": "time_travel_challenge",
+            "expected_ui": "_render_time_travel_game",
+            "building_type": "community center",
+            "context": "temporal evolution and future adaptability"
+        },
+        "📚 Storytelling": {
+            "message": "I would like to create a user journey through the central hub — almost like a story that guides people from arrival, into moments of pause, and then out toward workshops or market spaces. How do I design that narrative flow so it feels natural and not forced?",
+            "expected_game": "spatial_storytelling",
+            "expected_ui": "_render_storytelling_game",
+            "building_type": "community center",
+            "context": "narrative flow design with central hub and activity zones"
+        }
+    }
+
+    selected_scenario = st.selectbox(
+        "🎮 Select Test Scenario:",
+        list(test_scenarios.keys()),
+        help="Choose a scenario to test rich content generation"
+    )
+
+    scenario = test_scenarios[selected_scenario]
+
+    # Enhanced scenario display
+    st.markdown("### 📋 Scenario Details")
+
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.markdown("**User Message:**")
+        st.markdown(f'*"{scenario["message"]}"*')
+
+        st.markdown("**Context:**")
+        st.info(f"🏢 {scenario['building_type']} | 🎯 {scenario['context']}")
+
+    with col2:
+        st.markdown("**Expected Game:**")
+        st.code(scenario['expected_game'])
+
+        st.markdown("**UI Method:**")
+        st.code(scenario['expected_ui'])
+
+    # Test button with rich content validation
+    if st.button(f"🎮 Test {selected_scenario} with Rich Content", type="primary"):
+        st.markdown("---")
+        st.markdown(f"**🎮 {selected_scenario} Live Test with Rich Content Generation:**")
+
+        # Create enhanced challenge data with user message context
+        challenge_data = create_sample_challenge_data(scenario['expected_game'], scenario['building_type'])
+        challenge_data['user_message'] = scenario['message']
+        challenge_data['building_type'] = scenario['building_type']
+        challenge_data['context'] = scenario['context']
+
+        try:
+            # Show content generation preview first
+            with st.expander("🔍 Rich Content Generation Preview", expanded=True):
+                st.markdown("**Testing rich content generation for this scenario...**")
+
+                # Test content generation based on game type
+                content_gen = st.session_state.renderer.content_generator
+
+                if scenario['expected_game'] == 'space_transformation':
+                    st.markdown("**🏗️ Transformation Content:**")
+                    transformations = content_gen.generate_transformations_from_context(
+                        scenario['building_type'],
+                        scenario['message']
+                    )
+                    for name, desc in transformations.items():
+                        content_type = "RICH" if len(desc) > 80 else "SHALLOW"
+                        st.markdown(f"• **{name}**: {content_type} ({len(desc)} chars)")
+                        st.markdown(f"  *{desc[:100]}...*")
+
+                elif scenario['expected_game'] == 'perspective_challenge':
+                    st.markdown("**👤 Persona Content:**")
+                    personas = content_gen.generate_personas_from_context(
+                        scenario['building_type'],
+                        scenario['message']
+                    )
+                    for name, data in personas.items():
+                        desc = data.get('description', '')
+                        content_type = "RICH" if len(desc) > 50 else "SHALLOW"
+                        st.markdown(f"• **{name}**: {content_type} ({len(desc)} chars)")
+                        st.markdown(f"  *{desc[:80]}...*")
+
+                elif scenario['expected_game'] == 'metacognitive_challenge':
+                    st.markdown("**🔍 Mystery Content:**")
+                    mystery = content_gen.generate_mystery_from_context(
+                        scenario['building_type'],
+                        scenario['message']
+                    )
+                    st.markdown(f"• **Mystery**: {mystery['mystery_description']}")
+                    st.markdown("• **Clues:**")
+                    for clue in mystery['clues']:
+                        content_type = "RICH" if len(clue) > 50 else "SHALLOW"
+                        st.markdown(f"  - {content_type}: *{clue[:60]}...*")
+
+                elif scenario['expected_game'] == 'constraint_challenge':
+                    st.markdown("**🧩 Constraint Content:**")
+                    constraints = content_gen.generate_constraints_from_context(
+                        scenario['building_type'],
+                        scenario['message']
+                    )
+                    for name, data in constraints.items():
+                        impact = data.get('impact', '')
+                        content_type = "RICH" if len(impact) > 50 else "SHALLOW"
+                        st.markdown(f"• **{name}**: {content_type} ({len(impact)} chars)")
+                        st.markdown(f"  *{impact[:80]}...*")
+
+                elif scenario['expected_game'] == 'spatial_storytelling':
+                    st.markdown("**📚 Story Chapter Content:**")
+                    chapters = content_gen.generate_story_chapters_from_context(
+                        scenario['building_type'],
+                        scenario['message']
+                    )
+                    for name, desc in chapters.items():
+                        content_type = "RICH" if len(desc) > 80 else "SHALLOW"
+                        st.markdown(f"• **{name}**: {content_type} ({len(desc)} chars)")
+                        st.markdown(f"  *{desc[:100]}...*")
+
+                elif scenario['expected_game'] == 'time_travel_challenge':
+                    st.markdown("**⏰ Time Period Content:**")
+                    periods = content_gen.generate_time_periods_from_context(
+                        scenario['building_type'],
+                        scenario['message']
+                    )
+                    for name, desc in periods.items():
+                        content_type = "RICH" if len(desc) > 80 else "SHALLOW"
+                        st.markdown(f"• **{name}**: {content_type} ({len(desc)} chars)")
+                        st.markdown(f"  *{desc[:100]}...*")
+
+                elif scenario['expected_game'] == 'alternative_challenge':
+                    st.markdown("**🎯 Perspective Content:**")
+                    perspectives = content_gen.generate_perspectives_from_context(
+                        scenario['building_type'],
+                        scenario['message']
+                    )
+                    for perspective in perspectives:
+                        st.markdown(f"• **{perspective}'s View**")
+
+            # Render the actual game
+            st.markdown("### 🎮 Live Game Rendering:")
+            st.session_state.renderer.render_enhanced_challenge(challenge_data)
+            st.success(f"✅ {selected_scenario} rendered successfully with rich content!")
+
+        except Exception as e:
+            st.error(f"❌ Error rendering {selected_scenario}: {e}")
+            st.exception(e)
+
+    # Rich Content Validation Test
+    st.subheader("🎨 Rich Content Validation Test")
+    st.markdown("Test all games to verify they generate rich, contextual content instead of shallow descriptions.")
+
+    # Warehouse conversion test message (rich context)
+    warehouse_message = "I'm converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall. The challenge I'm facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people."
+
+    if st.button("🎨 Test All Games with Rich Content", type="primary"):
+        st.markdown("**Testing rich content generation across all games...**")
+
+        content_gen = st.session_state.renderer.content_generator
+
+        # Test each game type for rich content
+        game_tests = [
+            ("🏗️ Transformations", "space_transformation", "generate_transformations_from_context"),
+            ("👤 Personas", "perspective_challenge", "generate_personas_from_context"),
+            ("🔍 Mystery", "metacognitive_challenge", "generate_mystery_from_context"),
+            ("🧩 Constraints", "constraint_challenge", "generate_constraints_from_context"),
+            ("📚 Story Chapters", "spatial_storytelling", "generate_story_chapters_from_context"),
+            ("⏰ Time Periods", "time_travel_challenge", "generate_time_periods_from_context"),
+            ("🎯 Perspectives", "alternative_challenge", "generate_perspectives_from_context")
+        ]
+
+        for game_name, game_type, method_name in game_tests:
+            with st.expander(f"{game_name} Rich Content Test", expanded=False):
+                try:
+                    method = getattr(content_gen, method_name)
+                    result = method("community center", warehouse_message)
+
+                    if isinstance(result, dict):
+                        rich_count = 0
+                        total_count = len(result)
+
+                        for key, value in result.items():
+                            if isinstance(value, dict):
+                                # For personas/constraints with nested data
+                                desc = value.get('description', '') or value.get('impact', '') or str(value)
+                                char_count = len(desc)
+                            else:
+                                # For simple string values
+                                char_count = len(str(value))
+
+                            if char_count > 80:
+                                rich_count += 1
+                                content_type = "✅ RICH"
+                            else:
+                                content_type = "⚠️ SHALLOW"
+
+                            st.markdown(f"**{key}**: {content_type} ({char_count} chars)")
+
+                            # Show preview
+                            if isinstance(value, dict):
+                                preview = str(value.get('description', '') or value.get('impact', '') or str(value))[:100]
+                            else:
+                                preview = str(value)[:100]
+                            st.markdown(f"*{preview}...*")
+
+                        # Summary
+                        richness_ratio = rich_count / total_count if total_count > 0 else 0
+                        if richness_ratio >= 0.7:
+                            st.success(f"✅ {game_name}: {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+                        else:
+                            st.warning(f"⚠️ {game_name}: Only {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+
+                    elif isinstance(result, list):
+                        st.success(f"✅ {game_name}: Generated {len(result)} items")
+                        for item in result[:3]:  # Show first 3
+                            st.markdown(f"• {item}")
+
+                    else:
+                        st.info(f"ℹ️ {game_name}: Generated content of type {type(result)}")
+
+                except Exception as e:
+                    st.error(f"❌ {game_name}: Error - {e}")
+
+        st.success("🎉 Rich content validation completed!")
+
+    # Test all game types (data creation only)
     st.subheader("🧪 Comprehensive Game Type Test")
 
     all_game_types = [
@@ -857,8 +1151,8 @@ elif selected_test_mode == "🔗 Integration Test":
         "space_transformation"
     ]
 
-    if st.button("🚀 Test All Game Types", type="primary"):
-        st.markdown("**Testing all game types...**")
+    if st.button("🚀 Test All Game Types (Data Creation)", type="secondary"):
+        st.markdown("**Testing all game types for data creation...**")
 
         for game_type in all_game_types:
             try:
@@ -889,6 +1183,259 @@ elif selected_test_mode == "🔗 Integration Test":
 
         st.success(f"✅ Performance test completed in {duration:.3f} seconds")
         st.info(f"Average time per challenge: {duration/5:.3f} seconds")
+
+elif selected_test_mode == "🎨 Rich Content Testing":
+    st.header("🎨 Rich Content Testing Laboratory")
+    st.markdown("Comprehensive testing of rich content generation across all games with different user scenarios and contexts.")
+
+    # Test scenario selector
+    test_scenarios = {
+        "🏭 Warehouse to Community Center": {
+            "building_type": "community center",
+            "user_message": "I'm converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall. The challenge I'm facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+            "context": "Industrial adaptive reuse with elder focus",
+            "expected_themes": ["industrial heritage", "community", "accessibility", "cultural activities"]
+        },
+        "👴 Elder-Focused Design": {
+            "building_type": "community center",
+            "user_message": "How do I design spaces that are welcoming and accessible for elderly users in my community center? I want to create areas where they feel comfortable socializing and participating in activities.",
+            "context": "Accessibility and intergenerational design",
+            "expected_themes": ["accessibility", "comfort", "social interaction", "aging in place"]
+        },
+        "🌍 Climate-Responsive Design": {
+            "building_type": "school",
+            "user_message": "My school design needs to respond to the hot, dry climate while creating comfortable learning environments. How do I balance natural ventilation with acoustic privacy?",
+            "context": "Environmental design challenges",
+            "expected_themes": ["climate response", "natural ventilation", "thermal comfort", "learning environments"]
+        },
+        "🏙️ Urban Density Challenge": {
+            "building_type": "residential complex",
+            "user_message": "I'm designing a high-density residential complex in the city center. How do I create private outdoor spaces and community areas when land is so limited?",
+            "context": "Urban density and community building",
+            "expected_themes": ["density", "privacy", "community spaces", "urban context"]
+        },
+        "🎭 Cultural Heritage Integration": {
+            "building_type": "museum",
+            "user_message": "My museum design needs to showcase local cultural heritage while being accessible to international visitors. How do I balance authenticity with universal understanding?",
+            "context": "Cultural sensitivity and accessibility",
+            "expected_themes": ["cultural heritage", "authenticity", "accessibility", "storytelling"]
+        }
+    }
+
+    selected_scenario = st.selectbox(
+        "🎯 Select Test Scenario:",
+        list(test_scenarios.keys()),
+        help="Choose a scenario to test rich content generation"
+    )
+
+    scenario = test_scenarios[selected_scenario]
+
+    # Display scenario details
+    st.markdown("### 📋 Scenario Details")
+
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.markdown("**User Message:**")
+        st.markdown(f'*"{scenario["user_message"]}"*')
+
+        st.markdown("**Context:**")
+        st.info(f"🏢 {scenario['building_type']} | 🎯 {scenario['context']}")
+
+    with col2:
+        st.markdown("**Expected Themes:**")
+        for theme in scenario['expected_themes']:
+            st.markdown(f"• {theme}")
+
+    # Test all games with this scenario
+    if st.button("🎨 Test All Games with This Scenario", type="primary"):
+        st.markdown("---")
+        st.markdown(f"**🎨 Rich Content Generation Test for: {selected_scenario}**")
+
+        content_gen = st.session_state.renderer.content_generator
+
+        # Test each game type
+        game_tests = [
+            ("🏗️ Transformation Game", "generate_transformations_from_context", "dict", 80),
+            ("👤 Persona Game", "generate_personas_from_context", "dict_nested", 50),
+            ("🔍 Mystery Game", "generate_mystery_from_context", "mystery", 50),
+            ("🧩 Constraint Game", "generate_constraints_from_context", "dict_nested", 50),
+            ("📚 Storytelling Game", "generate_story_chapters_from_context", "dict", 80),
+            ("⏰ Time Travel Game", "generate_time_periods_from_context", "dict", 80),
+            ("🎯 Perspective Game", "generate_perspectives_from_context", "list", 0)
+        ]
+
+        for game_name, method_name, result_type, min_chars in game_tests:
+            with st.expander(f"{game_name} - Rich Content Analysis", expanded=True):
+                try:
+                    method = getattr(content_gen, method_name)
+                    result = method(scenario['building_type'], scenario['user_message'])
+
+                    if result_type == "dict":
+                        # Simple dictionary with string values
+                        rich_count = 0
+                        total_count = len(result)
+
+                        st.markdown("**Generated Content:**")
+                        for key, value in result.items():
+                            char_count = len(str(value))
+                            is_rich = char_count >= min_chars
+
+                            if is_rich:
+                                rich_count += 1
+                                status = "✅ RICH"
+                                color = "green"
+                            else:
+                                status = "⚠️ SHALLOW"
+                                color = "orange"
+
+                            st.markdown(f"**{key}**: {status} ({char_count} chars)")
+                            st.markdown(f"<div style='color: {color}; font-style: italic; margin-left: 20px;'>{str(value)[:120]}...</div>", unsafe_allow_html=True)
+
+                        # Summary
+                        richness_ratio = rich_count / total_count if total_count > 0 else 0
+                        if richness_ratio >= 0.8:
+                            st.success(f"🎉 EXCELLENT: {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+                        elif richness_ratio >= 0.6:
+                            st.warning(f"⚠️ GOOD: {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+                        else:
+                            st.error(f"❌ NEEDS WORK: Only {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+
+                    elif result_type == "dict_nested":
+                        # Dictionary with nested data (personas, constraints)
+                        rich_count = 0
+                        total_count = len(result)
+
+                        st.markdown("**Generated Content:**")
+                        for key, value in result.items():
+                            if isinstance(value, dict):
+                                desc = value.get('description', '') or value.get('impact', '') or str(value)
+                            else:
+                                desc = str(value)
+
+                            char_count = len(desc)
+                            is_rich = char_count >= min_chars
+
+                            if is_rich:
+                                rich_count += 1
+                                status = "✅ RICH"
+                                color = "green"
+                            else:
+                                status = "⚠️ SHALLOW"
+                                color = "orange"
+
+                            st.markdown(f"**{key}**: {status} ({char_count} chars)")
+                            st.markdown(f"<div style='color: {color}; font-style: italic; margin-left: 20px;'>{desc[:120]}...</div>", unsafe_allow_html=True)
+
+                        # Summary
+                        richness_ratio = rich_count / total_count if total_count > 0 else 0
+                        if richness_ratio >= 0.8:
+                            st.success(f"🎉 EXCELLENT: {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+                        elif richness_ratio >= 0.6:
+                            st.warning(f"⚠️ GOOD: {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+                        else:
+                            st.error(f"❌ NEEDS WORK: Only {rich_count}/{total_count} items are rich ({richness_ratio:.1%})")
+
+                    elif result_type == "mystery":
+                        # Special handling for mystery data
+                        st.markdown("**Generated Mystery:**")
+
+                        mystery_desc = result.get('mystery_description', '')
+                        st.markdown(f"**Mystery**: {mystery_desc}")
+
+                        clues = result.get('clues', [])
+                        st.markdown("**Clues:**")
+                        rich_clues = 0
+                        for clue in clues:
+                            char_count = len(clue)
+                            is_rich = char_count >= min_chars
+                            if is_rich:
+                                rich_clues += 1
+                                status = "✅ RICH"
+                                color = "green"
+                            else:
+                                status = "⚠️ SHALLOW"
+                                color = "orange"
+
+                            st.markdown(f"• {status} ({char_count} chars)")
+                            st.markdown(f"<div style='color: {color}; font-style: italic; margin-left: 20px;'>{clue}</div>", unsafe_allow_html=True)
+
+                        # Summary
+                        total_clues = len(clues)
+                        richness_ratio = rich_clues / total_clues if total_clues > 0 else 0
+                        if richness_ratio >= 0.8:
+                            st.success(f"🎉 EXCELLENT: {rich_clues}/{total_clues} clues are rich ({richness_ratio:.1%})")
+                        elif richness_ratio >= 0.6:
+                            st.warning(f"⚠️ GOOD: {rich_clues}/{total_clues} clues are rich ({richness_ratio:.1%})")
+                        else:
+                            st.error(f"❌ NEEDS WORK: Only {rich_clues}/{total_clues} clues are rich ({richness_ratio:.1%})")
+
+                    elif result_type == "list":
+                        # Simple list (perspectives)
+                        st.markdown("**Generated Perspectives:**")
+                        for item in result:
+                            st.markdown(f"• {item}")
+                        st.success(f"✅ Generated {len(result)} perspectives")
+
+                except Exception as e:
+                    st.error(f"❌ Error testing {game_name}: {e}")
+                    st.exception(e)
+
+    # Comparative analysis
+    st.markdown("---")
+    st.subheader("📊 Comparative Rich Content Analysis")
+
+    if st.button("📊 Compare All Scenarios", type="secondary"):
+        st.markdown("**Comparing rich content generation across all scenarios...**")
+
+        content_gen = st.session_state.renderer.content_generator
+
+        # Test transformation game across all scenarios (as example)
+        comparison_results = {}
+
+        for scenario_name, scenario_data in test_scenarios.items():
+            try:
+                transformations = content_gen.generate_transformations_from_context(
+                    scenario_data['building_type'],
+                    scenario_data['user_message']
+                )
+
+                rich_count = sum(1 for desc in transformations.values() if len(desc) >= 80)
+                total_count = len(transformations)
+                richness_ratio = rich_count / total_count if total_count > 0 else 0
+
+                comparison_results[scenario_name] = {
+                    'rich_count': rich_count,
+                    'total_count': total_count,
+                    'richness_ratio': richness_ratio,
+                    'sample': list(transformations.values())[0] if transformations else "No content"
+                }
+
+            except Exception as e:
+                comparison_results[scenario_name] = {
+                    'error': str(e)
+                }
+
+        # Display comparison
+        st.markdown("**🏗️ Transformation Game - Cross-Scenario Comparison:**")
+
+        for scenario_name, results in comparison_results.items():
+            if 'error' in results:
+                st.error(f"❌ {scenario_name}: {results['error']}")
+            else:
+                ratio = results['richness_ratio']
+                if ratio >= 0.8:
+                    status = "🎉 EXCELLENT"
+                    color = "green"
+                elif ratio >= 0.6:
+                    status = "⚠️ GOOD"
+                    color = "orange"
+                else:
+                    status = "❌ NEEDS WORK"
+                    color = "red"
+
+                st.markdown(f"**{scenario_name}**: {status} ({results['rich_count']}/{results['total_count']} rich - {ratio:.1%})")
+                st.markdown(f"<div style='color: {color}; font-style: italic; margin-left: 20px;'>Sample: {results['sample'][:100]}...</div>", unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")

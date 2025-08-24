@@ -1,0 +1,511 @@
+{
+  "timestamp": "2025-08-23 16:06:19",
+  "summary": {
+    "passed": 36,
+    "failed": 28,
+    "warnings": 7
+  },
+  "route_tests": [
+    {
+      "test": "Route-progressive_opening-1",
+      "status": "PASS",
+      "message": "'I'm designing a community cent...' \u2192 PROGRESSIVE_OPENING",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-progressive_opening-2",
+      "status": "FAIL",
+      "message": "Expected PROGRESSIVE_OPENING, got KNOWLEDGE_ONLY",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-progressive_opening-3",
+      "status": "PASS",
+      "message": "'I need to design a community c...' \u2192 PROGRESSIVE_OPENING",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-topic_transition-1",
+      "status": "FAIL",
+      "message": "Expected TOPIC_TRANSITION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-topic_transition-2",
+      "status": "FAIL",
+      "message": "Expected TOPIC_TRANSITION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-topic_transition-3",
+      "status": "FAIL",
+      "message": "Expected TOPIC_TRANSITION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-knowledge_only-1",
+      "status": "FAIL",
+      "message": "Expected KNOWLEDGE_ONLY, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-knowledge_only-2",
+      "status": "FAIL",
+      "message": "Expected KNOWLEDGE_ONLY, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-knowledge_only-3",
+      "status": "FAIL",
+      "message": "Expected KNOWLEDGE_ONLY, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-socratic_exploration-1",
+      "status": "PASS",
+      "message": "'I'm thinking about creating a ...' \u2192 SOCRATIC_EXPLORATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-socratic_exploration-2",
+      "status": "FAIL",
+      "message": "Expected SOCRATIC_EXPLORATION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-socratic_exploration-3",
+      "status": "FAIL",
+      "message": "Expected SOCRATIC_EXPLORATION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-cognitive_challenge-1",
+      "status": "PASS",
+      "message": "'I think this layout is perfect...' \u2192 COGNITIVE_CHALLENGE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-cognitive_challenge-2",
+      "status": "PASS",
+      "message": "'This design will definitely wo...' \u2192 COGNITIVE_CHALLENGE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-cognitive_challenge-3",
+      "status": "PASS",
+      "message": "'I'm confident this is the best...' \u2192 COGNITIVE_CHALLENGE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-multi_agent_comprehensive-1",
+      "status": "FAIL",
+      "message": "Expected MULTI_AGENT_COMPREHENSIVE, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-multi_agent_comprehensive-2",
+      "status": "PASS",
+      "message": "'Can you provide comprehensive ...' \u2192 MULTI_AGENT_COMPREHENSIVE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-multi_agent_comprehensive-3",
+      "status": "FAIL",
+      "message": "Expected MULTI_AGENT_COMPREHENSIVE, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-socratic_clarification-1",
+      "status": "FAIL",
+      "message": "Expected SOCRATIC_CLARIFICATION, got SOCRATIC_EXPLORATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-socratic_clarification-2",
+      "status": "PASS",
+      "message": "'I'm confused about the program...' \u2192 SOCRATIC_CLARIFICATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-socratic_clarification-3",
+      "status": "PASS",
+      "message": "'I don't understand how to orga...' \u2192 SOCRATIC_CLARIFICATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-supportive_scaffolding-1",
+      "status": "FAIL",
+      "message": "Expected SUPPORTIVE_SCAFFOLDING, got SOCRATIC_EXPLORATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-supportive_scaffolding-2",
+      "status": "FAIL",
+      "message": "Expected SUPPORTIVE_SCAFFOLDING, got SOCRATIC_CLARIFICATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-supportive_scaffolding-3",
+      "status": "FAIL",
+      "message": "Expected SUPPORTIVE_SCAFFOLDING, got SOCRATIC_EXPLORATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-foundational_building-1",
+      "status": "FAIL",
+      "message": "Expected FOUNDATIONAL_BUILDING, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-foundational_building-2",
+      "status": "FAIL",
+      "message": "Expected FOUNDATIONAL_BUILDING, got SOCRATIC_CLARIFICATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-foundational_building-3",
+      "status": "FAIL",
+      "message": "Expected FOUNDATIONAL_BUILDING, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-knowledge_with_challenge-1",
+      "status": "FAIL",
+      "message": "Expected KNOWLEDGE_WITH_CHALLENGE, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-knowledge_with_challenge-2",
+      "status": "FAIL",
+      "message": "Expected KNOWLEDGE_WITH_CHALLENGE, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-knowledge_with_challenge-3",
+      "status": "FAIL",
+      "message": "Expected KNOWLEDGE_WITH_CHALLENGE, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-balanced_guidance-1",
+      "status": "PASS",
+      "message": "'I'm working on a community cen...' \u2192 BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-balanced_guidance-2",
+      "status": "FAIL",
+      "message": "Expected BALANCED_GUIDANCE, got SOCRATIC_CLARIFICATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-balanced_guidance-3",
+      "status": "FAIL",
+      "message": "Expected BALANCED_GUIDANCE, got SOCRATIC_CLARIFICATION",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-cognitive_intervention-1",
+      "status": "FAIL",
+      "message": "Expected COGNITIVE_INTERVENTION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-cognitive_intervention-2",
+      "status": "FAIL",
+      "message": "Expected COGNITIVE_INTERVENTION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    },
+    {
+      "test": "Route-cognitive_intervention-3",
+      "status": "FAIL",
+      "message": "Expected COGNITIVE_INTERVENTION, got BALANCED_GUIDANCE",
+      "details": {},
+      "timestamp": "16:06:16"
+    }
+  ],
+  "game_tests": [
+    {
+      "test": "Game-constraint_challenge-1",
+      "status": "PASS",
+      "message": "'I'm completely stuck on this c...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-constraint_challenge-2",
+      "status": "PASS",
+      "message": "'I'm really stuck on the layout...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-constraint_challenge-3",
+      "status": "PASS",
+      "message": "'I'm having trouble with the sp...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-transformation-1",
+      "status": "PASS",
+      "message": "'I'm converting this warehouse ...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-transformation-2",
+      "status": "PASS",
+      "message": "'How do I transform this old fa...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-transformation-3",
+      "status": "PASS",
+      "message": "'I'm working on adaptive reuse ...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-storytelling-1",
+      "status": "PASS",
+      "message": "'I want to create a user journe...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-storytelling-2",
+      "status": "PASS",
+      "message": "'How do I design the story of m...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-storytelling-3",
+      "status": "PASS",
+      "message": "'I'm thinking about the narrati...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-time_travel-1",
+      "status": "PASS",
+      "message": "'How will this space evolve ove...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-time_travel-2",
+      "status": "PASS",
+      "message": "'I'm thinking about the buildin...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-time_travel-3",
+      "status": "PASS",
+      "message": "'How might this center adapt to...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-role_play-1",
+      "status": "PASS",
+      "message": "'How would a visitor feel enter...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-role_play-2",
+      "status": "PASS",
+      "message": "'What would a child experience ...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-role_play-3",
+      "status": "PASS",
+      "message": "'How would an elderly person na...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-detective-1",
+      "status": "PASS",
+      "message": "'Why isn't this layout working?...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-detective-2",
+      "status": "PASS",
+      "message": "'What's wrong with my current d...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-detective-3",
+      "status": "PASS",
+      "message": "'I need to investigate this cir...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-perspective_shift-1",
+      "status": "PASS",
+      "message": "'What if we flipped the program...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-perspective_shift-2",
+      "status": "WARN",
+      "message": "'How would this work if we inve...' \u2192 No gamification trigger",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Game-perspective_shift-3",
+      "status": "PASS",
+      "message": "'What's an alternative approach...' \u2192 Triggered gamification",
+      "details": {},
+      "timestamp": "16:06:18"
+    }
+  ],
+  "integration_tests": [
+    {
+      "test": "Frequency-Message-1",
+      "status": "PASS",
+      "message": "Message 1 should not trigger",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Frequency-Message-2",
+      "status": "PASS",
+      "message": "Message 2 should not trigger",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Frequency-Message-3",
+      "status": "FAIL",
+      "message": "Expected True, got False",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Frequency-Message-4",
+      "status": "PASS",
+      "message": "Message 4 should not trigger",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Frequency-Message-5",
+      "status": "PASS",
+      "message": "Message 5 should not trigger",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Frequency-Message-6",
+      "status": "FAIL",
+      "message": "Expected True, got False",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Flow-Step-1",
+      "status": "WARN",
+      "message": "Route: balanced_guidance (expected progressive_opening)",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Flow-Step-2",
+      "status": "WARN",
+      "message": "Route: balanced_guidance (expected topic_transition)",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Flow-Step-3",
+      "status": "PASS",
+      "message": "Route: balanced_guidance",
+      "details": {},
+      "timestamp": "16:06:18"
+    },
+    {
+      "test": "Flow-Step-4",
+      "status": "WARN",
+      "message": "Route: balanced_guidance (expected cognitive_challenge), Gamification: True (expected True)",
+      "details": {},
+      "timestamp": "16:06:19"
+    },
+    {
+      "test": "Flow-Step-5",
+      "status": "WARN",
+      "message": "Route: balanced_guidance (expected knowledge_only)",
+      "details": {},
+      "timestamp": "16:06:19"
+    },
+    {
+      "test": "Flow-Step-6",
+      "status": "PASS",
+      "message": "Route: socratic_exploration",
+      "details": {},
+      "timestamp": "16:06:19"
+    },
+    {
+      "test": "Flow-Step-7",
+      "status": "WARN",
+      "message": "Route: socratic_clarification (expected balanced_guidance)",
+      "details": {},
+      "timestamp": "16:06:19"
+    },
+    {
+      "test": "Flow-Step-8",
+      "status": "WARN",
+      "message": "Route: balanced_guidance (expected cognitive_challenge), Gamification: True (expected True)",
+      "details": {},
+      "timestamp": "16:06:19"
+    }
+  ]
+}
