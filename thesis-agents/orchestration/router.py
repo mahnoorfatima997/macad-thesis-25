@@ -28,6 +28,8 @@ class RouterHelper:
             conversation_history=getattr(student_state, "messages", []) if student_state else [],
             current_phase=getattr(getattr(student_state, "design_phase", None), "value", "ideation") if student_state else "ideation",
             phase_progress=0.0,
+            # CRITICAL FIX: Extract is_first_message from classification
+            is_first_message=classification.get("is_first_message", False),
         ) if hasattr(self.decision_tree, "RoutingContext") else None
 
         if routing_context is not None and hasattr(self.decision_tree, "decide_route"):

@@ -25,16 +25,26 @@ def make_context_node(context_agent, progression_manager, first_response_generat
         logger.info(f"Context node: user_messages count: {len(user_messages)}, assistant_messages count: {len(assistant_messages)}")
         logger.info(f"Context node: last_message: {last_message[:100]}...")
         
-        # Check if this is truly the first meaningful interaction - FIXED: Only first user message
+        # Check if this is the EXACT moment for progressive opening
+        # CRITICAL: Progressive opening triggers ONLY when:
+        # - Exactly 2 user messages (brief + first real message)
+        # - Zero assistant messages (no previous responses)
+        # - No image upload in the conversation
+        # This ensures it triggers only ONCE per conversation at the right moment
+        has_image_upload = any(
+            m.get("has_uploaded_image", False) or "image" in m.get("content", "").lower()
+            for m in student_state.messages
+        )
+
         is_first_message = (
-            len(user_messages) == 1 and len(assistant_messages) == 0  # Only the very first user message with no assistant response
+            len(user_messages) == 2 and
+            len(assistant_messages) == 0 and
+            not has_image_upload
         )
         
-        # ISSUE 3 FIX: Only treat as first message if it's ACTUALLY the first message
-        # Remove the project description pattern check that was causing mid-conversation triggers
-        # Progressive opening should ONLY happen on the very first user message
+        # CRITICAL: Progressive opening only triggers at the exact right moment
         if not is_first_message:
-            logger.info("Context node: Not first message - progressive opening will not trigger")
+            logger.info(f"Context node: Progressive opening will NOT trigger - conditions not met (user_messages: {len(user_messages)}, assistant_messages: {len(assistant_messages)}, has_image: {has_image_upload})")
         
         # 1208-If still not first message, try to get input classification to see if it's a project description
         if not is_first_message and last_message:
@@ -55,7 +65,7 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                 # FIXED: Reduced warning verbosity - this is not critical
                 logger.debug(f"Context node: Input classification check skipped: {e}")
         
-        logger.info(f"Context node: is_first_message determined as: {is_first_message}")
+        logger.info(f"Context node: is_first_message determined as: {is_first_message} (user_messages: {len(user_messages)}, assistant_messages: {len(assistant_messages)}, has_image: {has_image_upload})")
 
         if is_first_message:
             first_response_result = await first_response_generator.generate_first_response(last_message, student_state)
@@ -67,6 +77,17 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                 student_state.building_type = building_type
                 print(f"🔍 DEBUG: Updated student_state.building_type to: {student_state.building_type}")
             
+            # CRITICAL FIX: Add routing information to response metadata
+            response_metadata = first_response_result.get("metadata", {})
+            response_metadata.update({
+                "routing_path": "progressive_opening",
+                "response_type": "progressive_opening",
+                "ai_reasoning": f"First message - using progressive conversation system for {building_type} project",
+                "interaction_type": "first_message",
+                "user_intent": "first_message",
+                "agents_used": ["context_agent", "first_response_generator"],
+            })
+
             result_state: WorkflowState = {
                 **state,
                 "student_state": student_state,  # Ensure the updated state is referenced
@@ -90,7 +111,7 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                     "reasoning": f"First message - using progressive conversation system for {building_type} project",
                 },
                 "final_response": first_response_result.get("response_text", ""),
-                "response_metadata": first_response_result.get("metadata", {}),
+                "response_metadata": response_metadata,
                 "progression_data": progression_analysis,
             }
 

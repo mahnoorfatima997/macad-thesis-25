@@ -147,6 +147,8 @@ class LangGraphOrchestrator:
             building_type_confidence=continuity_context.get("building_type_confidence", 0.0),
             design_phase_detected=continuity_context.get("design_phase_detected", ""),
             phase_confidence=continuity_context.get("phase_confidence", 0.0),
+            # CRITICAL FIX: Extract is_first_message from classification
+            is_first_message=classification.get("is_first_message", False),
         )
 
         decision = self.routing_decision_tree.decide_route(routing_context)

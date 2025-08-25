@@ -2673,14 +2673,37 @@ class EnhancedGamificationRenderer:
     def _render_storytelling_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render interactive storytelling challenge."""
         try:
-            # FIXED: Properly initialize and persist session state
+            # ISSUE 2 FIX: Robust storytelling state initialization with validation
             if 'storytelling_state' not in st.session_state:
                 st.session_state.storytelling_state = {
                     'chapter': 1,
                     'story_points': 0,
-                    'narrative_choices': []
+                    'narrative_choices': [],
+                    'story_complete': False,
+                    'show_feedback': False,
+                    'feedback_message': '',
+                    'feedback_points': 0
                 }
+
             story_state = st.session_state.storytelling_state
+
+            # CRITICAL FIX: Validate and repair storytelling state if corrupted
+            required_keys = ['chapter', 'story_points', 'narrative_choices', 'show_feedback', 'feedback_message', 'feedback_points']
+            for key in required_keys:
+                if key not in story_state:
+                    if key == 'chapter':
+                        story_state[key] = 1
+                    elif key == 'story_points':
+                        story_state[key] = 0
+                    elif key == 'narrative_choices':
+                        story_state[key] = []
+                    elif key == 'show_feedback':
+                        story_state[key] = False
+                    elif key == 'feedback_message':
+                        story_state[key] = ''
+                    elif key == 'feedback_points':
+                        story_state[key] = 0
+                    print(f"🔧 STORYTELLING FIX: Added missing key '{key}' to storytelling state")
 
             st.markdown(f"""
         <div style="
@@ -2709,11 +2732,25 @@ class EnhancedGamificationRenderer:
             story_chapters_dict = self.content_generator.generate_story_chapters_from_context(building_type, challenge_text)
             story_chapters = list(story_chapters_dict.values())
 
-            # FIXED: Safe state access with validation
-            chapter_num = story_state.get('chapter', 1)
-            if len(story_chapters) == 0:
-                story_chapters = ["Begin your architectural story..."]
-            current_chapter = story_chapters[min(chapter_num - 1, len(story_chapters) - 1)]
+            # ISSUE 2 FIX: Ultra-safe state access with comprehensive validation
+            try:
+                chapter_num = story_state.get('chapter', 1)
+                if not isinstance(chapter_num, int) or chapter_num < 1:
+                    chapter_num = 1
+                    story_state['chapter'] = 1
+
+                if len(story_chapters) == 0:
+                    story_chapters = ["Begin your architectural story..."]
+
+                # Ensure chapter index is within bounds
+                chapter_index = min(max(chapter_num - 1, 0), len(story_chapters) - 1)
+                current_chapter = story_chapters[chapter_index]
+
+            except Exception as chapter_error:
+                print(f"🔧 STORYTELLING CHAPTER FIX: {chapter_error}")
+                chapter_num = 1
+                story_state['chapter'] = 1
+                current_chapter = "Begin your architectural story..."
 
             st.markdown(f"""
             <div style="
@@ -2727,51 +2764,98 @@ class EnhancedGamificationRenderer:
             </div>
             """, unsafe_allow_html=True)
 
-            # Story response
-            story_response = st.text_area(
-                "Continue the story - what happens next?",
-                key="storytelling_response",
-                height=100
-            )
+            # UI FIX: Show persistent feedback messages if available
+            if story_state.get('show_feedback', False):
+                feedback_msg = story_state.get('feedback_message', '')
+                feedback_points = story_state.get('feedback_points', 0)
 
-            if st.button(f"{theme['symbol']} Continue Story", key="continue_story", use_container_width=True):
-                if story_response:
-                    story_state['chapter'] += 1
-                    story_state['story_points'] += 10
-                    story_state['narrative_choices'].append(story_response)
+                if feedback_msg:
+                    st.success(feedback_msg)
+
+                if feedback_points > 0:
+                    self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
+
+                # Add a dismiss button to clear feedback
+                if st.button("✓ Continue", key="dismiss_feedback", use_container_width=True):
+                    story_state['show_feedback'] = False
+                    story_state['feedback_message'] = ''
+                    story_state['feedback_points'] = 0
                     st.session_state['storytelling_state'] = story_state
-
-                    # FIXED: Add completion logic when reaching 100 points
-                    if story_state['story_points'] >= 100:
-                        st.success("🎉 **STORY COMPLETE!** You've crafted a comprehensive narrative!")
-                        st.balloons()
-
-                        # Show final story summary
-                        with st.expander("📖 Your Complete Story", expanded=True):
-                            st.write("**Your Narrative Journey:**")
-                            for i, choice in enumerate(story_state['narrative_choices'], 1):
-                                st.write(f"**Chapter {i}:** {choice}")
-
-                        # Reset for new story
-                        if st.button("🔄 Start New Story", key="new_story"):
-                            st.session_state['storytelling_state'] = {
-                                'chapter': 1,
-                                'story_points': 0,
-                                'narrative_choices': []
-                            }
-                            st.rerun()
-
-                        # Trigger message processing for follow-up
-                        st.session_state.should_process_message = True
-                        st.session_state.messages.append({
-                            "role": "user",
-                            "content": f"I completed the storytelling challenge! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
-                        })
-                    else:
-                        st.success("Story continues! Your narrative has been recorded.")
-                        self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
-
                     st.rerun()
+
+            # Story response (only show if not showing feedback)
+            if not story_state.get('show_feedback', False):
+                story_response = st.text_area(
+                    "Continue the story - what happens next?",
+                    key="storytelling_response",
+                    height=100
+                )
+
+            # Only show button if not showing feedback
+            if not story_state.get('show_feedback', False):
+                if st.button(f"{theme['symbol']} Continue Story", key="continue_story", use_container_width=True):
+                    if story_response:
+                        # ISSUE 2 FIX: Safe state updates with validation
+                        try:
+                            story_state['chapter'] = story_state.get('chapter', 1) + 1
+                            story_state['story_points'] = story_state.get('story_points', 0) + 10
+                            if 'narrative_choices' not in story_state:
+                                story_state['narrative_choices'] = []
+                            story_state['narrative_choices'].append(story_response)
+                        except Exception as update_error:
+                            print(f"🔧 STORYTELLING UPDATE FIX: {update_error}")
+                            # Reset to safe state
+                            story_state = {
+                                'chapter': 2,
+                                'story_points': 10,
+                                'narrative_choices': [story_response],
+                                'show_feedback': False,
+                                'feedback_message': '',
+                                'feedback_points': 0
+                            }
+
+                        # UI FIX: Set persistent feedback instead of immediate display + rerun
+                        if story_state['story_points'] >= 100:
+                            # Story completion - show immediate feedback with balloons
+                            st.success("🎉 **STORY COMPLETE!** You've crafted a comprehensive narrative!")
+                            st.balloons()
+
+                            # Show final story summary
+                            with st.expander("📖 Your Complete Story", expanded=True):
+                                st.write("**Your Narrative Journey:**")
+                                for i, choice in enumerate(story_state['narrative_choices'], 1):
+                                    st.write(f"**Chapter {i}:** {choice}")
+
+                            # Reset for new story
+                            if st.button("🔄 Start New Story", key="new_story"):
+                                st.session_state['storytelling_state'] = {
+                                    'chapter': 1,
+                                    'story_points': 0,
+                                    'narrative_choices': [],
+                                    'show_feedback': False,
+                                    'feedback_message': '',
+                                    'feedback_points': 0
+                                }
+                                st.rerun()
+
+                            # Trigger message processing for follow-up
+                            st.session_state.should_process_message = True
+                            st.session_state.messages.append({
+                                "role": "user",
+                                "content": f"I completed the storytelling challenge! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
+                            })
+                        else:
+                            # UI FIX: Set persistent feedback state instead of immediate display + rerun
+                            story_state['show_feedback'] = True
+                            story_state['feedback_message'] = "Story continues! Your narrative has been recorded."
+                            story_state['feedback_points'] = 10
+
+                        # Update session state
+                        st.session_state['storytelling_state'] = story_state
+
+                        # UI FIX: Only rerun if story is not complete (to show persistent feedback)
+                        if story_state['story_points'] < 100:
+                            st.rerun()
 
         except Exception as e:
             print(f"🎮 ERROR in storytelling game: {e}")

@@ -59,13 +59,13 @@ class ChallengeGeneratorProcessor:
                     print(f"🎮 STRATEGY: Constraint trigger detected → increase_challenge → constraint_challenge → constraint")
                     return "increase_challenge"  # → constraint_challenge → constraint
 
-                # PRIORITY 4: Transformation triggers - FIXED: More specific to avoid knowledge route conflicts
+                # PRIORITY 4: Transformation triggers - ISSUE 1 FIX: EXTREMELY narrow to prevent over-triggering
                 elif any(pattern in user_message for pattern in [
-                    'convert building', 'converting building', 'transform building', 'transforming building',
-                    'adapt building', 'adapting building', 'adapting this building', 'repurpose building', 'repurposing building',
-                    'change the use of', 'flexible use of building', 'multi-use building', 'multi-use purposes',
-                    'warehouse to community center', 'factory to community center', 'office to community center',
-                    'adaptive reuse project', 'building conversion project'
+                    'how do i convert this building', 'how can i convert this building', 'how to convert this building',
+                    'how do i transform this building', 'how can i transform this building', 'how to transform this building',
+                    'i am converting this warehouse', 'i\'m converting this warehouse', 'converting this warehouse to',
+                    'i am transforming this warehouse', 'i\'m transforming this warehouse', 'transforming this warehouse to',
+                    'my building conversion project', 'my building transformation project', 'my adaptive reuse project'
                 ]):
                     # ISSUE 1 FIX: Check for recent transformation challenges before triggering
                     messages = getattr(state, 'messages', [])
@@ -499,19 +499,18 @@ class ChallengeGeneratorProcessor:
                 'help me think', 'new approach', 'different approach'
             ]
 
-            # 4. TRANSFORMATION TRIGGERS - ISSUE 2 FIX: Much more specific patterns for actual transformation requests
+            # 4. TRANSFORMATION TRIGGERS - ISSUE 1 FIX: EXTREMELY narrow patterns to prevent over-triggering
             transformation_patterns = [
-                # ONLY trigger for explicit transformation/conversion statements
-                'i\'m converting', 'i am converting', 'i want to convert', 'i need to convert',
-                'i\'m transforming', 'i am transforming', 'i want to transform', 'i need to transform',
-                'i\'m adapting', 'i am adapting', 'i want to adapt', 'i need to adapt',
-                'i\'m repurposing', 'i am repurposing', 'i want to repurpose', 'i need to repurpose',
-                # Specific conversion projects (only when user states they're doing it)
-                'my warehouse to community center', 'this warehouse to community center',
-                'converting this warehouse', 'transforming this warehouse', 'adapting this warehouse',
-                # Explicit transformation challenges
-                'how to transform', 'how do i transform', 'how can i transform',
-                'how to convert', 'how do i convert', 'how can i convert'
+                # ONLY trigger for EXPLICIT transformation/conversion questions or statements
+                'how do i convert this', 'how can i convert this', 'how to convert this',
+                'how do i transform this', 'how can i transform this', 'how to transform this',
+                'converting this building', 'transforming this building', 'adapting this building',
+                'repurposing this building', 'changing the use of this building',
+                # ONLY when user explicitly states they are doing a conversion project
+                'i am converting a', 'i\'m converting a', 'i am transforming a', 'i\'m transforming a',
+                'my conversion project', 'my transformation project', 'my adaptive reuse project',
+                # ONLY for direct conversion challenges
+                'conversion challenge', 'transformation challenge', 'adaptive reuse challenge'
             ]
 
             # 5. STORYTELLING TRIGGERS - NEW
