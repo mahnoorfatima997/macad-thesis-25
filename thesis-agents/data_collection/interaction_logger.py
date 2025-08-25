@@ -212,7 +212,18 @@ class InteractionLogger:
                 "response_complexity": self._estimate_response_complexity(agent_response),
                 "agent_selection_appropriateness": self._assess_agent_selection_appropriateness(routing_path, context_classification),
                 "response_coherence": self._assess_response_coherence(agent_response, agents_used)
-            }
+            },
+            
+            # ADD TOP-LEVEL COLUMNS FOR BENCHMARKING DASHBOARD COMPATIBILITY
+            # These duplicate the performance_metrics but are needed at top level for the dashboard
+            "prevents_cognitive_offloading": self._assess_cognitive_offloading_prevention(agent_response, response_type),
+            "encourages_deep_thinking": self._assess_deep_thinking_encouragement(agent_response),
+            "provides_scaffolding": self._assess_scaffolding(agent_response, cognitive_flags),
+            "maintains_engagement": self._assess_engagement_maintenance(agent_response, response_type),
+            "adapts_to_skill_level": self._assess_skill_adaptation(agent_response, student_skill_level, context_classification),
+            "multi_agent_coordination": len(agents_used) > 1,
+            "appropriate_agent_selection": self._assess_agent_selection_appropriateness(routing_path, context_classification),
+            "response_coherence": self._assess_response_coherence(agent_response, agents_used)
         }
         
         self.interactions.append(interaction)

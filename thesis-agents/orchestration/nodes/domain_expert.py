@@ -41,6 +41,39 @@ def make_domain_expert_node(domain_expert, state_validator, state_monitor, logge
             context_classification["primary_gap"] = primary_gap
         routing_decision = state.get("routing_decision", {}) or {}
 
+        # AGENT COORDINATION: Add other agents' responses to context for coordination
+        other_agent_responses = {}
+        if "socratic_result" in state:
+            socratic_result = state["socratic_result"]
+            if hasattr(socratic_result, 'to_dict'):
+                socratic_dict = socratic_result.to_dict()
+            elif isinstance(socratic_result, dict):
+                socratic_dict = socratic_result
+            else:
+                socratic_dict = {"response_text": str(socratic_result)}
+
+            other_agent_responses["socratic_tutor"] = {
+                "response_text": socratic_dict.get("response_text", ""),
+                "response_type": socratic_dict.get("response_type", "socratic"),
+                "key_insights": socratic_dict.get("key_insights", [])
+            }
+
+        if "analysis_result" in state:
+            analysis_data = state["analysis_result"]
+            if isinstance(analysis_data, dict):
+                other_agent_responses["analysis_agent"] = {
+                    "cognitive_state": analysis_data.get("cognitive_state", {}),
+                    "primary_gap": analysis_data.get("cognitive_state", {}).get("primary_gap", ""),
+                    "understanding_level": analysis_data.get("cognitive_state", {}).get("understanding_level", "moderate")
+                }
+
+        # Add coordination context to classification
+        if other_agent_responses:
+            context_classification["agent_coordination"] = {
+                "other_responses": other_agent_responses,
+                "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+            }
+
         domain_result = await domain_expert.provide_knowledge(
             student_state,
             context_classification,

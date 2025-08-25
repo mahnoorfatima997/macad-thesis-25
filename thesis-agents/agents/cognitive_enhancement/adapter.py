@@ -202,11 +202,25 @@ class CognitiveEnhancementAgent:
         # Build response
         response_text = challenge_result.get("challenge_text", "Continue exploring your design approach.")
         
+        # FIXED: Include cognitive state and scientific metrics in response
+        metadata = {
+            "cognitive_state": challenge_result.get("cognitive_state", {}),
+            "scientific_metrics": challenge_result.get("scientific_metrics", {}),
+            "enhancement_timestamp": challenge_result.get("enhancement_timestamp", ""),
+            "agent": self.name,
+            # SMART GAMIFICATION: Only show enhanced visuals when gamification is actually applied
+            "gamification_display": {
+                "is_gamified": challenge_result.get("gamification_applied", False),
+                "challenge_data": challenge_result,
+                "display_type": "enhanced_visual" if challenge_result.get("gamification_applied", False) else "standard"
+            }
+        }
+
         return ResponseBuilder.create_cognitive_enhancement_response(
             response_text,
             cognitive_flags=converted_flags,
             enhancement_metrics=enhancement_metrics,
-            metadata={}
+            metadata=metadata
         )
     
     def _calculate_enhancement_metrics(self, challenge_result: Dict, state: ArchMentorState, analysis_result: Dict) -> EnhancementMetrics:

@@ -285,8 +285,9 @@ class KnowledgeSynthesisProcessor:
                 if len(snippet) > 120:
                     clean_snippet += "..."
                 
-                # Proper Markdown link format: [Title](URL)
-                lines.append(f"### {i}. [{title}]({url})")
+                # Create clickable link format for Streamlit
+                lines.append(f"### {i}. {title}")
+                lines.append(f"🔗 **Link:** [{url}]({url})")
                 lines.append(f"{clean_snippet}")
                 lines.append("")  # Add spacing between examples
 
@@ -322,9 +323,9 @@ class KnowledgeSynthesisProcessor:
             if len(snippet) > 120:
                 clean_snippet += "..."
             
-            # Simple format: Title - URL - Description
-            lines.append(f"{i}. {title}")
-            lines.append(f"   Link: {url}")
+            # Simple format with clickable links
+            lines.append(f"{i}. **{title}**")
+            lines.append(f"   🔗 [{url}]({url})")
             lines.append(f"   {clean_snippet}")
             lines.append("")
         
@@ -335,35 +336,58 @@ class KnowledgeSynthesisProcessor:
         """Extract meaningful keywords from the user's topic for better filtering."""
         # Remove common architectural words to focus on the specific topic
         common_words = {
-            'design', 'architecture', 'building', 'space', 'project', 'the', 'a', 'an', 'and', 'or', 
+            'design', 'architecture', 'building', 'space', 'project', 'the', 'a', 'an', 'and', 'or',
             'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'are', 'was', 'were', 'be', 'been',
             'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may',
             'might', 'can', 'must', 'shall', 'this', 'that', 'these', 'those', 'it', 'its', 'they',
-            'them', 'their', 'we', 'our', 'you', 'your', 'me', 'my', 'i', 'am', 'im'
+            'them', 'their', 'we', 'our', 'you', 'your', 'me', 'my', 'i', 'am', 'im', 'some', 'provide',
+            'give', 'show', 'tell', 'help', 'about', 'how', 'what', 'where', 'when', 'why', 'which'
         }
-        
+
         # Split topic into words and filter
         words = topic.lower().split()
         keywords = []
-        
+
+        # Extract all meaningful words without hardcoded preferences
         for word in words:
             # Remove punctuation and clean
             clean_word = word.strip('.,!?;:()[]{}"\'').lower()
-            
+
             # Skip common words and very short words
-            if (clean_word not in common_words and 
-                len(clean_word) > 2 and 
+            if (clean_word not in common_words and
+                len(clean_word) > 2 and
                 clean_word.isalpha()):
                 keywords.append(clean_word)
-        
-        # If no keywords found, use the original topic words (excluding very common ones)
+
+        # Extract compound terms and phrases dynamically
+        topic_lower = topic.lower()
+
+        # Look for any compound architectural terms (not hardcoded)
+        compound_patterns = [
+            r'(\w+)\s+(center|centre|building|facility|space|hall|complex)',
+            r'(\w+)\s+(climate|weather|environment|condition)',
+            r'(\w+)\s+(design|architecture|planning|layout)',
+            r'(sustainable|green|eco|energy)\s+(\w+)',
+            r'(\w+)\s+(material|construction|structure)'
+        ]
+
+        import re
+        for pattern in compound_patterns:
+            matches = re.findall(pattern, topic_lower)
+            for match in matches:
+                if isinstance(match, tuple):
+                    keywords.extend([word for word in match if word not in common_words and len(word) > 2])
+
+        # If no meaningful keywords found, use any non-common words
         if not keywords:
             for word in words:
                 clean_word = word.strip('.,!?;:()[]{}"\'').lower()
-                if clean_word not in {'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with'}:
+                if clean_word not in {'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'can', 'you', 'some', 'provide', 'give', 'show'}:
                     keywords.append(clean_word)
-        
-        return keywords[:5]  # Limit to top 5 keywords
+
+        final_keywords = keywords
+
+        return final_keywords[:5]  # Limit to top 5 keywords
     
     def _calculate_topic_relevance(self, title: str, snippet: str, topic_keywords: List[str]) -> float:
         """Calculate how relevant an example is to the user's specific topic."""
@@ -507,91 +531,89 @@ class KnowledgeSynthesisProcessor:
             return [f"Would you like to learn more about {topic}?"]
     
     async def _generate_educational_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
-        """Generate educational-style response."""
+        """Generate contextual, specific educational response based on user's actual question."""
         try:
+            # Extract user's actual question and context
+            user_question = context.get('user_question', topic) if context else topic
+            building_type = context.get('building_type', 'architectural project') if context else 'architectural project'
+            project_context = context.get('project_context', '') if context else ''
+
+            # Create a contextual prompt that works for any architectural question
             prompt = f"""
-            Create an educational response about {topic} in architecture.
-            
-            Knowledge available: {knowledge.get('summary', 'General architectural knowledge')}
-            Context: {context if context else 'General architectural learning'}
-            
-            Structure the response to:
-            1. Introduce the topic clearly
-            2. Explain key concepts
-            3. Provide practical applications
-            4. Include architectural considerations
-            
-            Keep the tone informative but accessible.
+            A student is working on a {building_type} and asked: "{user_question}"
+
+            Their project context: {project_context}
+            Available knowledge: {knowledge.get('summary', 'General architectural knowledge')}
+
+            Provide a specific, helpful response that:
+            1. Directly addresses their question with concrete examples
+            2. Gives practical, actionable guidance for their specific project type
+            3. Includes specific spatial organization strategies
+            4. Mentions real architectural precedents or approaches when relevant
+            5. Provides step-by-step thinking process they can follow
+            6. Avoids generic "Architecture 101" advice
+
+            Be specific to their {building_type} project and give them practical next steps.
             """
-            
+
             response = await self.client.generate_completion([
-                self.client.create_system_message("You are an expert architecture educator."),
+                self.client.create_system_message("You are an expert architecture mentor providing specific, contextual guidance. Avoid generic advice."),
                 self.client.create_user_message(prompt)
             ])
-            
+
             if response and response.get("content"):
-                return response["content"]
-            
-            return f"Educational information about {topic} in architectural design and practice."
-            
+                # Clean any markdown headers that might have been generated
+                clean_response = self._clean_markdown_headers(response["content"])
+                return clean_response
+
+            # Fallback with more specific guidance
+            return f"For your {building_type}, consider how {topic} can be specifically applied to your project context. What are the unique spatial requirements and user needs you're addressing?"
+
         except Exception as e:
             self.telemetry.log_error("_generate_educational_response", str(e))
-            return f"Educational content about {topic} in architecture."
+            return f"Let's explore how {topic} applies specifically to your {building_type if context and context.get('building_type') else 'project'}."
     
     async def _generate_practical_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate practical-focused response."""
-        response = f"Practical Applications of {topic}\n\n"
-        response += f"In architectural practice, {topic} is commonly applied through:\n\n"
-        
-        # Add practical examples
+        response = f"In architectural practice, {topic} is commonly applied through direct implementation in design projects, "
+        response += f"integration with building systems, and coordination with construction processes.\n\n"
+
+        # Add practical examples in paragraph form
         examples = knowledge.get('examples', [])
         if examples:
-            for i, example in enumerate(examples[:3], 1):
-                response += f"{i}. {example}\n"
-        else:
-            response += f"• Direct implementation in design projects\n"
-            response += f"• Integration with building systems\n"
-            response += f"• Coordination with construction processes\n"
-        
-        response += f"\nWhen implementing {topic}, consider practical factors such as budget, timeline, and constructability."
-        
-        return response
+            response += "Key applications include: "
+            response += ", ".join(examples[:3]) + ".\n\n"
+
+        response += f"When implementing {topic}, consider practical factors such as budget, timeline, and constructability."
+
+        return self._clean_markdown_headers(response)
     
     async def _generate_technical_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate technical-focused response."""
-        response = f"Technical Aspects of {topic}\n\n"
-        response += f"From a technical perspective, {topic} involves:\n\n"
-        
-        # Add technical details
+        response = f"From a technical perspective, {topic} involves specification requirements and standards, "
+        response += f"performance criteria and testing, integration with building systems, and code compliance considerations.\n\n"
+
+        # Add technical details in paragraph form
         technical_points = knowledge.get('technical_points', [])
         if technical_points:
-            for point in technical_points[:4]:
-                response += f"• {point}\n"
-        else:
-            response += f"• Specification requirements and standards\n"
-            response += f"• Performance criteria and testing\n"
-            response += f"• Integration with building systems\n"
-            response += f"• Code compliance and safety considerations\n"
-        
-        response += f"\nTechnical implementation of {topic} requires careful coordination with engineering disciplines."
-        
-        return response
+            response += "Key technical aspects include: " + ", ".join(technical_points[:4]) + ".\n\n"
+
+        response += f"Technical implementation of {topic} requires careful coordination with engineering disciplines."
+
+        return self._clean_markdown_headers(response)
     
     async def _generate_balanced_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate balanced response covering multiple aspects."""
-        response = f"{topic} in Architecture\n\n"
-        response += f"{topic} encompasses both design and technical considerations in architectural practice.\n\n"
-        
-        # Add key aspects
-        response += "Key aspects include:\n"
-        response += f"• Design integration and aesthetic considerations\n"
-        response += f"• Technical requirements and performance criteria\n"
-        response += f"• Practical implementation and construction methods\n"
-        response += f"• Code compliance and safety requirements\n\n"
-        
+        response = f"{topic} encompasses both design and technical considerations in architectural practice.\n\n"
+
+        # Add key aspects in paragraph form
+        response += "Key aspects include design integration and aesthetic considerations, "
+        response += "technical requirements and performance criteria, practical implementation and construction methods, "
+        response += "and code compliance and safety requirements.\n\n"
+
         response += f"Successful implementation of {topic} requires balancing creative design with technical feasibility."
-        
-        return response
+
+        return self._clean_markdown_headers(response)
     
     # Helper methods for knowledge processing
     
@@ -767,12 +789,30 @@ class KnowledgeSynthesisProcessor:
         """Validate if response is complete and informative."""
         return len(response) > 100 and '.' in response
     
+    def _clean_markdown_headers(self, text: str) -> str:
+        """Clean markdown headers from text."""
+        import re
+
+        # Remove markdown headers (### or ##)
+        text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+
+        # Remove excessive line breaks
+        text = re.sub(r'\n{3,}', '\n\n', text)
+
+        # Clean up any remaining formatting issues
+        text = text.strip()
+
+        return text
+
     def _finalize_knowledge_response(self, response: str) -> str:
         """Finalize the knowledge response."""
+        # Clean markdown headers first
+        response = self._clean_markdown_headers(response)
+
         # Ensure proper ending
         if not response.endswith(('.', '!', '?')):
             response += "."
-        
+
         return response
     
     def _enhance_incomplete_response(self, response: str, topic: str) -> str:

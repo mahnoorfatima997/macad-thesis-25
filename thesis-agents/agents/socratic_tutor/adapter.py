@@ -140,6 +140,19 @@ class SocraticTutorAgent:
             if not user_input:
                 return await self._generate_fallback_response(state, analysis_result, gap_type)
 
+            # AGENT COORDINATION: Check for other agents' responses to build upon
+            coordination_context = context_classification.get("agent_coordination", {})
+            other_responses = coordination_context.get("other_responses", {})
+
+            if other_responses:
+                print(f"🤝 Coordination: Building Socratic questions upon {list(other_responses.keys())} responses")
+                # Extract domain knowledge to create questions about
+                domain_knowledge = other_responses.get("domain_expert", {}).get("response_text", "")
+                if domain_knowledge:
+                    print(f"   📚 Domain knowledge available: {len(domain_knowledge)} chars")
+                    # Store for use in question generation
+                    context_classification["domain_knowledge_context"] = domain_knowledge[:500]  # First 500 chars
+
             # ENHANCED ROUTE-AWARE RESPONSE GENERATION WITH GAMIFICATION
             if routing_path == "supportive_scaffolding":
                 print(f"   🆘 Using SUPPORTIVE SCAFFOLDING approach")
@@ -229,6 +242,23 @@ class SocraticTutorAgent:
             # Extract topic from user input
             topic = self._extract_main_topic(user_input)
 
+            # Check if visual analysis is available
+            visual_context = ""
+            visual_insights = state.agent_context.get('visual_insights', {})
+            if visual_insights.get('has_visual_analysis'):
+                strengths = visual_insights.get('design_strengths', [])
+                improvements = visual_insights.get('improvement_opportunities', [])
+                elements = visual_insights.get('identified_elements', [])
+
+                visual_context = f"""
+            VISUAL ANALYSIS AVAILABLE:
+            - Design strengths observed: {', '.join(strengths[:3]) if strengths else 'None'}
+            - Areas for improvement: {', '.join(improvements[:3]) if improvements else 'None'}
+            - Elements identified: {', '.join(elements[:4]) if elements else 'None'}
+
+            IMPORTANT: Reference these visual observations in your Socratic questioning. Build upon what you can see in their design.
+            """
+
             # Generate enhanced visual choice prompt for spatial organization
             prompt = f"""
             Create an engaging Socratic exploration response using visual choices for a {building_type} design project.
@@ -236,6 +266,7 @@ class SocraticTutorAgent:
             User's input: "{user_input}"
             Main topic: {topic}
             Building type: {building_type}
+            {visual_context}
 
             SPECIFIC GUIDANCE FOR SPATIAL ORGANIZATION:
             - Focus on spatial relationships, circulation patterns, and functional zones
@@ -671,10 +702,11 @@ class SocraticTutorAgent:
             if domain_expert_result and domain_expert_result.get("response_text", ""):
                 return await self._generate_technical_followup(state, domain_expert_result)
 
-        # ENHANCEMENT: Check for design guidance requests
-        if self._looks_design_guidance(last_message):
-            domain_expert_result = getattr(state, "domain_expert_result", {})
-            return await self._generate_design_guidance_synthesis(state, analysis_result, domain_expert_result)
+        # ENHANCEMENT: Check for design guidance requests - DISABLED to prevent hardcoded fallback override
+        # The hardcoded synthesis was overriding proper LLM responses, so we let the normal flow handle design guidance
+        # if self._looks_design_guidance(last_message):
+        #     domain_expert_result = getattr(state, "domain_expert_result", {})
+        #     return await self._generate_design_guidance_synthesis(state, analysis_result, domain_expert_result)
 
         # Original strategy-based routing
         if strategy == "clarifying_guidance":
@@ -860,7 +892,13 @@ Consider: Who will use this space? What activities need to happen here? What mak
         Get building type from state - NO MORE DETECTION, just retrieval.
         Building type is now centrally managed in conversation_progression.py
         """
-        # PRIORITY 1: Use state.building_type if available
+        # PRIORITY 1: Use conversation continuity context (highest confidence)
+        if hasattr(state, 'student_state') and hasattr(state.student_state, 'conversation_context'):
+            context = state.student_state.conversation_context
+            if context.detected_building_type and context.building_type_confidence > 0.7:
+                return context.detected_building_type
+
+        # PRIORITY 2: Use state.building_type if available
         if hasattr(state, 'building_type') and state.building_type and state.building_type != "unknown":
             return state.building_type
         
@@ -876,7 +914,23 @@ Consider: Who will use this space? What activities need to happen here? What mak
                 building_type = context_analysis['building_type']
                 if building_type != "unknown":
                     return building_type
-        
+
+        # PRIORITY 4: Extract from current_design_brief if available
+        if hasattr(state, 'student_state') and hasattr(state.student_state, 'current_design_brief'):
+            brief = state.student_state.current_design_brief
+            if brief and "community_center" in brief.lower():
+                return "community_center"
+            elif brief and "community center" in brief.lower():
+                return "community_center"
+
+        # PRIORITY 5: Extract from current_design_brief directly on state
+        if hasattr(state, 'current_design_brief') and state.current_design_brief:
+            brief = state.current_design_brief
+            if brief and "community_center" in brief.lower():
+                return "community_center"
+            elif brief and "community center" in brief.lower():
+                return "community_center"
+
         # FALLBACK: Return unknown instead of mixed_use
         return "unknown"
 
@@ -1170,28 +1224,41 @@ Generate a contextual response that builds on their input:
 
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+        # FIXED: Extract the specific topic from the student's message for topic-specific questions
+        topic_keywords = self._extract_topic_keywords(last_message)
+        main_topic = topic_keywords[0] if topic_keywords else "design approach"
+
         prompt = f"""
         You are a distinguished architectural educator using the Socratic method to challenge and deepen student thinking.
 
         STUDENT'S MESSAGE: "{last_message}"
         BUILDING TYPE: {building_type}
+        MAIN TOPIC: {main_topic}
+
+        CRITICAL: Your question must be directly related to the MAIN TOPIC ({main_topic}), not generic architectural concepts.
 
         Craft a complete scholarly response that:
         1. ACKNOWLEDGES THEIR THINKING: Recognize the validity of their approach while identifying areas for deeper consideration
-        2. INTRODUCES COMPLEXITY: Present 2-3 additional factors or constraints they should consider
-        3. PROVIDES THEORETICAL CONTEXT: Reference relevant design principles or architectural theory
-        4. CHALLENGES ASSUMPTIONS: Question underlying assumptions in a constructive way
-        5. OFFERS ALTERNATIVE PERSPECTIVES: Show different ways to approach the same problem
+        2. INTRODUCES COMPLEXITY: Present 2-3 additional factors or constraints they should consider SPECIFICALLY about {main_topic}
+        3. PROVIDES THEORETICAL CONTEXT: Reference relevant design principles or architectural theory RELATED TO {main_topic}
+        4. CHALLENGES ASSUMPTIONS: Question underlying assumptions in a constructive way ABOUT {main_topic}
+        5. OFFERS ALTERNATIVE PERSPECTIVES: Show different ways to approach {main_topic}
         6. ENDS NATURALLY: Conclude with a complete synthesis before asking your question
 
         RESPONSE STRUCTURE:
-        - Acknowledge their approach and its merits
-        - Introduce additional complexity or considerations specific to their building type
-        - Provide theoretical grounding or precedent examples
-        - End with a complete thought that synthesizes the challenges
-        - THEN ask ONE specific, challenging question that requires them to defend or refine their reasoning
+        - Acknowledge their approach and its merits regarding {main_topic}
+        - Introduce additional complexity or considerations specific to {main_topic} in {building_type} projects
+        - Provide theoretical grounding or precedent examples RELATED TO {main_topic}
+        - End with a complete thought that synthesizes the {main_topic} challenges
+        - THEN ask ONE specific, challenging question about {main_topic} that requires them to defend or refine their reasoning
 
-        Write a complete response (200-250 words) that challenges them constructively while providing educational value.
+        EXAMPLES OF TOPIC-SPECIFIC QUESTIONS:
+        - If topic is "circulation": Ask about circulation patterns, wayfinding, flow, movement, accessibility
+        - If topic is "lighting": Ask about natural light, artificial lighting, mood, visibility, energy
+        - If topic is "materials": Ask about material properties, sustainability, aesthetics, durability
+        - If topic is "structure": Ask about structural systems, loads, spans, construction methods
+
+        Write a complete response (200-250 words) that challenges them constructively while providing educational value SPECIFICALLY about {main_topic}.
         """
 
         try:
@@ -1294,19 +1361,38 @@ Generate a contextual response that builds on their input:
             recent_messages = state.messages[-3:]  # Last 3 messages
             recent_context = " | ".join([f"{msg.get('role', 'unknown')}: {msg.get('content', '')[:50]}" for msg in recent_messages])
 
+        # Check if visual analysis is available for fallback questions too
+        visual_context = ""
+        visual_insights = state.agent_context.get('visual_insights', {})
+        if visual_insights.get('has_visual_analysis'):
+            strengths = visual_insights.get('design_strengths', [])
+            improvements = visual_insights.get('improvement_opportunities', [])
+            elements = visual_insights.get('identified_elements', [])
+
+            visual_context = f"""
+        VISUAL ANALYSIS AVAILABLE:
+        - Design strengths: {', '.join(strengths[:2]) if strengths else 'None'}
+        - Improvement areas: {', '.join(improvements[:2]) if improvements else 'None'}
+        - Elements seen: {', '.join(elements[:3]) if elements else 'None'}
+
+        Reference these visual observations in your question.
+        """
+
         prompt = f"""
         You are a Socratic tutor helping an architecture student. The LLM generation failed, so you need to create a thoughtful fallback question.
 
         STUDENT'S INPUT: "{user_input}"
         BUILDING TYPE: {building_type}
         RECENT CONTEXT: {recent_context}
+        {visual_context}
 
         Generate a thoughtful Socratic question that:
         1. Directly relates to their specific input and building type
         2. Encourages deeper thinking about their design challenge
         3. Builds on the conversation context if available
-        4. Avoids generic templates - be specific to their situation
-        5. Helps them explore the implications or considerations they might have missed
+        4. References any visual elements they've shared (if visual analysis is available)
+        5. Avoids generic templates - be specific to their situation
+        6. Helps them explore the implications or considerations they might have missed
 
         Keep it under 50 words and make it genuinely helpful for their specific situation.
         """
@@ -1415,14 +1501,38 @@ Generate a contextual response that builds on their input:
         # Use phase-based approach if we have design focus OR a design brief (not both required)
         return (has_design_brief or design_focused) and sufficient_conversation
 
-    def _generate_phase_based_response(self, state: ArchMentorState, context_classification: Dict,
+    async def _generate_phase_based_response(self, state: ArchMentorState, context_classification: Dict,
                                            analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
         """Generate response using phase-based Socratic assessment."""
 
-        # Detect current phase and step
-        if not self.phase_manager:
-            raise ValueError("Phase manager not available")
-        current_phase, current_step = self.phase_manager.detect_current_phase(state)
+        # ENHANCED: Use phase info from orchestrator if available, otherwise detect
+        if hasattr(state, 'phase_info') and state.phase_info:
+            # Use phase information from dashboard's phase progression system
+            dashboard_phase_info = state.phase_info
+            current_phase_name = dashboard_phase_info.get("current_phase", "ideation")
+            current_step_name = dashboard_phase_info.get("step", "initial_context_reasoning")
+
+            # Convert string names to enum values
+            try:
+                current_phase = DesignPhase(current_phase_name)
+                current_step = SocraticStep(current_step_name)
+                print(f"🎯 SOCRATIC: Using dashboard phase info: {current_phase_name} - {current_step_name}")
+            except (ValueError, NameError):
+                # Fallback if enum conversion fails or enums not available
+                current_phase = DesignPhase.IDEATION if 'DesignPhase' in globals() else None
+                current_step = SocraticStep.INITIAL_CONTEXT_REASONING if 'SocraticStep' in globals() else None
+                if current_phase is None or current_step is None:
+                    # If enums not available, use fallback detection
+                    if not self.phase_manager:
+                        raise ValueError("Phase manager not available")
+                    current_phase, current_step = self.phase_manager.detect_current_phase(state)
+                print(f"⚠️ SOCRATIC: Failed to convert phase info, using fallback")
+        else:
+            # Fallback to phase detection if no dashboard info available
+            if not self.phase_manager:
+                raise ValueError("Phase manager not available")
+            current_phase, current_step = self.phase_manager.detect_current_phase(state)
+            print(f"🔍 SOCRATIC: Using phase detection: {current_phase.value} - {current_step.value}")
 
         # Extract building type
         building_type = self._extract_building_type_from_context(state)
@@ -1753,11 +1863,36 @@ Generate a comprehensive answer (3-4 sentences):
             print(f"🔍 DEBUG: AI generation failed in knowledge-only: {e}")
             return self._generate_fallback_knowledge_response(user_input, building_type)
     
-    def _generate_fallback_knowledge_response(self, user_input: str, building_type: str) -> Dict[str, Any]:
+    async def _generate_fallback_knowledge_response(self, user_input: str, building_type: str) -> Dict[str, Any]:
         """Generate fallback knowledge response when LLM fails."""
-        
+
+        # Generate LLM fallback response instead of hardcoded text
+        try:
+            fallback_prompt = f"""
+            The user is asking about their {building_type} project: "{user_input}"
+            Generate a helpful Socratic response that:
+            1. Acknowledges their question about architectural concepts
+            2. Asks a thought-provoking follow-up question to guide their thinking
+            3. Avoids generic phrases like "I'd be happy to help"
+            4. Sounds natural and educational, not templated
+
+            Keep it concise (1-2 sentences) and focus on guiding their architectural thinking.
+            """
+
+            fallback_response = await self.client.generate_completion([
+                self.client.create_system_message("You are a Socratic architecture tutor who guides students through thoughtful questions."),
+                self.client.create_user_message(fallback_prompt)
+            ])
+
+            response_text = fallback_response.strip() if fallback_response else f"What specific aspect of your {building_type} design are you most curious about exploring further?"
+
+        except Exception as fallback_error:
+            print(f"⚠️ Fallback response generation failed: {fallback_error}")
+            # Last resort - simple contextual response without hardcoded phrases
+            response_text = f"What specific aspect of your {building_type} design are you most curious about exploring further?"
+
         return {
-            "response_text": f"I'd be happy to help you with your {building_type} project. Your question touches on important architectural concepts. Let me provide you with some key information that should help clarify things for you.",
+            "response_text": response_text,
             "response_type": "knowledge_only",
             "response_strategy": "fallback_knowledge",
             "educational_intent": "Provide basic knowledge guidance",
@@ -1806,16 +1941,37 @@ Generate a comprehensive answer (3-4 sentences):
             building_type = self._extract_building_type_from_context(state)
             user_input = context_classification.get("user_input", "")
             
+            # Get comprehensive context for better responses
+            design_brief = getattr(state, 'current_design_brief', '') or ''
+
+            # Get full conversation context to understand references
+            all_messages = [msg['content'] for msg in state.messages if msg.get('role') in ['user', 'assistant']]
+            conversation_context = ' | '.join(all_messages[-8:]) if all_messages else ''
+
+            # Extract key project details from conversation history
+            project_details = self._extract_project_details_from_conversation(state)
+
             # Generate contextual guidance using LLM
             prompt = f"""
-            You are an architectural mentor helping with a {building_type} project. The user is asking for guidance on: "{user_input}"
+            You are an architectural mentor helping with a {building_type} project.
+
+            PROJECT CONTEXT: {design_brief}
+            PROJECT DETAILS FROM CONVERSATION: {project_details}
+            RECENT CONVERSATION: {conversation_context}
+            CURRENT USER REQUEST: "{user_input}"
+
+            IMPORTANT: The user's current message may refer to previous conversation context.
+            Look for references like "this", "that", "it", "forgot about" that connect to earlier discussion.
+            If the user mentions something was "forgotten", identify what specific aspect from the conversation history they're referring to.
 
             Provide a BALANCED response that includes:
-            1. HELPFUL GUIDANCE: Give specific, actionable advice and suggestions
-            2. GENTLE EXPLORATION: Ask ONE thoughtful question that builds on your guidance
-            3. ENCOURAGEMENT: Support their design thinking process
+            1. HELPFUL GUIDANCE: Give specific, actionable advice related to their {building_type} project
+            2. CONTEXTUAL RELEVANCE: Reference their specific project context and previous discussion
+            3. GENTLE EXPLORATION: Ask ONE thoughtful question that builds on your guidance
+            4. ENCOURAGEMENT: Support their design thinking process
 
             Focus on being helpful and practical while encouraging their own thinking.
+            Make sure your response is specific to their {building_type} project, not generic.
             Keep the response conversational and supportive.
             """
             
@@ -1904,224 +2060,84 @@ Generate a comprehensive answer (3-4 sentences):
             "cognitive_flags": ["continued_engagement"]
         }
 
-    # ENHANCEMENT: Technical followup generation ported from FROMOLDREPO
-    async def _generate_technical_followup(self, state: ArchMentorState, domain_expert_result: Dict[str, Any]) -> Dict[str, Any]:
-        """Produce 1–2 concise application probes referencing DomainExpert key points.
+    def _extract_project_details_from_conversation(self, state: ArchMentorState) -> str:
+        """Extract key project details from conversation history to understand context."""
+        try:
+            all_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+            conversation_text = ' '.join(all_messages).lower()
 
-        Ported from FROMOLDREPO lines 640-672.
-        """
-        building_type = self._extract_building_type_from_context(state)
-        last_message = ""
-        for msg in reversed(state.messages):
-            if msg.get('role') == 'user':
-                last_message = msg['content']
-                break
+            details = []
 
-        # Try to extract short labels from DomainExpert response
-        text = (domain_expert_result or {}).get("response_text", "").strip()
-        labels = []
-        if text:
-            import re
-            bullets = re.findall(r"^\s*[-•]\s*(.+)$", text, flags=re.MULTILINE)
-            for b in bullets[:3]:
-                # Use first 4 words as a short label
-                words = b.split()
-                labels.append(" ".join(words[:4]))
+            # Check conversation context first for project details
+            if hasattr(state, 'conversation_context'):
+                ctx = state.conversation_context
+                if ctx.project_type:
+                    details.append(f"{ctx.project_type} project")
+                if ctx.existing_building_type and ctx.target_building_type:
+                    details.append(f"converting {ctx.existing_building_type} to {ctx.target_building_type}")
+                elif ctx.existing_building_type:
+                    details.append(f"existing {ctx.existing_building_type} building")
+                elif ctx.target_building_type:
+                    details.append(f"{ctx.target_building_type} program")
+                if ctx.project_details:
+                    details.extend(ctx.project_details)
 
-        topic = self._extract_main_topic(last_message) if last_message else "your focus"
-        if not labels:
-            labels = [f"{topic} detail", f"{topic} compliance"]
+            # Fallback to text analysis if no conversation context
+            if not details:
+                # Check for building types and project types
+                if 'warehouse' in conversation_text:
+                    details.append("existing warehouse building")
+                if 'adaptive reuse' in conversation_text or 'conversion' in conversation_text:
+                    details.append("adaptive reuse project")
+                if 'community center' in conversation_text:
+                    details.append("community center program")
+                if 'elder' in conversation_text or 'senior' in conversation_text:
+                    details.append("serving elder/senior population")
+                if 'construction' in conversation_text:
+                    details.append("construction approach considerations")
 
-        q1 = f"Given {labels[0]}, where in your {building_type} does this most affect the layout or user flow?"
-        q2 = f"How will you verify {labels[1]} meets your project's constraints?"
+            # Check for specific architectural elements mentioned
+            if 'circulation' in conversation_text:
+                details.append("circulation design")
+            if 'material' in conversation_text:
+                details.append("material considerations")
+            if 'structure' in conversation_text:
+                details.append("structural considerations")
 
-        response_text = f"Apply these points in context:\n{q1}\n{q2}"
+            return '; '.join(details) if details else "general architectural project"
 
-        return {
-            "response_text": response_text,
-            "response_type": "technical_followup",
+        except Exception as e:
+            print(f"⚠️ Error extracting project details: {e}")
+            return "architectural project"
+
+    def _extract_topic_keywords(self, message: str) -> List[str]:
+        """Extract key architectural topics from the message for topic-specific questions."""
+        message_lower = message.lower()
+
+        # Define topic keywords in order of specificity
+        topic_keywords = {
+            "circulation": ["circulation", "movement", "flow", "wayfinding", "pathways", "corridors"],
+            "lighting": ["lighting", "light", "illumination", "daylight", "natural light", "artificial light"],
+            "materials": ["materials", "material", "finishes", "surfaces", "textures", "cladding"],
+            "structure": ["structure", "structural", "frame", "columns", "beams", "foundation"],
+            "acoustics": ["acoustics", "sound", "noise", "acoustic", "reverberation"],
+            "sustainability": ["sustainable", "sustainability", "green", "energy", "environmental"],
+            "accessibility": ["accessibility", "accessible", "ada", "universal design", "barrier-free"],
+            "programming": ["program", "programming", "functions", "activities", "uses"],
+            "spatial organization": ["spatial", "organization", "layout", "arrangement", "zoning"],
+            "facade": ["facade", "exterior", "envelope", "skin", "cladding"],
+            "landscape": ["landscape", "outdoor", "garden", "courtyard", "plaza"],
+            "technology": ["technology", "smart", "digital", "systems", "automation"]
         }
 
-    async def _generate_design_guidance_synthesis(self, state: ArchMentorState, analysis_result: Dict[str, Any], domain_expert_result: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate design guidance synthesis with Insight/Direction/Watch format.
+        # Find matching topics
+        found_topics = []
+        for topic, keywords in topic_keywords.items():
+            if any(keyword in message_lower for keyword in keywords):
+                found_topics.append(topic)
 
-        Ported from FROMOLDREPO lines 673-715.
-        """
-        building_type = self._extract_building_type_from_context(state)
-        last_message = ""
-        for msg in reversed(state.messages):
-            if msg.get('role') == 'user':
-                last_message = msg['content']
-                break
-
-        topic = self._extract_main_topic(last_message) if last_message else "design approach"
-
-        items = []
-
-        # Insight from domain expert or analysis - ENHANCED: Use multiple sentences
-        domain_text = (domain_expert_result or {}).get("response_text", "")
-        if domain_text:
-            # Extract first 2-3 meaningful sentences for richer insight
-            sentences = [s.strip() for s in domain_text.split('.') if s.strip()]
-            if len(sentences) >= 3:
-                insight = '. '.join(sentences[:3]) + '.'
-            elif len(sentences) >= 2:
-                insight = '. '.join(sentences[:2]) + '.'
-            elif sentences:
-                insight = sentences[0] + '.'
-            else:
-                insight = domain_text[:200]
-
-            # Limit length but preserve complete sentences
-            if len(insight) > 600:
-                insight = insight[:600].rstrip()
-                last_period = insight.rfind('.')
-                if last_period > 400:  # Keep if we have substantial content
-                    insight = insight[:last_period + 1]
-
-            items.append(f"- Insight: {insight}")
-
-        # Direction question
-        direction_q = f"Which approach to {topic} best supports your {building_type} goals?"
-        items.append(f"- Direction: {direction_q}")
-
-        # Watch line
-        watch_line = f"- Watch: Check implications for circulation/daylight/acoustics."
-        items.append(watch_line)
-
-        header = "Synthesis:"
-        next_probe = "Next: test one concrete change and tell me what you notice. What will you try first?"
-        response_text = header + "\n" + "\n".join(items) + "\n\n" + next_probe
-
-        return {
-            "response_text": response_text,
-            "response_type": "design_guidance",
-        }
-
-    def _extract_main_topic(self, text: str) -> str:
-        """Extract main topic from user text."""
-        if not text:
-            return "design"
-
-        # Simple keyword extraction
-        keywords = ["circulation", "lighting", "structure", "materials", "layout", "space", "design"]
-        text_lower = text.lower()
-
-        for keyword in keywords:
-            if keyword in text_lower:
-                return keyword
-
-        return "design approach"
-
-    def _extract_building_type_from_context(self, state: ArchMentorState) -> str:
-        """Extract building type from conversation context."""
-        # Comprehensive building type detection patterns
-        building_patterns = {
-            # Residential
-            "residential": ["house", "home", "residential", "housing", "apartment", "condo", "condominium", 
-                          "bungalow", "cottage", "mansion", "villa", "townhouse", "duplex", "triplex", 
-                          "penthouse", "loft", "studio", "dormitory", "dorm", "residence", "living space"],
-            
-            # Commercial/Retail
-            "commercial": ["retail", "commercial", "shop", "store", "mall", "shopping center", "market", 
-                          "boutique", "showroom", "supermarket", "hypermarket", "department store", 
-                          "convenience store", "pharmacy", "bank", "financial", "office", "corporate"],
-            
-            # Office/Workplace
-            "office": ["office", "workplace", "corporate", "business", "company", "headquarters", "hq", 
-                      "workspace", "coworking", "co-working", "startup", "tech", "consulting", "law firm"],
-            
-            # Educational
-            "educational": ["school", "education", "university", "college", "academy", "institute", "campus", 
-                           "classroom", "lecture hall", "library", "research", "training", "learning center", 
-                           "kindergarten", "preschool", "elementary", "middle school", "high school"],
-            
-            # Cultural/Arts
-            "cultural": ["museum", "gallery", "art", "cultural center", "theater", "theatre", "cinema", 
-                        "concert hall", "auditorium", "exhibition", "performance", "arts center", 
-                        "cultural hub", "creative space", "studio space"],
-            
-            # Healthcare
-            "healthcare": ["hospital", "clinic", "medical", "healthcare", "health center", "dental", 
-                          "pharmacy", "laboratory", "lab", "rehabilitation", "wellness", "fitness", "gym"],
-            
-            # Hospitality
-            "hospitality": ["hotel", "resort", "inn", "motel", "hostel", "guesthouse", "bed and breakfast", 
-                           "bnb", "lodge", "cabin", "restaurant", "cafe", "bar", "pub", "club", "lounge"],
-            
-            # Industrial
-            "industrial": ["factory", "warehouse", "industrial", "manufacturing", "production", "storage", 
-                          "distribution", "logistics", "workshop", "plant", "facility", "mill", "refinery"],
-            
-            # Transportation
-            "transportation": ["airport", "train station", "bus station", "terminal", "transport hub", 
-                             "parking", "garage", "depot", "hangar", "port", "marina", "dock"],
-            
-            # Religious
-            "religious": ["church", "temple", "mosque", "synagogue", "chapel", "cathedral", "basilica", 
-                         "shrine", "monastery", "convent", "religious center", "worship", "prayer"],
-            
-            # Civic/Government
-            "civic": ["government", "city hall", "courthouse", "police", "fire station", "post office", 
-                     "community center", "civic center", "town hall", "municipal", "public building"],
-            
-            # Sports/Recreation
-            "sports": ["stadium", "arena", "gymnasium", "sports center", "fitness", "recreation", 
-                      "swimming pool", "tennis court", "golf course", "park", "playground", "athletic"],
-            
-            # Mixed-Use
-            "mixed_use": ["mixed use", "mixed-use", "multi-use", "multi use", "integrated", "combined", 
-                          "hybrid", "versatile", "adaptive", "flexible space"]
-        }
-        
-        # Check current design brief
-        if hasattr(state, 'current_design_brief') and state.current_design_brief:
-            brief_lower = state.current_design_brief.lower()
-            for building_type, patterns in building_patterns.items():
-                if any(pattern in brief_lower for pattern in patterns):
-                    return building_type.replace("_", " ")
-
-        # Check messages for building type mentions
-        for msg in state.messages:
-            if msg.get('role') == 'user':
-                msg_lower = msg.get('content', '').lower()
-                for building_type, patterns in building_patterns.items():
-                    if any(pattern in msg_lower for pattern in patterns):
-                        return building_type.replace("_", " ")
-
-        # Check for specific architectural terms that might indicate building type
-        architectural_terms = {
-            "skyscraper": "tower",
-            "high-rise": "tower", 
-            "low-rise": "low-rise building",
-            "underground": "underground facility",
-            "floating": "floating structure",
-            "modular": "modular building",
-            "prefabricated": "prefabricated building",
-            "sustainable": "sustainable building",
-            "green": "green building",
-            "smart": "smart building",
-            "historic": "historic building",
-            "modern": "modern building",
-            "contemporary": "contemporary building",
-            "traditional": "traditional building"
-        }
-        
-        # Check design brief and messages for architectural terms
-        if hasattr(state, 'current_design_brief') and state.current_design_brief:
-            brief_lower = state.current_design_brief.lower()
-            for term, building_type in architectural_terms.items():
-                if term in brief_lower:
-                    return building_type
-                    
-        for msg in state.messages:
-            if msg.get('role') == 'user':
-                msg_lower = msg.get('content', '').lower()
-                for term, building_type in architectural_terms.items():
-                    if term in msg_lower:
-                        return building_type
-
-        return "building project"
+        # Return most specific topics first, or default to "design approach"
+        return found_topics if found_topics else ["design approach"]
 
     # Cleanup
     def __del__(self) -> None:

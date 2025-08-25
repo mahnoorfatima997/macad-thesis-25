@@ -26,7 +26,98 @@ class ChallengeGeneratorProcessor:
         self.telemetry.log_agent_start("select_enhancement_strategy")
         
         try:
-            # Strategy selection based on cognitive state
+            # CRITICAL FIX: Check for specific gamification triggers first to get correct game types
+            if state:
+                user_message = self._get_latest_user_message(state).lower().strip()
+
+                # Map specific trigger patterns to strategies for correct game types
+                # PRIORITY 1: Perspective shift triggers (most specific first)
+                if any(pattern in user_message for pattern in [
+                    'i wonder what would happen', 'wonder what would happen', 'what if i', 'what would happen if',
+                    'alternative', 'different angle', 'other way', 'different approach'
+                ]):
+                    print(f"🎮 STRATEGY: Alternative trigger detected → stimulate_curiosity → alternative_challenge → perspective_shift")
+                    return "stimulate_curiosity"  # → alternative_challenge → perspective_shift
+
+                # PRIORITY 2: Detective/mystery triggers
+                elif any(pattern in user_message for pattern in [
+                    'users seem to avoid', 'people avoid', 'users don\'t use', 'people don\'t use',
+                    'feels uncomfortable but', 'feels unwelcoming but', 'don\'t know why',
+                    'can\'t identify', 'can\'t pinpoint', 'bottlenecks but', 'investigate', 'analyze why'
+                ]):
+                    print(f"🎮 STRATEGY: Detective trigger detected → challenge_assumptions → metacognitive_challenge → detective")
+                    return "challenge_assumptions"  # → metacognitive_challenge → detective
+
+                # PRIORITY 3: Constraint triggers (enhanced patterns)
+                elif any(pattern in user_message for pattern in [
+                    'stuck', 'completely stuck', 'totally stuck', 'really stuck',
+                    'need fresh ideas', 'need creative ideas', 'need new ideas', 'fresh ideas',
+                    'constraint', 'limited', 'having trouble', 'struggling with'
+                ]):
+                    print(f"🎮 STRATEGY: Constraint trigger detected → increase_challenge → constraint_challenge → constraint")
+                    return "increase_challenge"  # → constraint_challenge → constraint
+
+                # PRIORITY 4: Transformation triggers
+                elif any(pattern in user_message for pattern in [
+                    'convert', 'converting', 'transform', 'transforming', 'adapt', 'adapting',
+                    'repurpose', 'repurposing', 'change the use', 'flexible use', 'multi-use',
+                    'warehouse to', 'factory to', 'office to', 'adaptive reuse'
+                ]):
+                    print(f"🎮 STRATEGY: Transformation trigger detected → transformation_design → space_transformation → transformation")
+                    return "transformation_design"  # → space_transformation → transformation
+
+                # PRIORITY 5: Storytelling triggers
+                elif any(pattern in user_message for pattern in [
+                    'user journey', 'user experience', 'journey through', 'story of',
+                    'narrative', 'sequence of spaces', 'progression through', 'flow of movement',
+                    'experience as they move', 'path through', 'spatial story'
+                ]):
+                    print(f"🎮 STRATEGY: Storytelling trigger detected → spatial_storytelling → spatial_storytelling → storytelling")
+                    return "spatial_storytelling"  # → spatial_storytelling → storytelling
+
+                # PRIORITY 6: Time travel triggers
+                elif any(pattern in user_message for pattern in [
+                    'over time', 'through time', 'years from now', 'in the future',
+                    'decades', 'generations', 'evolve', 'evolution', 'lifecycle',
+                    'aging', 'changing needs', 'future use', 'long-term'
+                ]):
+                    print(f"🎮 STRATEGY: Time travel trigger detected → temporal_exploration → time_travel_challenge → time_travel")
+                    return "temporal_exploration"  # → time_travel_challenge → time_travel
+
+                # PRIORITY 7: Role-play triggers (more specific patterns)
+                elif any(pattern in user_message for pattern in [
+                    'how would a', 'what would a', 'how would an', 'what would an',
+                    'how would someone', 'what would someone', 'how would they feel', 'what would they think',
+                    'visitor feel', 'user feel', 'person experience', 'elderly person', 'child feel'
+                ]):
+                    print(f"🎮 STRATEGY: Role-play trigger detected → increase_engagement → perspective_challenge → role_play")
+                    return "increase_engagement"  # → perspective_challenge → role_play
+
+            # FIXED: Add missing strategy detection based on trigger patterns
+            if state:
+                user_message = self._get_latest_user_message(state).lower().strip()
+
+                # Check for storytelling patterns
+                storytelling_patterns = ['tell me a story', 'story about', 'narrative', 'imagine a story']
+                if any(pattern in user_message for pattern in storytelling_patterns):
+                    return "spatial_storytelling"
+
+                # Check for time travel patterns
+                time_travel_patterns = ['time travel', 'different era', 'future', 'past', 'over time', 'through time']
+                if any(pattern in user_message for pattern in time_travel_patterns):
+                    return "temporal_exploration"
+
+                # Check for transformation patterns
+                transformation_patterns = ['transform', 'adapt', 'change', 'evolve', 'different uses']
+                if any(pattern in user_message for pattern in transformation_patterns):
+                    return "transformation_design"
+
+                # Check for creative constraint patterns
+                constraint_patterns = ['stuck', 'struggling', 'need inspiration', 'creative', 'ideas']
+                if any(pattern in user_message for pattern in constraint_patterns):
+                    return "creative_constraint_challenge"
+
+            # Fallback to cognitive state-based selection
             if cognitive_state.get("overconfidence_level") == "high":
                 return "challenge_assumptions"
             elif cognitive_state.get("passivity_level") == "high":
@@ -58,7 +149,13 @@ class ChallengeGeneratorProcessor:
                 "promote_reflection": ("metacognitive_challenge", "process_reflection"),
                 "increase_challenge": ("constraint_challenge", "spatial"),
                 "stimulate_curiosity": ("alternative_challenge", "structural"),
-                "balanced_development": ("perspective_challenge", "temporal_perspective")
+                "balanced_development": ("perspective_challenge", "temporal_perspective"),
+                # FIXED: Add missing creative constraint mapping
+                "creative_constraint_challenge": ("constraint_challenge", "structural"),
+                # NEW: Additional game types
+                "spatial_storytelling": ("spatial_storytelling", "narrative"),
+                "temporal_exploration": ("time_travel_challenge", "temporal"),
+                "transformation_design": ("space_transformation", "adaptive")
             }
             
             challenge_type, subtype = challenge_mapping.get(strategy, ("constraint_challenge", "functional"))
@@ -72,6 +169,13 @@ class ChallengeGeneratorProcessor:
                 challenge_result = await self._generate_alternative_challenge(cognitive_state, state, analysis_result, subtype)
             elif challenge_type == "metacognitive_challenge":
                 challenge_result = await self._generate_metacognitive_challenge(cognitive_state, state, analysis_result, subtype)
+            # NEW: Additional game types
+            elif challenge_type == "spatial_storytelling":
+                challenge_result = await self._generate_storytelling_challenge(cognitive_state, state, analysis_result, subtype)
+            elif challenge_type == "time_travel_challenge":
+                challenge_result = await self._generate_time_travel_challenge(cognitive_state, state, analysis_result, subtype)
+            elif challenge_type == "space_transformation":
+                challenge_result = await self._generate_transformation_challenge(cognitive_state, state, analysis_result, subtype)
             else:
                 challenge_result = await self._generate_general_challenge(cognitive_state, state, analysis_result)
             
@@ -94,25 +198,58 @@ class ChallengeGeneratorProcessor:
     async def _generate_constraint_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, constraint_type: str = "spatial") -> Dict[str, Any]:
         """Generate constraint-based cognitive challenge."""
         self.telemetry.log_agent_start("_generate_constraint_challenge")
-        
+
         try:
-            # Get challenge templates for constraint type
-            challenges = CHALLENGE_TEMPLATES.get("constraint_challenge", {}).get(constraint_type, [])
-            if not challenges:
-                challenges = ["How would your design change under different constraints?"]
-            
-            base_challenge = random.choice(challenges)
-            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "constraint_challenge", constraint_type)
-            
-            return {
-                "challenge_text": contextualized_challenge,
-                "challenge_type": "constraint_challenge",
-                "constraint_type": constraint_type,
-                "pedagogical_intent": "Challenge design assumptions through constraint exploration",
-                "cognitive_target": "flexibility_and_adaptation",
-                "expected_outcome": "Increased design flexibility and creative problem-solving"
-            }
-            
+            # Check if gamification should be applied
+            should_gamify = self._should_apply_gamification(state, constraint_type, "constraint_challenge")
+
+            if should_gamify:
+                # Extract context-aware information
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+                context_data = self._extract_challenge_context(user_message, building_type, "constraint")
+
+                # FIXED: Generate proper constraint challenge instead of echoing user input
+                if "structural" in user_message.lower() or constraint_type == "structural":
+                    challenge_text = f"Given the tight site constraints of your {building_type} project, explore how different structural systems (e.g., steel frame, timber, or concrete) impact the interior space organization. Consider how each system might influence spatial flexibility, ceiling heights, and natural light penetration. Create a layout for each scenario, focusing on how structural elements like columns or load-bearing walls affect the flow and usability of spaces. How do these structural choices align with your design goals for community interaction and accessibility within the limited site footprint?"
+                elif "spatial" in user_message.lower() or constraint_type == "spatial":
+                    challenge_text = f"Your {building_type} has a challenging irregular site boundary. Design three different spatial configurations that maximize usable area while maintaining code compliance. Consider how circulation, natural lighting, and programmatic adjacencies change with each approach. Which configuration best supports the intended community activities while addressing the site constraints?"
+                else:
+                    challenge_text = f"Working within budget and zoning constraints for your {building_type}, explore how material choices impact both design expression and functional performance. Compare three different material strategies and their implications for maintenance, sustainability, and user experience."
+
+                return {
+                    "challenge_text": challenge_text,
+                    "challenge_type": "constraint_challenge",
+                    "constraint_type": constraint_type,
+                    "building_type": building_type,
+                    "specific_constraint": context_data.get("specific_constraint", "design challenge"),
+                    "context_keywords": context_data.get("keywords", []),
+                    "challenge_focus": context_data.get("focus_area", "spatial design"),
+                    "specific_elements": context_data.get("specific_elements", []),
+                    "pedagogical_intent": f"Overcome {context_data.get('specific_constraint', 'design constraints')} through creative problem-solving",
+                    "cognitive_target": "constraint_resolution",
+                    "expected_outcome": f"Enhanced problem-solving for {context_data.get('focus_area', 'design challenges')}",
+                    "gamification_applied": True
+                }
+            else:
+                # Use traditional challenge generation
+                challenges = CHALLENGE_TEMPLATES.get("constraint_challenge", {}).get(constraint_type, [])
+                if not challenges:
+                    challenges = ["How would your design change under different constraints?"]
+
+                base_challenge = random.choice(challenges)
+                contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "constraint_challenge", constraint_type)
+
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "constraint_challenge",
+                    "constraint_type": constraint_type,
+                    "pedagogical_intent": "Challenge design assumptions through constraint exploration",
+                    "cognitive_target": "flexibility_and_adaptation",
+                    "expected_outcome": "Increased design flexibility and creative problem-solving",
+                    "gamification_applied": False
+                }
+
         except Exception as e:
             self.telemetry.log_error("_generate_constraint_challenge", str(e))
             return {
@@ -120,7 +257,8 @@ class ChallengeGeneratorProcessor:
                 "challenge_type": "constraint_challenge",
                 "constraint_type": constraint_type,
                 "pedagogical_intent": "Encourage adaptive thinking",
-                "cognitive_target": "flexibility"
+                "cognitive_target": "flexibility",
+                "gamification_applied": False
             }
     
     async def _generate_perspective_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, perspective_type: str = "user_perspective") -> Dict[str, Any]:
@@ -136,14 +274,34 @@ class ChallengeGeneratorProcessor:
             base_challenge = random.choice(challenges)
             contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "perspective_challenge", perspective_type)
             
-            return {
-                "challenge_text": contextualized_challenge,
-                "challenge_type": "perspective_challenge",
-                "perspective_type": perspective_type,
-                "pedagogical_intent": "Expand perspective and empathy in design thinking",
-                "cognitive_target": "perspective_taking",
-                "expected_outcome": "Enhanced empathy and user-centered design thinking"
-            }
+            # SMART GAMIFICATION: Only apply gamification when appropriate
+            should_gamify = self._should_apply_gamification(state, perspective_type, "perspective_challenge")
+
+            if should_gamify:
+                # Pass the original user message for flexible content generation
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+                return {
+                    "challenge_text": user_message,  # Pass original message for flexible generation
+                    "challenge_type": "perspective_challenge",
+                    "perspective_type": perspective_type,
+                    "building_type": building_type,
+                    "pedagogical_intent": "Expand perspective and empathy in design thinking",
+                    "cognitive_target": "perspective_taking",
+                    "expected_outcome": "Enhanced empathy and user-centered design thinking",
+                    "gamification_applied": True
+                }
+            else:
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "perspective_challenge",
+                    "perspective_type": perspective_type,
+                    "pedagogical_intent": "Expand perspective and empathy in design thinking",
+                    "cognitive_target": "perspective_taking",
+                    "expected_outcome": "Enhanced empathy and user-centered design thinking",
+                    "gamification_applied": False
+                }
             
         except Exception as e:
             self.telemetry.log_error("_generate_perspective_challenge", str(e))
@@ -154,29 +312,281 @@ class ChallengeGeneratorProcessor:
                 "pedagogical_intent": "Encourage empathetic design thinking",
                 "cognitive_target": "empathy"
             }
+
+    # Removed old hardcoded gamification method - now using flexible content generation system
+
+    def _get_latest_user_message(self, state: ArchMentorState) -> str:
+        """Get the latest user message from conversation history."""
+        try:
+            messages = getattr(state, 'messages', [])
+            user_messages = [msg for msg in messages if msg.get('role') == 'user']
+            if user_messages:
+                return user_messages[-1].get('content', '').strip()
+            return "How would different users experience this space?"
+        except Exception:
+            return "How would different users experience this space?"
+
+    def _should_apply_gamification(self, state: ArchMentorState, challenge_type: str, context: str) -> bool:
+        """
+        Smart gamification trigger with frequency control (1 game every 4 messages).
+
+        Gamification should ONLY be applied for specific trigger patterns:
+        - Role-play questions (How would a visitor feel...)
+        - Perspective questions (What would an elderly person think...)
+        - Curiosity amplification (I wonder what would happen...)
+        - Creative constraints (I'm stuck on...)
+        - Reality checks (This seems pretty easy...)
+        - Low engagement (Ok, Yes, Sure...)
+        - Overconfidence (I already know exactly what to do...)
+        - Cognitive offloading (Just tell me what to do...)
+
+        FREQUENCY CONTROL: Only trigger every 4 messages (20% rate)
+        """
+        try:
+            # Get conversation history
+            messages = getattr(state, 'messages', [])
+            user_messages = [msg for msg in messages if msg.get('role') == 'user']
+
+            if len(user_messages) == 0:
+                return False
+
+            latest_message = user_messages[-1].get('content', '').lower().strip()
+
+            # Check for strong triggers that should override frequency control
+            strong_trigger_patterns = [
+                'i\'m stuck on', 'stuck on', 'completely stuck', 'really stuck', 'totally stuck',
+                # FIXED: Add inspiration patterns to strong triggers
+                'need inspiration', 'inspiration for', 'inspire me', 'creative ideas', 'need ideas',
+                'convert', 'converting', 'transform', 'transforming', 'warehouse to', 'adaptive reuse',
+                'user journey', 'journey through', 'story of', 'narrative',
+                'over time', 'through time', 'evolve', 'evolution', 'future'
+            ]
+
+            has_strong_trigger = any(pattern in latest_message for pattern in strong_trigger_patterns)
+
+            # FIXED: FREQUENCY CONTROL: Apply gamification every 3 messages (2 message break) - BUT allow strong triggers to override
+            total_user_messages = len(user_messages)
+            print(f"🎮 FREQUENCY DEBUG: Message {total_user_messages}, has_strong_trigger: {has_strong_trigger}")
+            if not has_strong_trigger and total_user_messages % 3 != 0:
+                print(f"🎮 FREQUENCY CONTROL: Skipping gamification (message {total_user_messages}, next at {((total_user_messages // 3) + 1) * 3})")
+                return False
+            elif has_strong_trigger and total_user_messages % 3 != 0:
+                print(f"🎮 FREQUENCY OVERRIDE: Strong trigger '{latest_message[:50]}...' detected, overriding frequency control")
+            print(f"🎮 FREQUENCY CONTROL: Allowing gamification for message {total_user_messages}")
+
+            # 1. ROLE-PLAY TRIGGERS - FIXED: More specific patterns to avoid false positives
+            role_play_patterns = [
+                # Specific role-play questions about feelings/experiences
+                'how would a visitor feel', 'how would a user feel', 'how would someone feel',
+                'how would they feel', 'what would a visitor think', 'what would a user think',
+                'how do users feel', 'what would an elderly person', 'what would a child',
+                'how would an elderly', 'how would a child', 'how would an adult',
+                # Specific feeling/experience patterns (more precise)
+                'feel in this space', 'feel when they enter', 'feel in the space', 'experience in this',
+                'member feel when', 'user feel when', 'visitor feel when', 'person feel when',
+                # Perspective patterns (more specific to avoid "how should I approach")
+                'from a user\'s perspective', 'from a visitor\'s perspective', 'as a user would',
+                'teenager\'s perspective', 'child\'s perspective', 'user\'s perspective',
+                'elderly person\'s perspective', 'visitor\'s perspective'
+            ]
+            if any(pattern in latest_message for pattern in role_play_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Role-play question detected - '{latest_message}'")
+                return True
+
+            # 2. CURIOSITY AMPLIFICATION (line 18)
+            curiosity_patterns = ['i wonder what would happen', 'what if', 'i wonder']
+            if any(pattern in latest_message for pattern in curiosity_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Curiosity amplification detected")
+                return True
+
+            # 2.5. PERSPECTIVE SHIFT REQUESTS - Broader patterns
+            perspective_shift_patterns = [
+                # Original patterns
+                'help me see this from a different angle', 'different angle', 'see this differently',
+                'think about this differently', 'different perspective', 'another way to think',
+                'alternative viewpoint', 'fresh perspective',
+                # NEW: Simpler patterns
+                'different angle', 'differently', 'another way', 'alternative',
+                'fresh perspective', 'new perspective', 'see this', 'think about this'
+            ]
+            if any(pattern in latest_message for pattern in perspective_shift_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Perspective shift request detected - '{latest_message}'")
+                return True
+
+            # 3. CREATIVE CONSTRAINTS - Only for actual stuck/blocked situations
+            # FIXED: Removed "not sure how" - this is often part of thoughtful design questions
+            constraint_patterns = [
+                # Actual stuck/blocked patterns
+                'i\'m stuck on', 'stuck on', 'having trouble', 'i\'m stuck',
+                'completely stuck', 'really stuck', 'totally stuck',
+                # Fresh ideas patterns (when explicitly asking for ideas)
+                'i need fresh ideas', 'need fresh ideas', 'fresh ideas', 'new ideas',
+                'creative ideas', 'need ideas', 'ideas for', 'inspire me', 'inspiration',
+                'help me think', 'new approach', 'different approach'
+            ]
+
+            # 4. TRANSFORMATION TRIGGERS - NEW
+            transformation_patterns = [
+                'convert', 'converting', 'transform', 'transforming', 'adapt', 'adapting',
+                'repurpose', 'repurposing', 'change the use', 'flexible use', 'multi-use',
+                'warehouse to', 'factory to', 'office to', 'adaptive reuse'
+            ]
+
+            # 5. STORYTELLING TRIGGERS - NEW
+            storytelling_patterns = [
+                'user journey', 'user experience', 'journey through', 'story of',
+                'narrative', 'sequence of spaces', 'progression through', 'flow of movement',
+                'experience as they move', 'path through', 'spatial story'
+            ]
+
+            # 6. TIME TRAVEL TRIGGERS - ENHANCED with more specific patterns
+            time_travel_patterns = [
+                'over time', 'through time', 'years from now', 'in the future',
+                'decades', 'generations', 'evolve over time', 'evolution', 'lifecycle',
+                'aging', 'changing needs', 'future use', 'long-term',
+                # ADDED: More specific temporal patterns
+                'future community needs', 'adapt to future', 'evolve.*future',
+                '10.*years', '20.*years', 'next decade', 'coming years',
+                'digital.*future', 'technological.*future', 'future.*formats'
+            ]
+
+            # ADDITIONAL CHECK: Don't trigger for thoughtful design questions or example requests
+            thoughtful_design_indicators = [
+                'how should i approach', 'how should i', 'what would be the best way',
+                'considering', 'thinking about', 'exploring', 'approach this'
+            ]
+
+            # FIXED: Don't trigger gamification for example requests
+            example_request_indicators = [
+                'give example', 'show example', 'example project', 'project example',
+                'can you give', 'can you show', 'can you provide', 'provide example'
+            ]
+
+            is_thoughtful_question = any(indicator in latest_message for indicator in thoughtful_design_indicators)
+            is_example_request = any(indicator in latest_message for indicator in example_request_indicators)
+
+            # FIXED: Skip gamification for example requests
+            if is_example_request:
+                print(f"🎮 GAMIFICATION SKIP: Example request detected - no gamification needed")
+                return False
+
+            if any(pattern in latest_message for pattern in constraint_patterns) and not is_thoughtful_question:
+                print(f"🎮 GAMIFICATION TRIGGER: Creative constraint detected - '{latest_message}'")
+                return True
+
+            # FIXED: Check time travel patterns FIRST (higher priority than transformation)
+            if any(pattern in latest_message for pattern in time_travel_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Time travel challenge detected - '{latest_message}'")
+                return True
+
+            # Check storytelling patterns
+            if any(pattern in latest_message for pattern in storytelling_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Storytelling challenge detected - '{latest_message}'")
+                return True
+
+            # Check transformation patterns (lower priority than time travel)
+            if any(pattern in latest_message for pattern in transformation_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Transformation challenge detected - '{latest_message}'")
+                return True
+
+            # 4. REALITY CHECK / OVERCONFIDENCE (lines 24, 33)
+            overconfidence_patterns = [
+                'this seems pretty easy', 'this is easy', 'i already know exactly',
+                'i already know', 'that\'s obvious', 'simple', 'basic'
+            ]
+            if any(pattern in latest_message for pattern in overconfidence_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Overconfidence/reality check detected")
+                return True
+
+            # 5. LOW ENGAGEMENT (lines 27-31)
+            low_engagement_responses = ['ok', 'yes', 'sure', 'fine', 'alright', 'cool', 'maybe']
+            if latest_message in low_engagement_responses:
+                print(f"🎮 GAMIFICATION TRIGGER: Low engagement detected")
+                return True
+
+            # 6. COGNITIVE OFFLOADING (lines 223-233)
+            offloading_patterns = [
+                'just tell me what to do', 'can you design this', 'tell me what to do',
+                'what should i do', 'give me the answer', 'what\'s the standard solution'
+            ]
+            if any(pattern in latest_message for pattern in offloading_patterns):
+                print(f"🎮 GAMIFICATION TRIGGER: Cognitive offloading detected")
+                return True
+
+            # ADDITIONAL CHECK: Skip gamification for design exploration questions
+            design_exploration_indicators = [
+                'i am thinking about', 'i\'m thinking about', 'thinking about',
+                'considering', 'exploring', 'approach this', 'how should i',
+                'what would be the best', 'how might i', 'spatial organization',
+                'design approach', 'design strategy', 'user flow', 'circulation',
+                'organize spaces', 'layout', 'planning'
+            ]
+
+            if any(indicator in latest_message for indicator in design_exploration_indicators):
+                print(f"🎮 GAMIFICATION SKIP: Design exploration question - should get direct guidance")
+                return False
+
+            # Default: no gamification for normal design statements, technical questions, etc.
+            print(f"🎮 GAMIFICATION SKIP: Normal design statement/question (no trigger patterns)")
+            return False
+
+        except Exception as e:
+            print(f"🎮 GAMIFICATION ERROR: {e}")
+            return False  # Default to no gamification on error
+
+    def _extract_building_type(self, project_context: str) -> str:
+        """Extract building type from project context."""
+        building_types = ["community center", "hospital", "office", "school", "library", "museum", "residential"]
+        project_lower = project_context.lower()
+
+        for building_type in building_types:
+            if building_type in project_lower:
+                return building_type
+
+        return "building"  # Default fallback
     
     async def _generate_alternative_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, alternative_type: str = "structural") -> Dict[str, Any]:
         """Generate alternative exploration cognitive challenge."""
         self.telemetry.log_agent_start("_generate_alternative_challenge")
-        
+
         try:
-            # Get challenge templates for alternative type
-            challenges = CHALLENGE_TEMPLATES.get("alternative_challenge", {}).get(alternative_type, [])
-            if not challenges:
-                challenges = ["What alternative approaches could you explore?"]
-            
-            base_challenge = random.choice(challenges)
-            contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "alternative_challenge", alternative_type)
-            
-            return {
-                "challenge_text": contextualized_challenge,
-                "challenge_type": "alternative_challenge",
-                "alternative_type": alternative_type,
-                "pedagogical_intent": "Encourage exploration of design alternatives",
-                "cognitive_target": "divergent_thinking",
-                "expected_outcome": "Increased creative exploration and solution diversity"
-            }
-            
+            # Check if gamification should be applied
+            should_gamify = self._should_apply_gamification(state, alternative_type, "alternative_challenge")
+
+            if should_gamify:
+                # Pass original user message for flexible content generation
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "alternative_challenge",
+                    "alternative_type": alternative_type,
+                    "building_type": building_type,
+                    "pedagogical_intent": "Encourage exploration of design alternatives",
+                    "cognitive_target": "divergent_thinking",
+                    "expected_outcome": "Increased creative exploration and solution diversity",
+                    "gamification_applied": True
+                }
+            else:
+                # Use traditional challenge generation
+                challenges = CHALLENGE_TEMPLATES.get("alternative_challenge", {}).get(alternative_type, [])
+                if not challenges:
+                    challenges = ["What alternative approaches could you explore?"]
+
+                base_challenge = random.choice(challenges)
+                contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "alternative_challenge", alternative_type)
+
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "alternative_challenge",
+                    "alternative_type": alternative_type,
+                    "pedagogical_intent": "Encourage exploration of design alternatives",
+                    "cognitive_target": "divergent_thinking",
+                    "expected_outcome": "Increased creative exploration and solution diversity",
+                    "gamification_applied": False
+                }
+
         except Exception as e:
             self.telemetry.log_error("_generate_alternative_challenge", str(e))
             return {
@@ -184,7 +594,8 @@ class ChallengeGeneratorProcessor:
                 "challenge_type": "alternative_challenge",
                 "alternative_type": alternative_type,
                 "pedagogical_intent": "Encourage creative exploration",
-                "cognitive_target": "creativity"
+                "cognitive_target": "creativity",
+                "gamification_applied": False
             }
     
     async def _generate_metacognitive_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, metacognitive_type: str = "process_reflection") -> Dict[str, Any]:
@@ -199,15 +610,35 @@ class ChallengeGeneratorProcessor:
             
             base_challenge = random.choice(challenges)
             contextualized_challenge = await self._contextualize_challenge(base_challenge, state, "metacognitive_challenge", metacognitive_type)
-            
-            return {
-                "challenge_text": contextualized_challenge,
-                "challenge_type": "metacognitive_challenge",
-                "metacognitive_type": metacognitive_type,
-                "pedagogical_intent": "Promote metacognitive awareness and reflection",
-                "cognitive_target": "metacognition",
-                "expected_outcome": "Enhanced self-awareness and reflective practice"
-            }
+
+            # SMART GAMIFICATION: Only apply gamification when appropriate
+            should_gamify = self._should_apply_gamification(state, metacognitive_type, "metacognitive_challenge")
+
+            if should_gamify:
+                # Pass original user message for flexible content generation
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "metacognitive_challenge",
+                    "metacognitive_type": metacognitive_type,
+                    "building_type": building_type,
+                    "pedagogical_intent": "Foster metacognitive awareness and self-evaluation with focus on increasing engagement",
+                    "cognitive_target": "metacognition",
+                    "expected_outcome": "Enhanced self-awareness and reflective practice",
+                    "gamification_applied": True
+                }
+            else:
+                return {
+                    "challenge_text": contextualized_challenge,
+                    "challenge_type": "metacognitive_challenge",
+                    "metacognitive_type": metacognitive_type,
+                    "pedagogical_intent": "Foster metacognitive awareness and self-evaluation",
+                    "cognitive_target": "metacognition",
+                    "expected_outcome": "Enhanced self-awareness and reflective practice",
+                    "gamification_applied": False
+                }
             
         except Exception as e:
             self.telemetry.log_error("_generate_metacognitive_challenge", str(e))
@@ -522,4 +953,422 @@ class ChallengeGeneratorProcessor:
             
         except Exception as e:
             self.telemetry.log_error("generate_challenge_summary", str(e))
-            return "Challenge summary unavailable." 
+            return "Challenge summary unavailable."
+
+    async def _generate_storytelling_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, narrative_type: str = "narrative") -> Dict[str, Any]:
+        """Generate spatial storytelling cognitive challenge."""
+        self.telemetry.log_agent_start("_generate_storytelling_challenge")
+
+        try:
+            # Check if gamification should be applied
+            should_gamify = self._should_apply_gamification(state, narrative_type, "spatial_storytelling")
+
+            if should_gamify:
+                # Extract context-aware information
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+                context_data = self._extract_challenge_context(user_message, building_type, "storytelling")
+
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "spatial_storytelling",
+                    "narrative_type": narrative_type,
+                    "building_type": building_type,
+                    "specific_constraint": context_data.get("specific_constraint", "narrative design"),
+                    "context_keywords": context_data.get("keywords", []),
+                    "challenge_focus": context_data.get("focus_area", "spatial narrative"),
+                    "specific_elements": context_data.get("specific_elements", []),
+                    "pedagogical_intent": f"Explore {context_data.get('specific_constraint', 'spatial narratives and user journeys')}",
+                    "cognitive_target": "narrative_thinking",
+                    "expected_outcome": f"Enhanced understanding of {context_data.get('focus_area', 'spatial storytelling and user experience')}",
+                    "gamification_applied": True
+                }
+            else:
+                return {
+                    "challenge_text": "Consider the story your space tells through its design and user journey.",
+                    "challenge_type": "spatial_storytelling",
+                    "narrative_type": narrative_type,
+                    "pedagogical_intent": "Encourage narrative design thinking",
+                    "cognitive_target": "storytelling",
+                    "gamification_applied": False
+                }
+
+        except Exception as e:
+            self.telemetry.log_error("_generate_storytelling_challenge", str(e))
+            return {
+                "challenge_text": "How does your design tell a story through space?",
+                "challenge_type": "spatial_storytelling",
+                "narrative_type": narrative_type,
+                "pedagogical_intent": "Encourage narrative thinking",
+                "cognitive_target": "storytelling",
+                "gamification_applied": False
+            }
+
+    async def _generate_time_travel_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, temporal_type: str = "temporal") -> Dict[str, Any]:
+        """Generate time travel cognitive challenge."""
+        self.telemetry.log_agent_start("_generate_time_travel_challenge")
+
+        try:
+            # Check if gamification should be applied
+            should_gamify = self._should_apply_gamification(state, temporal_type, "time_travel_challenge")
+
+            if should_gamify:
+                # Extract context-aware information
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+                context_data = self._extract_challenge_context(user_message, building_type, "time_travel")
+
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "time_travel_challenge",
+                    "temporal_type": temporal_type,
+                    "building_type": building_type,
+                    "specific_constraint": context_data.get("specific_constraint", "temporal design"),
+                    "context_keywords": context_data.get("keywords", []),
+                    "challenge_focus": context_data.get("focus_area", "temporal design"),
+                    "specific_elements": context_data.get("specific_elements", []),
+                    "pedagogical_intent": f"Explore {context_data.get('specific_constraint', 'temporal aspects of design and space evolution')}",
+                    "cognitive_target": "temporal_thinking",
+                    "expected_outcome": f"Enhanced understanding of {context_data.get('focus_area', 'how spaces change over time')}",
+                    "gamification_applied": True
+                }
+            else:
+                return {
+                    "challenge_text": "Consider how your space will evolve and be used across different time periods.",
+                    "challenge_type": "time_travel_challenge",
+                    "temporal_type": temporal_type,
+                    "pedagogical_intent": "Encourage temporal design thinking",
+                    "cognitive_target": "temporal_awareness",
+                    "gamification_applied": False
+                }
+
+        except Exception as e:
+            self.telemetry.log_error("_generate_time_travel_challenge", str(e))
+            return {
+                "challenge_text": "How will your design adapt and change over time?",
+                "challenge_type": "time_travel_challenge",
+                "temporal_type": temporal_type,
+                "pedagogical_intent": "Encourage temporal thinking",
+                "cognitive_target": "temporal_awareness",
+                "gamification_applied": False
+            }
+
+    async def _generate_transformation_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, transformation_type: str = "adaptive") -> Dict[str, Any]:
+        """Generate space transformation cognitive challenge."""
+        self.telemetry.log_agent_start("_generate_transformation_challenge")
+
+        try:
+            # Check if gamification should be applied
+            should_gamify = self._should_apply_gamification(state, transformation_type, "space_transformation")
+
+            if should_gamify:
+                # Extract context-aware information
+                user_message = self._get_latest_user_message(state)
+                building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+                context_data = self._extract_challenge_context(user_message, building_type, "transformation")
+
+                return {
+                    "challenge_text": user_message,
+                    "challenge_type": "space_transformation",
+                    "transformation_type": transformation_type,
+                    "building_type": building_type,
+                    "specific_constraint": context_data.get("specific_constraint", "transformation challenge"),
+                    "context_keywords": context_data.get("keywords", []),
+                    "challenge_focus": context_data.get("focus_area", "adaptive design"),
+                    "specific_elements": context_data.get("specific_elements", []),
+                    "pedagogical_intent": f"Explore {context_data.get('specific_constraint', 'adaptive and transformative')} design strategies",
+                    "cognitive_target": "transformation_thinking",
+                    "expected_outcome": f"Enhanced understanding of {context_data.get('focus_area', 'adaptive and flexible design')}",
+                    "gamification_applied": True
+                }
+            else:
+                return {
+                    "challenge_text": "Consider how your space can transform and adapt to different uses and needs.",
+                    "challenge_type": "space_transformation",
+                    "transformation_type": transformation_type,
+                    "pedagogical_intent": "Encourage adaptive design thinking",
+                    "cognitive_target": "flexibility",
+                    "gamification_applied": False
+                }
+
+        except Exception as e:
+            self.telemetry.log_error("_generate_transformation_challenge", str(e))
+            return {
+                "challenge_text": "How can your design transform to meet changing needs?",
+                "challenge_type": "space_transformation",
+                "transformation_type": transformation_type,
+                "pedagogical_intent": "Encourage transformative thinking",
+                "cognitive_target": "adaptability",
+                "gamification_applied": False
+            }
+
+    def _extract_challenge_context(self, user_message: str, building_type: str, challenge_type: str) -> Dict[str, Any]:
+        """Extract specific context from user message to make challenges highly relevant."""
+        try:
+            user_lower = user_message.lower()
+            context = {
+                "keywords": [],
+                "specific_constraint": "design challenge",
+                "focus_area": "spatial design",
+                "user_intent": "general",
+                "specific_elements": []
+            }
+
+            # Extract building-specific context
+            if building_type:
+                context["building_type"] = building_type
+
+            # CONSTRAINT CHALLENGE CONTEXT
+            if challenge_type == "constraint":
+                # Circulation issues
+                if any(word in user_lower for word in ["circulation", "flow", "movement", "path", "route"]):
+                    context["specific_constraint"] = "circulation challenges"
+                    context["focus_area"] = "movement and flow"
+                    context["keywords"] = ["circulation", "flow", "pathways", "navigation"]
+
+                # Space planning issues
+                elif any(word in user_lower for word in ["layout", "space", "room", "area", "zone"]):
+                    context["specific_constraint"] = "spatial organization challenges"
+                    context["focus_area"] = "space planning"
+                    context["keywords"] = ["layout", "zoning", "spatial organization"]
+
+                # Structural constraints
+                elif any(word in user_lower for word in ["structure", "beam", "column", "load", "support"]):
+                    context["specific_constraint"] = "structural limitations"
+                    context["focus_area"] = "structural design"
+                    context["keywords"] = ["structure", "support", "load-bearing"]
+
+                # Programming constraints
+                elif any(word in user_lower for word in ["program", "function", "use", "activity", "flexible"]):
+                    context["specific_constraint"] = "programming challenges"
+                    context["focus_area"] = "functional programming"
+                    context["keywords"] = ["programming", "functionality", "multi-use"]
+
+            # TRANSFORMATION CHALLENGE CONTEXT
+            elif challenge_type == "transformation":
+                # Adaptive reuse
+                if any(word in user_lower for word in ["convert", "warehouse", "factory", "office", "adaptive reuse"]):
+                    context["specific_constraint"] = "adaptive reuse challenges"
+                    context["focus_area"] = "building conversion"
+                    context["keywords"] = ["conversion", "adaptive reuse", "transformation"]
+
+                    # Specific conversion types
+                    if "warehouse" in user_lower:
+                        context["specific_elements"] = ["high ceilings", "open spaces", "industrial character"]
+                    elif "office" in user_lower:
+                        context["specific_elements"] = ["cellular spaces", "HVAC systems", "partition walls"]
+
+            # STORYTELLING CHALLENGE CONTEXT
+            elif challenge_type == "storytelling":
+                if any(word in user_lower for word in ["journey", "experience", "narrative", "story"]):
+                    context["specific_constraint"] = "user experience design"
+                    context["focus_area"] = "spatial narrative"
+                    context["keywords"] = ["user journey", "experience", "narrative flow"]
+
+            # TIME TRAVEL CHALLENGE CONTEXT
+            elif challenge_type == "time_travel":
+                if any(word in user_lower for word in ["evolve", "future", "time", "generations", "lifecycle"]):
+                    context["specific_constraint"] = "temporal design considerations"
+                    context["focus_area"] = "long-term adaptability"
+                    context["keywords"] = ["evolution", "future needs", "adaptability"]
+
+            return context
+
+        except Exception as e:
+            return {
+                "keywords": [],
+                "specific_constraint": "design challenge",
+                "focus_area": "spatial design",
+                "user_intent": "general",
+                "specific_elements": []
+            }
+
+    async def _generate_storytelling_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
+        """Generate spatial storytelling challenge using AI for flexible content generation"""
+        user_message = self._get_latest_user_message(state)
+        building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+        # FLEXIBLE AI-POWERED: Generate contextual story prompt for ANY topic
+        story_prompt = await self._generate_ai_contextual_story_prompt(user_message, building_type)
+
+        return {
+            "challenge_text": story_prompt,
+            "challenge_type": "spatial_storytelling",
+            "story_type": subtype,
+            "building_type": building_type,
+            "narrative_focus": "building_perspective",
+            "gamification_applied": True
+        }
+
+    async def _generate_time_travel_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
+        """Generate time travel challenge using AI for flexible content generation"""
+        user_message = self._get_latest_user_message(state)
+        building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+        # FLEXIBLE AI-POWERED: Generate contextual time travel prompt for ANY topic
+        time_prompt = await self._generate_ai_contextual_time_travel_prompt(user_message, building_type)
+
+        return {
+            "challenge_text": time_prompt,
+            "challenge_type": "time_travel_challenge",
+            "temporal_type": subtype,
+            "building_type": building_type,
+            "time_periods": ["1950", "2024", "2050"],
+            "gamification_applied": True
+        }
+
+    async def _generate_transformation_challenge(self, cognitive_state: Dict, state: ArchMentorState, analysis_result: Dict, subtype: str) -> Dict:
+        """Generate space transformation challenge using AI for flexible content generation"""
+        user_message = self._get_latest_user_message(state)
+        building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
+
+        # FLEXIBLE AI-POWERED: Generate contextual transformation prompt for ANY topic
+        transform_prompt = await self._generate_ai_contextual_transformation_prompt(user_message, building_type)
+
+        return {
+            "challenge_text": transform_prompt,
+            "challenge_type": "space_transformation",
+            "transformation_type": subtype,
+            "building_type": building_type,
+            "adaptation_scenarios": ["daily", "seasonal", "programmatic"],
+            "gamification_applied": True
+        }
+
+    async def _generate_ai_contextual_story_prompt(self, user_message: str, building_type: str) -> str:
+        """Generate flexible story prompt using AI for any architectural topic"""
+        try:
+            import openai
+            client = openai.OpenAI()
+
+            # Extract the main architectural topic from user message
+            topic_extraction_prompt = f"""
+            Extract the main architectural topic/concept from this user message: "{user_message}"
+
+            Examples:
+            - "circulation strategies" → "circulation"
+            - "lighting design" → "lighting"
+            - "sustainable materials" → "sustainability"
+            - "acoustic performance" → "acoustics"
+            - "accessibility features" → "accessibility"
+            - "landscape integration" → "landscape"
+            - "structural systems" → "structure"
+
+            Return only the main topic (1-2 words):
+            """
+
+            topic_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": topic_extraction_prompt}],
+                max_tokens=50,
+                temperature=0.3
+            )
+
+            main_topic = topic_response.choices[0].message.content.strip().lower()
+
+            # Generate contextual story prompt
+            story_generation_prompt = f"""
+            Create a creative storytelling challenge for an architecture student working on a {building_type} project.
+
+            User's question/context: "{user_message}"
+            Main architectural topic: "{main_topic}"
+            Building type: "{building_type}"
+
+            Generate a storytelling prompt that:
+            1. Relates specifically to the topic "{main_topic}" in the context of a {building_type}
+            2. Uses narrative perspective (from building's POV, user's POV, or element's POV)
+            3. Encourages creative thinking about how {main_topic} affects user experience
+            4. Is engaging and imaginative, not generic
+            5. Connects to real architectural design considerations
+
+            Format: Write a 2-3 sentence storytelling prompt that starts with an engaging hook.
+
+            Example format: "Tell the story of [perspective] in your {building_type}. How does [topic-specific element] [specific action/impact]? What [specific questions about user experience/design impact]?"
+            """
+
+            story_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": story_generation_prompt}],
+                max_tokens=200,
+                temperature=0.7
+            )
+
+            return story_response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ AI story generation failed: {e}")
+            # Fallback to generic prompt
+            return f"Imagine your {building_type} as a character in a story. What would it say about the people who visit and the experiences it creates? Write a short narrative from the building's perspective, focusing on how your design decisions shape daily life and community interaction."
+
+    async def _generate_ai_contextual_time_travel_prompt(self, user_message: str, building_type: str) -> str:
+        """Generate flexible time travel prompt using AI for any architectural topic"""
+        try:
+            import openai
+            client = openai.OpenAI()
+
+            time_travel_prompt = f"""
+            Create a time travel challenge for an architecture student working on a {building_type} project.
+
+            User's question/context: "{user_message}"
+            Building type: "{building_type}"
+
+            Generate a time travel prompt that:
+            1. Relates specifically to the user's question/topic
+            2. Explores how the topic would differ across three time periods: 1950, 2024, 2050
+            3. Considers technological, social, and cultural changes
+            4. Encourages thinking about adaptation and evolution
+            5. Is specific to the architectural topic, not generic
+
+            Format: 2-3 sentences that guide the student through time periods with specific considerations.
+
+            Example structure: "Travel through time with your {building_type}'s [specific topic]. In 1950, [period-specific consideration]. Today, [current consideration]. In 2050, [future consideration]."
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": time_travel_prompt}],
+                max_tokens=200,
+                temperature=0.7
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ AI time travel generation failed: {e}")
+            return f"Travel through time with your {building_type} design. Imagine visiting it in 1950, today, and 2050. How would the same spaces be used differently in each era? What technologies, social patterns, and community needs would shape the experience?"
+
+    async def _generate_ai_contextual_transformation_prompt(self, user_message: str, building_type: str) -> str:
+        """Generate flexible transformation prompt using AI for any architectural topic"""
+        try:
+            import openai
+            client = openai.OpenAI()
+
+            transformation_prompt = f"""
+            Create a transformation challenge for an architecture student working on a {building_type} project.
+
+            User's question/context: "{user_message}"
+            Building type: "{building_type}"
+
+            Generate a transformation prompt that:
+            1. Relates specifically to the user's question/topic
+            2. Explores how spaces can adapt and transform
+            3. Considers different scenarios (daily, seasonal, programmatic, or functional changes)
+            4. Encourages thinking about flexibility and adaptability
+            5. Is specific to the architectural topic and building type
+
+            Format: 2-3 sentences that challenge the student to think about transformation scenarios.
+
+            Example structure: "Your {building_type} needs to [specific transformation challenge]. [Specific scenarios]. What [specific design elements] would enable these transformations?"
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": transformation_prompt}],
+                max_tokens=200,
+                temperature=0.7
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ AI transformation generation failed: {e}")
+            return f"Your {building_type} needs to transform throughout the day and seasons. Design a space that can adapt to different uses and user needs. What moveable elements, flexible systems, and adaptive features would enable these transformations while maintaining spatial quality?"

@@ -27,31 +27,50 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def load_api_key():
-    """Load API key from .env file or environment variable"""
-    # First try to load from .env file
-    env_file = Path('.env')
-    if env_file.exists():
-        try:
-            with open(env_file, 'r') as f:
-                for line in f:
-                    if line.strip() and not line.startswith('#'):
-                        key, value = line.strip().split('=', 1)
-                        if key == 'OPENAI_API_KEY':
-                            # Remove quotes if present
-                            api_key = value.strip().strip('"').strip("'")
-                            if api_key:
-                                logger.info("✅ API key loaded from .env file")
-                                return api_key
-        except Exception as e:
-            logger.warning(f"⚠️ Could not read .env file: {e}")
-    
-    # Fallback to environment variable
-    api_key = os.getenv("OPENAI_API_KEY")
-    if api_key:
-        logger.info("✅ API key loaded from environment variable")
-        return api_key
-    
-    return None
+    """Load API key using secrets manager (supports both st.secrets and environment variables)"""
+    try:
+        # Add thesis-agents to path for imports
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'thesis-agents'))
+        from utils.secrets_manager import get_openai_api_key
+
+        api_key = get_openai_api_key()
+        if api_key:
+            logger.info("✅ API key loaded via secrets manager")
+            return api_key
+        else:
+            logger.warning("⚠️ API key not found via secrets manager")
+            return None
+
+    except ImportError:
+        logger.warning("⚠️ Secrets manager not available, falling back to manual loading")
+
+        # Fallback to manual .env file loading
+        env_file = Path('.env')
+        if env_file.exists():
+            try:
+                with open(env_file, 'r') as f:
+                    for line in f:
+                        if line.strip() and not line.startswith('#'):
+                            key, value = line.strip().split('=', 1)
+                            if key == 'OPENAI_API_KEY':
+                                # Remove quotes if present
+                                api_key = value.strip().strip('"').strip("'")
+                                if api_key:
+                                    logger.info("✅ API key loaded from .env file")
+                                    return api_key
+            except Exception as e:
+                logger.warning(f"⚠️ Could not read .env file: {e}")
+
+        # Fallback to environment variable
+        api_key = os.getenv("OPENAI_API_KEY")
+        if api_key:
+            logger.info("✅ API key loaded from environment variable")
+            return api_key
+
+        return None
+    except Exception as e:
+        logger.error(f"❌ Error loading API key via secrets manager: {e}")
+        return None
 
 class TestScenario:
     """Defines a test scenario with expected outcomes"""

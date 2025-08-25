@@ -3,7 +3,12 @@ CSS styles and theme management for the dashboard.
 """
 
 import streamlit as st
+import sys
+import os
 from string import Template
+
+# Add parent directory to path for benchmarking import
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from benchmarking.thesis_colors import THESIS_COLORS
 
 def get_dashboard_css() -> str:
@@ -220,7 +225,7 @@ def get_dashboard_css() -> str:
         min-height: 40px;
     }
 
-    /* Enhanced Chat Input Styling */
+    /* Enhanced Chat Input Styling - FIXED VERSION */
     div[data-testid="stChatInput"] {
         background: white !important;
         border-radius: 20px !important;
@@ -249,24 +254,33 @@ def get_dashboard_css() -> str:
         background: transparent !important;
         border: none !important;
         border-radius: 16px !important;
-        padding: 18px 24px !important;
+        padding: 18px 55px !important;
         font-size: 16px !important;
         line-height: 1.5 !important;
+        text-align: justify !important;
         color: var(--primary-dark) !important;
-        resize: none !important;
-        min-height: 144px !important;
-        max-height: 144px !important;
+        resize: vertical !important;
+        min-height: 100px !important;
+        max-height: 300px !important;
         font-family: inherit !important;
         box-shadow: none !important;
         outline: none !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        overflow-y: auto !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        /* ADDED: Ensure proper display and visibility */
+        display: block !important;
+        visibility: visible !important;
     }
 
     div[data-testid="stChatInput"] textarea:focus {
         outline: none !important;
         box-shadow: none !important;
         border: none !important;
+        /* ADDED: Ensure focus state is visible and functional */
+        min-height: 56px !important;
     }
 
     div[data-testid="stChatInput"] textarea::placeholder {
@@ -295,6 +309,8 @@ def get_dashboard_css() -> str:
         margin: 4px !important;
         position: relative !important;
         overflow: hidden !important;
+        /* ADDED: Ensure button alignment with new textarea height */
+        align-self: flex-end !important;
     }
 
     div[data-testid="stChatInput"] button:hover {
@@ -308,8 +324,6 @@ def get_dashboard_css() -> str:
         box-shadow: 0 2px 10px rgba(92,79,115,0.3) !important;
     }
 
-    /* Send button icon - removed custom icon to prevent duplicates */
-
     /* Input container enhancements */
     div[data-testid="stChatInput"] > div {
         display: flex !important;
@@ -318,6 +332,8 @@ def get_dashboard_css() -> str:
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
+        /* ADDED: Ensure minimum height for container */
+        min-height: 56px !important;
     }
 
     /* Textarea container */
@@ -326,6 +342,8 @@ def get_dashboard_css() -> str:
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
+        /* ADDED: Ensure proper height inheritance */
+        min-height: 56px !important;
     }
 
     /* Button container */
@@ -335,18 +353,35 @@ def get_dashboard_css() -> str:
         flex-shrink: 0 !important;
     }
 
-    /* Modern Chat Interface - Clean & Seamless */
-    .chat-window {
-        background: #f8f9fa !important;
-        border-radius: 16px !important;
-        padding: 20px !important;
-        margin: 20px 0 !important;
-        border: 1px solid rgba(0,0,0,0.08) !important;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04) !important;
-        max-height: 600px !important;
-        overflow-y: auto !important;
-        width: 100% !important;
-        max-width: none !important;
+    /* Mobile responsive adjustments */
+    @media (max-width: 768px) {
+        div[data-testid="stChatInput"] {
+            margin: 15px 0 !important;
+            border-radius: 18px !important;
+        }
+        
+        div[data-testid="stChatInput"] textarea {
+            padding: 16px 20px !important;
+            font-size: 15px !important;
+            /* FIXED: Mobile height settings - removed fixed height */
+            min-height: 48px !important;
+            max-height: 300px !important;
+        }
+        
+        div[data-testid="stChatInput"] button {
+            width: 48px !important;
+            height: 48px !important;
+            min-width: 48px !important;
+            min-height: 48px !important;
+        }
+        
+        div[data-testid="stChatInput"] > div {
+            min-height: 48px !important;
+        }
+        
+        div[data-testid="stChatInput"] > div > div:first-child {
+            min-height: 48px !important;
+        }
     }
 
     .chat-messages {
@@ -605,7 +640,8 @@ def get_dashboard_css() -> str:
         div[data-testid="stChatInput"] textarea {
             padding: 16px 20px !important;
             font-size: 15px !important;
-            min-height: 64px !important;
+            min-height: 120px !important;
+            max-height: 300px !important;
         }
         
         div[data-testid="stChatInput"] button {
@@ -614,6 +650,127 @@ def get_dashboard_css() -> str:
             min-width: 48px !important;
             min-height: 48px !important;
         }
+    }
+
+    /* ENHANCED GAMIFICATION STYLES - THESIS COLOR PALETTE */
+    .gamified-message {
+        background: linear-gradient(135deg, #5c4f73 0%, #784c80 100%) !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 30px rgba(92, 79, 115, 0.3) !important;
+        animation: gamification-glow 3s ease-in-out infinite alternate !important;
+    }
+
+    .gamified-message .agent-avatar {
+        background: linear-gradient(135deg, #b87189 0%, #cd766d 100%) !important;
+        animation: avatar-pulse 2s ease-in-out infinite !important;
+    }
+
+    .gamified-message .agent-name {
+        color: #faf8f5 !important;
+        font-weight: bold !important;
+        text-shadow: 2px 2px 4px rgba(79, 58, 62, 0.4) !important;
+    }
+
+    @keyframes gamification-glow {
+        0% { box-shadow: 0 10px 30px rgba(92, 79, 115, 0.3); }
+        100% { box-shadow: 0 15px 40px rgba(120, 76, 128, 0.5); }
+    }
+
+    @keyframes avatar-pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* Challenge tool buttons - Thesis colors */
+    .challenge-tools button {
+        background: linear-gradient(135deg, #5c4f73 0%, #784c80 100%) !important;
+        color: #faf8f5 !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 10px 20px !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(92, 79, 115, 0.3) !important;
+    }
+
+    .challenge-tools button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(120, 76, 128, 0.4) !important;
+        background: linear-gradient(135deg, #784c80 0%, #4f3a3e 100%) !important;
+    }
+
+    /* Gamification progress bars - Thesis colors */
+    .gamification-progress {
+        background: linear-gradient(90deg, #cd766d 0%, #d99c66 50%, #5c4f73 100%) !important;
+        border-radius: 10px !important;
+        height: 8px !important;
+    }
+
+    /* Achievement badges - Thesis colors */
+    .achievement-badge {
+        background: linear-gradient(135deg, #b87189 0%, #cda29a 100%) !important;
+        border: 2px solid #784c80 !important;
+        color: #4f3a3e !important;
+        box-shadow: 0 4px 15px rgba(184, 113, 137, 0.3) !important;
+    }
+
+    /* Challenge type specific styles - Thesis colors */
+    .challenge-role-play {
+        border-left: 5px solid #cd766d !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(205, 118, 109, 0.1) 100%) !important;
+    }
+
+    .challenge-perspective-shift {
+        border-left: 5px solid #784c80 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(120, 76, 128, 0.1) 100%) !important;
+    }
+
+    .challenge-detective {
+        border-left: 5px solid #5c4f73 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(92, 79, 115, 0.1) 100%) !important;
+    }
+
+    .challenge-transformation {
+        border-left: 5px solid #dcc188 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(220, 193, 136, 0.1) 100%) !important;
+    }
+
+    .challenge-storytelling {
+        border-left: 5px solid #b87189 !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(184, 113, 137, 0.1) 100%) !important;
+    }
+
+    .challenge-time-travel {
+        border-left: 5px solid #4f3a3e !important;
+        background: linear-gradient(135deg, #faf8f5 0%, rgba(79, 58, 62, 0.1) 100%) !important;
+    }
+
+    /* Gamification sidebar styles */
+    .gamification-sidebar {
+        background: #faf8f5 !important;
+        border: 1px solid #e0ceb5 !important;
+        border-radius: 10px !important;
+        padding: 15px !important;
+        margin: 10px 0 !important;
+    }
+
+    .gamification-level {
+        color: #4f3a3e !important;
+        font-weight: bold !important;
+    }
+
+    .gamification-xp {
+        color: #5c4f73 !important;
+    }
+
+    .gamification-achievement {
+        background: linear-gradient(135deg, #cda29a 0%, #e0ceb5 100%) !important;
+        border-radius: 5px !important;
+        padding: 5px 10px !important;
+        margin: 2px 0 !important;
+        color: #4f3a3e !important;
+        font-size: 0.9em !important;
     }
 
     /* Old chat message styles removed - new seamless interface takes precedence */

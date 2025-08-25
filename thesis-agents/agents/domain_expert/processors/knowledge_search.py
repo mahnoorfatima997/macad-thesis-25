@@ -123,7 +123,14 @@ class KnowledgeSearchProcessor:
         ])
         
         # ENHANCED: Initialize Tavily API configuration (sole web search provider)
-        self.tavily_api_key = os.getenv('TAVILY_API_KEY')
+        try:
+            import sys
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'utils'))
+            from secrets_manager import get_tavily_api_key
+            self.tavily_api_key = get_tavily_api_key()
+        except ImportError:
+            # Fallback if secrets_manager is not available
+            self.tavily_api_key = os.getenv('TAVILY_API_KEY')
 
         # ENHANCED: Simple in-memory cache for web search results (reduces API calls)
         self._web_cache: Dict[str, List[Dict]] = {}
@@ -312,6 +319,7 @@ class KnowledgeSearchProcessor:
     
     def _create_enhanced_fallback_knowledge(self, topic: str) -> List[Dict]:
         """Create enhanced fallback knowledge based on topic."""
+        # Keep only essential fallback knowledge - let AI generate the rest
         fallback_knowledge = {
             'sustainable design': [
                 {
@@ -345,22 +353,89 @@ class KnowledgeSearchProcessor:
                 return knowledge
         
         # Generate flexible knowledge for any topic
-        return self._generate_flexible_knowledge(topic)
+        import asyncio
+        try:
+            # Try to run async knowledge generation
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(self._generate_flexible_knowledge(topic))
+        except Exception:
+            # Fallback to simple knowledge if async fails
+            return [
+                {
+                    'title': f'{topic.title()} in Architecture',
+                    'snippet': f'Architectural approach to {topic} involves analyzing context, user needs, functional requirements, and design integration.',
+                    'url': f'internal://fallback/{topic.replace(" ", "-")}',
+                    'source': 'fallback'
+                }
+            ]
     
-    def _generate_flexible_knowledge(self, topic: str) -> List[Dict]:
-        """Generate flexible architectural knowledge for any topic."""
+    async def _generate_flexible_knowledge(self, topic: str) -> List[Dict]:
+        """Generate flexible architectural knowledge for any topic using AI."""
+        try:
+            # Import the LLM client
+            from thesis_agents.utils.llm_client import LLMClient
+            client = LLMClient()
+
+            # Generate topic-specific knowledge
+            prompt = f"""
+            Generate specific architectural knowledge about "{topic}" in architecture.
+
+            Create 2-3 distinct knowledge pieces:
+            1. Core principles and strategies
+            2. Real-world examples and case studies
+            3. Practical implementation considerations
+
+            For each piece, provide:
+            - A specific title (not generic)
+            - A detailed snippet with concrete information, examples, or strategies
+            - Focus on actionable, specific content
+
+            Format as JSON array:
+            [
+                {{"title": "specific title", "snippet": "detailed content with examples"}},
+                {{"title": "specific title", "snippet": "detailed content with examples"}}
+            ]
+
+            Make it specific to {topic}, not generic architectural advice.
+            """
+
+            response = await client.generate_completion([
+                client.create_system_message("You are an expert architecture knowledge generator. Provide specific, actionable content."),
+                client.create_user_message(prompt)
+            ])
+
+            if response and response.get("content"):
+                import json
+                try:
+                    # Try to parse JSON response
+                    knowledge_data = json.loads(response["content"])
+
+                    # Convert to expected format
+                    results = []
+                    for i, item in enumerate(knowledge_data[:3]):  # Max 3 items
+                        results.append({
+                            'title': item.get('title', f'{topic.title()} - Knowledge {i+1}'),
+                            'snippet': item.get('snippet', f'Architectural considerations for {topic}.'),
+                            'url': f'internal://generated/{topic.replace(" ", "-")}-{i+1}',
+                            'source': 'ai_generated'
+                        })
+
+                    return results
+
+                except json.JSONDecodeError:
+                    # Fallback if JSON parsing fails
+                    pass
+
+        except Exception as e:
+            print(f"⚠️ AI knowledge generation failed: {e}")
+
+        # Simple fallback if AI generation fails
         return [
             {
-                'title': f'Architectural Considerations for {topic.title()}',
-                'snippet': f'In architectural design, {topic} involves careful consideration of form, function, context, and user needs.',
-                'url': f'internal://architecture/{topic.replace(" ", "-")}',
-                'source': 'internal'
-            },
-            {
-                'title': f'Design Principles: {topic.title()}',
-                'snippet': f'Key design principles for {topic} include sustainability, accessibility, aesthetic integration, and technical feasibility.',
-                'url': f'internal://principles/{topic.replace(" ", "-")}',
-                'source': 'internal'
+                'title': f'{topic.title()} in Architecture',
+                'snippet': f'Architectural approach to {topic} involves analyzing context, user needs, functional requirements, and design integration.',
+                'url': f'internal://fallback/{topic.replace(" ", "-")}',
+                'source': 'fallback'
             }
         ]
     

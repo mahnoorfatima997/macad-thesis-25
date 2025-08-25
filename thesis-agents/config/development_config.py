@@ -4,14 +4,28 @@ Development configuration for cost-efficient testing
 """
 
 import os
+import sys
 from typing import Dict, Any
+
+# Add utils to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'utils'))
+
+try:
+    from secrets_manager import secrets_manager
+except ImportError:
+    # Fallback if secrets_manager is not available
+    class FallbackSecretsManager:
+        def get_bool_secret(self, key: str, default: bool = False) -> bool:
+            value = os.getenv(key, str(default).lower())
+            return value.lower() in ('true', '1', 'yes', 'on')
+    secrets_manager = FallbackSecretsManager()
 
 class DevelopmentConfig:
     """Configuration for cheap development testing"""
-    
+
     def __init__(self):
         # Development mode flag
-        self.DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+        self.DEV_MODE = secrets_manager.get_bool_secret("DEV_MODE", False)
         
         # Model configurations for cost efficiency
         self.models = {

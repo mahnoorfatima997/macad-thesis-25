@@ -4,9 +4,14 @@ Chat components and message rendering for the dashboard.
 
 import streamlit as st
 import re
+import sys
+import os
 from html import escape
 from typing import Dict, Any, List
-from ..config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from dashboard.config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
 
 
 def safe_markdown_to_html(text: str) -> str:
@@ -67,15 +72,6 @@ def render_chat_interface():
             render_single_message(message)
         
         st.markdown("""
-            </div>
-        </div>
-        
-        <!-- Typing indicator -->
-        <div class="typing-indicator" id="typing-indicator" style="display: none;">
-            <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
             </div>
         </div>
         
@@ -256,7 +252,7 @@ def hide_typing_indicator():
 
 
 def render_single_message(message: Dict[str, Any]):
-    """Render a single message in the chat interface."""
+    """Render a single message in the chat interface with image support."""
     if message["role"] == "user":
         # User message - right side
         st.markdown(
@@ -271,6 +267,8 @@ def render_single_message(message: Dict[str, Any]):
             """,
             unsafe_allow_html=True,
         )
+
+        # Image display removed - images are now bundled with text content
     else:
         # Agent message - left side
         mentor_type = message.get("mentor_type", "Multi-Agent System")
@@ -284,29 +282,346 @@ def render_single_message(message: Dict[str, Any]):
             mentor_label = "Raw GPT"
         else:
             mentor_label = mentor_type
-        
+
+        # ENHANCED: Check if this is a gamified challenge
+        gamification_info = message.get("gamification", {})
+        is_gamified = gamification_info.get("is_gamified", False)
+        display_type = gamification_info.get("display_type", "")
+
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Message gamification check:")
+        # print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
+        # print(f"🎮 DEBUG: Is gamified: {is_gamified}")
+        # print(f"🎮 DEBUG: Display type: {display_type}")
+        # print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
+
+        if is_gamified and display_type == "enhanced_visual":
+            # print(f"🎮 DEBUG: Calling _render_gamified_message")
+            # Render enhanced gamified challenge
+            _render_gamified_message(message, mentor_label)
+        else:
+            # print(f"🎮 DEBUG: Rendering normal message")
+            pass
+            # Render normal message
+            st.markdown(
+                f"""
+                <div class="message agent-message">
+                    <div class="message-avatar agent-avatar"></div>
+                    <div class="message-content agent-content">
+                        <div class="message-header">
+                            <span class="agent-name">{mentor_label}</span>
+                        </div>
+                        <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
+                        <div class="message-time">{_format_timestamp(message.get("timestamp"))}</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # Display generated image if present in assistant message
+            print(f"🎨 DEBUG: Checking for generated_image in message: {bool(message.get('generated_image'))}")
+            if message.get("generated_image"):
+                print(f"🎨 DEBUG: Found generated_image in message, calling render function")
+                _render_generated_image_in_chat(message["generated_image"])
+            else:
+                print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
+
+
+def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
+    """Render a gamified challenge message with BOTH agent response AND interactive game."""
+    try:
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Starting gamified message rendering")
+        # print(f"🎮 DEBUG: Message keys: {list(message.keys())}")
+        # print(f"🎮 DEBUG: Gamification info: {message.get('gamification', {})}")
+
+        # Import the gamification components
+        from dashboard.ui.gamification_components import render_gamified_challenge
+
+        # Show the mentor header first
         st.markdown(
             f"""
-            <div class="message agent-message">
+            <div class="message agent-message gamified-message">
                 <div class="message-avatar agent-avatar"></div>
                 <div class="message-content agent-content">
                     <div class="message-header">
-                        <span class="agent-name">{mentor_label}</span>
+                        <span class="agent-name">🎮 {mentor_label} - Enhanced Challenge!</span>
                     </div>
-                    <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
-                    <div class="message-time">{_format_timestamp(message.get("timestamp"))}</div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
+        # STEP 1: Show the agent's response in normal chat bubble format
+        agent_response = message.get("content", "")
+        if agent_response and agent_response.strip():
+            # Clean the agent response from any HTML artifacts
+            clean_agent_response = _clean_agent_response(agent_response)
+
+            if clean_agent_response:
+                # Render as normal chat message bubble
+                st.markdown(
+                    f"""
+                    <div class="message agent-message">
+                        <div class="message-avatar agent-avatar"></div>
+                        <div class="message-content agent-content">
+                            <div class="message-header">
+                                <span class="agent-name">{mentor_label}</span>
+                            </div>
+                            <div class="message-text">{safe_markdown_to_html(clean_agent_response)}</div>
+                            <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+        # STEP 2: Then show the interactive game as an ENHANCEMENT
+        gamification_info = message.get("gamification", {})
+        challenge_data = gamification_info.get("challenge_data", {})
+
+        # STEP 3: Prepare contextual challenge data for the game
+        # Extract user's original message for contextual game generation
+        user_message = challenge_data.get("user_message", "")
+        if not user_message:
+            # Try to get from session state or message history
+            if hasattr(st.session_state, 'messages') and st.session_state.messages:
+                for msg in reversed(st.session_state.messages):
+                    if msg.get("role") == "user":
+                        user_message = msg.get("content", "")
+                        break
+
+        # Ensure challenge_data has all required fields for CONTEXTUAL game generation
+        if not challenge_data:
+            challenge_data = {}
+
+        challenge_data.update({
+            "user_message": user_message,  # Pass user's actual question for contextual games
+            "challenge_type": challenge_data.get("challenge_type") or gamification_info.get("challenge_type", "constraint_challenge"),  # FIXED: Don't override existing challenge_type
+            "building_type": gamification_info.get("building_type", "community center"),
+            "mentor_label": mentor_label,
+            "gamification_applied": True  # Ensure games are contextual, not hardcoded
+        })
+
+        # PERFORMANCE: Disable debug prints
+        # print(f"🎮 DEBUG: Challenge data keys: {list(challenge_data.keys())}")
+        # print(f"🎮 DEBUG: About to call enhanced gamification renderer")
+
+        # STEP 4: Render contextual interactive game (more subtle)
+        st.markdown("**◉ Interactive Challenge**")
+        st.markdown("*Explore this concept through an interactive experience:*")
+
+        # Use enhanced gamification system for contextual games
+        try:
+            from dashboard.ui.enhanced_gamification import render_enhanced_gamified_challenge, inject_gamification_css
+
+            # Inject CSS for animations
+            inject_gamification_css()
+
+            # Render enhanced gamification with user's context
+            render_enhanced_gamified_challenge(challenge_data)
+            # print(f"🎮 DEBUG: Enhanced gamification rendered successfully")
+            pass
+
+        except ImportError as e:
+            # Fallback to original system
+            # print(f"🎮 DEBUG: Enhanced gamification not available ({e}), using fallback")
+            render_gamified_challenge(challenge_data)
+
+        # print(f"🎮 DEBUG: Gamification rendering completed successfully")
+
+        # STEP 5: Add conversation continuity prompt
+        st.markdown("---")
+        st.markdown("💬 **Continue the conversation by sharing your thoughts, questions, or insights from this challenge.**")
+
+        # Add timestamp
+        st.markdown(
+            f"""
+            <div style="text-align: right; color: #888; font-size: 0.8em; margin-top: 10px;">
+                {_format_timestamp(message.get("timestamp", ""))}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # print(f"🎮 DEBUG: Gamified message rendering completed successfully")
+
+    except Exception as e:
+        print(f"⚠️ Error rendering gamified message: {e}")
+        import traceback
+        traceback.print_exc()
+        # Fallback to normal message rendering
+        st.markdown(
+            f"""
+            <div class="message agent-message">
+                <div class="message-avatar agent-avatar"></div>
+                <div class="message-content agent-content">
+                    <div class="message-header">
+                        <span class="agent-name">🎮 {mentor_label}</span>
+                    </div>
+                    <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
+                    <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+def _render_generated_image_in_chat(generated_image: dict):
+    """Render a generated image within the chat interface."""
+    try:
+        print(f"🎨 DEBUG: Attempting to render generated image")
+        print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys()) if generated_image else 'None'}")
+
+        if not generated_image:
+            print(f"❌ DEBUG: No generated_image data provided")
+            return
+
+        if not generated_image.get('url') and not generated_image.get('local_path'):
+            print(f"❌ DEBUG: No URL or local_path found in generated_image")
+            return
+
+        # Display the image with a nice caption
+        phase = generated_image.get('phase', 'design')
+        style = generated_image.get('style', 'visualization')
+
+        st.markdown(f"""
+        <div style="margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+            <div style="font-weight: bold; color: #007bff; margin-bottom: 8px;">
+                🎨 AI-Generated {phase.title()} Visualization
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Display the actual image - handle cloud vs local deployment
+        image_source = None
+        source_type = "unknown"
+
+        # Check if we're running on Streamlit Cloud
+        is_cloud = (
+            os.environ.get('STREAMLIT_SHARING_MODE') or
+            'streamlit.app' in os.environ.get('HOSTNAME', '') or
+            os.environ.get('STREAMLIT_SERVER_PORT') or
+            'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
+        )
+
+        if is_cloud:
+            # On Streamlit Cloud, prefer URL over local path since local files don't persist
+            image_source = generated_image.get('url') or generated_image.get('local_path')
+            source_type = "URL (cloud)" if generated_image.get('url') else "local (cloud)"
+        else:
+            # On local deployment, prefer local path over URL for reliability
+            image_source = generated_image.get('local_path') or generated_image.get('url')
+            source_type = "local file" if generated_image.get('local_path') else "URL"
+
+        print(f"🎨 DEBUG: Cloud deployment: {is_cloud}")
+        print(f"🎨 DEBUG: Image source: {image_source}")
+        print(f"🎨 DEBUG: Source type: {source_type}")
+
+        # Validate URL accessibility if using URL source
+        if image_source and image_source.startswith('http'):
+            try:
+                import requests
+                response = requests.head(image_source, timeout=5)
+                print(f"🎨 DEBUG: URL accessibility check: {response.status_code}")
+                if response.status_code != 200:
+                    print(f"⚠️ WARNING: Image URL may not be accessible: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ WARNING: Could not verify URL accessibility: {e}")
+
+        if image_source:
+            try:
+                st.image(
+                    image_source,
+                    caption=f"AI-generated {phase} visualization ({style})",
+                    use_container_width=True
+                )
+                print(f"✅ Displayed generated image from: {source_type}")
+            except Exception as e:
+                print(f"❌ Error displaying image from {source_type}: {e}")
+                # Fallback: try the other source if available
+                fallback_source = generated_image.get('url') if source_type.startswith('local') else generated_image.get('local_path')
+                if fallback_source:
+                    try:
+                        st.image(
+                            fallback_source,
+                            caption=f"AI-generated {phase} visualization ({style})",
+                            use_container_width=True
+                        )
+                        print(f"✅ Displayed generated image from fallback source")
+                    except Exception as e2:
+                        st.error("❌ Generated image could not be displayed - both sources failed")
+                        print(f"❌ Both image sources failed: {e}, {e2}")
+                else:
+                    st.error("❌ Generated image could not be displayed - primary source failed and no fallback available")
+        else:
+            st.error("❌ Generated image could not be displayed - no valid source found")
+            print(f"❌ No valid image source found in generated_image: {list(generated_image.keys())}")
+
+        # Add feedback buttons in a compact layout
+        st.markdown("**Does this visualization match your design thinking?**")
+
+        col1, col2, col3 = st.columns(3)
+
+        # Use unique keys based on image URL to avoid conflicts
+        image_key = str(hash(generated_image['url']))[-8:]
+
+        with col1:
+            if st.button("✅ Yes", key=f"feedback_yes_{image_key}", help="This captures my ideas well"):
+                st.success("Great! This confirms we're aligned on your design direction.")
+                _store_image_feedback(generated_image, 'positive')
+
+        with col2:
+            if st.button("🤔 Partially", key=f"feedback_partial_{image_key}", help="Close, but needs adjustment"):
+                st.info("Thanks for the feedback! Let's continue refining your design ideas.")
+                _store_image_feedback(generated_image, 'partial')
+
+        with col3:
+            if st.button("❌ No", key=f"feedback_no_{image_key}", help="This doesn't match my vision"):
+                st.warning("No problem! Let's continue exploring your design ideas.")
+                _store_image_feedback(generated_image, 'negative')
+
+        # Show generation details in an expander
+        with st.expander("🔍 View Generation Details"):
+            st.markdown(f"**Phase:** {generated_image.get('phase', 'Unknown')}")
+            st.markdown(f"**Style:** {generated_image.get('style', 'Unknown')}")
+            st.markdown(f"**Prompt:** {generated_image.get('prompt', 'No prompt available')}")
+            if generated_image.get('local_path'):
+                st.markdown(f"**Saved to:** `{generated_image['local_path']}`")
+
+    except Exception as e:
+        st.error(f"Error displaying generated image: {e}")
+        print(f"❌ Error displaying generated image in chat: {e}")
+
+def _store_image_feedback(generated_image: dict, feedback: str):
+    """Store user feedback for generated images."""
+    try:
+        import streamlit as st
+        from datetime import datetime
+
+        if 'image_feedback' not in st.session_state:
+            st.session_state.image_feedback = []
+
+        st.session_state.image_feedback.append({
+            'phase': generated_image.get('phase'),
+            'style': generated_image.get('style'),
+            'url': generated_image.get('url'),
+            'feedback': feedback,
+            'timestamp': datetime.now().isoformat()
+        })
+
+        print(f"✅ Stored {feedback} feedback for {generated_image.get('phase')} image")
+
+    except Exception as e:
+        print(f"❌ Error storing image feedback: {e}")
 
 def _format_timestamp(timestamp: str) -> str:
     """Format timestamp for display."""
     if not timestamp:
         return ""
-    
+
     try:
         from datetime import datetime
         dt = datetime.fromisoformat(timestamp)
@@ -349,17 +664,38 @@ def render_mode_configuration():
     """, unsafe_allow_html=True)
 
 
-def render_input_mode_selection():
-    """Render input mode selection component."""
-    input_mode = st.radio(
-        "Choose your input mode:",
-        INPUT_MODES,
-        index=0,
-        help="Text Only: Describe your project without images\n"
-             "Image + Text: Upload image and describe project\n"
-             "Image Only: Analyze image without text description"
-    )
-    return input_mode
+def render_initial_image_upload():
+    """Render initial image upload using popover - replaces input mode selection."""
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+
+        # Center the popover
+        col_left, col_center, col_right = st.columns([1, 1, 1])
+        with col_center:
+            st.markdown("""
+            <style>
+            div[data-testid="popover"] {
+                margin-top: 0.5rem !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+            with st.popover("📷 Upload Image", help="Upload your architectural drawing, plan, or sketch"):
+                uploaded_file = st.file_uploader(
+                    "Choose an image",
+                    type=['png', 'jpg', 'jpeg'],
+                    key="initial_image_upload"
+                )
+
+                if uploaded_file:
+                    st.success(f"✅ {uploaded_file.name} uploaded successfully!")
+
+            # Handle the case where no image is uploaded
+            if 'uploaded_file' not in locals():
+                uploaded_file = None
+
+    return uploaded_file
 
 
 def render_mentor_type_selection():
@@ -369,7 +705,8 @@ def render_mentor_type_selection():
         MENTOR_TYPES,
         index=0,
         help="Socratic Agent: Multi-agent system that challenges and guides thinking\n"
-             "Raw GPT: Direct GPT responses for comparison"
+             "Raw GPT: Direct GPT responses for comparison\n"
+             "No AI: Hardcoded questions only, no AI assistance (control group)"
     )
     return mentor_type
 
@@ -395,34 +732,40 @@ def render_skill_level_selection():
     return skill_level
 
 
-def render_project_description_input(template_text: str, input_mode: str):
-    """Render project description input area."""
-    if input_mode in ["Text Only", "Image + Text"]:
-        placeholder_text = ("Describe your architectural project here..." 
-                          if input_mode == "Text Only" 
-                          else "Describe your project along with the uploaded image...")
-        
+def render_project_description_input(template_text: str):
+    """Render project description input area with inline image upload."""
+    # Create columns for project description and image upload
+    col1, col2 = st.columns([0.85, 0.15])
+
+    with col1:
         project_description = st.text_area(
             "Project Description:",
             value=template_text,
-            placeholder=placeholder_text,
+            placeholder="Describe your architectural project here...",
             height=120,
             help="Provide details about your architectural project, design goals, constraints, or specific questions"
         )
-        return project_description
-    return ""
+
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)  # Add some spacing to align with text area
+        with st.popover("📷 Upload Image", help="Upload your architectural drawing, plan, or sketch"):
+            uploaded_file = st.file_uploader(
+                "Choose an image",
+                type=['png', 'jpg', 'jpeg'],
+                key="inline_image_upload"
+            )
+
+            if uploaded_file:
+                st.success(f"✅ {uploaded_file.name} uploaded!")
+
+        # Handle the case where no image is uploaded
+        if 'uploaded_file' not in locals():
+            uploaded_file = None
+
+    return project_description, uploaded_file
 
 
-def render_file_upload(input_mode: str):
-    """Render file upload component."""
-    uploaded_file = None
-    if input_mode in ["Image + Text", "Image Only"]:
-        uploaded_file = st.file_uploader(
-            "Upload your architectural drawing",
-            type=['png', 'jpg', 'jpeg'],
-            help="Upload a clear image of your architectural design, plan, or sketch"
-        )
-    return uploaded_file
+# render_file_upload function removed - replaced by render_initial_image_upload
 
 
 def render_chat_history():
@@ -431,8 +774,8 @@ def render_chat_history():
     render_chat_interface()
 
 
-def get_chat_input() -> str:
-    """Get chat input from user with enhanced styling and experience."""
+def get_chat_input() -> tuple[str, any]:
+    """Get chat input from user with enhanced styling and seamless image upload."""
     # Enhanced placeholder text based on context
     if 'messages' in st.session_state and st.session_state.messages:
         # Check if this is a follow-up to a question
@@ -446,14 +789,37 @@ def get_chat_input() -> str:
             placeholder = "Continue the conversation..."
     else:
         placeholder = "Start your architectural design journey..."
-    
-    # Get the chat input with enhanced styling
-    user_input = st.chat_input(
-        placeholder,
-        key="enhanced_chat_input"
-    )
-    
-    return user_input
+
+    # Create columns for chat input and image upload
+    col1, col2 = st.columns([0.9, 0.1])
+
+    with col1:
+        # Get the chat input with enhanced styling
+        user_input = st.chat_input(
+            placeholder,
+            key="enhanced_chat_input"
+        )
+
+    with col2:
+        st.markdown("""
+        <style>
+        div[data-testid="popover"] {
+            margin-top: 2rem !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Initialize uploaded_image
+        uploaded_image = None
+
+        with st.popover("📷", help="Upload an image to analyze"):
+            uploaded_image = st.file_uploader(
+                "Choose an image",
+                type=['png', 'jpg', 'jpeg'],
+                key="seamless_image_upload"
+            )
+
+    return user_input, uploaded_image
 
 
 
@@ -466,12 +832,52 @@ def response_contains_questions(text: str) -> bool:
     return text.count('?') >= 1
 
 
-def validate_input(input_mode: str, project_description: str, uploaded_file) -> tuple[bool, str]:
-    """Validate input based on selected mode."""
-    if input_mode == "Text Only" and not project_description.strip():
-        return False, "📝 Please describe your project for text-only analysis"
-    elif input_mode in ["Image + Text", "Image Only"] and not uploaded_file:
-        return False, "🖼️ Please upload an image for image analysis"
-    elif input_mode == "Image + Text" and not project_description.strip():
-        return False, "📝 Please describe your project along with the image"
-    return True, "" 
+def validate_input(project_description: str, uploaded_file) -> tuple[bool, str]:
+    """Validate input - requires either description or image."""
+    if not project_description.strip() and not uploaded_file:
+        return False, "📝 Please provide either a project description or upload an image to get started"
+    return True, ""
+
+
+def _clean_agent_response(agent_response: str) -> str:
+    """Clean agent response from HTML artifacts and return meaningful content."""
+    if not agent_response:
+        return ""
+
+    # Remove HTML artifacts that might have been captured
+    import re
+
+    # Remove HTML comments
+    clean_content = re.sub(r'<!--.*?-->', '', agent_response, flags=re.DOTALL)
+
+    # Remove HTML tags
+    clean_content = re.sub(r'<[^>]+>', '', clean_content)
+
+    # Remove lines that are just CSS properties or HTML attributes
+    lines = clean_content.split('\n')
+    clean_lines = []
+
+    for line in lines:
+        line = line.strip()
+        # Skip empty lines
+        if not line:
+            continue
+        # Skip lines that are just CSS properties or HTML attributes
+        if (line.startswith('font-size:') or line.startswith('margin:') or
+            line.startswith('color:') or line.startswith('background:') or
+            line.startswith('border:') or line.startswith('padding:') or
+            line.startswith('text-shadow:') or line.startswith('animation:') or
+            line.startswith('width:') or line.startswith('height:') or
+            line.startswith('border-radius:') or line.startswith('letter-spacing:') or
+            'style=' in line or line.startswith('">') or line == '>' or line == '"):'):
+            continue
+        # Keep meaningful content lines
+        clean_lines.append(line)
+
+    clean_content = '\n'.join(clean_lines)
+
+    # If content is too short or seems like artifacts, return empty
+    if len(clean_content.strip()) < 10 or clean_content.strip().lower() in ['challenge', 'game', 'interactive']:
+        return ""
+
+    return clean_content.strip()

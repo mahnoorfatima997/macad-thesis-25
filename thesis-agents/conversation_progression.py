@@ -1121,15 +1121,16 @@ class ConversationProgressionManager:
                 if design_brief:
                     # Comprehensive building type detection using enhanced patterns
                     project_context['building_type'] = self._extract_building_type_from_text(design_brief)
-                    
-                    # Also check recent messages if no design brief
+                else:
+                    # Only check FIRST user message if no design brief (not all messages)
                     if hasattr(self.current_state, 'messages') and self.current_state.messages:
-                        for msg in reversed(self.current_state.messages):
-                            if msg.get('role') == 'user':
-                                user_building_type = self._extract_building_type_from_text(msg['content'])
-                                if user_building_type != "mixed_use":
-                                    project_context['building_type'] = user_building_type
-                                    break
+                        user_messages = [msg for msg in self.current_state.messages if msg.get('role') == 'user']
+                        if user_messages:
+                            # Only use the FIRST user message for building type detection
+                            first_user_message = user_messages[0]['content']
+                            user_building_type = self._extract_building_type_from_text(first_user_message)
+                            if user_building_type != "mixed_use":
+                                project_context['building_type'] = user_building_type
         
                 # Assess complexity based on brief content
                 brief_lower = design_brief.lower()

@@ -1,0 +1,345 @@
+# =============================================================================
+# MEGA ARCHITECTURAL MENTOR - UNIFIED REQUIREMENTS
+# =============================================================================
+# Complete requirements for the unified architectural dashboard system
+# Includes: Main Chat, Test Dashboard, Benchmarking Dashboard, and all components
+# =============================================================================
+
+# =============================================================================
+# CORE WEB FRAMEWORK & INTERFACE
+# =============================================================================
+streamlit
+gradio
+fastapi
+uvicorn
+starlette
+httpx
+websockets
+
+# =============================================================================
+# AI & MACHINE LEARNING CORE
+# =============================================================================
+openai
+langchain
+langchain-community
+langchain-core
+langchain-text-splitters
+langchain-openai
+langgraph
+langsmith
+transformers
+torch
+torchvision
+torch-geometric
+tokenizers
+tiktoken
+
+# =============================================================================
+# COMPUTER VISION & IMAGE PROCESSING
+# =============================================================================
+opencv-python-headless
+pillow
+imageio
+albumentations
+ifcopenshell
+
+# =============================================================================
+# DATA PROCESSING & ANALYSIS
+# =============================================================================
+numpy
+pandas
+scikit-learn
+scipy
+matplotlib
+seaborn
+plotly
+kaleido
+colorcet
+networkx
+pyvis
+pyvista
+vtk
+
+# =============================================================================
+# VECTOR DATABASE & EMBEDDINGS
+# =============================================================================
+chromadb
+pysqlite3-binary  
+sentence-transformers
+faiss-cpu
+
+# =============================================================================
+# NATURAL LANGUAGE PROCESSING
+# =============================================================================
+spacy
+textblob
+nltk
+regex
+
+# =============================================================================
+# FILE HANDLING & DOCUMENT PROCESSING
+# =============================================================================
+PyPDF2
+pypdf
+openpyxl
+xlsxwriter
+python-multipart
+aiofiles
+filetype
+pydub
+dropbox
+
+# =============================================================================
+# WEB SCRAPING & EXTERNAL DATA
+# =============================================================================
+beautifulsoup4
+lxml
+requests
+aiohttp
+httpx-sse
+
+# =============================================================================
+# DATABASE & STORAGE
+# =============================================================================
+sqlalchemy
+aiosqlite
+asyncpg
+redis
+neo4j
+
+# =============================================================================
+# CONFIGURATION & ENVIRONMENT
+# =============================================================================
+python-dotenv
+python-decouple
+pydantic
+pydantic-settings
+pydantic_core
+python-json-logger
+
+# =============================================================================
+# UTILITIES & HELPERS
+# =============================================================================
+orjson
+tqdm
+tabulate
+rich
+click
+typer
+colorama
+coloredlogs
+humanfriendly
+
+# =============================================================================
+# ASYNC & CONCURRENCY
+# =============================================================================
+asyncio-mqtt
+nest-asyncio
+anyio
+sniffio
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+pytest
+pytest-cov
+black
+flake8
+ruff
+
+# =============================================================================
+# MONITORING & LOGGING
+# =============================================================================
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation
+opentelemetry-instrumentation-fastapi
+posthog
+
+# =============================================================================
+# SECURITY & AUTHENTICATION
+# =============================================================================
+bcrypt
+cryptography
+PyJWT
+PyNaCl
+google-auth
+
+# =============================================================================
+# ADDITIONAL DEPENDENCIES
+# =============================================================================
+# These are dependencies that may be required by the above packages
+attrs
+certifi
+charset-normalizer
+idna
+urllib3
+packaging
+setuptools
+wheel
+typing_extensions
+zipp
+importlib_metadata
+importlib_resources
+six
+python-dateutil
+pytz
+Jinja2
+MarkupSafe
+itsdangerous
+Werkzeug
+blinker
+flask-cors
+Flask
+marshmallow
+tenacity
+backoff
+dataclasses-json
+pydub
+ffmpy
+watchdog
+watchfiles
+websocket-client
+websockets
+tornado
+pydeck
+protobuf
+grpcio
+flatbuffers
+onnxruntime
+joblib
+threadpoolctl
+shapely
+contourpy
+cycler
+fonttools
+kiwisolver
+pyparsing
+mpmath
+sympy
+more-itertools
+mmh3
+frozenlist
+multidict
+yarl
+aiohappyeyeballs
+aiosignal
+h11
+httpcore
+httptools
+asgiref
+greenlet
+exceptiongroup
+fsspec
+platformdirs
+distlib
+virtualenv
+userpath
+pipenv
+pipx
+build
+pyproject_hooks
+tomlkit
+toml
+semantic-version
+griffe
+mypy_extensions
+overrides
+narwhals
+llama-index-core
+llama-parse
+llama-cloud
+llama-cloud-services
+huggingface-hub
+gradio_client
+FlashRank
+banks
+jiter
+groovy
+durationpy
+dotenv
+distro
+dirtyjson
+Deprecated
+cachetools
+argcomplete
+annotated-types
+et_xmlfile
+isodate
+jiter
+lark
+langsmith
+markdown-it-py
+mdurl
+matrix-client
+pooch
+propcache
+pyasn1==0.6.1
+pyasn1_modules==0.4.2
+PyGithub
+Pygments
+PyPika
+pyreadline3
+requests-oauthlib
+requests-toolbelt
+rpds-py
+rsa
+safehttpx
+scooby
+shellingham
+smmap
+tzdata
+wakepy
+wrapt
+zstandard
+
+# =============================================================================
+# OPTIONAL GPU ACCELERATION (Uncomment if using CUDA)
+# =============================================================================
+# cuda-python
+# cupy-cuda12x
+
+# =============================================================================
+# INSTALLATION INSTRUCTIONS
+# =============================================================================
+# 
+# 1. BASIC INSTALLATION:
+#    pip install -r requirements_mega.txt
+#
+# 2. GPU ACCELERATION (optional):
+#    # Install CUDA toolkit first, then uncomment GPU lines above
+#    pip install cuda-python cupy-cuda12x
+#
+# 3. SPACY MODEL DOWNLOAD (required for NLP features):
+#    python -m spacy download en_core_web_sm
+#
+# =============================================================================
+# SYSTEM REQUIREMENTS
+# =============================================================================
+#
+# MINIMUM:
+# - 4GB RAM
+# - Python 3.8+
+# - OpenAI API key
+#
+# RECOMMENDED:
+# - 8GB+ RAM
+# - GPU with 4GB+ VRAM (for faster processing)
+# - Python 3.8+
+# - OpenAI API key
+#
+# =============================================================================
+# COMPONENTS INCLUDED
+# =============================================================================
+#
+# This requirements file includes dependencies for:
+# - Main Chat Interface (Multi-agent system)
+# - Test Dashboard (Research testing environment)
+# - Benchmarking Dashboard (Cognitive analysis)
+# - Linkography Analysis (Design process visualization)
+# - Graph ML Visualizations (Interactive graphs)
+# - Anthropomorphism Analysis (AI interaction patterns)
+# - Data Collection & Export (Comprehensive logging)
+# - All supporting utilities and tools
+#
+# ============================================================================= 

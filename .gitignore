@@ -2,6 +2,7 @@
 mega_env/
 venv/
 segment-anything-2/
+myenv/
 
 # Byte-compiled / cache files
 __pycache__/

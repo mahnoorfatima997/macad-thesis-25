@@ -4,15 +4,79 @@ Dashboard configuration settings and constants.
 
 import os
 import streamlit as st
-from dotenv import load_dotenv
+from typing import Optional
+import logging
 
-# Load environment variables from .env in common locations
-# 1) Current working directory
-load_dotenv()
-# 2) Project root relative to this file
-_ROOT_ENV = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
-if os.path.exists(_ROOT_ENV):
-    load_dotenv(_ROOT_ENV, override=True)
+logger = logging.getLogger(__name__)
+
+class SecretsManager:
+    """
+    Centralized secrets manager that handles both Streamlit secrets and environment variables.
+    Prioritizes st.secrets for Streamlit deployment, falls back to environment variables for local development.
+    """
+
+    @staticmethod
+    def get_secret(key: str, default: str = "") -> str:
+        """
+        Get a secret value from Streamlit secrets or environment variables.
+
+        Args:
+            key: The secret key to retrieve
+            default: Default value if key is not found
+
+        Returns:
+            The secret value or default
+        """
+        # First try Streamlit secrets (for deployment)
+        try:
+            if hasattr(st, 'secrets') and key in st.secrets:
+                value = st.secrets[key]
+                if value:  # Only return non-empty values
+                    logger.debug(f"✅ Secret '{key}' loaded from st.secrets")
+                    return str(value)
+        except Exception as e:
+            logger.debug(f"Could not access st.secrets for '{key}': {e}")
+
+        # Fallback to environment variables (for local development)
+        try:
+            # Try to load from .env if not already loaded
+            from dotenv import load_dotenv
+            load_dotenv(override=False)  # Don't override existing env vars
+
+            # Also try project root .env
+            root_env = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+            if os.path.exists(root_env):
+                load_dotenv(root_env, override=False)
+        except ImportError:
+            pass  # python-dotenv not available
+        except Exception as e:
+            logger.debug(f"Could not load .env files: {e}")
+
+        # Get from environment
+        value = os.getenv(key, default)
+        if value and value != default:
+            logger.debug(f"✅ Secret '{key}' loaded from environment variables")
+        elif not value:
+            logger.warning(f"⚠️ Secret '{key}' not found in st.secrets or environment variables")
+
+        return value
+
+    @staticmethod
+    def get_bool_secret(key: str, default: bool = False) -> bool:
+        """Get a boolean secret value."""
+        value = SecretsManager.get_secret(key, str(default).lower())
+        return value.lower() in ('true', '1', 'yes', 'on')
+
+    @staticmethod
+    def get_int_secret(key: str, default: int = 0) -> int:
+        """Get an integer secret value."""
+        try:
+            return int(SecretsManager.get_secret(key, str(default)))
+        except (ValueError, TypeError):
+            return default
+
+# Global secrets manager instance
+secrets = SecretsManager()
 
 # Streamlit page configuration
 PAGE_CONFIG = {
@@ -25,7 +89,7 @@ PAGE_CONFIG = {
 INPUT_MODES = ["Text Only", "Image + Text", "Image Only"]
 
 # Mentor type options for research comparison
-MENTOR_TYPES = ["Socratic Agent", "Raw GPT"]
+MENTOR_TYPES = ["Socratic Agent", "Raw GPT", "No AI"]
 
 # Template design prompts
 TEMPLATE_PROMPTS = {
@@ -63,11 +127,26 @@ ASSESSMENT_MODES = [
 EXPORT_FORMATS = ["JSON", "CSV", "Excel"]
 
 def get_api_key() -> str:
-    """Get API key from environment or Streamlit secrets"""
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        try:
-            api_key = st.secrets.get('OPENAI_API_KEY', '')
-        except:
-            api_key = ''
-    return api_key 
+    """Get API key from Streamlit secrets or environment variables"""
+    return secrets.get_secret('OPENAI_API_KEY')
+
+def get_tavily_api_key() -> str:
+    """Get Tavily API key from Streamlit secrets or environment variables"""
+    return secrets.get_secret('TAVILY_API_KEY')
+
+def get_replicate_api_token() -> str:
+    """Get Replicate API token from Streamlit secrets or environment variables"""
+    return secrets.get_secret('REPLICATE_API_TOKEN')
+
+def get_langsmith_api_key() -> str:
+    """Get LangSmith API key from Streamlit secrets or environment variables"""
+    return secrets.get_secret('LANGSMITH_API_KEY')
+
+def get_langsmith_config() -> dict:
+    """Get LangSmith configuration from Streamlit secrets or environment variables"""
+    return {
+        'api_key': secrets.get_secret('LANGSMITH_API_KEY'),
+        'endpoint': secrets.get_secret('LANGSMITH_ENDPOINT', 'https://api.smith.langchain.com'),
+        'project': secrets.get_secret('LANGSMITH_PROJECT', 'mentor'),
+        'tracing': secrets.get_bool_secret('LANGSMITH_TRACING', True)
+    }

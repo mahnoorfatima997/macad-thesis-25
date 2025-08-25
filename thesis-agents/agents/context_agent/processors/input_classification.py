@@ -92,11 +92,13 @@ class InputClassificationProcessor:
             manual_interaction_type = self._classify_interaction_type(input_text, state)
 
             # Define interaction types that should use manual override (priority over AI)
+            # REDUCED LIST: Let AI handle knowledge_request and general_statement for better context understanding
             manual_override_types = [
                 "confusion_expression", "direct_answer_request",
-                "knowledge_request", "implementation_request", "example_request",
-                "feedback_request", "technical_question", "improvement_seeking",
-                "general_question", "general_statement"
+                "implementation_request", "example_request",
+                "feedback_request", "technical_question", "improvement_seeking"
+                # Removed: "knowledge_request", "general_question", "general_statement"
+                # → Let AI classification handle these for better context awareness
             ]
 
             # If it matches a specific pattern, prioritize this over AI classification
@@ -206,24 +208,42 @@ class InputClassificationProcessor:
             # If it's a response, classify based on response content
             return self._classify_response_content(input_text, state)
 
-        # 2. Example Request - HIGH PRIORITY
+        # 2. Example Request - HIGH PRIORITY (More specific patterns to avoid conflicts)
         example_request_patterns = [
-            "show me examples", "can you give me examples", "provide me with examples",
-            "can you show me precedents", "I need some references", "give me some examples",
-            "can you provide", "precedent projects", "case studies", "examples of",
-            "can you give some examples", "can you give examples", "give me examples",
+            # Explicit example requests
+            "show me examples", "give me examples", "provide examples", "need examples",
+            "can you give me examples", "can you show me examples", "can you provide examples",
+            # Project-specific requests
             "example project", "example projects", "example building", "example buildings",
-            "museum examples", "building examples", "project examples", "design examples"
+            "project examples", "building examples", "design examples",
+            "precedent projects", "precedents", "case studies", "case study",
+            # Specific building type examples
+            "adaptive reuse projects", "community center projects", "projects for",
+            "museum examples", "residential examples", "commercial examples",
+            # References and inspiration
+            "references", "inspiration", "built projects", "real projects"
         ]
-        if any(pattern in input_lower for pattern in example_request_patterns):
+        # Only classify as example_request if it contains "example", "project", "precedent", "case", or "reference"
+        has_example_keywords = any(keyword in input_lower for keyword in ["example", "project", "precedent", "case", "reference"])
+        if has_example_keywords and any(pattern in input_lower for pattern in example_request_patterns):
             return "example_request"
 
-        # 3. Knowledge Request - HIGH PRIORITY
+        # 3. Knowledge Request - HIGH PRIORITY (Avoid conflicts with example requests)
         knowledge_request_patterns = [
-            "tell me about", "what are", "explain", "describe",
-            "I want to learn about", "can you explain"
+            # Direct knowledge requests (without example keywords)
+            "tell me about", "what are", "what is", "explain", "describe",
+            "how does", "why does", "when should", "where should",
+            "I want to learn about", "can you explain", "can you describe",
+            "definition of", "meaning of", "concept of",
+            # Enhanced patterns for program elements and design guidance
+            "what program elements", "program elements", "what elements",
+            "what should i consider", "what do you suggest", "what would you suggest",
+            "what considerations", "what factors", "what aspects",
+            "curious about", "wondering about", "interested in learning",
+            "what components", "key considerations", "important factors"
         ]
-        if any(pattern in input_lower for pattern in knowledge_request_patterns):
+        # Only classify as knowledge_request if it doesn't have example keywords
+        if not has_example_keywords and any(pattern in input_lower for pattern in knowledge_request_patterns):
             return "knowledge_request"
 
         # ENHANCED PATTERN SYSTEM - Level 2: Context-Dependent Patterns
@@ -308,12 +328,21 @@ class InputClassificationProcessor:
         if any(pattern in input_lower for pattern in feedback_patterns):
             return "feedback_request"
 
-        # 11. Technical question detection
+        # 11. Technical question detection - FIXED: More specific patterns to avoid false positives
+        # FIXED: Make "how to" more specific to avoid catching design questions like "how to organize"
         technical_patterns = [
-            "how to", "technical", "specification", "requirement", "standard",
-            "code", "regulation", "material", "system", "structure"
+            "how to calculate", "how to size", "how to specify", "how to meet code",
+            "how to comply", "technical", "specification", "requirement", "standard",
+            "code", "regulation", "building code", "ada requirement"
         ]
-        if any(pattern in input_lower for pattern in technical_patterns):
+        # Additional check: only classify as technical if it's asking about specific technical procedures
+        has_technical_context = any(context in input_lower for context in [
+            "calculate", "size", "specify", "code", "standard", "requirement",
+            "regulation", "specification", "technical", "engineering"
+        ])
+        has_technical_pattern = any(pattern in input_lower for pattern in technical_patterns)
+
+        if has_technical_pattern and has_technical_context:
             return "technical_question"
 
         # 12. Project description detection - HIGH PRIORITY: Detect clear project descriptions (CHECK FIRST)
@@ -396,9 +425,19 @@ class InputClassificationProcessor:
 
         # ENHANCED PATTERN SYSTEM - Level 5: General Classification
 
-        # 15. Enhanced general statement detection - MOVED TO LOWER PRIORITY
+        # 15. Enhanced general statement detection - CONTEXT-AWARE
+        # Check for knowledge-seeking patterns first, even with "I am"
+        knowledge_seeking_with_i_am = [
+            "i am curious", "i am wondering", "i am asking", "i am interested",
+            "i am looking for", "i am trying to understand", "i am confused about"
+        ]
+        if any(pattern in input_lower for pattern in knowledge_seeking_with_i_am):
+            return "knowledge_request"
+
+        # Then check for general statements (but exclude knowledge-seeking)
         statement_patterns = [
-            "i am", "i have", "i want", "i need", "i like", "i prefer",
+            "i am working", "i am thinking", "i am planning", "i am designing",
+            "i have", "i want", "i need", "i like", "i prefer",
             "this is", "that is", "it is", "there is", "here is"
         ]
         if any(pattern in input_lower for pattern in statement_patterns):
@@ -494,7 +533,7 @@ class InputClassificationProcessor:
         describing_project = any(indicator in input_lower for indicator in project_description_indicators)
 
         if describing_project:
-            return "design_problem"  # User is describing their design approach
+            return "design_exploration"  # User is describing their design approach - changed from design_problem
 
         # Check for other response types
         if any(word in input_lower for word in ["confused", "don't understand", "unclear", "help"]):
@@ -952,7 +991,7 @@ class InputClassificationProcessor:
         Classify the student's input into these clear categories:
 
         1. INTERACTION TYPE (most important for routing):
-        - design_problem: Describing design actions/decisions: "I'm designing", "I will place", "I would organize", "My approach is", "I'd design", "I'll create", "I plan to"
+        - design_exploration: Describing design actions/decisions: "I'm designing", "I will place", "I would organize", "My approach is", "I'd design", "I'll create", "I plan to"
         - example_request: ANY mention of "example", "examples", "project", "projects", "precedent", "case study", "show me", "can you provide", "real project", "built project"
         - feedback_request: Asks for review, feedback, thoughts, critique, evaluation, "what do you think", "how does this look"
         - technical_question: Asks about specific standards, requirements, codes, procedures, "what are the requirements", "how many", "what size", "how do I calculate"
@@ -979,14 +1018,13 @@ class InputClassificationProcessor:
 
         Respond in valid JSON format:
         {{
-            "interaction_type": "design_problem|example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|direct_answer_request|knowledge_seeking|general_statement",
+            "interaction_type": "design_exploration|example_request|feedback_request|technical_question|confusion_expression|improvement_seeking|direct_answer_request|knowledge_seeking|general_statement",
             "confidence_level": "overconfident|uncertain|confident",
             "understanding_level": "low|medium|high",
             "engagement_level": "low|medium|high",
             "is_example_request": true/false,
             "is_feedback_request": true/false,
             "is_technical_question": true/false,
-            "is_design_problem": true/false,
             "shows_confusion": true/false,
             "requests_help": true/false,
             "demonstrates_overconfidence": true/false,
@@ -1079,16 +1117,36 @@ class InputClassificationProcessor:
         input_lower = input_text.lower()
         word_count = len(input_text.split())
 
-        # ENHANCED EXAMPLE REQUEST DETECTION - MORE PATTERNS
+        # ENHANCED EXAMPLE REQUEST DETECTION - MORE SPECIFIC PATTERNS
         example_patterns = [
-            r"\bexample\b", r"\bexamples\b", r"\bproject\b", r"\bprojects\b",
-            r"\bprecedent\b", r"\bprecedents\b", r"\bcase study\b", r"\bcase studies\b",
-            r"\bshow me\b", r"\bcan you give\b", r"\bcan you provide\b", r"\bcan you show\b",
-            r"\breal project\b", r"\bbuilt project\b", r"\bactual project\b",
-            r"\breference\b", r"\breferences\b", r"\binspiration\b"
+            r"\bexample\b", r"\bexamples\b", r"\bprecedent\b", r"\bprecedents\b",
+            r"\bcase study\b", r"\bcase studies\b", r"\breference\b", r"\breferences\b",
+            r"\breal project\b", r"\bbuilt project\b", r"\bactual project\b", r"\binspiration\b"
         ]
 
-        is_example_request = any(re.search(pattern, input_lower) for pattern in example_patterns)
+        # Project patterns (only when combined with example keywords)
+        project_patterns = [
+            r"\bproject\b", r"\bprojects\b", r"\bbuilding\b", r"\bbuildings\b"
+        ]
+
+        # Request patterns (only when combined with example keywords)
+        request_patterns = [
+            r"\bshow me\b", r"\bcan you give\b", r"\bcan you provide\b", r"\bcan you show\b"
+        ]
+
+        # Check for example keywords first
+        has_example_keywords = any(re.search(pattern, input_lower) for pattern in example_patterns)
+
+        # Check for project/building keywords
+        has_project_keywords = any(re.search(pattern, input_lower) for pattern in project_patterns)
+
+        # Check for request patterns
+        has_request_patterns = any(re.search(pattern, input_lower) for pattern in request_patterns)
+
+        # Example request is true if:
+        # 1. Has explicit example keywords, OR
+        # 2. Has project keywords AND request patterns (e.g., "show me projects")
+        is_example_request = has_example_keywords or (has_project_keywords and has_request_patterns)
 
         # OVERCONFIDENCE DETECTION (critical for cognitive enhancement)
         overconfident_indicators = [
@@ -1133,24 +1191,10 @@ class InputClassificationProcessor:
         ]
         improvement_seeking = any(indicator in input_lower for indicator in improvement_indicators)
 
-        # Check for design problem patterns (FROMOLDREPO style)
-        design_problem_indicators = [
-            "i'm designing", "i will place", "i would place", "i'd place", "i'll place",
-            "i will organize", "i would organize", "i'd organize", "i'll organize",
-            "i will design", "i would design", "i'd design", "i'll design",
-            "my approach is", "my strategy is", "my plan is", "i plan to",
-            # Enhanced patterns for spatial organization and design decisions
-            "spatial organization", "organize", "arrangement", "layout",
-            "what can i do", "what else can i", "how can i", "how should i",
-            "decide about", "decisions about", "choices for", "options for",
-            "placement", "positioning", "circulation", "flow"
-        ]
-        is_design_problem = any(indicator in input_lower for indicator in design_problem_indicators)
+        # REMOVED: design_problem patterns - these should be classified as design_exploration instead
 
-        # DETERMINE INTERACTION TYPE - PRIORITIZE DESIGN PROBLEMS
-        if is_design_problem:
-            interaction_type = "design_problem"
-        elif is_example_request:
+        # DETERMINE INTERACTION TYPE - REMOVED DESIGN_PROBLEM PRIORITY
+        if is_example_request:
             interaction_type = "example_request"
         elif is_feedback_request:
             interaction_type = "feedback_request"
@@ -1203,7 +1247,7 @@ class InputClassificationProcessor:
             "is_technical_question": is_technical_question,
             "is_feedback_request": is_feedback_request,
             "is_example_request": is_example_request,
-            "is_design_problem": is_design_problem,  # ← ADDED THIS
+            # REMOVED: "is_design_problem" - no longer used
             "shows_confusion": shows_confusion,
             "requests_help": requests_help,
             "demonstrates_overconfidence": overconfidence_score >= 1,

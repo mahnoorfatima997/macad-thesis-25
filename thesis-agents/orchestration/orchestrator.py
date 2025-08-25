@@ -115,6 +115,14 @@ class LangGraphOrchestrator:
         except Exception:
             pass
 
+        # CONTEXT CONSISTENCY: Validate and repair context before routing
+        if student_state:
+            context_validation = student_state.validate_and_repair_context_consistency()
+            if context_validation["repairs_made"]:
+                print(f"🔧 Context repairs made: {context_validation['repairs_made']}")
+            if context_validation["context_stability"] < 0.5:
+                print(f"⚠️ Low context stability: {context_validation['context_stability']:.2f}")
+
         # Get conversation continuity context
         continuity_context = {}
         if student_state:
@@ -144,6 +152,12 @@ class LangGraphOrchestrator:
         decision = self.routing_decision_tree.decide_route(routing_context)
         self.last_routing_decision = decision  # for reasoning access
 
+        # CRITICAL FIX: Update state with enhanced classification from routing decision
+        # This ensures the metadata uses the correct user_intent (not design_problem)
+        if hasattr(decision, 'classification') and decision.classification:
+            state["student_classification"] = decision.classification
+            print(f"🔧 FIXED: Updated classification with user_intent = {decision.classification.get('user_intent', 'unknown')}")
+
         # Update conversation context with routing decision
         if student_state:
             user_input = state.get("last_message", "")
@@ -155,6 +169,18 @@ class LangGraphOrchestrator:
             if classification.get("building_type") and len(student_state.messages) <= 2:  # Only for first interaction
                 confidence = classification.get("building_type_confidence", 0.5)
                 student_state.update_building_type_context(classification["building_type"], confidence)
+
+            # Update project context from conversation (adaptive reuse, warehouse, etc.)
+            student_state.detect_and_update_project_context_from_conversation()
+
+            # ADDITIONAL: Extract building type from design brief if not already set
+            if (student_state.building_type == "unknown" and
+                hasattr(student_state, 'current_design_brief') and
+                student_state.current_design_brief):
+                extracted_type = student_state.extract_building_type_from_brief_only()
+                if extracted_type != "unknown":
+                    print(f"🏗️ Orchestrator extracted building type from brief: {extracted_type}")
+                    student_state.building_type = extracted_type
 
             if classification.get("design_phase"):
                 confidence = classification.get("design_phase_confidence", 0.5)
@@ -304,7 +330,7 @@ class LangGraphOrchestrator:
         elif routing_path == "knowledge_with_challenge":
             return self._synthesize_knowledge_with_challenge_response(agent_results, user_input, classification)
         elif routing_path == "balanced_guidance":
-            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification)
+            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification, state)
 
         # Intervention routes
         elif routing_path == "cognitive_intervention":
@@ -316,7 +342,7 @@ class LangGraphOrchestrator:
         elif routing_path == "feedback_request":
             return self._synthesize_multi_agent_comprehensive_response(agent_results, user_input, classification)
         elif routing_path == "design_guidance":
-            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification)
+            return self._synthesize_balanced_guidance_response(agent_results, user_input, classification, state)
 
         # Fallback
         return self._synthesize_default_response(agent_results)
@@ -332,25 +358,51 @@ class LangGraphOrchestrator:
             socratic_result = socratic_result.to_dict()
         
         # For pure example requests, prefer just the examples (no appended Socratic follow-up)
-        is_example_req = any(k in user_input.lower() for k in ["example", "examples", "precedent", "case study", "case studies", "project", "projects"]) and classification.get("interaction_type") == "example_request"
+        has_example_keywords = any(k in user_input.lower() for k in ["example", "examples", "precedent", "case study", "case studies", "project", "projects"])
+        is_example_intent = classification.get("interaction_type") == "example_request" or classification.get("user_intent") == "example_request"
+        is_example_req = has_example_keywords and is_example_intent
+
         if is_example_req:
             text = domain_result.get('response_text', '') if domain_result else ''
-            return text or self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
+            if text:
+                return text, "knowledge_only"
+            else:
+                return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
-        if domain_result and socratic_result:
-            final_response = f"{domain_result.get('response_text', '')}\n\n{socratic_result.get('response_text', '')}"
-            return final_response, "knowledge_only_with_socratic"
+        # FIXED: For knowledge_only routes, prioritize domain expert response only
+        if domain_result and domain_result.get('response_text'):
+            return domain_result.get('response_text', ''), "knowledge_only"
+        elif socratic_result and socratic_result.get('response_text'):
+            return socratic_result.get('response_text', ''), "knowledge_only"
         return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
     def _synthesize_socratic_exploration_response(self, agent_results: Dict[str, Any]) -> tuple[str, str]:
         socratic_result = agent_results.get("socratic", {})
-        
+
         # Safety check: ensure socratic_result is a dictionary
         if hasattr(socratic_result, 'to_dict'):
             socratic_result = socratic_result.to_dict()
-        
+
         if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "socratic_exploration"
+            response_text = socratic_result.get("response_text", "")
+
+            # CRITICAL FIX: Add Socratic question at the end if not already present
+            if not response_text.strip().endswith('?'):
+                # Check if there's a separate question in the result
+                socratic_question = socratic_result.get("question_text", "")
+                if not socratic_question:
+                    # Look for question in metadata or other fields
+                    metadata = socratic_result.get("metadata", {})
+                    socratic_question = metadata.get("socratic_question", "")
+
+                # If we found a question, append it
+                if socratic_question and not socratic_question in response_text:
+                    response_text = f"{response_text}\n\n{socratic_question}"
+                elif not socratic_question:
+                    # Generate a contextual follow-up question as fallback
+                    response_text = f"{response_text}\n\nWhat aspects of this would you like to explore further?"
+
+            return response_text, "socratic_exploration"
         return (
             "I'd be happy to help you explore this topic together. What specific aspects would you like to think about?",
             "socratic_exploration",
@@ -405,8 +457,8 @@ class LangGraphOrchestrator:
         Uses the enhanced conversation context to avoid multiple detections.
         """
         # PRIORITY 1: Use conversation continuity context (highest confidence)
-        if hasattr(state, "student_state") and hasattr(state.student_state, 'conversation_context'):
-            continuity_context = state.student_state.conversation_context
+        if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'conversation_context'):
+            continuity_context = state['student_state'].conversation_context
             if continuity_context.detected_building_type and continuity_context.building_type_confidence > 0.7:
                 return continuity_context.detected_building_type
 
@@ -415,30 +467,18 @@ class LangGraphOrchestrator:
             return state.building_type
 
         # PRIORITY 3: Use student_state.building_type if available and not unknown
-        if hasattr(state, "student_state") and hasattr(state.student_state, 'building_type'):
-            if state.student_state.building_type and state.student_state.building_type != "unknown":
-                return state.student_state.building_type
+        if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'building_type'):
+            if state['student_state'].building_type and state['student_state'].building_type != "unknown":
+                return state['student_state'].building_type
 
         # PRIORITY 4: Use conversation continuity context even with lower confidence
-        if hasattr(state, "student_state") and hasattr(state.student_state, 'conversation_context'):
-            continuity_context = state.student_state.conversation_context
+        if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'conversation_context'):
+            continuity_context = state['student_state'].conversation_context
             if continuity_context.detected_building_type and continuity_context.building_type_confidence > 0.3:
                 return continuity_context.detected_building_type
 
         # FALLBACK: Return unknown (no more local detection)
         return "unknown"
-
-    def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
-        """Extract student state from agent results for phase detection."""
-        # Try to get student state from various sources
-        for agent_name, result in agent_results.items():
-            if result and hasattr(result, 'student_state'):
-                return result.student_state
-            elif result and isinstance(result, dict) and 'student_state' in result:
-                return result['student_state']
-        
-        # If no student state found, return None
-        return None
 
     def _extract_student_state_from_results(self, agent_results: Dict[str, Any]) -> Any:
         """Extract student state from agent results for phase detection."""
@@ -562,17 +602,85 @@ class LangGraphOrchestrator:
         if hasattr(analysis_result, 'to_dict'):
             analysis_result = analysis_result.to_dict()
 
-        # Prioritize socratic for comprehensive analysis
+        # ENHANCED: Create contextual response that addresses user's specific input
+        responses = []
+
+        # Add domain expertise if available and relevant
+        if domain_result and domain_result.get("response_text"):
+            domain_text = domain_result.get("response_text", "").strip()
+            if domain_text and len(domain_text) > 50:  # Ensure substantial content
+                responses.append(domain_text)
+
+        # Add socratic guidance if available and different from domain
         if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "multi_agent_comprehensive"
-        elif domain_result and domain_result.get("response_text"):
-            return domain_result.get("response_text", ""), "multi_agent_comprehensive"
+            socratic_text = socratic_result.get("response_text", "").strip()
+            if socratic_text and len(socratic_text) > 50:
+                # Only add if significantly different from domain response
+                if not responses or not self._responses_too_similar(socratic_text, responses[0]):
+                    responses.append(socratic_text)
+
+        # FIXED: Synthesize multiple perspectives into one cohesive response
+        if len(responses) >= 2:
+            # Create a cohesive synthesis instead of just concatenating
+            synthesis_prompt = f"""
+            Synthesize these two expert perspectives into one cohesive, comprehensive response that addresses the user's question: "{user_input}"
+
+            Domain Expert Response: {responses[0]}
+
+            Socratic Tutor Response: {responses[1]}
+
+            Create a unified response that:
+            1. Directly addresses the user's specific question
+            2. Integrates the best insights from both perspectives
+            3. Maintains a natural, conversational flow
+            4. Avoids repetition or fragmentation
+            5. Provides actionable guidance
+
+            Write as a single, cohesive response (not separate sections):
+            """
+
+            try:
+                import openai
+                client = openai.OpenAI()
+                synthesis_response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": synthesis_prompt}],
+                    max_tokens=800,
+                    temperature=0.7
+                )
+                synthesized_text = synthesis_response.choices[0].message.content.strip()
+                return synthesized_text, "multi_agent_comprehensive"
+            except Exception as e:
+                print(f"⚠️ Synthesis failed, using fallback: {e}")
+                # Fallback to better concatenation
+                return f"{responses[0]}\n\n{responses[1]}", "multi_agent_comprehensive"
+
+        elif len(responses) == 1:
+            return responses[0], "multi_agent_comprehensive"
         elif cognitive_result and cognitive_result.get("response_text"):
             return cognitive_result.get("response_text", ""), "multi_agent_comprehensive"
+
         return (
-            "I'd be happy to provide comprehensive feedback on your project. What specific aspects would you like me to focus on?",
+            f"I'd be happy to provide comprehensive feedback on your approach. Your idea about {user_input.lower()[:50]}... shows thoughtful consideration. What specific aspects would you like me to focus on?",
             "multi_agent_comprehensive",
         )
+
+    def _responses_too_similar(self, response1: str, response2: str) -> bool:
+        """Check if two responses are too similar to warrant combining"""
+        # Simple similarity check based on common words
+        words1 = set(response1.lower().split())
+        words2 = set(response2.lower().split())
+
+        if len(words1) == 0 or len(words2) == 0:
+            return False
+
+        # Calculate Jaccard similarity
+        intersection = len(words1.intersection(words2))
+        union = len(words1.union(words2))
+        similarity = intersection / union if union > 0 else 0
+
+        # Consider responses too similar if >70% overlap
+        return similarity > 0.7
 
     def _synthesize_socratic_clarification_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
         """Synthesize Socratic clarification response"""
@@ -661,8 +769,8 @@ class LangGraphOrchestrator:
             "knowledge_with_challenge",
         )
 
-    def _synthesize_balanced_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
-        """Synthesize balanced guidance response"""
+    def _synthesize_balanced_guidance_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any], state: Dict[str, Any] = None) -> tuple[str, str]:
+        """Synthesize balanced guidance response using proper synthesis logic"""
         domain_result = agent_results.get("domain", {})
         socratic_result = agent_results.get("socratic", {})
         cognitive_result = agent_results.get("cognitive", {})
@@ -675,17 +783,36 @@ class LangGraphOrchestrator:
         if hasattr(cognitive_result, 'to_dict'):
             cognitive_result = cognitive_result.to_dict()
 
-        # Use the best available response
-        if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "balanced_guidance"
-        elif domain_result and domain_result.get("response_text"):
-            return domain_result.get("response_text", ""), "balanced_guidance"
-        elif cognitive_result and cognitive_result.get("response_text"):
-            return cognitive_result.get("response_text", ""), "balanced_guidance"
-        return (
-            "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?",
-            "balanced_guidance",
-        )
+        # Extract response texts
+        domain_text = domain_result.get("response_text", "") if domain_result else ""
+        socratic_text = socratic_result.get("response_text", "") if socratic_result else ""
+        cognitive_text = cognitive_result.get("response_text", "") if cognitive_result else ""
+
+        # Use synthesis shaping for balanced guidance
+        try:
+            from .synthesis import shape_by_route
+
+            # For balanced_guidance, don't pre-combine texts - let synthesis template handle it
+            # Pass a minimal base text and let shape_by_route use the ordered_results properly
+            base_text = domain_text or socratic_text or cognitive_text or "I'd be happy to help you explore this topic. What specific aspect would you like to focus on?"
+
+            # Apply synthesis shaping
+            synthesized_response = shape_by_route(
+                text=base_text,
+                routing_path="balanced_guidance",
+                classification=classification,
+                ordered_results=agent_results,
+                user_message_count=len([m for m in (state or {}).get("messages", []) if m.get("role") == "user"]),
+                context_analysis=classification  # Use classification as context analysis
+            )
+
+            return synthesized_response, "balanced_guidance"
+
+        except Exception as e:
+            print(f"⚠️ Synthesis shaping failed: {e}")
+            # Fallback - use synthesis template manually
+            fallback_response = "Synthesis:\n- Insight: I'd be happy to help you explore this topic\n- Direction: What specific aspect would you like to focus on?\n- Watch: Consider how your design decisions will impact the user experience"
+            return fallback_response, "balanced_guidance"
 
     # ------------- Metadata helpers (ported minimally) -------------
 
@@ -753,10 +880,55 @@ class LangGraphOrchestrator:
                 from phase_assessment.phase_manager import PhaseAssessmentManager
                 phase_manager = PhaseAssessmentManager()
                 
-                # Use the state parameter directly for phase detection
-                if state and hasattr(state, 'student_state'):
-                    student_state = state.student_state
-                    print(f"🔍 Phase detection: Using student state with {len(student_state.messages)} messages")
+                # ENHANCED: Use phase info from dashboard if available, otherwise detect
+                if state and 'student_state' in state and state['student_state'] and hasattr(state['student_state'], 'phase_info') and state['student_state'].phase_info:
+                    # Use phase information from dashboard's phase progression system
+                    dashboard_phase_info = state['student_state'].phase_info
+                    current_phase_name = dashboard_phase_info.get("current_phase", "ideation")
+                    print(f"🎯 Phase detection: Using dashboard phase info: {current_phase_name}")
+
+                    # Map phase progress to step progression
+                    phase_progress = dashboard_phase_info.get("phase_progress", {})
+                    current_phase_progress = phase_progress.get(current_phase_name, {})
+                    completion_percent = current_phase_progress.get("completion_percent", 0.0)
+
+                    print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
+                    print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
+                    print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
+
+                    # Estimate step based on completion
+                    if completion_percent < 25:
+                        current_step_name = "initial_context_reasoning"
+                        prog = 0.25
+                    elif completion_percent < 50:
+                        current_step_name = "knowledge_synthesis_trigger"
+                        prog = 0.5
+                    elif completion_percent < 75:
+                        current_step_name = "socratic_questioning"
+                        prog = 0.75
+                    else:
+                        current_step_name = "metacognitive_prompt"
+                        prog = 1.0
+
+                    confidence = max(0.7, min(0.95, completion_percent / 100.0))
+
+                    phase_info = {
+                        "phase": current_phase_name,
+                        "step": current_step_name,
+                        "confidence": confidence,
+                        "progression_score": prog,
+                        "completion_percent": completion_percent,
+                        # Back-compat keys
+                        "current_phase": current_phase_name,
+                        "current_step": current_step_name,
+                        "phase_confidence": confidence,
+                        "next_phase": None,
+                    }
+                elif state and 'student_state' in state and state['student_state']:
+                    # Fallback to phase detection if no dashboard info available
+                    student_state = state['student_state']
+                    messages = getattr(student_state, 'messages', [])
+                    print(f"🔍 Phase detection: Using student state with {len(messages)} messages")
                     current_phase, current_step = phase_manager.detect_current_phase(student_state)
                     print(f"🎯 Phase detection result: {current_phase.value} - {current_step.value}")
                     #1108 tracking: Phase detection (real tracking): compute early and attach to analysis_result
@@ -814,6 +986,35 @@ class LangGraphOrchestrator:
                     "next_phase": None,
                 }
 
+        # ENHANCED: Extract gamification metadata from cognitive enhancement agent
+        gamification_metadata = {}
+
+        # Handle both AgentResponse objects and dict results
+        if cognitive_result:
+            # If it's an AgentResponse object, access metadata directly
+            if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata:
+                if 'gamification_display' in cognitive_result.metadata:
+                    gamification_metadata = cognitive_result.metadata['gamification_display']
+                    print(f"🎮 ORCHESTRATOR: Found gamification metadata from AgentResponse: {gamification_metadata}")
+            # If it's a dict, use the old method
+            elif isinstance(cognitive_result, dict) and cognitive_result.get("metadata", {}).get("gamification_display"):
+                gamification_metadata = cognitive_result.get("metadata", {}).get("gamification_display", {})
+                print(f"🎮 ORCHESTRATOR: Found gamification metadata from dict: {gamification_metadata}")
+
+        # Also check routing decision for gamification triggers
+        detailed_routing = routing_decision.get("detailed_routing_decision", {}) or state.get("detailed_routing_decision", {}) if state else {}
+        gamification_triggers = detailed_routing.get("metadata", {}).get("gamification_triggers", [])
+        if gamification_triggers:
+            print(f"🎮 ORCHESTRATOR: Found gamification triggers: {gamification_triggers}")
+            if not gamification_metadata:
+                # Create gamification metadata from triggers
+                gamification_metadata = {
+                    "is_gamified": True,
+                    "trigger_type": gamification_triggers[0] if gamification_triggers else "unknown",
+                    "display_type": "enhanced_visual",
+                    "challenge_data": {"triggers": gamification_triggers}
+                }
+
         return {
             "response_type": response_type,
             "agents_used": agents_used,
@@ -821,12 +1022,27 @@ class LangGraphOrchestrator:
             "ai_reasoning": routing_decision.get("reasoning", "No AI reasoning available"),
             "phase_analysis": phase_info,
             "enhancement_metrics": enhancement_metrics,
-            "scientific_metrics": cognitive_result.get("scientific_metrics", {}),
-            "cognitive_state": cognitive_result.get("cognitive_state", {}),
+            # FIXED: Extract scientific metrics and cognitive state from metadata (handle AgentResponse objects)
+            "scientific_metrics": (
+                cognitive_result.metadata.get("scientific_metrics", {}) if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata
+                else cognitive_result.get("metadata", {}).get("scientific_metrics", cognitive_result.get("scientific_metrics", {})) if isinstance(cognitive_result, dict)
+                else {}
+            ),
+            "cognitive_state": (
+                cognitive_result.metadata.get("cognitive_state", {}) if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata
+                else cognitive_result.get("metadata", {}).get("cognitive_state", cognitive_result.get("cognitive_state", {})) if isinstance(cognitive_result, dict)
+                else {}
+            ),
             "analysis_result": analysis_result,
             "sources": domain_result.get("sources", []) if domain_result else [],
             "processing_time": "N/A",
             "classification": classification,
+            # Add explicit interaction_type and user_intent for routing display
+            "interaction_type": classification.get("interaction_type") or classification.get("user_intent", "unknown"),
+            "user_intent": classification.get("user_intent") or classification.get("interaction_type", "unknown"),
+            # ENHANCED: Include gamification metadata
+            "gamification_display": gamification_metadata,
+            "gamification": gamification_metadata  # Also include under 'gamification' key for compatibility
 
         }
 
@@ -846,6 +1062,13 @@ class LangGraphOrchestrator:
 
         # Get user input first
         user_messages = [m for m in student_state.messages if m.get("role") == "user"]
+
+        print(f"\n🎯 ORCHESTRATOR: process_student_input called")
+        print(f"   User messages count: {len(user_messages)}")
+        print(f"   Phase info available: {hasattr(student_state, 'phase_info') and student_state.phase_info is not None}")
+        if hasattr(student_state, 'phase_info') and student_state.phase_info:
+            print(f"   Current phase from state: {student_state.phase_info.get('current_phase', 'unknown')}")
+        print(f"   Last user message: {user_messages[-1] if user_messages else 'No messages'}...")
         current_user_input = user_messages[-1]["content"] if user_messages else ""
 
         print(f"\n🚀 ArchMentor Processing Pipeline Started")
@@ -895,9 +1118,9 @@ class LangGraphOrchestrator:
         processing_time = time.time() - start_time
         self.logger.info(f"Workflow completed in {processing_time:.2f}s")
 
-        print(f"\n✅ Processing completed successfully in {processing_time:.2f}s")
-        print(f"   📊 Final response length: {len(final_state.get('final_response', ''))} characters")
-        print(f"   🎯 Route taken: {final_state.get('routing_decision', {}).get('path', 'unknown')}")
+        # Enhanced Process Summary
+        user_input_text = initial_state.get('user_input', 'Unknown input')
+        self._print_enhanced_process_summary(final_state, processing_time, user_input_text)
 
         if "response_metadata" in final_state:
             final_state["response_metadata"]["processing_time"] = f"{processing_time:.2f}s"
@@ -910,14 +1133,77 @@ class LangGraphOrchestrator:
         except Exception:
             pass
 
+        # CRITICAL FIX: Extract gamification metadata from response_metadata and add to top level
+        response_metadata = final_state.get("response_metadata", {})
+        gamification_metadata = response_metadata.get("gamification", {})
+
         return {
             "response": final_state.get("final_response", ""),
-            "metadata": final_state.get("response_metadata", {}),
+            "metadata": response_metadata,
             "routing_path": final_state.get("routing_decision", {}).get("path", "unknown"),
             "classification": final_state.get("student_classification", {}),
             "conversation_progression": progression_analysis,
             "milestone_guidance": milestone_guidance,
+            # CRITICAL FIX: Add gamification metadata to top level for UI access
+            "gamification": gamification_metadata,
+            "gamification_display": gamification_metadata,  # Also add as gamification_display for compatibility
         }
+
+    def _print_enhanced_process_summary(self, final_state: Dict, processing_time: float, user_input: str):
+        """Print an enhanced, clean process summary."""
+        print(f"\n{'='*80}")
+        print(f"🎯 ORCHESTRATION SUMMARY")
+        print(f"{'='*80}")
+
+        # Input summary
+        input_preview = user_input[:60] + "..." if len(user_input) > 60 else user_input
+        print(f"📝 Input: {input_preview}")
+
+        # Routing information
+        routing_decision = final_state.get('routing_decision', {})
+        routing_path = routing_decision.get('path', 'unknown')
+        print(f"🛤️  Route: {routing_path}")
+
+        # Agents activated
+        agents_used = []
+        if final_state.get("analysis_result"): agents_used.append("Analysis")
+        if final_state.get("domain_expert_result"): agents_used.append("Domain Expert")
+        if final_state.get("socratic_result"): agents_used.append("Socratic Tutor")
+        if final_state.get("cognitive_enhancement_result"): agents_used.append("Cognitive Enhancement")
+
+        print(f"🤖 Agents: {', '.join(agents_used) if agents_used else 'None'}")
+
+        # Response information
+        response_length = len(final_state.get('final_response', ''))
+        print(f"📊 Response: {response_length} characters")
+
+        # Classification information
+        classification = final_state.get('student_classification', {})
+        if classification:
+            intent = classification.get('interaction_type') or classification.get('user_intent', 'unknown')
+            print(f"🎯 Intent: {intent}")
+
+        # Gamification information
+        metadata = final_state.get('response_metadata', {})
+        gamification_info = metadata.get('gamification', {})
+        if gamification_info.get('trigger_type'):
+            trigger = gamification_info.get('trigger_type')
+            enhanced = "✨ Enhanced" if gamification_info.get('enhancement_applied') else "🎯 Detected"
+            print(f"🎮 Gamification: {enhanced} - {trigger}")
+
+        # Performance
+        print(f"⏱️  Processing: {processing_time:.2f}s")
+
+        # Scientific metrics if available
+        scientific_metrics = metadata.get('scientific_metrics', {})
+        if scientific_metrics and scientific_metrics.get('overall_cognitive_score', 0) > 0:
+            cognitive_score = scientific_metrics.get('overall_cognitive_score', 0)
+            confidence = scientific_metrics.get('scientific_confidence', 0)
+            print(f"🧠 Cognitive Score: {cognitive_score:.2f} (confidence: {confidence:.2f})")
+
+        print(f"{'='*80}")
+        print(f"✅ Processing completed successfully")
+        print(f"{'='*80}\n")
 
     def _print_user_requested_info(self, final_state: Dict[str, Any]) -> None:
         routing_path = final_state.get("routing_decision", {}).get("path", "unknown")
