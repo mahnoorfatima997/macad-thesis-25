@@ -1194,10 +1194,8 @@ def complete_advanced_challenge(challenge_type: str, success: bool, time_spent: 
         st.info("📚 Learning opportunity! Every challenge teaches us something new.")
 
 def render_gamification_sidebar() -> None:
-    """Render gamification progress in sidebar."""
+    """Render gamification progress in sidebar - simplified for test mode."""
     tracker = GamificationTracker()
     tracker.render_progress_sidebar()
 
-    # Add quick access to advanced features
-    if st.sidebar.button("🎮 Advanced Gamification"):
-        st.session_state['show_advanced_gamification'] = True
+    # Advanced gamification button removed for test mode focus

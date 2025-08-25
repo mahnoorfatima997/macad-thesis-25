@@ -36,11 +36,12 @@ from dashboard.core.image_database import ImageDatabase
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from phase_progression_system import PhaseProgressionSystem
 from thesis_tests.test_dashboard import TestDashboard
-from thesis_tests.data_models import InteractionData, TestPhase
+from thesis_tests.data_models import InteractionData, TestPhase, TestGroup
+
+# Test mode components now integrated into sidebar_components.py
 
 
-# Configure Streamlit (must be first Streamlit command)
-st.set_page_config(**PAGE_CONFIG)
+# Page config moved to mentor.py to avoid multiple calls
 
 # Cached resources
 @st.cache_resource
@@ -136,20 +137,22 @@ class UnifiedArchitecturalDashboard:
             test_dashboard=self.test_dashboard,
             image_database=self.image_database
         )
+
+        # Store mode processor in session state for sidebar access
+        st.session_state.mode_processor = self.mode_processor
     
     def run(self):
         """Main run method for the dashboard."""
         # Render sidebar
         render_complete_sidebar(self.data_collector)
 
-        # ENHANCED: Add gamification progress to sidebar
-        try:
-            from dashboard.ui.gamification_components import render_gamification_sidebar, render_advanced_gamification_dashboard
-            render_gamification_sidebar()
+        # Test mode components now integrated into sidebar
 
-            # Check if advanced gamification dashboard should be shown
-            if st.session_state.get('show_advanced_gamification', False):
-                render_advanced_gamification_dashboard()
+        # ENHANCED: Add gamification progress to sidebar (simplified for test mode)
+        try:
+            from dashboard.ui.gamification_components import render_gamification_sidebar
+            render_gamification_sidebar()
+            # Note: Advanced gamification dashboard removed for test mode focus
 
         except Exception as e:
             print(f"⚠️ Error rendering gamification sidebar: {e}")
@@ -169,20 +172,32 @@ class UnifiedArchitecturalDashboard:
         # Mode configuration using full width
         render_mode_configuration()
 
-        # Mentor type selection
-        mentor_type = render_mentor_type_selection()
-        st.session_state.mentor_type = mentor_type
-        st.session_state.current_mode = mentor_type  # Map to current_mode for compatibility
+        # Check dashboard mode from sidebar
+        dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
 
-        # Template prompts
-        selected_template = render_template_selection()
+        if dashboard_mode == "Test Mode":
+            # Test mode: Fixed community center challenge, no templates
+            mentor_type = st.session_state.get('mentor_type', 'Socratic Agent')
+            skill_level = "Intermediate"  # Fixed for research consistency
 
-        # Skill level selection
-        skill_level = render_skill_level_selection()
+            # Project description input with fixed challenge (no templates)
+            project_description, uploaded_file = render_project_description_input("")
 
-        # Project description input with inline image upload
-        template_text = TEMPLATE_PROMPTS.get(selected_template, "")
-        project_description, uploaded_file = render_project_description_input(template_text)
+        else:  # Flexible Mode
+            # Original mentor.py functionality with templates
+            mentor_type = render_mentor_type_selection()
+            st.session_state.mentor_type = mentor_type
+            st.session_state.current_mode = mentor_type
+
+            # Template prompts (only in flexible mode)
+            selected_template = render_template_selection()
+
+            # Skill level selection (flexible in flexible mode)
+            skill_level = render_skill_level_selection()
+
+            # Project description input with template support
+            template_text = TEMPLATE_PROMPTS.get(selected_template, "")
+            project_description, uploaded_file = render_project_description_input(template_text)
         
         # Start analysis button (centered, no form rectangle)
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -1373,6 +1388,8 @@ class UnifiedArchitecturalDashboard:
 
         # Fallback if no analysis found
         return f"{user_input}\n\n[UPLOADED IMAGE: Analysis not available]"
+
+    # Test action handlers removed - now handled in sidebar_components.py
 
 
 def main():
