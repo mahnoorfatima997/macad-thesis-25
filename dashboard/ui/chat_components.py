@@ -387,8 +387,12 @@ def render_single_message(message: Dict[str, Any]):
             )
 
             # Display generated image if present in assistant message
+            print(f"🎨 DEBUG: Checking for generated_image in message: {bool(message.get('generated_image'))}")
             if message.get("generated_image"):
+                print(f"🎨 DEBUG: Found generated_image in message, calling render function")
                 _render_generated_image_in_chat(message["generated_image"])
+            else:
+                print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
 
 
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
@@ -535,7 +539,15 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
 def _render_generated_image_in_chat(generated_image: dict):
     """Render a generated image within the chat interface."""
     try:
-        if not generated_image or not generated_image.get('url'):
+        print(f"🎨 DEBUG: Attempting to render generated image")
+        print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys()) if generated_image else 'None'}")
+
+        if not generated_image:
+            print(f"❌ DEBUG: No generated_image data provided")
+            return
+
+        if not generated_image.get('url') and not generated_image.get('local_path'):
+            print(f"❌ DEBUG: No URL or local_path found in generated_image")
             return
 
         # Display the image with a nice caption
@@ -550,12 +562,70 @@ def _render_generated_image_in_chat(generated_image: dict):
         </div>
         """, unsafe_allow_html=True)
 
-        # Display the actual image
-        st.image(
-            generated_image['url'],
-            caption=f"AI-generated {phase} visualization ({style})",
-            use_container_width=True
+        # Display the actual image - handle cloud vs local deployment
+        image_source = None
+        source_type = "unknown"
+
+        # Check if we're running on Streamlit Cloud
+        is_cloud = (
+            os.environ.get('STREAMLIT_SHARING_MODE') or
+            'streamlit.app' in os.environ.get('HOSTNAME', '') or
+            os.environ.get('STREAMLIT_SERVER_PORT') or
+            'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
         )
+
+        if is_cloud:
+            # On Streamlit Cloud, prefer URL over local path since local files don't persist
+            image_source = generated_image.get('url') or generated_image.get('local_path')
+            source_type = "URL (cloud)" if generated_image.get('url') else "local (cloud)"
+        else:
+            # On local deployment, prefer local path over URL for reliability
+            image_source = generated_image.get('local_path') or generated_image.get('url')
+            source_type = "local file" if generated_image.get('local_path') else "URL"
+
+        print(f"🎨 DEBUG: Cloud deployment: {is_cloud}")
+        print(f"🎨 DEBUG: Image source: {image_source}")
+        print(f"🎨 DEBUG: Source type: {source_type}")
+
+        # Validate URL accessibility if using URL source
+        if image_source and image_source.startswith('http'):
+            try:
+                import requests
+                response = requests.head(image_source, timeout=5)
+                print(f"🎨 DEBUG: URL accessibility check: {response.status_code}")
+                if response.status_code != 200:
+                    print(f"⚠️ WARNING: Image URL may not be accessible: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ WARNING: Could not verify URL accessibility: {e}")
+
+        if image_source:
+            try:
+                st.image(
+                    image_source,
+                    caption=f"AI-generated {phase} visualization ({style})",
+                    use_container_width=True
+                )
+                print(f"✅ Displayed generated image from: {source_type}")
+            except Exception as e:
+                print(f"❌ Error displaying image from {source_type}: {e}")
+                # Fallback: try the other source if available
+                fallback_source = generated_image.get('url') if source_type.startswith('local') else generated_image.get('local_path')
+                if fallback_source:
+                    try:
+                        st.image(
+                            fallback_source,
+                            caption=f"AI-generated {phase} visualization ({style})",
+                            use_container_width=True
+                        )
+                        print(f"✅ Displayed generated image from fallback source")
+                    except Exception as e2:
+                        st.error("❌ Generated image could not be displayed - both sources failed")
+                        print(f"❌ Both image sources failed: {e}, {e2}")
+                else:
+                    st.error("❌ Generated image could not be displayed - primary source failed and no fallback available")
+        else:
+            st.error("❌ Generated image could not be displayed - no valid source found")
+            print(f"❌ No valid image source found in generated_image: {list(generated_image.keys())}")
 
         # Add feedback buttons in a compact layout
         st.markdown("**Does this visualization match your design thinking?**")

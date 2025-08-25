@@ -12,7 +12,10 @@
       "Bash(start cmd /c:*)",
       "Bash(git restore:*)",
       "Bash(rm:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "WebFetch(domain:www.researchgate.net)",
+      "Bash(curl:*)",
+      "Bash(streamlit run:*)"
     ],
     "deny": []
   }
