@@ -46,7 +46,7 @@ class ReplicateImageGenerator:
             }
         }
 
-    def generate_phase_image(self, design_description: str, phase: str, project_context: str = "") -> Dict[str, Any]:
+    def generate_phase_image(self, design_description: str, phase: str, project_context: str = "", session_id: str = "") -> Dict[str, Any]:
         """Generate an image appropriate for the given design phase"""
         
         if not self.api_token:
@@ -76,9 +76,14 @@ class ReplicateImageGenerator:
             # Download and save the image with Dropbox integration
             image_url = result["image_url"]
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{timestamp}_{phase}_{image_style.value}.png"
 
-            local_path = self.download_and_save_image(image_url, filename, save_to_dropbox=True)
+            # Create filename with session ID, phase, and timestamp
+            if session_id:
+                filename = f"{session_id}_{phase}_{timestamp}.png"
+            else:
+                filename = f"{timestamp}_{phase}_{image_style.value}.png"
+
+            local_path = self.download_and_save_image(image_url, filename, phase, save_to_dropbox=True)
 
             return {
                 "success": True,
@@ -212,7 +217,7 @@ class ReplicateImageGenerator:
         except Exception as e:
             return {"error": f"Unexpected error: {str(e)}"}
 
-    def download_and_save_image(self, image_url: str, filename: str, save_to_dropbox: bool = True) -> Optional[str]:
+    def download_and_save_image(self, image_url: str, filename: str, phase: str = "", save_to_dropbox: bool = True) -> Optional[str]:
         """Download and save the generated image locally and optionally to Dropbox"""
 
         try:
@@ -220,10 +225,18 @@ class ReplicateImageGenerator:
 
             response = requests.get(image_url, timeout=30)
             if response.status_code == 200:
-                # Create directory if it doesn't exist
-                os.makedirs("generated_images", exist_ok=True)
+                # Create base directory
+                base_dir = "generated_images"
+                os.makedirs(base_dir, exist_ok=True)
 
-                filepath = os.path.join("generated_images", filename)
+                # Create phase-specific directory if phase is provided
+                if phase:
+                    phase_dir = os.path.join(base_dir, phase.lower())
+                    os.makedirs(phase_dir, exist_ok=True)
+                    filepath = os.path.join(phase_dir, filename)
+                else:
+                    filepath = os.path.join(base_dir, filename)
+
                 with open(filepath, 'wb') as f:
                     f.write(response.content)
 
@@ -231,7 +244,7 @@ class ReplicateImageGenerator:
 
                 # Also save to Dropbox if requested
                 if save_to_dropbox:
-                    self._save_to_dropbox(filepath, filename)
+                    self._save_to_dropbox(filepath, filename, phase)
 
                 return filepath
             else:
@@ -242,7 +255,7 @@ class ReplicateImageGenerator:
             print(f"❌ Error downloading image: {e}")
             return None
 
-    def _save_to_dropbox(self, local_filepath: str, filename: str) -> bool:
+    def _save_to_dropbox(self, local_filepath: str, filename: str, phase: str = "") -> bool:
         """Save image to Dropbox using the existing Dropbox integration"""
         try:
             # Import Dropbox integration
@@ -252,8 +265,11 @@ class ReplicateImageGenerator:
                 print("⚠️ Dropbox client not available, skipping Dropbox upload")
                 return False
 
-            # Create Dropbox path for generated images
-            dropbox_path = f"/thesis_exports/generated_images/{filename}"
+            # Create Dropbox path for generated images with phase folder
+            if phase:
+                dropbox_path = f"/thesis_exports/generated_images/{phase.lower()}/{filename}"
+            else:
+                dropbox_path = f"/thesis_exports/generated_images/{filename}"
 
             print(f"☁️ Uploading image to Dropbox: {dropbox_path}")
 
