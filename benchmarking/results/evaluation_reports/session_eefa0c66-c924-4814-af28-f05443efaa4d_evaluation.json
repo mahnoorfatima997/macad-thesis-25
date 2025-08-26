@@ -1,0 +1,125 @@
+{
+  "evaluation_timestamp": "2025-08-26T10:29:18.116646",
+  "session_metrics": {
+    "session_id": "eefa0c66-c924-4814-af28-f05443efaa4d",
+    "timestamp": "2025-08-26T10:29:18.096131",
+    "duration_minutes": 0.72,
+    "total_interactions": 2,
+    "cognitive_offloading_prevention": {
+      "overall_rate": 1.0,
+      "in_direct_questions": 0,
+      "temporal_improvement": 0.0,
+      "consistency": 1.0
+    },
+    "deep_thinking_engagement": {
+      "overall_rate": 0.0,
+      "avg_response_length": 0,
+      "question_complexity": 1.0,
+      "sustained_rate": 1.0
+    },
+    "scaffolding_effectiveness": {
+      "overall_rate": 0.0,
+      "by_skill_level": {
+        "beginner": 0,
+        "intermediate": 0.0,
+        "advanced": 0
+      },
+      "adaptive_score": 0.833,
+      "gap_coverage": 1.0
+    },
+    "knowledge_integration": {
+      "integration_rate": 0.0,
+      "avg_sources_per_interaction": 0.0,
+      "source_diversity": 0,
+      "unique_sources_used": 0
+    },
+    "skill_progression": {
+      "initial_level": "intermediate",
+      "final_level": "intermediate",
+      "progression_score": 0.0,
+      "level_changes": 0,
+      "stability": 1.0
+    },
+    "conceptual_understanding": {
+      "overall_score": 0.0,
+      "indicator_distribution": {
+        "spatial_reasoning": 0,
+        "design_principles": 0,
+        "theoretical_connection": 0,
+        "precedent_awareness": 0,
+        "contextual_understanding": 0
+      },
+      "depth_score": 0.125
+    },
+    "metacognitive_development": {
+      "reflection_rate": 0.0,
+      "confidence_progression": -0.0,
+      "self_awareness_score": 0.0
+    },
+    "sustained_engagement": {
+      "overall_rate": 1.0,
+      "avg_streak_length": 2.0,
+      "max_streak_length": 2,
+      "engagement_decay": 0.0
+    },
+    "question_quality": {
+      "quality_score": 0,
+      "complexity": 0,
+      "specificity": 0
+    },
+    "reflection_depth": {
+      "depth_score": 0.15,
+      "elaboration": 7.5
+    },
+    "agent_coordination_score": 0.0,
+    "routing_appropriateness": {
+      "overall_appropriateness": 1.0,
+      "routing_diversity": 0.5,
+      "by_context": {
+        "improvement_seeking": 1.0
+      }
+    },
+    "improvement_over_baseline": {
+      "cognitive_offloading_rate_improvement": 100.0,
+      "deep_thinking_engagement_improvement": -50,
+      "knowledge_retention_improvement": -50,
+      "metacognitive_awareness_improvement": -50,
+      "creative_problem_solving_improvement": -12.2,
+      "critical_thinking_development_improvement": -50,
+      "overall_improvement": -18.7
+    }
+  },
+  "comparative_analysis": {
+    "vs_baseline": {
+      "cognitive_offloading_rate_improvement": 100.0,
+      "deep_thinking_engagement_improvement": -50,
+      "knowledge_retention_improvement": -50,
+      "metacognitive_awareness_improvement": -50,
+      "creative_problem_solving_improvement": -12.2,
+      "critical_thinking_development_improvement": -50,
+      "overall_improvement": -18.7
+    },
+    "effectiveness_summary": {
+      "cognitive_offloading_prevention": "Effective",
+      "deep_thinking_engagement": "Needs Improvement",
+      "scaffolding": "Needs Improvement",
+      "knowledge_integration": "Needs Improvement",
+      "overall_rating": "Needs Significant Improvement"
+    }
+  },
+  "recommendations": [
+    "Incorporate more complex, open-ended questions that require critical analysis",
+    "Diversify knowledge sources to provide richer contextual understanding",
+    "Enhance multi-agent coordination for more coherent responses"
+  ],
+  "strengths": [
+    "Excellent at preventing cognitive offloading",
+    "Successfully maintains deep thinking engagement",
+    "Effective at addressing identified cognitive gaps"
+  ],
+  "areas_for_improvement": [
+    "Student question quality needs development",
+    "Limited skill progression observed",
+    "Student reflections lack depth"
+  ]
+}

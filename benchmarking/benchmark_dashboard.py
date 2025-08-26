@@ -2280,53 +2280,46 @@ class BenchmarkDashboard:
         """Render comprehensive comparative analysis"""
         st.markdown('<h2 class="sub-header">Comparative Analysis</h2>', unsafe_allow_html=True)
         
-        # Collect improvement data from thesis data
+        # Collect improvement data directly from evaluation reports
         improvements = []
+        show_baseline_reference = False
         
-        if self.thesis_data_metrics:
-            # Calculate baseline values
-            baseline_prevention = 0.30
-            baseline_deep_thinking = 0.35
-            
-            for session_id, metrics in self.thesis_data_metrics.items():
-                prevention_rate = metrics['prevention_rate']
-                deep_thinking_rate = metrics['deep_thinking_rate']
-                
-                # Calculate improvements over baseline
-                prevention_improvement = ((prevention_rate - baseline_prevention) / baseline_prevention * 100) if baseline_prevention > 0 else 0
-                thinking_improvement = ((deep_thinking_rate - baseline_deep_thinking) / baseline_deep_thinking * 100) if baseline_deep_thinking > 0 else 0
-                
-                # Estimate other improvements based on core metrics
-                improvements.append({
-                    'Cognitive Offloading': prevention_improvement,
-                    'Deep Thinking': thinking_improvement,
-                    'Knowledge Retention': (prevention_improvement + thinking_improvement) / 2 * 0.8,  # Slightly lower
-                    'Metacognitive Awareness': thinking_improvement * 0.9,  # Correlated with deep thinking
-                    'Creative Problem Solving': (prevention_improvement + thinking_improvement) / 2 * 0.7,  # Moderate correlation
-                    'Critical Thinking': thinking_improvement * 1.1  # Slightly higher than deep thinking
-                })
-        
-        # Fallback to evaluation reports
-        elif self.evaluation_reports:
+        # Always prioritize evaluation reports as they have the correct calculated values
+        if self.evaluation_reports:
             for report in self.evaluation_reports.values():
                 imp = report['session_metrics']['improvement_over_baseline']
+                # Use the values directly from evaluation reports
                 improvements.append({
-                    'Cognitive Offloading': imp.get('cognitive_offloading_rate_improvement', 0),
+                    'Cognitive Offloading Prevention': imp.get('cognitive_offloading_rate_improvement', 0),
                     'Deep Thinking': imp.get('deep_thinking_engagement_improvement', 0),
                     'Knowledge Retention': imp.get('knowledge_retention_improvement', 0),
                     'Metacognitive Awareness': imp.get('metacognitive_awareness_improvement', 0),
                     'Creative Problem Solving': imp.get('creative_problem_solving_improvement', 0),
                     'Critical Thinking': imp.get('critical_thinking_development_improvement', 0)
                 })
+        else:
+            # If no evaluation reports, show baseline reference values
+            show_baseline_reference = True
+            # These represent the baseline performance of traditional methods (not improvements)
+            baseline_performance = {
+                'Cognitive Offloading Prevention': 48.0,  # 48% prevention rate from UPenn research
+                'Deep Thinking': 42.0,  # 42% engagement from Belland et al. 2017
+                'Knowledge Retention': 38.0,  # 38% retention rate
+                'Metacognitive Awareness': 31.0,  # 31% from STEM studies
+                'Creative Problem Solving': 37.0,  # 37% average
+                'Critical Thinking': 36.0  # 36% development rate
+            }
+            improvements = [baseline_performance]
         
         if improvements:
             # Section 1: vs Traditional Methods
             st.markdown("### Improvement vs Traditional Methods")
             
-            # Average improvement over baseline
+            # Average improvement over baseline - calculate correctly
             avg_improvements = {}
             for key in improvements[0].keys():
-                avg_improvements[key] = np.mean([imp[key] for imp in improvements])
+                values = [imp[key] for imp in improvements]
+                avg_improvements[key] = np.mean(values)
             
             # Create bar chart with custom colors for each dimension
             fig = go.Figure()
@@ -2336,7 +2329,7 @@ class BenchmarkDashboard:
             
             # Map cognitive dimensions to our metric colors
             dimension_color_map = {
-                'Cognitive Offloading': get_metric_color('cognitive_offloading'),
+                'Cognitive Offloading Prevention': get_metric_color('cognitive_offloading'),
                 'Deep Thinking': get_metric_color('deep_thinking'),
                 'Knowledge Retention': get_metric_color('knowledge_integration'),
                 'Metacognitive Awareness': get_metric_color('metacognition'),
@@ -2366,10 +2359,14 @@ class BenchmarkDashboard:
             
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
             
+            # Update title based on whether showing baseline or improvements
+            chart_title = "Baseline Performance of Traditional Methods" if show_baseline_reference else "Average Improvement Over Traditional Methods"
+            y_axis_label = "Performance %" if show_baseline_reference else "Improvement Percentage"
+            
             fig.update_layout(
-                title="Average Improvement Over Traditional Methods",
+                title=chart_title,
                 xaxis_title="Cognitive Dimension",
-                yaxis_title="Improvement Percentage",
+                yaxis_title=y_axis_label,
                 showlegend=False,
                 height=500
             )

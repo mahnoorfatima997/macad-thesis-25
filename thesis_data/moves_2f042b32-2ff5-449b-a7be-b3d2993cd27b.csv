@@ -1,0 +1,139 @@
+move_id,session_id,timestamp,sequence_number,content,move_type,phase,modality,cognitive_operation,design_focus,move_source,cognitive_load,previous_move_id,tool_used,interaction_trigger,semantic_links,temporal_links,conceptual_distance,ai_influence_strength,self_generation_strength,directness_level,pause_duration,revision_count,complexity_score,uncertainty_markers
+354e62fd-7e1b-4382-ba5f-c0b43005ba11,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.026157,1,What are the key considerations for community center design?,analysis,IDEATION,text,proposal,culture,user_generated,low,,,,[],[],0.0,,1.0,,0.0,0,0.43999999999999995,0
+9c2c3d41-82dd-467f-8eb1-14d332acf00c,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,2,"Designing a community center, especially within the context of repurposing a former industrial warehouse, presents a unique set of opportunities and challenges.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6902651515151514,0
+7fa1b284-b4ba-4a50-914a-14e6b380148c,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,3,"The key considerations for such a project can be categorized into several main areas: functional programming, adaptive reuse and sustainability, social inclusion and accessibility, and aesthetic integration.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7436111111111111,0
+80edc54a-346b-4161-83ca-a3f292e17f8f,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,4,"**Functional Programming**
+
+- **Versatility of Spaces**: Design spaces that are flexible and can serve multiple purposes.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5602604166666667,0
+e5d76eac-1f38-4a10-a65c-5293990824a1,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,5,"For example, a large open area can be used for community gatherings, sports activities, and public events.",analysis,IDEATION,text,reference,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5606862745098039,0
+9670b167-022d-4f34-b732-47713b61aad4,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,6,"- **Range of Activities**: Understand the community's needs to accommodate a variety of activities, from recreational to educational and social services.",analysis,IDEATION,text,proposal,culture,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6760714285714285,0
+ac4afe32-9916-4d82-872c-f0175a04d21a,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,7,"This could include spaces for classes, workshops, meetings, and indoor sports, as well as areas for relaxation and social interaction.
+- **Amenity Integration**: Consider the inclusion of amenities such as cafés, libraries, childcare facilities, and tech hubs to make the center a more attractive and useful space for a wider audience.
+
+### 2.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7026729559748427,1
+b7648b42-9158-46af-9496-5f76841a05d9,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,8,"**Adaptive Reuse and Sustainability**
+
+- **Preservation vs. Adaptation**:",transformation,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5466666666666666,0
+de66ad95-87b5-4a07-882f-4aaee45978a3,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,9,"Assess which features of the warehouse can be preserved to maintain its character (like brick walls, large windows, and structural beams) and what needs adaptation for energy efficiency, safety, and comfort.
+-",analysis,IDEATION,text,assessment,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7106770833333332,0
+55494a33-70f2-4429-87d1-a529ea2d50c6,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,10,"**Sustainability Practices**: Implement sustainable design principles, such as maximizing natural light, using eco-friendly materials, and incorporating green roofs or rain gardens.",analysis,IDEATION,text,proposal,material,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.735595238095238,0
+ecb9bb79-07ef-4eac-b183-fcc90d77f720,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,11,"Thermal insulation, efficient HVAC systems, and solar panels can reduce the building's carbon footprint.",synthesis,IDEATION,text,proposal,structure,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.602797619047619,0
+5e27c079-5b46-483e-bed3-a3af5639c5d1,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,12,"- **Zoning and Code Compliance**: Ensure that the design meets local zoning laws and building codes, especially since warehouses may not originally be intended for public use.",synthesis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6621296296296296,0
+3e716131-51c3-47e3-a6bb-7c6e07fdc6c5,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,13,"**Social Inclusion and Accessibility**
+
+- **Universal Design**: Guarantee that the building is accessible to everyone, including people with disabilities.",synthesis,IDEATION,text,proposal,culture,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7055701754385965,0
+84c25c87-661d-4ffc-ba13-e0c83c107e92,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,14,"This involves considering entrance accessibility, interior mobility, and the usability of facilities.
+- **Inclusive Spaces**: Create spaces that feel welcoming and inclusive for diverse groups within the community.",analysis,IDEATION,text,proposal,culture,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7637797619047618,0
+7d35ebc7-b988-4f4c-9521-5742af890198,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,15,"This can involve thoughtful layout planning, signage, and the provision of multifunctional areas that cater to various age groups and interests.
+- **Engagement and Feedback**: Engage with the community through surveys, workshops, or public meetings to gather input on the design and programming of the center, ensuring it meets the needs and desires of its intended users.
+
+### 4.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7051553672316384,0
+9345574c-5530-4c8f-9f7e-ec8709f7a8ec,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:34:58.093901,16,"**Aesthetic Integration**
+
+- **",analysis,IDEATION,text,proposal,form,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.4597916666666666,0
+7c0a621b-894b-43b4-a149-c51ddf780e9d,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.205959,17,give me some examples of buildings like that in europe,synthesis,IDEATION,text,reference,function,user_generated,medium,,,,[],[],0.0,,1.0,,0.0,0,0.3754166666666666,0
+1e4e74a1-5713-4687-9ab1-06e48bdc35d0,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,18,Repurposing industrial warehouses into community centers offers a unique opportunity to blend historical architecture with modern functionality.,synthesis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6249019607843137,0
+4c820c60-def8-4056-809e-69547e4994ab,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,19,"Europe, with its rich industrial past, provides several exemplary cases where such transformations have been successfully executed.",transformation,IDEATION,text,proposal,form,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6511274509803922,0
+157a1cc0-1d37-4656-b130-9063ad3f684d,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,20,"**Nave 16, Matadero Madrid, Spain**: Originally a slaughterhouse and livestock market, the Matadero Madrid has been transformed into a contemporary art center.",transformation,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.688560606060606,0
+cc377875-1126-43d3-bf74-284a6de4162d,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,21,"Nave 16 is one of its most versatile spaces, offering a vast, open-plan area for exhibitions, performances, and community events.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6195833333333334,0
+4b88da70-551d-40ee-8076-ec97b42fc2ee,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,22,"The preservation of the industrial architecture, combined with modern interventions, makes it a standout example of adaptive reuse.",synthesis,IDEATION,text,reference,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6397222222222222,0
+6c754ea8-4e9b-4a0f-9718-ab49811babc6,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,23,"2. **La Friche La Belle de Mai, Marseille, France**: This former tobacco factory in Marseille has been reborn as a vibrant cultural and community center.",analysis,IDEATION,text,proposal,form,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6488333333333333,0
+c0d1e1c1-6808-470b-bd89-e345f55400ae,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,24,"It hosts a wide range of facilities, including theaters, exhibition spaces, workshops, and a rooftop terrace.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6136458333333333,0
+a02f13ad-08df-4e99-b936-10bb5adb6024,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,25,The project is an excellent example of how industrial spaces can be adapted to foster community engagement and creativity.,transformation,IDEATION,text,reference,culture,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5461403508771929,0
+0c27d60d-6cb5-4499-ad06-7ce0449fd1ad,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,26,"Originally built by Alfred Bird, the inventor of custard, today it houses creative and digital businesses, galleries, venues, and shops.",analysis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6327083333333333,0
+50cffd4b-d3a3-4ea2-8c91-21d1c027f836,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,27,It's a prime example of how industrial buildings can be repurposed to support new economic activities while serving as a community hub.,synthesis,IDEATION,text,support,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.629469696969697,0
+cad11465-6c2f-4943-9467-4bee673eb4b3,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.267875,28,"4. **Westergasfabriek, Amsterdam, Netherlands**: This former gasworks complex has been transformed into a cultural venue in a city park setting.",transformation,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6477083333333333,0
+4b045d7b-c38d-408c-93f4-0c6a3dca3c8d,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.268875,29,"The Westergasfabriek combines green outdoor spaces with industrial architecture, promoting both community engagement and sustainability.",synthesis,IDEATION,text,proposal,environment,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7033333333333333,0
+80aebc31-ae41-4463-a8f2-5d4a83fbbacc,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.268875,30,"**Kunst-Werke Institute for Contemporary Art (KW), Berlin, Germany**: Located in a former margarine factory in the Mitte district, KW has become one of Berlin’s key locations for contemporary art.",analysis,IDEATION,text,proposal,form,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7233333333333332,0
+edb4e429-1c3b-471c-a5ec-38d747772695,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:35:41.268875,31,"The preservation of the building's industrial character, alongside its function as a dynamic art space, makes it a unique community asset.",synthesis,IDEATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6302380952380953,0
+e49236e2-eb13-435a-9e68-e0f052297eef,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.175800,32,I need a spatial representation of the custard factory,analysis,VISUALIZATION,text,proposal,function,user_generated,low,,,,[],[],0.0,,1.0,,0.0,0,0.4372222222222222,0
+7b6d9aa1-2255-4b83-80a5-0c7de32c9ac6,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,33,"The design should address the flow of materials, workers, and products through the space, as well as the integration of necessary machinery and storage requirements.",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6748333333333334,0
+2d816169-4bab-4972-a8ba-43a0990821c3,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,34,"Here's a step-by-step guide to visualize and layout a custard factory:
+
+### 1.",analysis,VISUALIZATION,text,proposal,form,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.4457051282051282,0
+a3fa3da7-da2d-4798-a894-18b5896daa16,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,35,"Define Zones
+
+Divide the factory into clear zones based on the production process, ensuring there's a logical flow that minimizes cross-contamination and optimizes efficiency.",analysis,VISUALIZATION,text,clarification,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6926041666666667,0
+9cc403aa-03c0-40c0-b8ae-19d40399ae19,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,36,"For raw materials like milk, sugar, and flavorings.
+- **Mixing Area:**",analysis,VISUALIZATION,text,proposal,material,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5206060606060606,0
+8002afc1-a98a-413a-97c7-1c5718ef219a,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,37,"A cold storage area for the finished product, ready for dispatch.",analysis,VISUALIZATION,text,proposal,material,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.503560606060606,0
+8c89d8b7-0cfc-4da2-a8de-abe6f3fd5eeb,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,38,"This should be easily accessible for loading vehicles.
+- **Utility Areas:**",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.48916666666666664,0
+0fd0d218-66a1-4f1c-a633-476c88a451e2,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,39,"Don't forget about office spaces, staff amenities (like locker rooms and canteens), maintenance workshops, and quality control labs.
+
+### 3.",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6283333333333333,0
+cbe520d3-63e5-40de-a918-7d20ef024dda,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,40,"Alternatively, a circular flow can be efficient, especially in minimizing the distance products and materials need to be moved.
+- **Centralized Utilities:** Place utilities (like boilers, refrigeration systems, and electrical rooms) centrally or adjacent to their primary users to reduce costs and increase efficiency.
+
+### 4.",transformation,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.748550724637681,0
+626d8d05-6575-49f0-98cb-95a8063b1abb,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,41,"Visualization Techniques
+
+- **Floor Plans:** Start with detailed floor plans for each zone, showing the placement of machinery, workstations, and storage.",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6760714285714285,0
+5b28a8cd-a59f-4c46-acb1-a50d76c80d8a,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:36:45.249464,42,Use symbols and color coding to differentiate areas,analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.40291666666666665,0
+e103f152-8c02-44a8-a664-9e261c2d6d0b,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.673273,43,what about the area breakdown for the program?,reflection,VISUALIZATION,text,proposal,function,user_generated,low,,,,[],[],0.0,,1.0,,0.0,0,0.37947916666666665,0
+f5c6ab4e-a6f7-471f-ae85-09e8f86293e4,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,44,"For an architectural design project, breaking down the area for your program involves understanding the space requirements for each part of your design, ensuring that the overall space is used efficiently and effectively.",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7208333333333333,0
+7aaca29f-ce3a-4dbb-91a5-a4985788bf9a,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,45,"**Understand the Project Requirements**
+
+- **Functionality:**",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5599999999999999,0
+c90fb066-6c2d-469f-a668-0f025498faa6,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,46,What is the purpose of the building?,synthesis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.3545238095238095,0
+6bd603d4-0da0-44ca-a2a5-8aa548f278da,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,47,"Are there any local zoning laws or building codes that dictate certain sizes or uses for spaces?
+
+### 2.",synthesis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.4665350877192982,0
+381927bc-f4cb-4dfe-983f-c5af6e6d3d9f,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,48,"This could include:
+
+- Living areas (living room, dining room)
+- Bedrooms
+- Bathrooms
+- Kitchen
+- Utility spaces (laundry, storage)
+- Special function rooms (home office, gym, media room)
+- Circulation spaces (hallways, stairs)
+- Outdoor areas (patios, balconies)
+
+### 3.",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7178571428571429,1
+ae0844c2-7194-4ad2-a159-7438022d6c30,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,49,"**Allocate Space Based on Function**
+
+Each space in your list will require a certain amount of area based on its function.",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5046428571428572,0
+4c7887f0-66f4-4ea0-9265-d9d03c8ddf7d,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,50,"Some spaces may need to be designed to serve multiple purposes.
+- **Circulation:**",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.4601282051282051,0
+6eb6566a-0511-4ca7-9912-c57a1b1e535d,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,51,"**Consider the Relationships Between Spaces**
+
+How spaces relate to each other can greatly affect the functionality and flow of your design.",analysis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5558333333333333,0
+8b040288-915c-420d-8b02-530ccbdce32c,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.733773,52,- Bedrooms should be located in quieter areas of the building.,synthesis,VISUALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.42666666666666664,0
+937f2f4b-de8a-4d6b-ad2b-8c642cf8ac50,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:37:20.734772,53,"This can help you visualize how spaces relate to each other and make adjustments as necessary. 
+
+### 6.",transformation,VISUALIZATION,text,proposal,form,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.45499999999999996,0
+504f624f-950c-4e72-9b9b-bf64ada3b289,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.336811,54,give me construction system examples for each one of the parts of the building in a comprehensive breakdown,synthesis,MATERIALIZATION,text,reference,structure,user_generated,medium,,,,[],[],0.0,,1.0,,0.0,0,0.4897222222222222,0
+4f7ec28a-df03-4be2-ae32-5976800e9c21,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,55,"The construction of a building can be broken down into several key parts, each with its own set of construction systems and material considerations.",analysis,MATERIALIZATION,text,proposal,structure,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6269791666666666,0
+834de004-9221-4aff-a83f-d80c43a3f381,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,56,"Foundation
+- **Shallow Foundations (Spread Footings):** These are used for light structures.",analysis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5397916666666667,0
+0a031ae3-7823-45ae-a44d-4c57bff2acd2,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,57,"Common materials include concrete with reinforcement bars.
+- **Deep Foundations (Piles and Caissons):** Suitable for heavy buildings or poor soil conditions, piles (long cylindrical columns) and caissons (large underground cylinders) transfer load to stable ground.",synthesis,MATERIALIZATION,text,support,material,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7722619047619047,0
+df3806eb-6987-4628-8d0a-3ad5f5f3b902,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,58,"Materials include steel, pre-stressed concrete, or wood.
+
+### 2.",analysis,MATERIALIZATION,text,proposal,material,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5413888888888888,0
+d46316eb-f68a-4e8b-84ef-f5d523cd8333,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,59,"Structural Frame
+- **Steel Frame Construction:** Widely used in commercial and industrial buildings.",synthesis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5428205128205128,0
+77cac003-521a-4389-89dd-a0dbd3a8ed31,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,60,The system comprises steel columns and beams.,analysis,MATERIALIZATION,text,proposal,structure,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.40273809523809523,0
+8ce571e2-ab42-411d-978d-04ca5319b634,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,61,- **Concrete Frame Construction:** Consists of concrete columns and beams.,analysis,MATERIALIZATION,text,proposal,structure,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5104166666666666,0
+50cfd923-3587-45e1-93c0-27958d3331a8,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,62,"It's used in various buildings, providing excellent fire resistance and acoustic performance.
+-",synthesis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.610448717948718,0
+497878b1-a742-42e0-af24-6e31960f5371,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,63,**Timber Frame Construction:** Suitable for residential and small buildings.,synthesis,MATERIALIZATION,text,proposal,structure,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5511111111111111,0
+cec9f2f4-c9a5-464a-b14a-673575265c85,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,64,"It provides a warm aesthetic and is sustainable but requires protection against pests and moisture.
+
+### 3.",analysis,MATERIALIZATION,text,proposal,form,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5175490196078432,0
+204b1d36-2706-4da9-b4ce-82a826a3ba2a,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,65,They can be structural or used as veneer over a structural frame.,analysis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.38874999999999993,0
+47f469bd-28e1-45e8-aab9-c602192398e1,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,66,"- **Curtain Walls:** Non-load bearing walls, typically made of glass, metal, or composite materials, attached to the building's structure.",synthesis,MATERIALIZATION,text,proposal,structure,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6654385964912279,0
+0b823691-5c2e-4e79-a841-1947279a65cd,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,67,"Ideal for modern, high-rise buildings.
+- **Insulated Metal Panels (IMPs):** Prefabricated panels that offer quick installation and excellent thermal performance.",synthesis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6995833333333332,0
+fad79c13-a640-4792-8ad3-62226e97a44c,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,68,"Used in industrial and commercial facilities.
+
+### 4.",analysis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.4326041666666667,0
+c73239fa-0ae7-4394-aa58-bd22a272f46f,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,69,Often used in commercial buildings.,synthesis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.42916666666666664,0
+8de8f0e1-6568-4945-a176-583c996d910e,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,70,Constructed with layers of waterproof materials over a structural deck.,analysis,MATERIALIZATION,text,proposal,material,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.47916666666666663,0
+e45ed702-970f-4f27-aa74-1391fd1ee3ba,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,71,"Common materials include EPDM, TPO, and bituminous.
+- **Pitched Roofs:** Common in residential buildings.",synthesis,MATERIALIZATION,text,proposal,material,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.6197619047619047,0
+b8cb673e-636a-484d-abc2-b245119e1232,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,72,"Materials include asphalt shingles, metal roofing, clay or concrete tiles, and wood shakes.
+- **Green Roofs:** Support plant life, improving insulation and reducing runoff.",analysis,MATERIALIZATION,text,support,structure,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.7228125,0
+12a2a272-1b0a-4233-aad5-4c45d5e99edf,2f042b32-2ff5-449b-a7be-b3d2993cd27b,2025-08-06T14:38:24.384513,73,"Floors
+- **Concrete Slabs:** Cast-in-place or precast, concrete slabs are common for both ground and upper floors.",analysis,MATERIALIZATION,text,proposal,function,ai_provided,low,,,,[],[],0.0,0.9,1.0,direct_answer,0.0,0,0.5900980392156863,0
