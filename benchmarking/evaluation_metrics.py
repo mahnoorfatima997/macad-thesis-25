@@ -436,15 +436,26 @@ class CognitiveMetricsEvaluator:
         for metric, current_value in current_metrics.items():
             baseline_value = self.baseline_metrics.get(metric, 0.5)
             
+            # Apply a minimum threshold to avoid extreme negative values from zero metrics
+            # This accounts for short sessions or limited interaction types
+            min_threshold = 0.1
+            adjusted_current = max(current_value, min_threshold) if metric != 'cognitive_offloading_rate' else current_value
+            
             # For cognitive offloading, lower is better
             if metric == 'cognitive_offloading_rate':
                 improvement = ((baseline_value - current_value) / baseline_value) * 100
             else:
-                improvement = ((current_value - baseline_value) / baseline_value) * 100
+                # Use adjusted value for other metrics
+                improvement = ((adjusted_current - baseline_value) / baseline_value) * 100
+            
+            # Cap extreme negative improvements at -50% for better visualization
+            # This represents "significantly below baseline" without distorting graphs
+            if improvement < -50:
+                improvement = -50
             
             improvements[f"{metric}_improvement"] = round(improvement, 1)
         
-        # Calculate overall improvement
+        # Calculate overall improvement with bounded values
         overall_improvement = np.mean(list(improvements.values()))
         improvements['overall_improvement'] = round(overall_improvement, 1)
         

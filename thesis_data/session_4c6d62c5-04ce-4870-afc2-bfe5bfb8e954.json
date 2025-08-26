@@ -1,0 +1,152 @@
+{
+  "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
+  "participant_id": "Biel",
+  "test_group": "MENTOR",
+  "start_time": "2025-08-06T14:59:37.527052",
+  "end_time": "2025-08-06T15:07:06.291306",
+  "phase_transitions": [
+    {
+      "timestamp": "2025-08-06T15:03:29.266796",
+      "from_phase": "IDEATION",
+      "to_phase": "VISUALIZATION",
+      "duration_seconds": 0
+    },
+    {
+      "timestamp": "2025-08-06T15:05:14.547592",
+      "from_phase": "VISUALIZATION",
+      "to_phase": "MATERIALIZATION",
+      "duration_seconds": 105.280796
+    },
+    {
+      "timestamp": "2025-08-06T15:06:47.350020",
+      "from_phase": "POST_TEST",
+      "to_phase": "POST_TEST",
+      "duration_seconds": 0
+    }
+  ],
+  "assessments": {},
+  "summary": {
+    "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
+    "participant_id": "Biel",
+    "test_group": "MENTOR",
+    "duration_minutes": 7.479404233333333,
+    "total_interactions": 8,
+    "total_moves": 23,
+    "phase_transitions": 3,
+    "avg_cognitive_score": 1.2050754720148047,
+    "cognitive_scores": {
+      "cop": 0.9625,
+      "dte": 0.9,
+      "se": 0.85625,
+      "ki": 3.313570834064251,
+      "lp": 0.5573395603281145,
+      "ma": 0.6407924376964624,
+      "composite": 1.2050754720148047
+    },
+    "cognitive_metrics": {
+      "cop": 0.9625,
+      "dte": 0.9,
+      "se": 0.85625,
+      "ki": 3.313570834064251,
+      "lp": 0.5573395603281145,
+      "ma": 0.6407924376964624,
+      "composite": 1.2050754720148047
+    },
+    "phases_completed": [
+      "PRE_TEST",
+      "VISUALIZATION",
+      "MATERIALIZATION",
+      "POST_TEST"
+    ]
+  },
+  "cognitive_metrics_history": [
+    {
+      "timestamp": "2025-08-06T15:00:15.086166",
+      "phase": "PRE_TEST",
+      "cop": 0.7,
+      "dte": 0.2,
+      "se": 0.9,
+      "ki": 0.0,
+      "lp": 0.5,
+      "ma": 0.3,
+      "composite": 0.43333333333333335
+    },
+    {
+      "timestamp": "2025-08-06T15:01:06.923803",
+      "phase": "PRE_TEST",
+      "cop": 1.0,
+      "dte": 1.0,
+      "se": 0.85,
+      "ki": 0.5704410552978516,
+      "lp": 0.5,
+      "ma": 0.3,
+      "composite": 0.7034068425496419
+    },
+    {
+      "timestamp": "2025-08-06T15:01:57.962306",
+      "phase": "PRE_TEST",
+      "cop": 1.0,
+      "dte": 1.0,
+      "se": 0.85,
+      "ki": 3.7861758665605025,
+      "lp": 0.5470799006697469,
+      "ma": 0.6636363636363636,
+      "composite": 1.3078153551444356
+    },
+    {
+      "timestamp": "2025-08-06T15:02:37.470468",
+      "phase": "PRE_TEST",
+      "cop": 1.0,
+      "dte": 1.0,
+      "se": 0.85,
+      "ki": 4.396154389014611,
+      "lp": 0.5792209186613104,
+      "ma": 0.7615384615384615,
+      "composite": 1.4311522948690636
+    },
+    {
+      "timestamp": "2025-08-06T15:03:13.350871",
+      "phase": "PRE_TEST",
+      "cop": 1.0,
+      "dte": 1.0,
+      "se": 0.85,
+      "ki": 4.406819855372111,
+      "lp": 0.5732937136548306,
+      "ma": 0.8333333333333333,
+      "composite": 1.443907817060046
+    },
+    {
+      "timestamp": "2025-08-06T15:04:14.971174",
+      "phase": "VISUALIZATION",
+      "cop": 1.0,
+      "dte": 1.0,
+      "se": 0.85,
+      "ki": 4.253053485645967,
+      "lp": 0.5834272757113554,
+      "ma": 0.7705882352941176,
+      "composite": 1.4095114994419067
+    },
+    {
+      "timestamp": "2025-08-06T15:04:51.563912",
+      "phase": "VISUALIZATION",
+      "cop": 1.0,
+      "dte": 1.0,
+      "se": 0.85,
+      "ki": 4.5327576888235,
+      "lp": 0.593852183607856,
+      "ma": 0.7210526315789474,
+      "composite": 1.4496104173350506
+    },
+    {
+      "timestamp": "2025-08-06T15:06:04.032299",
+      "phase": "MATERIALIZATION",
+      "cop": 1.0,
+      "dte": 1.0,
+      "se": 0.85,
+      "ki": 4.563164331799462,
+      "lp": 0.5818424903198166,
+      "ma": 0.7761904761904761,
+      "composite": 1.4618662163849592
+    }
+  ]
+}

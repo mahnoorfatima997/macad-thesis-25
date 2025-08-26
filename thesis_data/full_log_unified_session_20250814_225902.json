@@ -1,0 +1,4864 @@
+[
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T22:59:10.637239",
+    "interaction_number": 1,
+    "student_input": "I'm creating a community learning center that will serve as a hub for education, workshops, and community events. The building needs to include classrooms, a library, multipurpose spaces, and outdoor learning areas. I want it to be welcoming to all ages and accessible to everyone in the community.",
+    "input_length": 48,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "unknown",
+    "confidence_level": "unknown",
+    "engagement_level": "unknown",
+    "agent_response": "Hello there,\n\nIt's fantastic to hear about your vision for a community learning center! It sounds like a wonderful and inclusive space that's going to bring a lot of value to your community. The combination of classrooms, a library, multipurpose spaces, and outdoor learning areas will certainly make it a versatile hub for education and engagement.\n\nLet's start by exploring some design aspects. How do we make our spaces adaptable for various activities? How can we integrate indoor and outdoor spa",
+    "response_length": 81,
+    "routing_path": "mentor_mode",
+    "agents_used": [
+      "Socratic Agent"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "Socratic Agent",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "unknown",
+    "phase_confidence": 0.5,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 10,
+    "design_moves": [
+      {
+        "content": "I'm creating a community learning center that will serve as a hub for education, workshops, and community events.",
+        "timestamp": "2025-08-14T22:59:10.637239",
+        "micro_timestamp": 1755230350.637239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.132,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 113,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.7333333333333334
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "The building needs to include classrooms, a library, multipurpose spaces, and outdoor learning areas.",
+        "timestamp": "2025-08-14T22:59:10.737239",
+        "micro_timestamp": 1755230350.737239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.13,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 101,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 0.9285714285714286
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "I want it to be welcoming to all ages and accessible to everyone in the community.",
+        "timestamp": "2025-08-14T22:59:10.837239",
+        "micro_timestamp": 1755230350.837239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.067,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 82,
+          "has_question": false,
+          "word_count": 16,
+          "complexity_score": 0.41875
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Hello there,",
+        "timestamp": "2025-08-14T22:59:10.937239",
+        "micro_timestamp": 1755230350.937239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.013000000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 12,
+          "has_question": false,
+          "word_count": 2,
+          "complexity_score": 0.65
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "It's fantastic to hear about your vision for a community learning center!",
+        "timestamp": "2025-08-14T22:59:11.037239",
+        "micro_timestamp": 1755230351.037239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.06200000000000001,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 73,
+          "has_question": false,
+          "word_count": 12,
+          "complexity_score": 0.5166666666666667
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "It sounds like a wonderful and inclusive space that's going to bring a lot of value to your community.",
+        "timestamp": "2025-08-14T22:59:11.137239",
+        "micro_timestamp": 1755230351.137239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.084,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 102,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.4421052631578948
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "The combination of classrooms, a library, multipurpose spaces, and outdoor learning areas will certainly make it a versatile hub for education and engagement.",
+        "timestamp": "2025-08-14T22:59:11.237239",
+        "micro_timestamp": 1755230351.237239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.205,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 158,
+          "has_question": false,
+          "word_count": 23,
+          "complexity_score": 0.8913043478260869
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "Let's start by exploring some design aspects.",
+        "timestamp": "2025-08-14T22:59:11.337239",
+        "micro_timestamp": 1755230351.337239,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 5,
+        "cognitive_load": 0.03900000000000001,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 45,
+          "has_question": false,
+          "word_count": 7,
+          "complexity_score": 0.5571428571428572
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "How do we make our spaces adaptable for various activities?",
+        "timestamp": "2025-08-14T22:59:11.437239",
+        "micro_timestamp": 1755230351.437239,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 6,
+        "cognitive_load": 0.05500000000000001,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 59,
+          "has_question": true,
+          "word_count": 10,
+          "complexity_score": 0.5
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "How can we integrate indoor and outdoor spa",
+        "timestamp": "2025-08-14T22:59:11.537239",
+        "micro_timestamp": 1755230351.537239,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 7,
+        "cognitive_load": 0.03960000000000001,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 43,
+          "has_question": false,
+          "word_count": 8,
+          "complexity_score": 0.45
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "general",
+      "general",
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {},
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": true,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T22:59:36.507544",
+    "interaction_number": 2,
+    "student_input": "For me, the main purpose of the design is to create a space where people of all ages can learn, share, and connect. The community it will serve is quite diverse \u2014 from school children and teenagers to working adults and retirees. I imagine it hosting everything from art classes and STEM workshops to community gardening sessions and cultural events.\n\nI\u2019d love the indoor and outdoor areas to feel like one continuous environment, so a workshop could easily spill into the courtyard, or a class could gather under a shaded pergola. Accessibility is important too \u2014 I want everyone, regardless of mobility, to feel welcome and able to participate fully.\n\nOne thing I\u2019m still figuring out is how to make the space adaptable enough for both small, quiet activities and large, energetic gatherings without one disrupting the other. How can I balance that flexibility with comfort?",
+    "input_length": 146,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "mentor_mode",
+    "agents_used": [
+      "orchestrator"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "orchestrator",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 8,
+    "design_moves": [
+      {
+        "content": "For me, the main purpose of the design is to create a space where people of all ages can learn, share, and connect.",
+        "timestamp": "2025-08-14T22:59:36.506543",
+        "micro_timestamp": 1755230376.506543,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.162,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 115,
+          "has_question": false,
+          "word_count": 23,
+          "complexity_score": 0.7043478260869566
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "The community it will serve is quite diverse \u2014 from school children and teenagers to working adults and retirees.",
+        "timestamp": "2025-08-14T22:59:36.606543",
+        "micro_timestamp": 1755230376.606543,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.095,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 113,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.5
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "I imagine it hosting everything from art classes and STEM workshops to community gardening sessions and cultural events.",
+        "timestamp": "2025-08-14T22:59:36.706543",
+        "micro_timestamp": 1755230376.706543,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.103,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 120,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.5722222222222222
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "I\u2019d love the indoor and outdoor areas to feel like one continuous environment, so a workshop could easily spill into the courtyard, or a class could gather under a shaded pergola.",
+        "timestamp": "2025-08-14T22:59:36.806543",
+        "micro_timestamp": 1755230376.806543,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.21100000000000002,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 179,
+          "has_question": false,
+          "word_count": 31,
+          "complexity_score": 0.6806451612903226
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 5
+      },
+      {
+        "content": "Accessibility is important too \u2014 I want everyone, regardless of mobility, to feel welcome and able to participate fully.",
+        "timestamp": "2025-08-14T22:59:36.906543",
+        "micro_timestamp": 1755230376.906543,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.14,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 120,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.736842105263158
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 6
+      },
+      {
+        "content": "One thing I\u2019m still figuring out is how to make the space adaptable enough for both small, quiet activities and large, energetic gatherings without one disrupting the other.",
+        "timestamp": "2025-08-14T22:59:37.006543",
+        "micro_timestamp": 1755230377.006543,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.22220000000000006,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 173,
+          "has_question": false,
+          "word_count": 28,
+          "complexity_score": 0.7214285714285715
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "How can I balance that flexibility with comfort?",
+        "timestamp": "2025-08-14T22:59:37.106543",
+        "micro_timestamp": 1755230377.106543,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.0451,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 48,
+          "has_question": true,
+          "word_count": 8,
+          "complexity_score": 0.5125
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-14T22:59:37.206543",
+        "micro_timestamp": 1755230377.206543,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T22:59:53.182041",
+    "interaction_number": 3,
+    "student_input": "For me, the main purpose of the design is to create a space where people of all ages can learn, share, and connect. The community it will serve is quite diverse \u2014 from school children and teenagers to working adults and retirees. I imagine it hosting everything from art classes and STEM workshops to community gardening sessions and cultural events.\n\nI\u2019d love the indoor and outdoor areas to feel like one continuous environment, so a workshop could easily spill into the courtyard, or a class could gather under a shaded pergola. Accessibility is important too \u2014 I want everyone, regardless of mobility, to feel welcome and able to participate fully.\n\nOne thing I\u2019m still figuring out is how to make the space adaptable enough for both small, quiet activities and large, energetic gatherings without one disrupting the other. How can I balance that flexibility with comfort?",
+    "input_length": 146,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "high",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "1. **Flexible Zoning Design**: Implement a zoning strategy that uses movable partitions and multi-functional furniture to define areas within the learning center.\n\nThis approach allows spaces to be reconfigured easily to accommodate both small, quiet activities and larger, more energetic gatherings.\n\nFor example, lightweight, sound-absorbing panels can be used to create intimate study nooks or opened up to form larger, communal spaces.\n\nIncorporating rolling whiteboards or shelves can further fa",
+    "response_length": 70,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.6,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 11,
+    "design_moves": [
+      {
+        "content": "For me, the main purpose of the design is to create a space where people of all ages can learn, share, and connect.",
+        "timestamp": "2025-08-14T22:59:53.182041",
+        "micro_timestamp": 1755230393.182041,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.162,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 115,
+          "has_question": false,
+          "word_count": 23,
+          "complexity_score": 0.7043478260869566
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "The community it will serve is quite diverse \u2014 from school children and teenagers to working adults and retirees.",
+        "timestamp": "2025-08-14T22:59:53.282041",
+        "micro_timestamp": 1755230393.282041,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.095,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 113,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.5
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "I imagine it hosting everything from art classes and STEM workshops to community gardening sessions and cultural events.",
+        "timestamp": "2025-08-14T22:59:53.382041",
+        "micro_timestamp": 1755230393.382041,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.103,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 120,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.5722222222222222
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "I\u2019d love the indoor and outdoor areas to feel like one continuous environment, so a workshop could easily spill into the courtyard, or a class could gather under a shaded pergola.",
+        "timestamp": "2025-08-14T22:59:53.482041",
+        "micro_timestamp": 1755230393.482041,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.21100000000000002,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 179,
+          "has_question": false,
+          "word_count": 31,
+          "complexity_score": 0.6806451612903226
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "Accessibility is important too \u2014 I want everyone, regardless of mobility, to feel welcome and able to participate fully.",
+        "timestamp": "2025-08-14T22:59:53.582041",
+        "micro_timestamp": 1755230393.582041,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.14,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 120,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.736842105263158
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "One thing I\u2019m still figuring out is how to make the space adaptable enough for both small, quiet activities and large, energetic gatherings without one disrupting the other.",
+        "timestamp": "2025-08-14T22:59:53.682041",
+        "micro_timestamp": 1755230393.682041,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.22220000000000006,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 173,
+          "has_question": false,
+          "word_count": 28,
+          "complexity_score": 0.7214285714285715
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "How can I balance that flexibility with comfort?",
+        "timestamp": "2025-08-14T22:59:53.782041",
+        "micro_timestamp": 1755230393.782041,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.0451,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 48,
+          "has_question": true,
+          "word_count": 8,
+          "complexity_score": 0.5125
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "**Flexible Zoning Design**: Implement a zoning strategy that uses movable partitions and multi-functional furniture to define areas within the learning center.",
+        "timestamp": "2025-08-14T22:59:53.982041",
+        "micro_timestamp": 1755230393.982041,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.21720000000000003,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 159,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.861904761904762
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.19999980926513672,
+        "next_move": 2
+      },
+      {
+        "content": "This approach allows spaces to be reconfigured easily to accommodate both small, quiet activities and larger, more energetic gatherings.",
+        "timestamp": "2025-08-14T22:59:54.082041",
+        "micro_timestamp": 1755230394.082041,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.18719999999999995,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 136,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.8210526315789473
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "For example, lightweight, sound-absorbing panels can be used to create intimate study nooks or opened up to form larger, communal spaces.",
+        "timestamp": "2025-08-14T22:59:54.182041",
+        "micro_timestamp": 1755230394.182041,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.198,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 137,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.8571428571428572
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Incorporating rolling whiteboards or shelves can further fa",
+        "timestamp": "2025-08-14T22:59:54.282041",
+        "micro_timestamp": 1755230394.282041,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.052000000000000005,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 59,
+          "has_question": false,
+          "word_count": 8,
+          "complexity_score": 0.65
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "analysis",
+      "synthesis",
+      "synthesis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 0.4,
+        "question_quality": 0.6666666666666666,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0.5
+      },
+      "complexity_metrics": {
+        "overall_score": 0.26666666666666666,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 0.29333333333333333,
+        "complexity_progression": 0.5
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.0,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.2,
+        "skill_development": 0.2,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.22000000000000003,
+        "learning_velocity": 0.5
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.4066666666666667,
+      "scientific_confidence": 0.5033333333333333
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "low",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "shallow",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "design_problem",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "understanding",
+      "context_dependency": "high",
+      "classification_confidence": 0.6499999999999999,
+      "last_message": "For me, the main purpose of the design is to create a space where people of all ages can learn, share, and connect. The community it will serve is quite diverse \u2014 from school children and teenagers to working adults and retirees. I imagine it hosting everything from art classes and STEM workshops to community gardening sessions and cultural events.\n\nI\u2019d love the indoor and outdoor areas to feel like one continuous environment, so a workshop could easily spill into the courtyard, or a class could gather under a shaded pergola. Accessibility is important too \u2014 I want everyone, regardless of mobility, to feel welcome and able to participate fully.\n\nOne thing I\u2019m still figuring out is how to make the space adaptable enough for both small, quiet activities and large, energetic gatherings without one disrupting the other. How can I balance that flexibility with comfort?",
+      "user_input": "For me, the main purpose of the design is to create a space where people of all ages can learn, share, and connect. The community it will serve is quite diverse \u2014 from school children and teenagers to working adults and retirees. I imagine it hosting everything from art classes and STEM workshops to community gardening sessions and cultural events.\n\nI\u2019d love the indoor and outdoor areas to feel like one continuous environment, so a workshop could easily spill into the courtyard, or a class could gather under a shaded pergola. Accessibility is important too \u2014 I want everyone, regardless of mobility, to feel welcome and able to participate fully.\n\nOne thing I\u2019m still figuring out is how to make the space adaptable enough for both small, quiet activities and large, energetic gatherings without one disrupting the other. How can I balance that flexibility with comfort?",
+      "primary_gap": "brief_development",
+      "agent_coordination": {
+        "other_responses": {
+          "socratic_tutor": {
+            "response_text": "",
+            "response_type": "socratic",
+            "key_insights": []
+          },
+          "analysis_agent": {
+            "cognitive_state": {},
+            "primary_gap": "",
+            "understanding_level": "moderate"
+          }
+        },
+        "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+      },
+      "routing_path": "balanced_guidance"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your advanced level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "advanced",
+              "confidence": 0.7333333333333334,
+              "indicators": {
+                "beginner": 1,
+                "intermediate": 7,
+                "advanced": 1
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 19.4,
+                "word_count": 194,
+                "sentence_count": 10,
+                "complexity_score": 0.97
+              },
+              "reasoning": "1 beginner-level terms detected; 7 intermediate-level terms detected; 1 advanced-level terms detected; complex sentence structure; assessed as advanced"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "conversation_phase": "discovery",
+              "opening_strategy": {
+                "opening_message": "Hi there! It's fantastic that you're diving into the fascinating world of cultural architecture. Let's explore how different cultures uniquely shape the functionality of their spaces, offering us both inspiration and insight. I'm excited to journey with you as we uncover the stories behind these designs and how they serve the communities that use them.",
+                "primary_dimension": "functional",
+                "opening_questions": [
+                  "What is the primary purpose of your design?",
+                  "Who are the main users and what do they need?"
+                ],
+                "exploration_prompts": [
+                  "Let's explore how the program influences the spatial organization",
+                  "Consider how user needs might evolve over time",
+                  "Think about the relationship between function and form"
+                ],
+                "knowledge_gaps": [
+                  "programming",
+                  "user analysis",
+                  "functional relationships"
+                ],
+                "complexity_level": "beginner",
+                "suggested_approach": "idea_development"
+              },
+              "relevant_dimensions": [
+                "functional",
+                "spatial",
+                "contextual",
+                "aesthetic"
+              ],
+              "user_profile": {
+                "knowledge_level": "beginner",
+                "learning_style": "analytical",
+                "interests": [
+                  "cultural",
+                  "educational",
+                  "design_process"
+                ],
+                "strengths": [],
+                "gaps": [],
+                "engagement_patterns": [],
+                "conversation_preferences": [],
+                "milestone_progress": {}
+              },
+              "milestone": {
+                "milestone_type": "phase_entry",
+                "phase": "discovery",
+                "dimension": "functional",
+                "topic": "cultural",
+                "user_understanding": "beginner",
+                "confidence_level": "neutral",
+                "engagement_level": "high",
+                "progress_percentage": 0.0,
+                "required_actions": [],
+                "success_criteria": [],
+                "timestamp": "2025-08-14T22:59:41.277432",
+                "metadata": {}
+              },
+              "next_steps": [
+                "Ask follow-up questions to deepen understanding",
+                "Explore related design space dimensions",
+                "Begin building foundational knowledge",
+                "Identify specific areas of interest"
+              ]
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "phase_analysis": {
+          "phase": "ideation",
+          "step": "initial_context_reasoning",
+          "confidence": 0.6,
+          "progression_score": 0.25,
+          "current_phase": "ideation",
+          "current_step": "initial_context_reasoning",
+          "phase_confidence": 0.6
+        },
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:01:46.088082",
+    "interaction_number": 4,
+    "student_input": "I really like the idea of movable partitions and modular furniture \u2014 it feels like it would make the spaces so much more dynamic. I can picture a morning study group in a quiet nook, then the same spot opening up for an afternoon art workshop.\n\nThe seamless indoor-outdoor integration also excites me, especially the large glass doors and shaded pergolas. I think that could really change the atmosphere depending on the weather or time of day.\n\nOne thing I\u2019m wondering about is the acoustic side \u2014 how can we make sure the materials we choose not only manage sound well but also complement the overall aesthetic? And could some of those acoustic elements also be movable or multi-purpose, like display boards or shelving?\n\nWhat strategies have you seen work best for keeping that balance between flexibility, comfort, and a cohesive design style?",
+    "input_length": 143,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 8,
+    "design_moves": [
+      {
+        "content": "I really like the idea of movable partitions and modular furniture \u2014 it feels like it would make the spaces so much more dynamic.",
+        "timestamp": "2025-08-14T23:01:46.087081",
+        "micro_timestamp": 1755230506.087081,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.1272,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 129,
+          "has_question": false,
+          "word_count": 24,
+          "complexity_score": 0.4416666666666667
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I can picture a morning study group in a quiet nook, then the same spot opening up for an afternoon art workshop.",
+        "timestamp": "2025-08-14T23:01:46.187081",
+        "micro_timestamp": 1755230506.187081,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.114,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 113,
+          "has_question": false,
+          "word_count": 22,
+          "complexity_score": 0.5181818181818182
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "The seamless indoor-outdoor integration also excites me, especially the large glass doors and shaded pergolas.",
+        "timestamp": "2025-08-14T23:01:46.287081",
+        "micro_timestamp": 1755230506.287081,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.111,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 110,
+          "has_question": false,
+          "word_count": 15,
+          "complexity_score": 0.74
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "I think that could really change the atmosphere depending on the weather or time of day.",
+        "timestamp": "2025-08-14T23:01:46.387081",
+        "micro_timestamp": 1755230506.387081,
+        "phase": "ideation",
+        "move_type": "reflection",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.0584,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 88,
+          "has_question": false,
+          "word_count": 16,
+          "complexity_score": 0.45625
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "One thing I\u2019m wondering about is the acoustic side \u2014 how can we make sure the materials we choose not only manage sound well but also complement the overall aesthetic?",
+        "timestamp": "2025-08-14T23:01:46.487081",
+        "micro_timestamp": 1755230506.487081,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.1518,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 167,
+          "has_question": true,
+          "word_count": 30,
+          "complexity_score": 0.45999999999999996
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "And could some of those acoustic elements also be movable or multi-purpose, like display boards or shelving?",
+        "timestamp": "2025-08-14T23:01:46.587081",
+        "micro_timestamp": 1755230506.587081,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.109,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 108,
+          "has_question": true,
+          "word_count": 17,
+          "complexity_score": 0.6411764705882353
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "What strategies have you seen work best for keeping that balance between flexibility, comfort, and a cohesive design style?",
+        "timestamp": "2025-08-14T23:01:46.687081",
+        "micro_timestamp": 1755230506.687081,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.14299999999999996,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 123,
+          "has_question": true,
+          "word_count": 19,
+          "complexity_score": 0.7526315789473683
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-14T23:01:46.787081",
+        "micro_timestamp": 1755230506.787081,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "synthesis",
+      "general",
+      "general",
+      "reflection",
+      "analysis",
+      "general",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:02:03.861496",
+    "interaction_number": 5,
+    "student_input": "I really like the idea of movable partitions and modular furniture \u2014 it feels like it would make the spaces so much more dynamic. I can picture a morning study group in a quiet nook, then the same spot opening up for an afternoon art workshop.\n\nThe seamless indoor-outdoor integration also excites me, especially the large glass doors and shaded pergolas. I think that could really change the atmosphere depending on the weather or time of day.\n\nOne thing I\u2019m wondering about is the acoustic side \u2014 how can we make sure the materials we choose not only manage sound well but also complement the overall aesthetic? And could some of those acoustic elements also be movable or multi-purpose, like display boards or shelving?\n\nWhat strategies have you seen work best for keeping that balance between flexibility, comfort, and a cohesive design style?",
+    "input_length": 143,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "high",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "I'd be happy to help you explore landscape architecture in learning_center architecture.\n\nThis is an interesting area that involves various approaches and strategies.\n\nCould you tell me more specifically what aspect of landscape architecture you'd like to understand better?\n\nHow might you design a learning center that not only adapts to diverse activities through movable partitions and modular furniture, but also harmonizes acoustics with aesthetics by integrating innovative materials?\n\nConsider",
+    "response_length": 70,
+    "routing_path": "knowledge_with_challenge",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.6,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 11,
+    "design_moves": [
+      {
+        "content": "I really like the idea of movable partitions and modular furniture \u2014 it feels like it would make the spaces so much more dynamic.",
+        "timestamp": "2025-08-14T23:02:03.861496",
+        "micro_timestamp": 1755230523.861496,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.1272,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 129,
+          "has_question": false,
+          "word_count": 24,
+          "complexity_score": 0.4416666666666667
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I can picture a morning study group in a quiet nook, then the same spot opening up for an afternoon art workshop.",
+        "timestamp": "2025-08-14T23:02:03.961496",
+        "micro_timestamp": 1755230523.961496,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.114,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 113,
+          "has_question": false,
+          "word_count": 22,
+          "complexity_score": 0.5181818181818182
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "The seamless indoor-outdoor integration also excites me, especially the large glass doors and shaded pergolas.",
+        "timestamp": "2025-08-14T23:02:04.061496",
+        "micro_timestamp": 1755230524.061496,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.111,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 110,
+          "has_question": false,
+          "word_count": 15,
+          "complexity_score": 0.74
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "I think that could really change the atmosphere depending on the weather or time of day.",
+        "timestamp": "2025-08-14T23:02:04.161496",
+        "micro_timestamp": 1755230524.161496,
+        "phase": "ideation",
+        "move_type": "reflection",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.0584,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 88,
+          "has_question": false,
+          "word_count": 16,
+          "complexity_score": 0.45625
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "One thing I\u2019m wondering about is the acoustic side \u2014 how can we make sure the materials we choose not only manage sound well but also complement the overall aesthetic?",
+        "timestamp": "2025-08-14T23:02:04.261496",
+        "micro_timestamp": 1755230524.261496,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.1518,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 167,
+          "has_question": true,
+          "word_count": 30,
+          "complexity_score": 0.45999999999999996
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "And could some of those acoustic elements also be movable or multi-purpose, like display boards or shelving?",
+        "timestamp": "2025-08-14T23:02:04.361496",
+        "micro_timestamp": 1755230524.361496,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.109,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 108,
+          "has_question": true,
+          "word_count": 17,
+          "complexity_score": 0.6411764705882353
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "What strategies have you seen work best for keeping that balance between flexibility, comfort, and a cohesive design style?",
+        "timestamp": "2025-08-14T23:02:04.461496",
+        "micro_timestamp": 1755230524.461496,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.14299999999999996,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 123,
+          "has_question": true,
+          "word_count": 19,
+          "complexity_score": 0.7526315789473683
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "I'd be happy to help you explore landscape architecture in learning_center architecture.",
+        "timestamp": "2025-08-14T23:02:04.561496",
+        "micro_timestamp": 1755230524.561496,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.08470000000000003,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 88,
+          "has_question": false,
+          "word_count": 12,
+          "complexity_score": 0.6416666666666667
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "This is an interesting area that involves various approaches and strategies.",
+        "timestamp": "2025-08-14T23:02:04.661496",
+        "micro_timestamp": 1755230524.661496,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.0792,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 76,
+          "has_question": false,
+          "word_count": 11,
+          "complexity_score": 0.6
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Could you tell me more specifically what aspect of landscape architecture you'd like to understand better?",
+        "timestamp": "2025-08-14T23:02:04.761496",
+        "micro_timestamp": 1755230524.761496,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.091,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 106,
+          "has_question": true,
+          "word_count": 16,
+          "complexity_score": 0.56875
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "How might you design a learning center that not only adapts to diverse activities through movable partitions and modular furniture, but also harmonizes acoustics with aesthetics by integrating innovative materials?",
+        "timestamp": "2025-08-14T23:02:04.861496",
+        "micro_timestamp": 1755230524.861496,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.23650000000000002,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 214,
+          "has_question": true,
+          "word_count": 30,
+          "complexity_score": 0.7166666666666667
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "synthesis",
+      "general",
+      "general",
+      "reflection",
+      "analysis",
+      "general",
+      "general",
+      "analysis",
+      "synthesis",
+      "general",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 0.6,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.4,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.2,
+        "integration_level": 0.44000000000000006,
+        "complexity_progression": 0.7448453608247423
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.3333333333333333,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.3,
+        "skill_development": 0.3,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.33,
+        "learning_velocity": 0.16666666666666666
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.465,
+      "scientific_confidence": 0.605
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "moderate",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "knowledge_seeking",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "validation",
+      "context_dependency": "high",
+      "classification_confidence": 0.6499999999999999,
+      "last_message": "I really like the idea of movable partitions and modular furniture \u2014 it feels like it would make the spaces so much more dynamic. I can picture a morning study group in a quiet nook, then the same spot opening up for an afternoon art workshop.\n\nThe seamless indoor-outdoor integration also excites me, especially the large glass doors and shaded pergolas. I think that could really change the atmosphere depending on the weather or time of day.\n\nOne thing I\u2019m wondering about is the acoustic side \u2014 how can we make sure the materials we choose not only manage sound well but also complement the overall aesthetic? And could some of those acoustic elements also be movable or multi-purpose, like display boards or shelving?\n\nWhat strategies have you seen work best for keeping that balance between flexibility, comfort, and a cohesive design style?",
+      "user_input": "I really like the idea of movable partitions and modular furniture \u2014 it feels like it would make the spaces so much more dynamic. I can picture a morning study group in a quiet nook, then the same spot opening up for an afternoon art workshop.\n\nThe seamless indoor-outdoor integration also excites me, especially the large glass doors and shaded pergolas. I think that could really change the atmosphere depending on the weather or time of day.\n\nOne thing I\u2019m wondering about is the acoustic side \u2014 how can we make sure the materials we choose not only manage sound well but also complement the overall aesthetic? And could some of those acoustic elements also be movable or multi-purpose, like display boards or shelving?\n\nWhat strategies have you seen work best for keeping that balance between flexibility, comfort, and a cohesive design style?",
+      "primary_gap": "brief_development",
+      "agent_coordination": {
+        "other_responses": {
+          "socratic_tutor": {
+            "response_text": "",
+            "response_type": "socratic",
+            "key_insights": []
+          },
+          "analysis_agent": {
+            "cognitive_state": {},
+            "primary_gap": "",
+            "understanding_level": "moderate"
+          }
+        },
+        "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+      },
+      "routing_path": "knowledge_with_challenge"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your advanced level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "advanced",
+              "confidence": 0.8333333333333334,
+              "indicators": {
+                "beginner": 1,
+                "intermediate": 8,
+                "advanced": 1
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 19.823529411764707,
+                "word_count": 337,
+                "sentence_count": 17,
+                "complexity_score": 0.9911764705882353
+              },
+              "reasoning": "1 beginner-level terms detected; 8 intermediate-level terms detected; 1 advanced-level terms detected; complex sentence structure; assessed as advanced"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "current_phase": "exploration",
+              "phase_transition": true,
+              "new_milestone": {
+                "milestone_type": "phase_entry",
+                "phase": "exploration",
+                "dimension": null,
+                "topic": "interior",
+                "user_understanding": "unknown",
+                "confidence_level": "unknown",
+                "engagement_level": "unknown",
+                "progress_percentage": 0.0,
+                "required_actions": [],
+                "success_criteria": [],
+                "timestamp": "2025-08-14T23:01:50.780101",
+                "metadata": {}
+              },
+              "progression_guidance": {
+                "phase_objectives": [
+                  "Deepen understanding of key concepts",
+                  "Explore multiple perspectives and approaches",
+                  "Address knowledge gaps",
+                  "Build foundational knowledge"
+                ],
+                "suggested_approaches": [
+                  "Provide examples and case studies",
+                  "Ask probing questions",
+                  "Introduce new concepts gradually",
+                  "Connect to user's existing knowledge"
+                ],
+                "success_indicators": [
+                  "User demonstrates growing understanding",
+                  "Knowledge gaps being addressed",
+                  "User asks deeper questions",
+                  "Concepts being connected"
+                ],
+                "next_phase_preparation": [
+                  "Prepare synthesis activities",
+                  "Identify connection opportunities",
+                  "Plan insight formation support",
+                  "Design application preparation"
+                ]
+              },
+              "conversation_summary": {
+                "total_milestones": 2,
+                "current_phase": "exploration",
+                "opened_dimensions": [],
+                "user_profile": {
+                  "knowledge_level": "beginner",
+                  "learning_style": "analytical",
+                  "interests": [
+                    "cultural",
+                    "educational",
+                    "design_process"
+                  ],
+                  "strengths": [],
+                  "gaps": [],
+                  "engagement_patterns": [],
+                  "conversation_preferences": [],
+                  "milestone_progress": {}
+                },
+                "learning_progress": {
+                  "status": "in_progress",
+                  "progress": 0.4,
+                  "phases_completed": 1,
+                  "current_phase_progress": 0.5
+                },
+                "conversation_quality": {
+                  "quality": "needs_improvement",
+                  "score": 0.25,
+                  "engagement_trend": "declining",
+                  "understanding_trend": "declining"
+                },
+                "project_context": {
+                  "building_type": "learning_center"
+                },
+                "challenges": [
+                  "Processing complex information",
+                  "Connecting theoretical concepts"
+                ],
+                "opportunities": [
+                  "Learning from examples",
+                  "Developing analytical skills"
+                ]
+              }
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "phase_analysis": {
+          "phase": "ideation",
+          "step": "initial_context_reasoning",
+          "confidence": 0.65,
+          "progression_score": 0.25,
+          "current_phase": "ideation",
+          "current_step": "initial_context_reasoning",
+          "phase_confidence": 0.65
+        },
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": true,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:02:40.579242",
+    "interaction_number": 6,
+    "student_input": "I\u2019m really curious about how landscape architecture can shape the overall experience of a learning center. I like the idea of using biophilic design to connect indoor and outdoor spaces \u2014 it seems like it could make the building feel more alive and flexible at the same time.\n\nI\u2019m also wondering about integrating acoustics with aesthetics. Could movable sound-absorbing panels really work as art displays or shelving without feeling awkward? How do you balance functionality and beauty in that way?\n\nAnd with technology, I\u2019m curious \u2014 what tools or systems could help adjust lighting, temperature, or even acoustics to support different activities while keeping the space welcoming and cohesive?\n\nHow might all these elements work together to create a learning center that feels both dynamic and harmonious with its natural surroundings?",
+    "input_length": 131,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "knowledge_with_challenge",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 8,
+    "design_moves": [
+      {
+        "content": "I\u2019m really curious about how landscape architecture can shape the overall experience of a learning center.",
+        "timestamp": "2025-08-14T23:02:40.579242",
+        "micro_timestamp": 1755230560.579242,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.10010000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 106,
+          "has_question": false,
+          "word_count": 16,
+          "complexity_score": 0.56875
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I like the idea of using biophilic design to connect indoor and outdoor spaces \u2014 it seems like it could make the building feel more alive and flexible at the same time.",
+        "timestamp": "2025-08-14T23:02:40.679242",
+        "micro_timestamp": 1755230560.679242,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.16439999999999996,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 168,
+          "has_question": false,
+          "word_count": 32,
+          "complexity_score": 0.428125
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "I\u2019m also wondering about integrating acoustics with aesthetics.",
+        "timestamp": "2025-08-14T23:02:40.779242",
+        "micro_timestamp": 1755230560.779242,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.055999999999999994,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 63,
+          "has_question": false,
+          "word_count": 8,
+          "complexity_score": 0.7
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "Could movable sound-absorbing panels really work as art displays or shelving without feeling awkward?",
+        "timestamp": "2025-08-14T23:02:40.879242",
+        "micro_timestamp": 1755230560.879242,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.08800000000000001,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 101,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.6285714285714286
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "How do you balance functionality and beauty in that way?",
+        "timestamp": "2025-08-14T23:02:40.979242",
+        "micro_timestamp": 1755230560.979242,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.0517,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 56,
+          "has_question": true,
+          "word_count": 10,
+          "complexity_score": 0.47000000000000003
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "And with technology, I\u2019m curious \u2014 what tools or systems could help adjust lighting, temperature, or even acoustics to support different activities while keeping the space welcoming and cohesive?",
+        "timestamp": "2025-08-14T23:02:41.079242",
+        "micro_timestamp": 1755230561.079242,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.254,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 195,
+          "has_question": true,
+          "word_count": 29,
+          "complexity_score": 0.8758620689655173
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "How might all these elements work together to create a learning center that feels both dynamic and harmonious with its natural surroundings?",
+        "timestamp": "2025-08-14T23:02:41.179242",
+        "micro_timestamp": 1755230561.179242,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.13090000000000002,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 140,
+          "has_question": true,
+          "word_count": 22,
+          "complexity_score": 0.5409090909090909
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-14T23:02:41.279242",
+        "micro_timestamp": 1755230561.279242,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "synthesis",
+      "general",
+      "general",
+      "analysis",
+      "general",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:02:50.832413",
+    "interaction_number": 7,
+    "student_input": "I\u2019m really curious about how landscape architecture can shape the overall experience of a learning center. I like the idea of using biophilic design to connect indoor and outdoor spaces \u2014 it seems like it could make the building feel more alive and flexible at the same time.\n\nI\u2019m also wondering about integrating acoustics with aesthetics. Could movable sound-absorbing panels really work as art displays or shelving without feeling awkward? How do you balance functionality and beauty in that way?\n\nAnd with technology, I\u2019m curious \u2014 what tools or systems could help adjust lighting, temperature, or even acoustics to support different activities while keeping the space welcoming and cohesive?\n\nHow might all these elements work together to create a learning center that feels both dynamic and harmonious with its natural surroundings?",
+    "input_length": 131,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "high",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "Your curiosity about biophilic design and its potential to animate and unite indoor and outdoor spaces is insightful, especially in the context of a learning center where flexibility and vitality can enhance the educational experience.\n\nBy considering movable sound-absorbing panels as dual-purpose elements, you're tapping into a clever integration of acoustics and aesthetics that can indeed balance functionality and beauty.\n\nAs you explore technology's role in adjusting lighting, temperature, an",
+    "response_length": 70,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.6,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 10,
+    "design_moves": [
+      {
+        "content": "I\u2019m really curious about how landscape architecture can shape the overall experience of a learning center.",
+        "timestamp": "2025-08-14T23:02:50.832413",
+        "micro_timestamp": 1755230570.832413,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.10010000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 106,
+          "has_question": false,
+          "word_count": 16,
+          "complexity_score": 0.56875
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I like the idea of using biophilic design to connect indoor and outdoor spaces \u2014 it seems like it could make the building feel more alive and flexible at the same time.",
+        "timestamp": "2025-08-14T23:02:50.932413",
+        "micro_timestamp": 1755230570.932413,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.16439999999999996,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 168,
+          "has_question": false,
+          "word_count": 32,
+          "complexity_score": 0.428125
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "I\u2019m also wondering about integrating acoustics with aesthetics.",
+        "timestamp": "2025-08-14T23:02:51.032413",
+        "micro_timestamp": 1755230571.032413,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.055999999999999994,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 63,
+          "has_question": false,
+          "word_count": 8,
+          "complexity_score": 0.7
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Could movable sound-absorbing panels really work as art displays or shelving without feeling awkward?",
+        "timestamp": "2025-08-14T23:02:51.132413",
+        "micro_timestamp": 1755230571.132413,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.08800000000000001,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 101,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.6285714285714286
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "How do you balance functionality and beauty in that way?",
+        "timestamp": "2025-08-14T23:02:51.232413",
+        "micro_timestamp": 1755230571.232413,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.0517,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 56,
+          "has_question": true,
+          "word_count": 10,
+          "complexity_score": 0.47000000000000003
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "And with technology, I\u2019m curious \u2014 what tools or systems could help adjust lighting, temperature, or even acoustics to support different activities while keeping the space welcoming and cohesive?",
+        "timestamp": "2025-08-14T23:02:51.332413",
+        "micro_timestamp": 1755230571.332413,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.254,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 195,
+          "has_question": true,
+          "word_count": 29,
+          "complexity_score": 0.8758620689655173
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "How might all these elements work together to create a learning center that feels both dynamic and harmonious with its natural surroundings?",
+        "timestamp": "2025-08-14T23:02:51.432413",
+        "micro_timestamp": 1755230571.432413,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.13090000000000002,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 140,
+          "has_question": true,
+          "word_count": 22,
+          "complexity_score": 0.5409090909090909
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Your curiosity about biophilic design and its potential to animate and unite indoor and outdoor spaces is insightful, especially in the context of a learning center where flexibility and vitality can enhance the educational experience.",
+        "timestamp": "2025-08-14T23:02:51.532413",
+        "micro_timestamp": 1755230571.532413,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.236,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 235,
+          "has_question": false,
+          "word_count": 35,
+          "complexity_score": 0.6742857142857143
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "By considering movable sound-absorbing panels as dual-purpose elements, you're tapping into a clever integration of acoustics and aesthetics that can indeed balance functionality and beauty.",
+        "timestamp": "2025-08-14T23:02:51.632413",
+        "micro_timestamp": 1755230571.632413,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.21009999999999998,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 190,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.7639999999999999
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "As you explore technology's role in adjusting lighting, temperature, an",
+        "timestamp": "2025-08-14T23:02:51.732413",
+        "micro_timestamp": 1755230571.732413,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.09020000000000003,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 71,
+          "has_question": false,
+          "word_count": 10,
+          "complexity_score": 0.8200000000000001
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "synthesis",
+      "general",
+      "general",
+      "analysis",
+      "general",
+      "analysis",
+      "general",
+      "analysis",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 0.8,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.5333333333333333,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.4,
+        "integration_level": 0.5866666666666667,
+        "complexity_progression": 0.7061855670103093
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.6666666666666666,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.4,
+        "skill_development": 0.4,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.44000000000000006,
+        "learning_velocity": 0.3333333333333333
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.5233333333333333,
+      "scientific_confidence": 0.69
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "moderate",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "confusion_expression",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "understanding",
+      "context_dependency": "high",
+      "classification_confidence": 0.7,
+      "last_message": "I\u2019m really curious about how landscape architecture can shape the overall experience of a learning center. I like the idea of using biophilic design to connect indoor and outdoor spaces \u2014 it seems like it could make the building feel more alive and flexible at the same time.\n\nI\u2019m also wondering about integrating acoustics with aesthetics. Could movable sound-absorbing panels really work as art displays or shelving without feeling awkward? How do you balance functionality and beauty in that way?\n\nAnd with technology, I\u2019m curious \u2014 what tools or systems could help adjust lighting, temperature, or even acoustics to support different activities while keeping the space welcoming and cohesive?\n\nHow might all these elements work together to create a learning center that feels both dynamic and harmonious with its natural surroundings?",
+      "user_input": "I\u2019m really curious about how landscape architecture can shape the overall experience of a learning center. I like the idea of using biophilic design to connect indoor and outdoor spaces \u2014 it seems like it could make the building feel more alive and flexible at the same time.\n\nI\u2019m also wondering about integrating acoustics with aesthetics. Could movable sound-absorbing panels really work as art displays or shelving without feeling awkward? How do you balance functionality and beauty in that way?\n\nAnd with technology, I\u2019m curious \u2014 what tools or systems could help adjust lighting, temperature, or even acoustics to support different activities while keeping the space welcoming and cohesive?\n\nHow might all these elements work together to create a learning center that feels both dynamic and harmonious with its natural surroundings?",
+      "routing_path": "socratic_exploration"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "milestone_context": {
+          "milestone_type": "phase_entry",
+          "phase": "synthesis",
+          "required_actions": [],
+          "success_criteria": [],
+          "agent_guidance": {
+            "primary_role": "Analyze user input and conversation context",
+            "focus_areas": [
+              "intent classification",
+              "conversation state",
+              "routing decisions"
+            ],
+            "milestone_context": "Current milestone: phase_entry in synthesis phase",
+            "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": true,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:03:09.895399",
+    "interaction_number": 8,
+    "student_input": "I think the site\u2019s characteristics \u2014 like sunlight patterns, existing vegetation, and topography \u2014 could really shape how I place indoor-outdoor connections, seating areas, and learning zones. For example, natural shading could guide where outdoor classrooms or gathering spaces go, and views could help orient pathways or sightlines.\n\nI\u2019m still a bit unclear on how to best integrate technology, like automated lighting or acoustic adjustments, so it feels natural and not intrusive. How can I make these systems support flexibility and comfort without overwhelming the design?\n\nAlso, could movable panels or furniture adapt differently depending on the season or type of activity, while still keeping the space cohesive? How might I approach testing or planning for that?",
+    "input_length": 117,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 7,
+    "design_moves": [
+      {
+        "content": "I think the site\u2019s characteristics \u2014 like sunlight patterns, existing vegetation, and topography \u2014 could really shape how I place indoor-outdoor connections, seating areas, and learning zones.",
+        "timestamp": "2025-08-14T23:03:09.895399",
+        "micro_timestamp": 1755230589.895399,
+        "phase": "ideation",
+        "move_type": "reflection",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.21600000000000003,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 192,
+          "has_question": false,
+          "word_count": 27,
+          "complexity_score": 1.0
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "For example, natural shading could guide where outdoor classrooms or gathering spaces go, and views could help orient pathways or sightlines.",
+        "timestamp": "2025-08-14T23:03:09.995399",
+        "micro_timestamp": 1755230589.995399,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.1793,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 141,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.7761904761904761
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "I\u2019m still a bit unclear on how to best integrate technology, like automated lighting or acoustic adjustments, so it feels natural and not intrusive.",
+        "timestamp": "2025-08-14T23:03:10.095399",
+        "micro_timestamp": 1755230590.095399,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.19029999999999997,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 148,
+          "has_question": false,
+          "word_count": 24,
+          "complexity_score": 0.7208333333333332
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "How can I make these systems support flexibility and comfort without overwhelming the design?",
+        "timestamp": "2025-08-14T23:03:10.195399",
+        "micro_timestamp": 1755230590.195399,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.08800000000000001,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 93,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.5714285714285714
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 5
+      },
+      {
+        "content": "Also, could movable panels or furniture adapt differently depending on the season or type of activity, while still keeping the space cohesive?",
+        "timestamp": "2025-08-14T23:03:10.295399",
+        "micro_timestamp": 1755230590.295399,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.165,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 142,
+          "has_question": true,
+          "word_count": 22,
+          "complexity_score": 0.75
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 6
+      },
+      {
+        "content": "How might I approach testing or planning for that?",
+        "timestamp": "2025-08-14T23:03:10.395399",
+        "micro_timestamp": 1755230590.395399,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.0504,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 50,
+          "has_question": true,
+          "word_count": 9,
+          "complexity_score": 0.4666666666666667
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-14T23:03:10.495399",
+        "micro_timestamp": 1755230590.495399,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "reflection",
+      "analysis",
+      "analysis",
+      "analysis",
+      "general",
+      "synthesis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:03:14.522429",
+    "interaction_number": 9,
+    "student_input": "I think the site\u2019s characteristics \u2014 like sunlight patterns, existing vegetation, and topography \u2014 could really shape how I place indoor-outdoor connections, seating areas, and learning zones. For example, natural shading could guide where outdoor classrooms or gathering spaces go, and views could help orient pathways or sightlines.\n\nI\u2019m still a bit unclear on how to best integrate technology, like automated lighting or acoustic adjustments, so it feels natural and not intrusive. How can I make these systems support flexibility and comfort without overwhelming the design?\n\nAlso, could movable panels or furniture adapt differently depending on the season or type of activity, while still keeping the space cohesive? How might I approach testing or planning for that?",
+    "input_length": 117,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "uncertain",
+    "engagement_level": "high",
+    "agent_response": "\ud83c\udf05 DAILY RHYTHM CHALLENGE: 24 hours in the life!\n\n*Your building experiences dawn, noon, dusk, and midnight differently.*\n\nConsider how the learning center's outdoor spaces evolve throughout the day and year.\n\nHow do sunlight patterns influence the comfort and usability of these areas at different times?\n\nAnalyze how existing vegetation can provide shade or seasonal interest, and how topography might create unique microclimates.\n\nDesign seating and learning zones that adapt to these temporal chan",
+    "response_length": 74,
+    "routing_path": "cognitive_challenge",
+    "agents_used": [
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "cognitive_enhancement",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.6,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 12,
+    "design_moves": [
+      {
+        "content": "I think the site\u2019s characteristics \u2014 like sunlight patterns, existing vegetation, and topography \u2014 could really shape how I place indoor-outdoor connections, seating areas, and learning zones.",
+        "timestamp": "2025-08-14T23:03:14.522429",
+        "micro_timestamp": 1755230594.522429,
+        "phase": "ideation",
+        "move_type": "reflection",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.21600000000000003,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 192,
+          "has_question": false,
+          "word_count": 27,
+          "complexity_score": 1.0
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "For example, natural shading could guide where outdoor classrooms or gathering spaces go, and views could help orient pathways or sightlines.",
+        "timestamp": "2025-08-14T23:03:14.622429",
+        "micro_timestamp": 1755230594.622429,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.1793,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 141,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.7761904761904761
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "I\u2019m still a bit unclear on how to best integrate technology, like automated lighting or acoustic adjustments, so it feels natural and not intrusive.",
+        "timestamp": "2025-08-14T23:03:14.722429",
+        "micro_timestamp": 1755230594.722429,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.19029999999999997,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 148,
+          "has_question": false,
+          "word_count": 24,
+          "complexity_score": 0.7208333333333332
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "How can I make these systems support flexibility and comfort without overwhelming the design?",
+        "timestamp": "2025-08-14T23:03:14.822429",
+        "micro_timestamp": 1755230594.822429,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.08800000000000001,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 93,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.5714285714285714
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "Also, could movable panels or furniture adapt differently depending on the season or type of activity, while still keeping the space cohesive?",
+        "timestamp": "2025-08-14T23:03:14.922429",
+        "micro_timestamp": 1755230594.922429,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.165,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 142,
+          "has_question": true,
+          "word_count": 22,
+          "complexity_score": 0.75
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "How might I approach testing or planning for that?",
+        "timestamp": "2025-08-14T23:03:15.022429",
+        "micro_timestamp": 1755230595.022429,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.0504,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 50,
+          "has_question": true,
+          "word_count": 9,
+          "complexity_score": 0.4666666666666667
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "\ud83c\udf05 DAILY RHYTHM CHALLENGE: 24 hours in the life!",
+        "timestamp": "2025-08-14T23:03:15.122429",
+        "micro_timestamp": 1755230595.122429,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.056999999999999995,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 47,
+          "has_question": false,
+          "word_count": 9,
+          "complexity_score": 0.6333333333333333
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "*Your building experiences dawn, noon, dusk, and midnight differently.",
+        "timestamp": "2025-08-14T23:03:15.222429",
+        "micro_timestamp": 1755230595.222429,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.08900000000000001,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 70,
+          "has_question": false,
+          "word_count": 9,
+          "complexity_score": 0.9888888888888889
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "Consider how the learning center's outdoor spaces evolve throughout the day and year.",
+        "timestamp": "2025-08-14T23:03:15.422429",
+        "micro_timestamp": 1755230595.422429,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.0803,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 85,
+          "has_question": false,
+          "word_count": 13,
+          "complexity_score": 0.5615384615384615
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.20000004768371582,
+        "next_move": 4
+      },
+      {
+        "content": "How do sunlight patterns influence the comfort and usability of these areas at different times?",
+        "timestamp": "2025-08-14T23:03:15.522429",
+        "micro_timestamp": 1755230595.522429,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.08910000000000003,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 95,
+          "has_question": true,
+          "word_count": 15,
+          "complexity_score": 0.54
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "Analyze how existing vegetation can provide shade or seasonal interest, and how topography might create unique microclimates.",
+        "timestamp": "2025-08-14T23:03:15.622429",
+        "micro_timestamp": 1755230595.622429,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 5,
+        "cognitive_load": 0.1386,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 125,
+          "has_question": false,
+          "word_count": 17,
+          "complexity_score": 0.7411764705882353
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 6
+      },
+      {
+        "content": "Design seating and learning zones that adapt to these temporal chan",
+        "timestamp": "2025-08-14T23:03:15.722429",
+        "micro_timestamp": 1755230595.722429,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 6,
+        "cognitive_load": 0.057,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 67,
+          "has_question": false,
+          "word_count": 11,
+          "complexity_score": 0.5181818181818182
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "reflection",
+      "analysis",
+      "analysis",
+      "analysis",
+      "general",
+      "synthesis",
+      "general",
+      "general",
+      "analysis",
+      "analysis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.6666666666666666,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.4,
+        "integration_level": 0.7333333333333334,
+        "complexity_progression": 0.6391752577319587
+      },
+      "reflection_metrics": {
+        "overall_score": 0.8,
+        "self_assessment": 0.6666666666666666,
+        "process_awareness": 0.8,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.5,
+        "skill_development": 0.5,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.55,
+        "learning_velocity": 0.3333333333333333
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.6716666666666666,
+      "scientific_confidence": 0.7750000000000001
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "high",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "confusion_expression",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "understanding",
+      "context_dependency": "high",
+      "classification_confidence": 0.6499999999999999,
+      "last_message": "I think the site\u2019s characteristics \u2014 like sunlight patterns, existing vegetation, and topography \u2014 could really shape how I place indoor-outdoor connections, seating areas, and learning zones. For example, natural shading could guide where outdoor classrooms or gathering spaces go, and views could help orient pathways or sightlines.\n\nI\u2019m still a bit unclear on how to best integrate technology, like automated lighting or acoustic adjustments, so it feels natural and not intrusive. How can I make these systems support flexibility and comfort without overwhelming the design?\n\nAlso, could movable panels or furniture adapt differently depending on the season or type of activity, while still keeping the space cohesive? How might I approach testing or planning for that?",
+      "user_input": "I think the site\u2019s characteristics \u2014 like sunlight patterns, existing vegetation, and topography \u2014 could really shape how I place indoor-outdoor connections, seating areas, and learning zones. For example, natural shading could guide where outdoor classrooms or gathering spaces go, and views could help orient pathways or sightlines.\n\nI\u2019m still a bit unclear on how to best integrate technology, like automated lighting or acoustic adjustments, so it feels natural and not intrusive. How can I make these systems support flexibility and comfort without overwhelming the design?\n\nAlso, could movable panels or furniture adapt differently depending on the season or type of activity, while still keeping the space cohesive? How might I approach testing or planning for that?"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:03:59.122632",
+    "interaction_number": 10,
+    "student_input": "I think about how sunlight moves across the site and how it affects outdoor spaces throughout the day. For example, morning light could make east-facing learning terraces perfect for reading or group discussions, while afternoon sun might require shaded pergolas or trees for comfort.\n\nExisting vegetation can be used strategically\u2014not just for shade, but also to create seasonal interest, like flowering plants in spring or evergreens for winter visual appeal. Topography could form natural amphitheaters or sun traps, giving each zone a distinct microclimate that supports different activities.\n\nI\u2019m curious about how to plan flexible seating and learning zones that adapt to both busy and quiet times. Could modular furniture or movable shade structures help the space feel comfortable all day and all year? How might I test these ideas to see if they really work with the daily rhythm of the site?",
+    "input_length": 143,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "cognitive_challenge",
+    "agents_used": [
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "cognitive_enhancement",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 8,
+    "design_moves": [
+      {
+        "content": "I think about how sunlight moves across the site and how it affects outdoor spaces throughout the day.",
+        "timestamp": "2025-08-14T23:03:59.121884",
+        "micro_timestamp": 1755230639.121884,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.09350000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 102,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.4722222222222222
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "For example, morning light could make east-facing learning terraces perfect for reading or group discussions, while afternoon sun might require shaded pergolas or trees for comfort.",
+        "timestamp": "2025-08-14T23:03:59.221884",
+        "micro_timestamp": 1755230639.221884,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.22880000000000003,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 181,
+          "has_question": false,
+          "word_count": 26,
+          "complexity_score": 0.8
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Existing vegetation can be used strategically\u2014not just for shade, but also to create seasonal interest, like flowering plants in spring or evergreens for winter visual appeal.",
+        "timestamp": "2025-08-14T23:03:59.321884",
+        "micro_timestamp": 1755230639.321884,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.20199999999999996,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 175,
+          "has_question": false,
+          "word_count": 26,
+          "complexity_score": 0.7769230769230768
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Topography could form natural amphitheaters or sun traps, giving each zone a distinct microclimate that supports different activities.",
+        "timestamp": "2025-08-14T23:03:59.421884",
+        "micro_timestamp": 1755230639.421884,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.135,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 134,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.75
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 5
+      },
+      {
+        "content": "I\u2019m curious about how to plan flexible seating and learning zones that adapt to both busy and quiet times.",
+        "timestamp": "2025-08-14T23:03:59.521884",
+        "micro_timestamp": 1755230639.521884,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.09680000000000001,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 106,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.4631578947368421
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 6
+      },
+      {
+        "content": "Could modular furniture or movable shade structures help the space feel comfortable all day and all year?",
+        "timestamp": "2025-08-14T23:03:59.621884",
+        "micro_timestamp": 1755230639.621884,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.08900000000000001,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 105,
+          "has_question": true,
+          "word_count": 17,
+          "complexity_score": 0.5235294117647059
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 7
+      },
+      {
+        "content": "How might I test these ideas to see if they really work with the daily rhythm of the site?",
+        "timestamp": "2025-08-14T23:03:59.721884",
+        "micro_timestamp": 1755230639.721884,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.08639999999999999,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 90,
+          "has_question": true,
+          "word_count": 19,
+          "complexity_score": 0.3789473684210526
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-14T23:03:59.821884",
+        "micro_timestamp": 1755230639.821884,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "analysis",
+      "general",
+      "general",
+      "analysis",
+      "general",
+      "synthesis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:04:07.608259",
+    "interaction_number": 11,
+    "student_input": "I think about how sunlight moves across the site and how it affects outdoor spaces throughout the day. For example, morning light could make east-facing learning terraces perfect for reading or group discussions, while afternoon sun might require shaded pergolas or trees for comfort.\n\nExisting vegetation can be used strategically\u2014not just for shade, but also to create seasonal interest, like flowering plants in spring or evergreens for winter visual appeal. Topography could form natural amphitheaters or sun traps, giving each zone a distinct microclimate that supports different activities.\n\nI\u2019m curious about how to plan flexible seating and learning zones that adapt to both busy and quiet times. Could modular furniture or movable shade structures help the space feel comfortable all day and all year? How might I test these ideas to see if they really work with the daily rhythm of the site?",
+    "input_length": 143,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "high",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "Your consideration of sunlight and existing vegetation as key elements in shaping outdoor spaces is insightful, particularly your idea of using morning light for east-facing learning terraces and creating shaded areas for afternoon comfort.\n\nBy integrating seasonal interest through strategic plant selection, you not only enhance the aesthetic appeal but also invite year-round engagement with the environment.\n\nAs you explore flexible seating and learning zones, think about how these elements can ",
+    "response_length": 71,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.6,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 10,
+    "design_moves": [
+      {
+        "content": "I think about how sunlight moves across the site and how it affects outdoor spaces throughout the day.",
+        "timestamp": "2025-08-14T23:04:07.607250",
+        "micro_timestamp": 1755230647.60725,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.09350000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 102,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.4722222222222222
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "For example, morning light could make east-facing learning terraces perfect for reading or group discussions, while afternoon sun might require shaded pergolas or trees for comfort.",
+        "timestamp": "2025-08-14T23:04:07.707250",
+        "micro_timestamp": 1755230647.70725,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.22880000000000003,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 181,
+          "has_question": false,
+          "word_count": 26,
+          "complexity_score": 0.8
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "Existing vegetation can be used strategically\u2014not just for shade, but also to create seasonal interest, like flowering plants in spring or evergreens for winter visual appeal.",
+        "timestamp": "2025-08-14T23:04:07.807250",
+        "micro_timestamp": 1755230647.80725,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.20199999999999996,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 175,
+          "has_question": false,
+          "word_count": 26,
+          "complexity_score": 0.7769230769230768
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Topography could form natural amphitheaters or sun traps, giving each zone a distinct microclimate that supports different activities.",
+        "timestamp": "2025-08-14T23:04:07.907250",
+        "micro_timestamp": 1755230647.90725,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.135,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 134,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.75
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "I\u2019m curious about how to plan flexible seating and learning zones that adapt to both busy and quiet times.",
+        "timestamp": "2025-08-14T23:04:08.007250",
+        "micro_timestamp": 1755230648.00725,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 5,
+        "cognitive_load": 0.09680000000000001,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 106,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.4631578947368421
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 6
+      },
+      {
+        "content": "Could modular furniture or movable shade structures help the space feel comfortable all day and all year?",
+        "timestamp": "2025-08-14T23:04:08.107250",
+        "micro_timestamp": 1755230648.10725,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 6,
+        "cognitive_load": 0.08900000000000001,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 105,
+          "has_question": true,
+          "word_count": 17,
+          "complexity_score": 0.5235294117647059
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 7
+      },
+      {
+        "content": "How might I test these ideas to see if they really work with the daily rhythm of the site?",
+        "timestamp": "2025-08-14T23:04:08.207250",
+        "micro_timestamp": 1755230648.20725,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 7,
+        "cognitive_load": 0.08639999999999999,
+        "context": {
+          "sentence_position": 6,
+          "text_length": 90,
+          "has_question": true,
+          "word_count": 19,
+          "complexity_score": 0.3789473684210526
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Your consideration of sunlight and existing vegetation as key elements in shaping outdoor spaces is insightful, particularly your idea of using morning light for east-facing learning terraces and creating shaded areas for afternoon comfort.",
+        "timestamp": "2025-08-14T23:04:08.307250",
+        "micro_timestamp": 1755230648.30725,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.28919999999999996,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 240,
+          "has_question": false,
+          "word_count": 34,
+          "complexity_score": 0.7088235294117646
+        },
+        "previous_move": 7,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "By integrating seasonal interest through strategic plant selection, you not only enhance the aesthetic appeal but also invite year-round engagement with the environment.",
+        "timestamp": "2025-08-14T23:04:08.407250",
+        "micro_timestamp": 1755230648.40725,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.17,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 169,
+          "has_question": false,
+          "word_count": 23,
+          "complexity_score": 0.7391304347826086
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "As you explore flexible seating and learning zones, think about how these elements can",
+        "timestamp": "2025-08-14T23:04:08.507250",
+        "micro_timestamp": 1755230648.50725,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.09570000000000001,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 86,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 0.6214285714285714
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "analysis",
+      "general",
+      "general",
+      "analysis",
+      "general",
+      "synthesis",
+      "synthesis",
+      "general",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0.14117647058823535
+      },
+      "complexity_metrics": {
+        "overall_score": 0.8,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.2,
+        "integration_level": 0.8800000000000001,
+        "complexity_progression": 0.6701030927835051
+      },
+      "reflection_metrics": {
+        "overall_score": 0.8,
+        "self_assessment": 0.6666666666666666,
+        "process_awareness": 0.8,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.6,
+        "skill_development": 0.6,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.66,
+        "learning_velocity": 0.5
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.73,
+      "scientific_confidence": 0.7750000000000001
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "high",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "confusion_expression",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "understanding",
+      "context_dependency": "high",
+      "classification_confidence": 0.7,
+      "last_message": "I think about how sunlight moves across the site and how it affects outdoor spaces throughout the day. For example, morning light could make east-facing learning terraces perfect for reading or group discussions, while afternoon sun might require shaded pergolas or trees for comfort.\n\nExisting vegetation can be used strategically\u2014not just for shade, but also to create seasonal interest, like flowering plants in spring or evergreens for winter visual appeal. Topography could form natural amphitheaters or sun traps, giving each zone a distinct microclimate that supports different activities.\n\nI\u2019m curious about how to plan flexible seating and learning zones that adapt to both busy and quiet times. Could modular furniture or movable shade structures help the space feel comfortable all day and all year? How might I test these ideas to see if they really work with the daily rhythm of the site?",
+      "user_input": "I think about how sunlight moves across the site and how it affects outdoor spaces throughout the day. For example, morning light could make east-facing learning terraces perfect for reading or group discussions, while afternoon sun might require shaded pergolas or trees for comfort.\n\nExisting vegetation can be used strategically\u2014not just for shade, but also to create seasonal interest, like flowering plants in spring or evergreens for winter visual appeal. Topography could form natural amphitheaters or sun traps, giving each zone a distinct microclimate that supports different activities.\n\nI\u2019m curious about how to plan flexible seating and learning zones that adapt to both busy and quiet times. Could modular furniture or movable shade structures help the space feel comfortable all day and all year? How might I test these ideas to see if they really work with the daily rhythm of the site?",
+      "routing_path": "socratic_exploration"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "milestone_context": {
+          "milestone_type": "phase_entry",
+          "phase": "reflection",
+          "required_actions": [],
+          "success_criteria": [],
+          "agent_guidance": {
+            "primary_role": "Analyze user input and conversation context",
+            "focus_areas": [
+              "intent classification",
+              "conversation state",
+              "routing decisions"
+            ],
+            "milestone_context": "Current milestone: phase_entry in reflection phase",
+            "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": true,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:04:42.567081",
+    "interaction_number": 12,
+    "student_input": "I\u2019m still thinking about how to make the outdoor zones truly adaptable throughout the day and year. For instance, I wonder how modular seating or movable shade structures could be arranged so that the spaces feel comfortable in both full sun and partial shade, while still supporting different activities at the same time.\n\nI\u2019m also curious about testing these ideas\u2014maybe through temporary setups or small-scale mock-ups\u2014to see how people actually use the space.\n\nHow could I figure out the best arrangement of these adaptable elements to respond to sunlight, seasonal changes, and the flow of learners throughout the day?",
+    "input_length": 99,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 5,
+    "design_moves": [
+      {
+        "content": "I\u2019m still thinking about how to make the outdoor zones truly adaptable throughout the day and year.",
+        "timestamp": "2025-08-14T23:04:42.567081",
+        "micro_timestamp": 1755230682.567081,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.0913,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 99,
+          "has_question": false,
+          "word_count": 17,
+          "complexity_score": 0.4882352941176471
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "For instance, I wonder how modular seating or movable shade structures could be arranged so that the spaces feel comfortable in both full sun and partial shade, while still supporting different activities at the same time.",
+        "timestamp": "2025-08-14T23:04:42.667081",
+        "micro_timestamp": 1755230682.667081,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.2849000000000001,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 222,
+          "has_question": false,
+          "word_count": 36,
+          "complexity_score": 0.7194444444444446
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "I\u2019m also curious about testing these ideas\u2014maybe through temporary setups or small-scale mock-ups\u2014to see how people actually use the space.",
+        "timestamp": "2025-08-14T23:04:42.767081",
+        "micro_timestamp": 1755230682.767081,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.144,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 139,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.6
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "How could I figure out the best arrangement of these adaptable elements to respond to sunlight, seasonal changes, and the flow of learners throughout the day?",
+        "timestamp": "2025-08-14T23:04:42.867081",
+        "micro_timestamp": 1755230682.867081,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.2035,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 158,
+          "has_question": true,
+          "word_count": 26,
+          "complexity_score": 0.7115384615384615
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-14T23:04:42.967081",
+        "micro_timestamp": 1755230682.967081,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "analysis",
+      "synthesis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:04:50.207818",
+    "interaction_number": 13,
+    "student_input": "I\u2019m still thinking about how to make the outdoor zones truly adaptable throughout the day and year. For instance, I wonder how modular seating or movable shade structures could be arranged so that the spaces feel comfortable in both full sun and partial shade, while still supporting different activities at the same time.\n\nI\u2019m also curious about testing these ideas\u2014maybe through temporary setups or small-scale mock-ups\u2014to see how people actually use the space.\n\nHow could I figure out the best arrangement of these adaptable elements to respond to sunlight, seasonal changes, and the flow of learners throughout the day?",
+    "input_length": 99,
+    "input_type": "overconfident_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "uncertain",
+    "engagement_level": "high",
+    "agent_response": "Your idea about using modular seating and movable shade structures is a great way to address the adaptability of outdoor zones, especially in a learning center where varied activities require flexible spaces.\n\nBy testing these concepts with temporary setups or small-scale mock-ups, you can observe how different configurations respond to changes in sunlight and seasonal shifts, as well as how they support the flow and engagement of learners throughout the day.\n\nConsider how these adaptable elemen",
+    "response_length": 76,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.6,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 7,
+    "design_moves": [
+      {
+        "content": "I\u2019m still thinking about how to make the outdoor zones truly adaptable throughout the day and year.",
+        "timestamp": "2025-08-14T23:04:50.207818",
+        "micro_timestamp": 1755230690.207818,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.0913,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 99,
+          "has_question": false,
+          "word_count": 17,
+          "complexity_score": 0.4882352941176471
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "For instance, I wonder how modular seating or movable shade structures could be arranged so that the spaces feel comfortable in both full sun and partial shade, while still supporting different activities at the same time.",
+        "timestamp": "2025-08-14T23:04:50.307818",
+        "micro_timestamp": 1755230690.307818,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.2849000000000001,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 222,
+          "has_question": false,
+          "word_count": 36,
+          "complexity_score": 0.7194444444444446
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "I\u2019m also curious about testing these ideas\u2014maybe through temporary setups or small-scale mock-ups\u2014to see how people actually use the space.",
+        "timestamp": "2025-08-14T23:04:50.407818",
+        "micro_timestamp": 1755230690.407818,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.144,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 139,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.6
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "How could I figure out the best arrangement of these adaptable elements to respond to sunlight, seasonal changes, and the flow of learners throughout the day?",
+        "timestamp": "2025-08-14T23:04:50.507818",
+        "micro_timestamp": 1755230690.507818,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 4,
+        "cognitive_load": 0.2035,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 158,
+          "has_question": true,
+          "word_count": 26,
+          "complexity_score": 0.7115384615384615
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Your idea about using modular seating and movable shade structures is a great way to address the adaptability of outdoor zones, especially in a learning center where varied activities require flexible spaces.",
+        "timestamp": "2025-08-14T23:04:50.607818",
+        "micro_timestamp": 1755230690.607818,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.25079999999999997,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 208,
+          "has_question": false,
+          "word_count": 32,
+          "complexity_score": 0.653125
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "By testing these concepts with temporary setups or small-scale mock-ups, you can observe how different configurations respond to changes in sunlight and seasonal shifts, as well as how they support the flow and engagement of learners throughout the day.",
+        "timestamp": "2025-08-14T23:04:50.707818",
+        "micro_timestamp": 1755230690.707818,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.35159999999999997,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 253,
+          "has_question": false,
+          "word_count": 39,
+          "complexity_score": 0.7512820512820513
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "Consider how these adaptable elemen",
+        "timestamp": "2025-08-14T23:04:50.807818",
+        "micro_timestamp": 1755230690.807818,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.034100000000000005,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 35,
+          "has_question": false,
+          "word_count": 5,
+          "complexity_score": 0.62
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "analysis",
+      "synthesis",
+      "analysis",
+      "synthesis",
+      "synthesis",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.9333333333333333,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.2,
+        "integration_level": 1.0,
+        "complexity_progression": 0.6237113402061856
+      },
+      "reflection_metrics": {
+        "overall_score": 0.8,
+        "self_assessment": 0.6666666666666666,
+        "process_awareness": 0.8,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.7,
+        "skill_development": 0.7,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.77,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.7883333333333333,
+      "scientific_confidence": 0.7750000000000001
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "high",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "improvement_seeking",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "is_response_to_question": false,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "understanding",
+      "context_dependency": "high",
+      "classification_confidence": 0.6,
+      "last_message": "I\u2019m still thinking about how to make the outdoor zones truly adaptable throughout the day and year. For instance, I wonder how modular seating or movable shade structures could be arranged so that the spaces feel comfortable in both full sun and partial shade, while still supporting different activities at the same time.\n\nI\u2019m also curious about testing these ideas\u2014maybe through temporary setups or small-scale mock-ups\u2014to see how people actually use the space.\n\nHow could I figure out the best arrangement of these adaptable elements to respond to sunlight, seasonal changes, and the flow of learners throughout the day?",
+      "user_input": "I\u2019m still thinking about how to make the outdoor zones truly adaptable throughout the day and year. For instance, I wonder how modular seating or movable shade structures could be arranged so that the spaces feel comfortable in both full sun and partial shade, while still supporting different activities at the same time.\n\nI\u2019m also curious about testing these ideas\u2014maybe through temporary setups or small-scale mock-ups\u2014to see how people actually use the space.\n\nHow could I figure out the best arrangement of these adaptable elements to respond to sunlight, seasonal changes, and the flow of learners throughout the day?",
+      "routing_path": "socratic_exploration"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "milestone_context": {
+          "milestone_type": "reflection_point",
+          "phase": "reflection",
+          "required_actions": [
+            "Evaluate current progress and understanding",
+            "Identify remaining gaps or challenges",
+            "Plan next steps in learning journey"
+          ],
+          "success_criteria": [
+            "Current progress accurately evaluated",
+            "Gaps or challenges identified",
+            "Next steps clearly planned"
+          ],
+          "agent_guidance": {
+            "primary_role": "Analyze user input and conversation context",
+            "focus_areas": [
+              "intent classification",
+              "conversation state",
+              "routing decisions"
+            ],
+            "milestone_context": "Current milestone: reflection_point in reflection phase",
+            "guidance": "Focus on understanding user intent and ensuring conversation aligns with reflection_point objectives"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:05:53.249431",
+    "interaction_number": 14,
+    "student_input": "I\u2019d like to explore how to balance flexibility with comfort and usability\u2014like, how many modular seating options should I provide without making the space feel cluttered?\n\nAlso, I\u2019m curious about how to integrate the natural features, like existing trees or slopes, into these adaptable layouts so that they guide movement and activity naturally.",
+    "input_length": 53,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 3,
+    "design_moves": [
+      {
+        "content": "I\u2019d like to explore how to balance flexibility with comfort and usability\u2014like, how many modular seating options should I provide without making the space feel cluttered?",
+        "timestamp": "2025-08-14T23:05:53.249431",
+        "micro_timestamp": 1755230753.249431,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.18810000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 170,
+          "has_question": true,
+          "word_count": 26,
+          "complexity_score": 0.6576923076923077
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "Also, I\u2019m curious about how to integrate the natural features, like existing trees or slopes, into these adaptable layouts so that they guide movement and activity naturally.",
+        "timestamp": "2025-08-14T23:05:53.349431",
+        "micro_timestamp": 1755230753.349431,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.2519,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 174,
+          "has_question": false,
+          "word_count": 27,
+          "complexity_score": 0.8481481481481482
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-14T23:05:53.449431",
+        "micro_timestamp": 1755230753.449431,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  },
+  {
+    "session_id": "unified_session_20250814_225902",
+    "timestamp": "2025-08-14T23:06:03.897673",
+    "interaction_number": 15,
+    "student_input": "I\u2019d like to explore how to balance flexibility with comfort and usability\u2014like, how many modular seating options should I provide without making the space feel cluttered?\n\nAlso, I\u2019m curious about how to integrate the natural features, like existing trees or slopes, into these adaptable layouts so that they guide movement and activity naturally.",
+    "input_length": 53,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "Your interest in balancing flexibility with comfort and usability, particularly through modular seating, is crucial for creating a dynamic learning environment.\n\nBy considering how to integrate natural features like existing trees or slopes, you\u2019re tapping into the potential for these elements to guide movement and activity, which can enhance both collaborative and individual learning experiences.\n\nAs you visualize this phase, think about how the spatial layout can naturally encourage different ",
+    "response_length": 70,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.6,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 5,
+    "design_moves": [
+      {
+        "content": "I\u2019d like to explore how to balance flexibility with comfort and usability\u2014like, how many modular seating options should I provide without making the space feel cluttered?",
+        "timestamp": "2025-08-14T23:06:03.897673",
+        "micro_timestamp": 1755230763.897673,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.18810000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 170,
+          "has_question": true,
+          "word_count": 26,
+          "complexity_score": 0.6576923076923077
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "Also, I\u2019m curious about how to integrate the natural features, like existing trees or slopes, into these adaptable layouts so that they guide movement and activity naturally.",
+        "timestamp": "2025-08-14T23:06:03.997673",
+        "micro_timestamp": 1755230763.997673,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.2519,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 174,
+          "has_question": false,
+          "word_count": 27,
+          "complexity_score": 0.8481481481481482
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Your interest in balancing flexibility with comfort and usability, particularly through modular seating, is crucial for creating a dynamic learning environment.",
+        "timestamp": "2025-08-14T23:06:04.097673",
+        "micro_timestamp": 1755230764.097673,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.182,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 160,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.8666666666666667
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "By considering how to integrate natural features like existing trees or slopes, you\u2019re tapping into the potential for these elements to guide movement and activity, which can enhance both collaborative and individual learning experiences.",
+        "timestamp": "2025-08-14T23:06:04.197673",
+        "micro_timestamp": 1755230764.197673,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.30030000000000007,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 238,
+          "has_question": false,
+          "word_count": 34,
+          "complexity_score": 0.8029411764705883
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "As you visualize this phase, think about how the spatial layout can naturally encourage different",
+        "timestamp": "2025-08-14T23:06:04.297673",
+        "micro_timestamp": 1755230764.297673,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.1078,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 97,
+          "has_question": false,
+          "word_count": 15,
+          "complexity_score": 0.6533333333333333
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "analysis",
+      "general",
+      "analysis",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 1.0,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 1.0,
+        "complexity_progression": 0.3917525773195876
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.6666666666666666,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.8,
+        "skill_development": 0.8,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.8800000000000001,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.74,
+      "scientific_confidence": 0.7750000000000001
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "moderate",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "deep",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "design_problem",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": false,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "intermediate",
+      "learning_intent": "exploration",
+      "context_dependency": "high",
+      "classification_confidence": 0.6,
+      "last_message": "I\u2019d like to explore how to balance flexibility with comfort and usability\u2014like, how many modular seating options should I provide without making the space feel cluttered?\n\nAlso, I\u2019m curious about how to integrate the natural features, like existing trees or slopes, into these adaptable layouts so that they guide movement and activity naturally.",
+      "user_input": "I\u2019d like to explore how to balance flexibility with comfort and usability\u2014like, how many modular seating options should I provide without making the space feel cluttered?\n\nAlso, I\u2019m curious about how to integrate the natural features, like existing trees or slopes, into these adaptable layouts so that they guide movement and activity naturally.",
+      "routing_path": "socratic_exploration"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "milestone_context": {
+          "milestone_type": "reflection_point",
+          "phase": "reflection",
+          "required_actions": [
+            "Evaluate current progress and understanding",
+            "Identify remaining gaps or challenges",
+            "Plan next steps in learning journey"
+          ],
+          "success_criteria": [
+            "Current progress accurately evaluated",
+            "Gaps or challenges identified",
+            "Next steps clearly planned"
+          ],
+          "agent_guidance": {
+            "primary_role": "Analyze user input and conversation context",
+            "focus_areas": [
+              "intent classification",
+              "conversation state",
+              "routing decisions"
+            ],
+            "milestone_context": "Current milestone: reflection_point in reflection phase",
+            "guidance": "Focus on understanding user intent and ensuring conversation aligns with reflection_point objectives"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    }
+  }
+]
