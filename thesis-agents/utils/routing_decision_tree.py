@@ -1334,8 +1334,21 @@ class AdvancedRoutingDecisionTree:
     def _apply_gamification_routing(self, triggers: List[str], classification: Dict[str, Any], context: RoutingContext) -> RouteType | None:
         """Apply gamification-enhanced routing based on detected triggers."""
 
-        # Priority-based trigger routing with enhanced interactivity - REDUCED SOCRATIC OVERRIDE
+        # Priority-based trigger routing with enhanced interactivity - FIXED: Check if gamification is allowed
         for trigger in triggers:
+            # CRITICAL FIX: Check if gamification is actually allowed before routing to cognitive challenge
+            gamification_triggers = [
+                "low_engagement_challenge", "reality_check_challenge", "creative_constraint_challenge",
+                "comparison_challenge", "perspective_shift_challenge"
+            ]
+
+            if trigger in gamification_triggers:
+                # Check if gamification should be applied by looking at context
+                gamification_allowed = context.get("gamification_allowed", True)
+                if not gamification_allowed:
+                    print(f"🎮 ROUTING FIX: {trigger} detected but gamification not allowed - routing to socratic_exploration")
+                    return RouteType.SOCRATIC_EXPLORATION
+
             if trigger == "low_engagement_challenge":
                 return RouteType.COGNITIVE_CHALLENGE
             elif trigger == "reality_check_challenge":

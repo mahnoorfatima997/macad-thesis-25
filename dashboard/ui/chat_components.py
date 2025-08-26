@@ -407,8 +407,11 @@ def render_single_message(message: Dict[str, Any]):
             if message.get("generated_image"):
                 print(f"🎨 DEBUG: Found generated_image in message, calling render function")
                 _render_generated_image_in_chat(message["generated_image"])
-            else:
-                print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
+
+            # Check for active task to render (like gamification)
+            _render_task_if_active()
+            # else:
+            #     print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
 
 
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
@@ -1074,3 +1077,65 @@ def _clean_agent_response(agent_response: str) -> str:
         return ""
 
     return clean_content.strip()
+
+
+def _render_task_if_active():
+    """Render active task UI component if present (like gamification)"""
+    try:
+        # Check if there's an active task to render
+        active_task_data = st.session_state.get('active_task', None)
+
+        if active_task_data and active_task_data.get('should_render', False):
+            print(f"🎯 TASK_UI: Rendering active task component")
+
+            # Import task UI renderer
+            from dashboard.ui.task_ui_renderer import TaskUIRenderer
+
+            # Extract task data
+            task = active_task_data['task']
+            guidance_type = active_task_data['guidance_type']
+            user_input = active_task_data.get('user_input', '')
+
+            # Get actual task content from guidance system
+            from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+            guidance_system = TaskGuidanceSystem()
+
+            # Get the real task assignment based on test group
+            if task.test_group == "MENTOR":
+                task_data = guidance_system.mentor_tasks.get(task.task_type, {})
+            elif task.test_group == "GENERIC_AI":
+                task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
+            elif task.test_group == "CONTROL":
+                task_data = guidance_system.control_tasks.get(task.task_type, {})
+            else:
+                task_data = {}
+
+            # Get the actual task assignment content
+            task_content = task_data.get("task_assignment", f"🎯 TASK {task.task_type.value.replace('_', ' ').title()}: Complete the design challenge")
+
+            # Add specific guidance content based on type
+            if guidance_type == "socratic" and task_data.get("socratic_questions"):
+                questions = task_data["socratic_questions"]
+                if questions:
+                    task_content += f"\n\n**Guided Exploration Question:**\n{questions[0]}"
+            elif guidance_type == "direct" and task_data.get("direct_information"):
+                info_list = task_data["direct_information"]
+                if info_list:
+                    info_text = "\n".join([f"• {info}" for info in info_list[:2]])  # Show first 2 items
+                    task_content += f"\n\n**Helpful Information:**\n{info_text}"
+            elif guidance_type == "minimal" and task_data.get("minimal_prompt"):
+                task_content += f"\n\n**Guidance:** {task_data['minimal_prompt']}"
+
+            # Render the task UI component with real content
+            renderer = TaskUIRenderer()
+            renderer.render_task_component(task, task_content, guidance_type)
+
+            # Mark as rendered to avoid duplicate rendering
+            st.session_state['active_task']['should_render'] = False
+
+            print(f"🎯 TASK_UI: Task component rendered successfully")
+
+    except Exception as e:
+        print(f"🎯 TASK_UI ERROR: Failed to render task component: {e}")
+        import traceback
+        traceback.print_exc()

@@ -64,8 +64,8 @@ class MegaConfig:
         self.enable_skill_assessment = secrets_manager.get_bool_secret("ENABLE_SKILL_ASSESSMENT", True)
 
         # UI Configuration
-        self.page_title = secrets_manager.get_secret("PAGE_TITLE", "🏗️ Mega Architectural Mentor v2.0")
-        self.page_icon = secrets_manager.get_secret("PAGE_ICON", "🏗️")
+        self.page_title = secrets_manager.get_secret("PAGE_TITLE", "◉ Mega Architectural Mentor v2.0")
+        self.page_icon = secrets_manager.get_secret("PAGE_ICON", "◉")
         self.layout = secrets_manager.get_secret("LAYOUT", "wide")
         self.sidebar_state = secrets_manager.get_secret("SIDEBAR_STATE", "expanded")
 

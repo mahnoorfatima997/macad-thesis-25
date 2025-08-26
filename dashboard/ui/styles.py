@@ -273,6 +273,10 @@ def get_dashboard_css() -> str:
         /* ADDED: Ensure proper display and visibility */
         display: block !important;
         visibility: visible !important;
+        /* FIXED: Disable browser spellcheck to prevent red underlines on all words */
+        spellcheck: false !important;
+        -webkit-spellcheck: false !important;
+        -moz-spellcheck: false !important;
     }
 
     div[data-testid="stChatInput"] textarea:focus {
@@ -642,6 +646,10 @@ def get_dashboard_css() -> str:
             font-size: 15px !important;
             min-height: 120px !important;
             max-height: 300px !important;
+            /* FIXED: Disable spellcheck on mobile too */
+            spellcheck: false !important;
+            -webkit-spellcheck: false !important;
+            -moz-spellcheck: false !important;
         }
         
         div[data-testid="stChatInput"] button {
