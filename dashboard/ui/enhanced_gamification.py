@@ -2296,8 +2296,8 @@ class EnhancedGamificationRenderer:
 
 
     def _render_interactive_constraint_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
-        """Render compact constraint puzzle game."""
-        # Compact header
+        """Render standardized constraint puzzle game with consistent UI."""
+        # STANDARDIZED HEADER - matches other games
         st.markdown(f"""
         <div style="
             background: {theme['gradient']};
@@ -2305,24 +2305,29 @@ class EnhancedGamificationRenderer:
             padding: 20px;
             margin: 15px 0;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         ">
             <div style="
-                width: 50px;
-                height: 50px;
-                background: {theme['accent']};
+                width: 60px;
+                height: 60px;
+                background: rgba(255,255,255,0.2);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin: 0 auto 10px;
-                font-size: 1.5em;
-                color: {theme['primary']};
+                margin: 0 auto 15px;
+                font-size: 1.8em;
+                color: white;
+                animation: {theme['animation']} 2s infinite;
             ">
                 {theme['icon']}
             </div>
-            <h3 style="color: white; margin: 0; font-weight: 400;">
-                {theme['icon']} Constraint Puzzle
+            <h3 style="color: white; margin: 0 0 10px 0; font-weight: 600; font-size: 1.4em;">
+                Constraint Challenge
             </h3>
+            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.95em;">
+                Select constraints and create innovative solutions
+            </p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -2342,22 +2347,55 @@ class EnhancedGamificationRenderer:
 
         constraint_state = st.session_state[constraint_key]
 
-        # Compact constraint selection
-        for constraint_name, constraint_data in constraints.items():
-            is_selected = constraint_name in constraint_state['selected_constraints']
+        # STANDARDIZED CONSTRAINT SELECTION - matches other games
+        st.markdown(f"""
+        <div style="
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        ">
+            <h4 style="color: {theme['primary']}; margin: 0 0 15px 0; font-size: 1.1em;">
+                {theme['symbol']} Select Constraints (max 3):
+            </h4>
+        </div>
+        """, unsafe_allow_html=True)
 
-            if st.button(
-                f"{constraint_data['icon']} {constraint_name}: {constraint_data['impact']}",
-                key=f"constraint_{constraint_name}_{constraint_key}",
-                type="primary" if is_selected else "secondary",
-                use_container_width=True
-            ):
-                if is_selected:
-                    constraint_state['selected_constraints'].remove(constraint_name)
-                else:
-                    if len(constraint_state['selected_constraints']) < 3:
-                        constraint_state['selected_constraints'].append(constraint_name)
-                st.rerun()
+        # Display constraints in a grid layout
+        constraint_items = list(constraints.items())
+        for i in range(0, len(constraint_items), 2):
+            cols = st.columns(2)
+            for j, col in enumerate(cols):
+                if i + j < len(constraint_items):
+                    constraint_name, constraint_data = constraint_items[i + j]
+                    is_selected = constraint_name in constraint_state['selected_constraints']
+
+                    with col:
+                        # ENHANCED CONSTRAINT BUTTON with better styling
+                        button_style = "primary" if is_selected else "secondary"
+                        button_text = f"{'✓ ' if is_selected else ''}{constraint_data.get('icon', '◐')} {constraint_name}"
+
+                        if st.button(
+                            button_text,
+                            key=f"constraint_{constraint_name}_{constraint_key}",
+                            type=button_style,
+                            use_container_width=True,
+                            help=constraint_data.get('impact', 'Design constraint')
+                        ):
+                            if is_selected:
+                                constraint_state['selected_constraints'].remove(constraint_name)
+                            else:
+                                if len(constraint_state['selected_constraints']) < 3:
+                                    constraint_state['selected_constraints'].append(constraint_name)
+                                else:
+                                    st.warning("Maximum 3 constraints allowed. Deselect one first.")
+                            st.rerun()
+
+        # Show selection status
+        if constraint_state['selected_constraints']:
+            selected_count = len(constraint_state['selected_constraints'])
+            st.info(f"🎯 {selected_count}/3 constraints selected: {', '.join(constraint_state['selected_constraints'])}")
 
         # Show solution area when constraints are selected
         if constraint_state['selected_constraints']:
@@ -2383,19 +2421,53 @@ class EnhancedGamificationRenderer:
                 key=f"solution_{constraint_key}"
             )
 
-            if st.button(f"{theme['symbol']} Submit Solution", key=f"submit_{constraint_key}", type="primary"):
+            # ENHANCED SUBMISSION LOGIC
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                submit_button = st.button(
+                    f"{theme['symbol']} Submit Solution",
+                    key=f"submit_{constraint_key}",
+                    type="primary",
+                    use_container_width=True
+                )
+            with col2:
+                if st.button("🔄 Reset", key=f"reset_{constraint_key}", use_container_width=True):
+                    constraint_state['selected_constraints'] = []
+                    constraint_state['solution'] = ''
+                    st.rerun()
+
+            if submit_button:
                 if solution.strip():
+                    # COMPLETE SUBMISSION PROCESSING
                     constraint_state['completed'] = True
                     constraint_state['solution'] = solution
                     constraint_state['points'] += len(constraint_state['selected_constraints']) * 15
 
-                    # INTEGRATE WITH MENTOR: Send game response back to conversation
-                    game_response = solution.strip()
+                    # Show immediate feedback
+                    st.success(f"🎉 Solution submitted! +{len(constraint_state['selected_constraints']) * 15} points")
+                    st.balloons()
+
+                    # ENHANCED INTEGRATION: Format response for mentor system
+                    selected_constraints_text = ", ".join(constraint_state['selected_constraints'])
+                    formatted_response = f"**Constraint Challenge Response:**\n\n**Selected Constraints:** {selected_constraints_text}\n\n**My Solution:** {solution.strip()}"
+
+                    # Send to conversation
                     if 'messages' not in st.session_state:
                         st.session_state.messages = []
-                    st.session_state.messages.append({"role": "user", "content": game_response})
+                    st.session_state.messages.append({"role": "user", "content": formatted_response})
                     st.session_state.should_process_message = True
+
+                    # Track completion for gamification stats
+                    try:
+                        from dashboard.ui.gamification_components import GamificationTracker
+                        tracker = GamificationTracker()
+                        tracker.add_challenge_completion("constraint_challenge", 25)
+                    except Exception as e:
+                        print(f"⚠️ Gamification tracking failed: {e}")
+
                     st.rerun()
+                else:
+                    st.warning("Please enter a solution before submitting.")
 
         # Show progress after completion
         if constraint_state.get('completed', False):
@@ -3145,7 +3217,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
                 margin: 15px 0;
                 text-align: center;
             ">
-                <h3 style="color: white; margin: 0 0 10px 0;">🎯 Design Challenge</h3>
+                <h3 style="color: white; margin: 0 0 10px 0;">Design Challenge</h3>
                 <p style="color: white; margin: 0; font-size: 1.1em;">{challenge_text}</p>
             </div>
             """, unsafe_allow_html=True)
@@ -3174,7 +3246,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
                 margin: 15px 0;
                 text-align: center;
             ">
-                <h3 style="color: white; margin: 0 0 10px 0;">🎯 Design Challenge</h3>
+                <h3 style="color: white; margin: 0 0 10px 0;">Design Challenge</h3>
                 <p style="color: white; margin: 0; font-size: 1.1em;">{challenge_text}</p>
             </div>
             """, unsafe_allow_html=True)

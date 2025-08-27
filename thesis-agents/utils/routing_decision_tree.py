@@ -1010,13 +1010,25 @@ class AdvancedRoutingDecisionTree:
             
         except Exception as e:
             logger.error(f"Error in advanced routing decision: {e}")
-            return RoutingDecision(
-                route=RouteType.ERROR,
-                reason=f"Routing error: {str(e)}",
-                confidence=0.0,
-                rule_applied="error",
-                classification=classification  # Now guaranteed to be defined
-            )
+            # CRITICAL FIX: For task-related messages, provide fallback routing instead of error
+            user_input = classification.get('user_input', '').lower()
+            if any(word in user_input for word in ['task', 'subtask', 'guidance', 'architectural concept', 'spatial program']):
+                logger.info("Task-related message detected, using balanced_guidance fallback")
+                return RoutingDecision(
+                    route=RouteType.BALANCED_GUIDANCE,
+                    reason=f"Task message fallback routing (original error: {str(e)})",
+                    confidence=0.7,
+                    rule_applied="task_fallback",
+                    classification=classification
+                )
+            else:
+                return RoutingDecision(
+                    route=RouteType.ERROR,
+                    reason=f"Routing error: {str(e)}",
+                    confidence=0.0,
+                    rule_applied="error",
+                    classification=classification  # Now guaranteed to be defined
+                )
     
     def _evaluate_rule(self, rule: Dict[str, Any], classification: Dict[str, Any], context: RoutingContext) -> bool:
         """Evaluate if a rule applies"""
@@ -1237,6 +1249,41 @@ class AdvancedRoutingDecisionTree:
         triggers = []
         message_lower = message.lower().strip()
 
+        # CRITICAL FIX: Check for design exploration patterns FIRST to prevent gamification
+        design_exploration_indicators = [
+            # Planning and approach statements
+            'i am thinking about', 'i\'m thinking about', 'thinking about',
+            'considering', 'exploring', 'approach this', 'how should i',
+            'what would be the best', 'how might i', 'i would like to',
+            'i want to', 'first focus on', 'focus on', 'starting with',
+            # Design process language
+            'design approach', 'design strategy', 'design process',
+            'spatial organization', 'layout design', 'space planning',
+            'user flow', 'circulation', 'organize spaces', 'planning',
+            # Program and functional language
+            'program elements', 'program requirements', 'functional requirements',
+            'spaces for the', 'provide right program', 'right program elements',
+            'community needs', 'user needs', 'building requirements',
+            # Specific architectural elements (not transformation)
+            'within the building', 'in the building', 'building layout',
+            'interior spaces', 'spatial arrangement', 'space organization',
+            # CRITICAL FIX: Add descriptive design concept patterns
+            'parents can watch', 'children playing', 'playground nooks',
+            'central spaces', 'visually engaging', 'different activities',
+            'spaces where', 'areas where', 'zones where', 'places where',
+            'can watch', 'can see', 'can observe', 'visual connection',
+            'sightlines', 'sight lines', 'visual access', 'supervision',
+            # CRITICAL FIX: Add user experience design questions (architectural, not gamification)
+            'experience these', 'experience the', 'feel welcoming', 'feel accessible',
+            'accessible to', 'welcoming to', 'workshop classrooms', 'classroom',
+            'same layout', 'layout can', 'truly feel', 'different groups',
+            'elderly visitor', 'child experience', 'user groups', 'age groups'
+        ]
+
+        if any(indicator in message_lower for indicator in design_exploration_indicators):
+            print(f"🎮 ROUTING_SKIP: Design exploration detected - no gamification triggers")
+            return []  # Return empty list to prevent gamification
+
         # 1. ROLE-PLAY TRIGGERS - Same patterns as challenge_generator.py
         role_play_patterns = [
             'how would a visitor feel', 'how would', 'what would', 'from the perspective of',
@@ -1334,8 +1381,24 @@ class AdvancedRoutingDecisionTree:
     def _apply_gamification_routing(self, triggers: List[str], classification: Dict[str, Any], context: RoutingContext) -> RouteType | None:
         """Apply gamification-enhanced routing based on detected triggers."""
 
-        # Priority-based trigger routing with enhanced interactivity - REDUCED SOCRATIC OVERRIDE
+        # Priority-based trigger routing with enhanced interactivity - FIXED: Check if gamification is allowed
         for trigger in triggers:
+            # CRITICAL FIX: Check if gamification is actually allowed before routing to cognitive challenge
+            gamification_triggers = [
+                "low_engagement_challenge", "reality_check_challenge", "creative_constraint_challenge",
+                "comparison_challenge", "perspective_shift_challenge"
+            ]
+
+            if trigger in gamification_triggers:
+                # Check if gamification should be applied by looking at context
+                # CRITICAL FIX: context is a RoutingContext object, not a dict
+                gamification_allowed = getattr(context, 'gamification_allowed', True)
+                if hasattr(context, 'classification') and context.classification:
+                    gamification_allowed = context.classification.get("gamification_allowed", True)
+                if not gamification_allowed:
+                    print(f"🎮 ROUTING FIX: {trigger} detected but gamification not allowed - routing to socratic_exploration")
+                    return RouteType.SOCRATIC_EXPLORATION
+
             if trigger == "low_engagement_challenge":
                 return RouteType.COGNITIVE_CHALLENGE
             elif trigger == "reality_check_challenge":

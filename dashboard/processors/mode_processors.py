@@ -32,21 +32,125 @@ class ModeProcessor:
         self.test_dashboard = test_dashboard
         self.image_database = image_database
 
-        # Initialize dynamic task system
-        self.task_manager = DynamicTaskManager()
-        self.task_guidance = TaskGuidanceSystem()
+        # Initialize dynamic task system ONLY for Test Mode
+        # These will be None in Flexible Mode to prevent any task-related functionality
+        self.task_manager = None
+        self.task_guidance = None
 
-        print("🎯 TASK_SYSTEM: Dynamic task manager initialized")
-    
+        print("🎯 TASK_SYSTEM: Task system initialization deferred until mode is determined")
+
+    def _ensure_task_system_initialized(self):
+        """Initialize task system only when in Test Mode"""
+        dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+
+        if dashboard_mode == "Test Mode":
+            if self.task_manager is None:
+                self.task_manager = DynamicTaskManager()
+                self.task_guidance = TaskGuidanceSystem()
+                print("🎯 TASK_SYSTEM: Dynamic task manager initialized for Test Mode")
+        else:
+            # Ensure task system is disabled in Flexible Mode
+            if self.task_manager is not None:
+                self.task_manager = None
+                self.task_guidance = None
+                print("🎯 TASK_SYSTEM: Task system disabled for Flexible Mode")
+
+    def render_active_tasks_ui(self):
+        """Render active tasks UI - ONLY in Test Mode"""
+        dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+
+        if dashboard_mode != "Test Mode":
+            print("🎯 TASK_UI: Disabled - running in Flexible Mode")
+            return
+
+        if self.task_manager is None:
+            print("🎯 TASK_UI: Task manager not initialized")
+            return
+
+        # Render task UI only in Test Mode
+        try:
+            active_tasks = self.task_manager.get_active_tasks()
+            if active_tasks:
+                st.markdown("### 🎯 Active Tasks")
+                for task in active_tasks:
+                    with st.expander(f"Task: {task.task_type.value.replace('_', ' ').title()}", expanded=False):
+                        st.write(f"**Test Group**: {task.test_group}")
+                        st.write(f"**Phase**: {task.current_phase}")
+                        st.write(f"**Triggered at**: {task.triggered_at_completion:.1f}% completion")
+                        st.write(f"**Phase Range**: {task.phase_completion_range}")
+
+                        if st.button(f"Complete {task.task_type.value}", key=f"complete_{task.task_type.value}"):
+                            self.task_manager.complete_task(task.task_type)
+                            st.rerun()
+        except AttributeError:
+            print("🎯 TASK_UI: Task manager is None - cannot render tasks")
+
     async def process_input(self, user_input: str, mode: str, image_path: str = None) -> str:
         """Process user input based on the selected mode with optional image."""
         try:
-            # Check if we're in test mode
-            test_mode_active = st.session_state.get('test_mode_active', False)
-            test_group = st.session_state.get('test_group', None)
-            test_phase = st.session_state.get('test_current_phase', TestPhase.IDEATION)
+            # CRITICAL: Check dashboard mode to determine if test features should be active
+            dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+            test_mode_active = (dashboard_mode == "Test Mode")
 
-            print(f"🔬 MODE_PROCESSOR: test_mode_active={test_mode_active}, test_group={test_group}, test_phase={test_phase}")
+            # Initialize or disable task system based on mode
+            self._ensure_task_system_initialized()
+
+            # Only get test-specific variables if in Test Mode
+            test_group_raw = None
+            if test_mode_active:
+                # Get test group from multiple possible sources
+                test_group_raw = (
+                    st.session_state.get('test_group', None) or
+                    st.session_state.get('test_group_selection', None) or
+                    st.session_state.get('current_mode', None)
+                )
+
+                # Convert to TestGroup enum if needed
+                if test_group_raw:
+                    if isinstance(test_group_raw, str):
+                        # Map string values to TestGroup enum
+                        test_group_mapping = {
+                            "MENTOR": TestGroup.MENTOR,
+                            "GENERIC_AI": TestGroup.GENERIC_AI,
+                            "CONTROL": TestGroup.CONTROL,
+                            "Socratic Agent": TestGroup.MENTOR,
+                            "Raw GPT": TestGroup.GENERIC_AI,
+                            "No AI": TestGroup.CONTROL
+                        }
+                        test_group = test_group_mapping.get(test_group_raw, None)
+                    else:
+                        test_group = test_group_raw
+                else:
+                    test_group = None
+
+                # Convert test_current_phase from string to TestPhase enum if needed
+                test_phase_raw = st.session_state.get('test_current_phase', 'Ideation')
+                if isinstance(test_phase_raw, str):
+                    # Map string values to TestPhase enum
+                    test_phase_mapping = {
+                        "Ideation": TestPhase.IDEATION,
+                        "Visualization": TestPhase.VISUALIZATION,
+                        "Materialization": TestPhase.MATERIALIZATION,
+                        "ideation": TestPhase.IDEATION,
+                        "visualization": TestPhase.VISUALIZATION,
+                        "materialization": TestPhase.MATERIALIZATION
+                    }
+                    test_phase = test_phase_mapping.get(test_phase_raw, TestPhase.IDEATION)
+                else:
+                    test_phase = test_phase_raw or TestPhase.IDEATION
+            else:
+                test_group = None
+                test_phase = None
+
+            print(f"🔬 MODE_PROCESSOR: dashboard_mode={dashboard_mode}, test_mode_active={test_mode_active}, test_group={test_group}, test_phase={test_phase}")
+
+            # DEBUG: Show all test-related session state variables
+            if test_mode_active:
+                print(f"🔍 DEBUG: test_group_raw={test_group_raw}")
+                print(f"🔍 DEBUG: session_state.test_group={st.session_state.get('test_group', 'NOT_SET')}")
+                print(f"🔍 DEBUG: session_state.test_group_selection={st.session_state.get('test_group_selection', 'NOT_SET')}")
+                print(f"🔍 DEBUG: session_state.current_mode={st.session_state.get('current_mode', 'NOT_SET')}")
+                print(f"🔍 DEBUG: session_state.mentor_type={st.session_state.get('mentor_type', 'NOT_SET')}")
 
             # First, validate the question for appropriateness
             conversation_context = getattr(st.session_state, 'messages', [])[-5:]  # Last 5 messages for context
@@ -65,7 +169,7 @@ class ModeProcessor:
             enhanced_input = self._enhance_input_with_image_context(user_input)
 
             # Handle test mode processing
-            if test_mode_active and test_group:
+            if test_mode_active and test_group and test_phase:
                 return await self._process_test_mode(enhanced_input, test_group, test_phase, image_path)
 
             # Handle regular modes
@@ -95,7 +199,8 @@ class ModeProcessor:
 
         # Get current phase from session state for compatibility
         current_phase_str = st.session_state.get('test_current_phase', 'Ideation')
-        print(f"🔬 TEST_MODE: Processing {test_group.value} in {current_phase_str} phase")
+        test_group_name = test_group.value if test_group else "None"
+        print(f"🔬 TEST_MODE: Processing {test_group_name} in {current_phase_str} phase")
 
         # Get conversation history for task detection
         conversation_history = st.session_state.get('messages', [])
@@ -111,52 +216,51 @@ class ModeProcessor:
                     image_analysis = analysis.get('detailed_analysis', {})
                     break
 
-        # Get phase completion percentage from session state
-        phase_completion_percent = 0.0
-        try:
-            # Try to get phase completion from phase progression system
-            if hasattr(st.session_state, 'phase_session_id') and st.session_state.phase_session_id:
-                # Import phase progression system
-                import sys
-                import os
-                sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-                from phase_progression_system import PhaseProgressionSystem
+        # CRITICAL FIX: Get phase completion from dashboard (updated after phase processing)
+        phase_completion_percent = st.session_state.get('current_phase_completion', 0.0)
+        print(f"🎯 TASK_TRIGGER: Using updated phase completion: {phase_completion_percent:.1f}%")
 
-                phase_system = PhaseProgressionSystem()
-                session = phase_system.sessions.get(st.session_state.phase_session_id)
-                if session and session.current_phase:
-                    current_progress = session.phase_progress.get(session.current_phase)
-                    if current_progress:
-                        phase_completion_percent = current_progress.completion_percent
-                        print(f"🎯 TASK_TRIGGER: Phase completion: {phase_completion_percent:.1f}%")
-        except Exception as e:
-            print(f"⚠️ Could not get phase completion: {e}")
+        # TASK SYSTEM: Only process tasks if in Test Mode and task system is initialized
+        triggered_task = None
+        print(f"🎯 TASK_DEBUG: task_manager={self.task_manager is not None}, test_group={test_group}, phase_completion={phase_completion_percent:.1f}%")
 
-        # Check for dynamic task triggers
-        triggered_task = self.task_manager.check_task_triggers(
-            user_input=user_input,
-            conversation_history=conversation_history,
-            current_phase=current_phase_str.lower(),
-            test_group=test_group.value,
-            image_uploaded=image_uploaded,
-            image_analysis=image_analysis,
-            phase_completion_percent=phase_completion_percent
-        )
+        if self.task_manager is not None and test_group is not None:
+            print(f"🎯 TASK_TRIGGER_CHECK: Checking triggers for {test_group.value} at {phase_completion_percent:.1f}% completion")
 
-        # Activate triggered task
-        if triggered_task:
-            task = self.task_manager.activate_task(
-                task_type=triggered_task,
-                test_group=test_group.value,
+            # Check for dynamic task triggers
+            triggered_task = self.task_manager.check_task_triggers(
+                user_input=user_input,
+                conversation_history=conversation_history,
                 current_phase=current_phase_str.lower(),
-                trigger_reason=f"Triggered by: {user_input[:50]}...",
-                task_data={'image_path': image_path} if image_path else {},
+                test_group=test_group.value,
+                image_uploaded=image_uploaded,
+                image_analysis=image_analysis,
                 phase_completion_percent=phase_completion_percent
             )
-            print(f"🎯 TASK_ACTIVATED: {triggered_task.value} for {test_group.value} at {phase_completion_percent:.1f}% completion")
 
-        # Check if phase transition is needed (for all modes)
-        self._check_phase_transition(user_input, test_group)
+            print(f"🎯 TASK_TRIGGER_RESULT: triggered_task={triggered_task}")
+
+            # Activate triggered task
+            if triggered_task:
+                task = self.task_manager.activate_task(
+                    task_type=triggered_task,
+                    test_group=test_group.value,
+                    current_phase=current_phase_str.lower(),
+                    trigger_reason=f"Triggered by: {user_input[:50]}...",
+                    task_data={'image_path': image_path} if image_path else {},
+                    phase_completion_percent=phase_completion_percent
+                )
+                print(f"🎯 TASK_ACTIVATED: {triggered_task.value} for {test_group.value} at {phase_completion_percent:.1f}% completion")
+            else:
+                print(f"🎯 TASK_NO_TRIGGER: No tasks triggered at {phase_completion_percent:.1f}% completion")
+        elif self.task_manager is None:
+            print(f"🎯 TASK_SYSTEM: Disabled - task manager not initialized")
+        elif test_group is None:
+            print(f"🎯 TASK_SYSTEM: Disabled - test group not set (running in Flexible Mode or test group not selected)")
+
+        # Check if phase transition is needed (only if test_group is set)
+        if test_group is not None:
+            self._check_phase_transition(user_input, test_group)
 
         # Route to appropriate test condition
         if test_group == TestGroup.MENTOR:
@@ -174,20 +278,24 @@ class ModeProcessor:
         else:
             response = "Invalid test group configuration."
 
-        # Apply dynamic task guidance if tasks are active
-        active_tasks = self.task_manager.get_active_tasks()
-        if active_tasks:
-            for task in active_tasks:
-                print(f"🎯 APPLYING_GUIDANCE: {task.task_type.value} for {task.test_group}")
-                response = self.task_guidance.get_task_guidance(
-                    task=task,
-                    user_input=user_input,
-                    base_response=response,
-                    conversation_context=st.session_state.get('messages', [])
-                )
+        # Apply dynamic task guidance if tasks are active AND task system is initialized (Test Mode only)
+        if self.task_manager is not None and self.task_guidance is not None:
+            active_tasks = self.task_manager.get_active_tasks()
+            if active_tasks:
+                for task in active_tasks:
+                    print(f"🎯 APPLYING_GUIDANCE: {task.task_type.value} for {task.test_group}")
+                    response = self.task_guidance.get_task_guidance(
+                        task=task,
+                        user_input=user_input,
+                        base_response=response,
+                        conversation_context=st.session_state.get('messages', [])
+                    )
+        else:
+            print(f"🎯 TASK_GUIDANCE: Disabled - running in Flexible Mode")
 
-        # Log test-specific interaction with enhanced metadata
-        await self._log_test_interaction(user_input, response, test_group, test_phase)
+        # Log test-specific interaction with enhanced metadata (only if test_group and test_phase are valid)
+        if test_group is not None and test_phase is not None:
+            await self._log_test_interaction(user_input, response, test_group, test_phase)
 
         return response
 
@@ -204,28 +312,66 @@ class ModeProcessor:
             pass
 
         elif test_group == TestGroup.GENERIC_AI:
-            # Generic AI mode: Timer-based or interaction-count-based transitions
-            phase_interaction_limits = {
-                'Ideation': 4,  # 4 interactions before moving to visualization
-                'Visualization': 4,  # 4 interactions before moving to materialization
-                'Materialization': 6  # 6 interactions before completion
-            }
-
-            limit = phase_interaction_limits.get(current_phase, 999)
-            if interaction_count >= limit:
-                self._advance_phase_automatically()
+            # GENERIC_AI mode: MANUAL phase progression via UI buttons
+            # No automatic transitions - user controls when to advance
+            pass
 
         elif test_group == TestGroup.CONTROL:
-            # Control mode: Similar to Generic AI but with different thresholds
-            phase_interaction_limits = {
-                'Ideation': 5,  # Slightly more interactions since no AI guidance
-                'Visualization': 5,
-                'Materialization': 7
-            }
+            # CONTROL mode: MANUAL phase progression via UI buttons
+            # No automatic transitions - user controls when to advance
+            pass
 
-            limit = phase_interaction_limits.get(current_phase, 999)
-            if interaction_count >= limit:
-                self._advance_phase_automatically()
+    def advance_phase_manually(self, reason: str = "Manual advancement"):
+        """Manually advance to the next phase (for GENERIC_AI and CONTROL modes)"""
+
+        current_phase = st.session_state.get('test_current_phase', 'Ideation')
+
+        phase_progression = {
+            'Ideation': 'Visualization',
+            'Visualization': 'Materialization',
+            'Materialization': 'Complete'
+        }
+
+        next_phase = phase_progression.get(current_phase, 'Complete')
+
+        if next_phase != 'Complete':
+            st.session_state.test_current_phase = next_phase
+            print(f"🔄 MANUAL_PHASE: Advanced from {current_phase} to {next_phase} ({reason})")
+
+            # Log phase transition if data collector is available
+            if self.data_collector and hasattr(self.data_collector, 'log_phase_transition'):
+                self.data_collector.log_phase_transition(
+                    from_phase=current_phase.lower(),
+                    to_phase=next_phase.lower(),
+                    trigger_reason=f"manual_{reason}"
+                )
+
+            # Handle phase transition with proper task checking
+            test_group = st.session_state.get('test_group', TestGroup.MENTOR).name
+            self._handle_phase_transition(
+                from_phase=current_phase.lower(),
+                to_phase=next_phase.lower(),
+                test_group=test_group,
+                user_input=f"Manual phase transition to {next_phase}: {reason}"
+            )
+
+            # Add a system message about phase transition
+            phase_transition_message = f"**Phase Transition**: Moving from {current_phase} to {next_phase} phase. ({reason})"
+
+            if 'messages' not in st.session_state:
+                st.session_state.messages = []
+
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": phase_transition_message,
+                "timestamp": datetime.now().isoformat(),
+                "phase_transition": True
+            })
+
+            # Trigger rerun to update UI
+            st.rerun()
+        else:
+            print(f"🏁 MANUAL_PHASE: Already at final phase ({current_phase})")
 
     def _advance_phase_automatically(self):
         """Automatically advance to the next phase"""
@@ -243,6 +389,15 @@ class ModeProcessor:
         if next_phase != 'Complete':
             st.session_state.test_current_phase = next_phase
             print(f"🔄 AUTO_PHASE: Advanced from {current_phase} to {next_phase}")
+
+            # CRITICAL FIX: Handle phase transition with proper task checking
+            test_group = st.session_state.get('test_group', TestGroup.MENTOR).name
+            self._handle_phase_transition(
+                from_phase=current_phase.lower(),
+                to_phase=next_phase.lower(),
+                test_group=test_group,
+                user_input=f"Phase transition to {next_phase}"
+            )
 
             # Add a system message about phase transition
             phase_transition_message = f"**Phase Transition**: Moving from {current_phase} to {next_phase} phase."
@@ -820,16 +975,16 @@ class ModeProcessor:
         return response
 
     async def _process_generic_ai_mode(self, user_input: str) -> str:
-        """Process using generic AI."""
+        """Process using Generic AI mode - Direct assistance without scaffolding"""
         # Ensure session is initialized
         if not st.session_state.session_id:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        # Use test dashboard's generic AI mode
-        if not self.test_dashboard:
-            return "Generic AI mode is not available."
-        
-        response = self.test_dashboard.generic_ai_env.process_input(user_input)
+
+        # Get current phase for context
+        current_phase = st.session_state.get('test_current_phase', 'Ideation').lower()
+
+        # Use actual Generic AI logic from thesis_tests
+        response = await self._get_generic_ai_response(user_input, current_phase)
         
         # Log interaction
         try:
@@ -871,19 +1026,102 @@ class ModeProcessor:
             print(f"Warning: Could not log interaction: {e}")
         
         return response
-    
+
+    async def _get_generic_ai_response(self, user_input: str, phase: str) -> str:
+        """Get direct AI response using GPT-4 (from thesis_tests/generic_ai_environment.py)"""
+        try:
+            # Import OpenAI
+            import openai
+
+            # Get API key
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                return self._get_generic_ai_fallback_response(user_input, phase)
+
+            # Initialize client
+            client = openai.OpenAI(api_key=api_key)
+
+            # Create system prompt based on phase
+            system_prompt = self._create_generic_ai_system_prompt(phase)
+
+            # Get response from OpenAI
+            response = client.chat.completions.create(
+                model="gpt-4-turbo-preview",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_input}
+                ],
+                temperature=0.7,
+                max_tokens=500
+            )
+
+            return response.choices[0].message.content
+
+        except Exception as e:
+            print(f"Generic AI API error: {e}")
+            return self._get_generic_ai_fallback_response(user_input, phase)
+
+    def _create_generic_ai_system_prompt(self, phase: str) -> str:
+        """Create system prompt for Generic AI based on phase"""
+        base_prompt = """You are a helpful AI assistant providing direct, specific guidance for architectural design.
+        Provide concrete suggestions, examples, and recommendations. Be informative and comprehensive."""
+
+        phase_context = {
+            "ideation": """
+            The user is in the ideation phase, developing initial concepts for a
+            community center in a former industrial warehouse. Provide specific
+            ideas, examples, and suggestions to help them develop their concept.
+            """,
+            "visualization": """
+            The user is visualizing their design through sketches and diagrams.
+            Help with spatial arrangements, visualization techniques, and specific
+            layout suggestions.
+            """,
+            "materialization": """
+            The user is developing technical details and construction strategies.
+            Provide specific material recommendations, structural solutions, and
+            technical specifications.
+            """
+        }
+
+        return base_prompt + phase_context.get(phase, "")
+
+    def _get_generic_ai_fallback_response(self, user_input: str, phase: str) -> str:
+        """Fallback responses when API is not available"""
+        fallback_responses = {
+            "ideation": [
+                "For community center design, consider flexible spaces that can accommodate multiple activities. Think about how different age groups will use the space.",
+                "Industrial warehouses offer great opportunities for adaptive reuse. The high ceilings and open floor plates are perfect for community gathering spaces.",
+                "Consider the cultural diversity of your neighborhood. How can the design reflect and celebrate different community traditions?"
+            ],
+            "visualization": [
+                "Try creating bubble diagrams to show relationships between different spaces. This will help you understand circulation patterns.",
+                "Section drawings are particularly useful for warehouse conversions - they show how you can use the vertical space effectively.",
+                "Consider drawing sight lines to understand how people will move through and experience the space."
+            ],
+            "materialization": [
+                "For warehouse conversions, consider exposing the existing steel structure as a design feature while adding warm materials like wood for comfort.",
+                "Think about acoustic separation between active and quiet spaces. Sound-absorbing materials will be important in a large open space.",
+                "Sustainable strategies might include natural ventilation through existing windows and adding insulation to improve energy performance."
+            ]
+        }
+
+        import random
+        responses = fallback_responses.get(phase, fallback_responses["ideation"])
+        return random.choice(responses)
+
     async def _process_control_mode(self, user_input: str) -> str:
-        """Process using control mode (no AI)."""
+        """Process using Control mode - No AI assistance, minimal self-directed prompts"""
         # Ensure session is initialized
         if not st.session_state.session_id:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        # Use test dashboard's control mode
-        if not self.test_dashboard:
-            return "Control mode is not available."
-        
-        response = self.test_dashboard.control_env.process_input(user_input)
-        
+
+        # Get current phase for context
+        current_phase = st.session_state.get('test_current_phase', 'Ideation').lower()
+
+        # Use actual Control logic from thesis_tests - minimal guidance only
+        response = self._get_control_response(user_input, current_phase)
+
         # Log interaction
         try:
             interaction = InteractionData(
@@ -922,8 +1160,53 @@ class ModeProcessor:
                 )
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
-        
+
         return response
+
+    def _get_control_response(self, user_input: str, phase: str) -> str:
+        """Get minimal control response (from thesis_tests/control_environment.py)"""
+        # Control mode provides minimal, non-directive prompts
+        # Based on the actual thesis_tests implementation
+
+        # Acknowledge input and provide minimal continuation prompt
+        acknowledgments = [
+            "Continue working on your design.",
+            "Proceed with your development.",
+            "Keep developing your ideas.",
+            "Continue with your approach.",
+            "Proceed as you see fit."
+        ]
+
+        # Phase-specific minimal prompts
+        phase_prompts = {
+            "ideation": [
+                "Consider your design concept further.",
+                "Think about your approach to the community center.",
+                "Develop your initial ideas.",
+                "Continue conceptualizing your design."
+            ],
+            "visualization": [
+                "Work on visualizing your design.",
+                "Continue developing your visual representations.",
+                "Proceed with your design visualization.",
+                "Keep working on your spatial arrangements."
+            ],
+            "materialization": [
+                "Continue with your technical development.",
+                "Work on the implementation aspects.",
+                "Proceed with your material considerations.",
+                "Continue developing your construction approach."
+            ]
+        }
+
+        import random
+
+        # Combine acknowledgment with phase-specific prompt
+        acknowledgment = random.choice(acknowledgments)
+        phase_prompt = random.choice(phase_prompts.get(phase, phase_prompts["ideation"]))
+
+        # Very minimal response - just acknowledgment and continuation
+        return f"{acknowledgment} {phase_prompt}"
 
     def _extract_design_moves(self, user_input: str, response: str, test_phase: TestPhase) -> Dict[str, Any]:
         """Extract design moves for linkography analysis based on test logic documents"""
@@ -1009,30 +1292,7 @@ class ModeProcessor:
         """Get status of active dynamic tasks for UI display"""
         return self.task_manager.get_task_status()
 
-    def render_active_tasks_ui(self):
-        """Render active tasks in the UI for monitoring - PHASE COMPLETION BASED"""
-        active_tasks = self.task_manager.get_active_tasks()
-
-        if active_tasks:
-            st.sidebar.markdown("### 🎯 Active Tasks")
-            for task in active_tasks:
-                # Get phase completion range for display
-                phase_range = task.progress_indicators.get("phase_completion_range", "Unknown")
-                triggered_at = task.progress_indicators.get("triggered_at_completion", "Unknown")
-
-                with st.sidebar.expander(f"{task.task_type.value.replace('_', ' ').title()} ({phase_range})"):
-                    st.write(f"**Group**: {task.test_group}")
-                    st.write(f"**Phase**: {task.current_phase}")
-                    st.write(f"**Triggered at**: {triggered_at} phase completion")
-                    st.write(f"**Expected duration**: {task.duration_minutes} min (reference)")
-                    st.write(f"**Trigger**: {task.trigger_reason}")
-
-                    # Show phase completion range instead of time progress
-                    st.info(f"📊 **Phase Range**: {phase_range} completion")
-
-                    if st.button(f"Complete {task.task_type.value}", key=f"complete_{task.task_type.value}"):
-                        self.task_manager.complete_task(task.task_type, "Manual completion")
-                        st.rerun()
+    # REMOVED: Duplicate render_active_tasks_ui method - using the mode-restricted version above
 
     def _ensure_phase_progression_tracking(self, user_input: str, test_group: str):
         """Ensure phase progression is tracked for all test groups"""
@@ -1081,6 +1341,136 @@ class ModeProcessor:
                     }
                     st.session_state.test_current_phase = phase_mapping.get(current_phase, 'Ideation')
 
+                    # CRITICAL FIX: Check for task triggers based on phase completion
+                    self._check_and_trigger_tasks(user_input, current_phase, test_group, completion_percent)
+
         except Exception as e:
             print(f"⚠️ Phase progression tracking failed for {test_group}: {e}")
             # Don't let phase tracking errors break the main flow
+
+    def _check_and_trigger_tasks(self, user_input: str, current_phase: str, test_group: str, completion_percent: float):
+        """Check and trigger tasks based on phase completion percentage"""
+        try:
+            if self.task_manager is None:
+                print(f"🎯 TASK_TRIGGER: Task manager not initialized - initializing now")
+                self._ensure_task_system_initialized()
+
+            if self.task_manager is None:
+                print(f"🎯 TASK_TRIGGER: Task manager still not initialized - skipping")
+                return
+
+            # Get conversation history for task triggering
+            conversation_history = st.session_state.get('messages', [])
+
+            # Check if any tasks should be triggered
+            triggered_task = self.task_manager.check_task_triggers(
+                user_input=user_input,
+                conversation_history=conversation_history,
+                current_phase=current_phase,
+                test_group=test_group,
+                image_uploaded=False,  # TODO: Add image upload detection
+                image_analysis=None,   # TODO: Add image analysis if needed
+                phase_completion_percent=completion_percent
+            )
+
+            if triggered_task:
+                print(f"🎯 TASK_TRIGGERED: {triggered_task.value} at {completion_percent:.1f}% completion in {current_phase} phase")
+
+                # Activate the triggered task
+                activated_task = self.task_manager.activate_task(
+                    task_type=triggered_task,
+                    test_group=test_group,
+                    current_phase=current_phase,
+                    trigger_reason=f"Phase completion: {completion_percent:.1f}%",
+                    phase_completion_percent=completion_percent
+                )
+
+                if activated_task:
+                    print(f"🎯 TASK_ACTIVATED: {activated_task.task_type.value} for {test_group}")
+
+                    # Store task for UI rendering (like gamification does)
+                    st.session_state['active_task'] = {
+                        'task': activated_task,
+                        'user_input': user_input,
+                        'guidance_type': self._get_guidance_type_for_test_group(test_group),
+                        'should_render': True
+                    }
+                else:
+                    print(f"🎯 TASK_ACTIVATION_FAILED: Could not activate {triggered_task.value}")
+            else:
+                print(f"🎯 TASK_CHECK: No tasks triggered at {completion_percent:.1f}% completion in {current_phase}")
+
+        except Exception as e:
+            print(f"⚠️ Task triggering failed: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _handle_phase_transition(self, from_phase: str, to_phase: str, test_group: str, user_input: str):
+        """Handle phase transitions with proper task checking for missed and new tasks"""
+        try:
+            if self.task_manager is None:
+                print(f"🔄 PHASE_TRANSITION: Task manager not initialized - initializing now")
+                self._ensure_task_system_initialized()
+
+            if self.task_manager is None:
+                print(f"🔄 PHASE_TRANSITION: Task manager still not initialized - skipping")
+                return
+
+            # Get conversation history for task triggering
+            conversation_history = st.session_state.get('messages', [])
+
+            # Check for phase transition tasks (missed tasks + new phase tasks)
+            transition_tasks = self.task_manager.check_phase_transition_tasks(
+                from_phase=from_phase,
+                to_phase=to_phase,
+                user_input=user_input,
+                conversation_history=conversation_history,
+                test_group=test_group,
+                image_uploaded=False,  # TODO: Add image upload detection
+                image_analysis=None    # TODO: Add image analysis if needed
+            )
+
+            if transition_tasks:
+                # Activate the highest priority task (first in the list)
+                task_to_activate = transition_tasks[0]
+
+                print(f"🔄 PHASE_TRANSITION_TASK: {task_to_activate.value} triggered during {from_phase} → {to_phase}")
+
+                activated_task = self.task_manager.activate_task(
+                    task_type=task_to_activate,
+                    test_group=test_group,
+                    current_phase=to_phase,
+                    trigger_reason=f"Phase transition: {from_phase} → {to_phase}",
+                    phase_completion_percent=0.0
+                )
+
+                if activated_task:
+                    print(f"🔄 PHASE_TRANSITION_ACTIVATED: {activated_task.task_type.value} for {test_group}")
+
+                    # Store task for UI rendering
+                    st.session_state['active_task'] = {
+                        'task': activated_task,
+                        'user_input': user_input,
+                        'guidance_type': self._get_guidance_type_for_test_group(test_group),
+                        'should_render': True
+                    }
+                else:
+                    print(f"🔄 PHASE_TRANSITION_ACTIVATION_FAILED: Could not activate {task_to_activate.value}")
+            else:
+                print(f"🔄 PHASE_TRANSITION: No tasks triggered for {from_phase} → {to_phase}")
+
+        except Exception as e:
+            print(f"⚠️ Phase transition handling failed: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _get_guidance_type_for_test_group(self, test_group: str) -> str:
+        """Get guidance type based on test group"""
+        if test_group == "MENTOR":
+            return "socratic"
+        elif test_group == "GENERIC_AI":
+            return "direct"
+        elif test_group == "CONTROL":
+            return "minimal"
+        else:
+            return "minimal"

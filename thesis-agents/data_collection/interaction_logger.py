@@ -15,6 +15,33 @@ from enum import Enum
 import os
 import uuid
 import pandas as pd
+import sys
+
+# 2608-ADDED Import thesis_tests data models for enhanced integration
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from thesis_tests.data_models import (
+        TestPhase, TestGroup, DesignMove, InteractionData,
+        MoveType, MoveSource, Modality, DesignFocus
+    )
+    THESIS_MODELS_AVAILABLE = True
+except ImportError:
+    print("⚠️ Thesis test models not available - using fallback enums")
+    THESIS_MODELS_AVAILABLE = False
+
+    # Fallback enums if thesis_tests not available
+    class TestPhase(Enum):
+        IDEATION = "ideation"
+        VISUALIZATION = "visualization"
+        MATERIALIZATION = "materialization"
+
+    class TestGroup(Enum):
+        MENTOR = "MENTOR"
+        GENERIC_AI = "GENERIC_AI"
+        CONTROL = "CONTROL"
+
+
+
 
 # Custom JSON encoder to handle ConversationMilestone and other non-serializable objects
 class CustomJSONEncoder(json.JSONEncoder):
@@ -45,15 +72,24 @@ class CustomJSONEncoder(json.JSONEncoder):
         return str(obj)
 
 class InteractionLogger:
-    def __init__(self, session_id: str = None):
+    def __init__(self, session_id: str = None, test_group: str = None, participant_id: str = None):
         self.session_id = session_id or str(uuid.uuid4())
+        self.test_group = test_group or "MENTOR"  # Default to MENTOR mode
+        self.participant_id = participant_id or "unified_user"
         self.interactions = []
+        self.design_moves = []
+        self.phase_transitions = []
         self.session_start = datetime.datetime.now()
-        
+        self.current_phase = "ideation"
+        self.phase_start_times = {}
+
         # Create data directory
         os.makedirs("./thesis_data", exist_ok=True)
-        
-        print(f"Data collection initialized for session: {self.session_id}")
+
+        # Initialize phase tracking
+        self.phase_start_times[self.current_phase] = self.session_start
+
+        print(f"Enhanced data collection initialized for session: {self.session_id} (Group: {self.test_group})")
         
     def log_interaction(self, 
                        student_input: str,
@@ -196,10 +232,10 @@ class InteractionLogger:
             
             # AGENT-SPECIFIC DATA (NEW)
             "agent_data": {
-                "analysis_result": metadata.get("analysis_result", {}),
-                "domain_expert_result": metadata.get("domain_expert_result", {}),
-                "socratic_result": metadata.get("socratic_result", {}),
-                "cognitive_enhancement_result": metadata.get("cognitive_enhancement_result", {})
+                "analysis_result": metadata.get("analysis_result", {}) if metadata else {},
+                "domain_expert_result": metadata.get("domain_expert_result", {}) if metadata else {},
+                "socratic_result": metadata.get("socratic_result", {}) if metadata else {},
+                "cognitive_enhancement_result": metadata.get("cognitive_enhancement_result", {}) if metadata else {}
             },
             
             # ENHANCED PERFORMANCE METRICS
@@ -236,7 +272,79 @@ class InteractionLogger:
         self._save_interaction_to_csv(interaction)
         
         print(f"Logged interaction {interaction['interaction_number']}: {response_type} via {routing_path} (Phase: {current_phase}, Moves: {len(design_moves)})")
-        
+
+    def log_phase_transition(self, from_phase: str, to_phase: str, trigger_reason: str = "automatic"):
+        """Log a phase transition event"""
+        transition_time = datetime.datetime.now()
+
+        # Calculate time spent in previous phase
+        if from_phase in self.phase_start_times:
+            phase_duration = (transition_time - self.phase_start_times[from_phase]).total_seconds()
+        else:
+            phase_duration = 0.0
+
+        transition = {
+            "session_id": self.session_id,
+            "timestamp": transition_time.isoformat(),
+            "from_phase": from_phase,
+            "to_phase": to_phase,
+            "trigger_reason": trigger_reason,
+            "phase_duration": phase_duration,
+            "test_group": self.test_group,
+            "interaction_count_at_transition": len(self.interactions)
+        }
+
+        self.phase_transitions.append(transition)
+
+        # Update current phase tracking
+        self.current_phase = to_phase
+        self.phase_start_times[to_phase] = transition_time
+
+        # Save to CSV
+        self._save_phase_transition_to_csv(transition)
+
+        print(f"🔄 PHASE_TRANSITION: {from_phase} → {to_phase} ({trigger_reason}) after {phase_duration:.1f}s")
+
+    def log_design_move(self, move_content: str, move_type: str, move_source: str,
+                       modality: str = "text", design_focus: str = "function"):
+        """Log an individual design move for linkography analysis"""
+        if not THESIS_MODELS_AVAILABLE:
+            # Fallback logging without full thesis models
+            move = {
+                "id": str(uuid.uuid4()),
+                "session_id": self.session_id,
+                "timestamp": datetime.datetime.now().isoformat(),
+                "sequence_number": len(self.design_moves) + 1,
+                "content": move_content,
+                "move_type": move_type,
+                "phase": self.current_phase,
+                "modality": modality,
+                "move_source": move_source,
+                "design_focus": design_focus,
+                "test_group": self.test_group
+            }
+        else:
+            # Full thesis model integration
+            move = DesignMove(
+                id=str(uuid.uuid4()),
+                session_id=self.session_id,
+                timestamp=datetime.datetime.now(),
+                sequence_number=len(self.design_moves) + 1,
+                content=move_content,
+                move_type=MoveType(move_type) if move_type in [m.value for m in MoveType] else MoveType.ANALYSIS,
+                phase=TestPhase(self.current_phase) if self.current_phase in [p.value for p in TestPhase] else TestPhase.IDEATION,
+                modality=Modality(modality) if modality in [m.value for m in Modality] else Modality.TEXT,
+                cognitive_operation="analysis",  # Default
+                design_focus=DesignFocus(design_focus) if design_focus in [f.value for f in DesignFocus] else DesignFocus.FUNCTION,
+                move_source=MoveSource(move_source) if move_source in [s.value for s in MoveSource] else MoveSource.USER_GENERATED,
+                cognitive_load="medium"  # Default
+            )
+
+        self.design_moves.append(move)
+        self._save_design_move_to_csv(move)
+
+        print(f"📝 DESIGN_MOVE: {move_type} move logged ({move_source})")
+
     def _classify_input_type(self, input_text: str) -> str:
         """Classify student input for analysis"""
         input_lower = input_text.lower()
@@ -1343,6 +1451,84 @@ class InteractionLogger:
             "most_used_agent": max(agent_usage.items(), key=lambda x: x[1])[0] if agent_usage else "none",
             "most_common_route": max(routing_distribution.items(), key=lambda x: x[1])[0] if routing_distribution else "unknown"
         }
+
+    def _save_phase_transition_to_csv(self, transition: Dict[str, Any]):
+        """Save phase transition to CSV file"""
+        transitions_file = f"./thesis_data/phase_transitions_{self.session_id}.csv"
+
+        # Create file with headers if it doesn't exist
+        if not os.path.exists(transitions_file):
+            with open(transitions_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=[
+                    'session_id', 'timestamp', 'from_phase', 'to_phase',
+                    'trigger_reason', 'phase_duration', 'test_group', 'interaction_count_at_transition'
+                ])
+                writer.writeheader()
+
+        # Append transition data
+        with open(transitions_file, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=[
+                'session_id', 'timestamp', 'from_phase', 'to_phase',
+                'trigger_reason', 'phase_duration', 'test_group', 'interaction_count_at_transition'
+            ])
+            writer.writerow(transition)
+
+    def _save_design_move_to_csv(self, move):
+        """Save design move to CSV file"""
+        moves_file = f"./thesis_data/design_moves_{self.session_id}.csv"
+
+        # Create file with headers if it doesn't exist
+        if not os.path.exists(moves_file):
+            with open(moves_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=[
+                    'id', 'session_id', 'timestamp', 'sequence_number', 'content',
+                    'move_type', 'phase', 'modality', 'move_source', 'design_focus',
+                    'test_group', 'cognitive_operation', 'cognitive_load'
+                ])
+                writer.writeheader()
+
+        # Prepare move data for CSV
+        if THESIS_MODELS_AVAILABLE and hasattr(move, 'to_dict'):
+            # Use thesis model's to_dict method if available
+            move_data = move.to_dict() if hasattr(move, 'to_dict') else asdict(move)
+            move_data['test_group'] = self.test_group
+        else:
+            # Use dictionary format
+            move_data = move.copy() if isinstance(move, dict) else asdict(move)
+            move_data['test_group'] = self.test_group
+
+        # Append move data
+        with open(moves_file, 'a', newline='', encoding='utf-8') as f:
+            fieldnames = [
+                'id', 'session_id', 'timestamp', 'sequence_number', 'content',
+                'move_type', 'phase', 'modality', 'move_source', 'design_focus',
+                'test_group', 'cognitive_operation', 'cognitive_load'
+            ]
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+
+            # Handle timestamp formatting
+            if 'timestamp' in move_data and hasattr(move_data['timestamp'], 'isoformat'):
+                move_data['timestamp'] = move_data['timestamp'].isoformat()
+
+            # Handle enum values and filter to only include expected fields
+            filtered_data = {}
+            for key in fieldnames:
+                if key in move_data:
+                    value = move_data[key]
+                    if hasattr(value, 'value'):  # Enum
+                        filtered_data[key] = value.value
+                    else:
+                        filtered_data[key] = value
+                else:
+                    # Provide default values for missing fields
+                    if key == 'cognitive_operation':
+                        filtered_data[key] = 'analysis'
+                    elif key == 'cognitive_load':
+                        filtered_data[key] = 'medium'
+                    else:
+                        filtered_data[key] = ''
+
+            writer.writerow(filtered_data)
 
 # Benchmark comparison functions for thesis
 def compare_with_baseline(session_summary: Dict[str, Any]) -> Dict[str, Any]:

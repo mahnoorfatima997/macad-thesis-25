@@ -129,9 +129,13 @@ def render_session_management(data_collector=None):
         st.success("Data collector reset!")
         st.rerun()
     
-    # Export data button
-    if st.button("💾 Export Data"):
-        export_session_data(data_collector)
+    # Export data button - ONLY in Test Mode
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+    if dashboard_mode == "Test Mode":
+        if st.button("💾 Export Data"):
+            export_session_data(data_collector)
+    else:
+        st.info("📊 Export functionality is only available in Test Mode for research data collection.")
 
 
 def render_mode_selection():
@@ -187,6 +191,15 @@ def render_test_mode_primary():
     st.session_state.mentor_type = mentor_type_mapping[selected_test_group]
     st.session_state.current_mode = mentor_type_mapping[selected_test_group]
 
+    # CRITICAL: Also set test_group for task system compatibility
+    from thesis_tests.data_models import TestGroup
+    test_group_enum_mapping = {
+        "MENTOR": TestGroup.MENTOR,
+        "GENERIC_AI": TestGroup.GENERIC_AI,
+        "CONTROL": TestGroup.CONTROL
+    }
+    st.session_state.test_group = test_group_enum_mapping[selected_test_group]
+
     # Test session status
     if st.session_state.get('test_session_active', False):
         participant_id = st.session_state.get('participant_id', 'unified_user')
@@ -198,18 +211,16 @@ def render_test_mode_primary():
         current_phase = st.session_state.get('test_current_phase', 'Ideation')
         st.write(f"Phase: {current_phase}")
 
-        # Phase controls
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Next Phase", help="Advance to next design phase"):
-                advance_to_next_phase()
-        with col2:
-            if st.button("End Test", help="Complete test session"):
-                end_test_session()
+        # REMOVED: Duplicate phase control buttons
+        # Phase progression is handled automatically by the phase progression system
+        # Manual phase controls would interfere with research validity
     else:
         # Start test session
         if st.button("Start Test Session", type="primary"):
             initialize_test_session()
+
+    # DEBUG: Task System Status
+    debug_task_system_status()
 
     return selected_test_group
 
@@ -252,7 +263,14 @@ def render_pretest_section():
 
 
 def export_session_data(data_collector=None):
-    """Export session data functionality with enhanced research metrics."""
+    """Export session data functionality with enhanced research metrics - ONLY in Test Mode."""
+
+    # MODE RESTRICTION: Only allow export in Test Mode
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+    if dashboard_mode != "Test Mode":
+        st.error("🚫 Export functionality is only available in Test Mode for research data collection.")
+        return
+
     if not st.session_state.get('messages', []):
         st.warning("No data to export")
         return
@@ -432,43 +450,88 @@ def initialize_test_session():
         st.error(f"❌ Failed to initialize test session: {e}")
 
 
-def advance_to_next_phase():
-    """Advance to the next test phase."""
-    try:
-        current_phase = st.session_state.get('test_current_phase', 'Ideation')
+def debug_task_system_status():
+    """Debug function to check task system status in the sidebar"""
 
-        phase_progression = {
-            'Ideation': 'Visualization',
-            'Visualization': 'Materialization',
-            'Materialization': 'Complete'
-        }
+    st.markdown("---")
+    st.markdown("### 🔍 DEBUG: Task System Status")
 
-        next_phase = phase_progression.get(current_phase, 'Complete')
-        st.session_state.test_current_phase = next_phase
+    # Check 1: Dashboard Mode
+    dashboard_mode = st.session_state.get('dashboard_mode', 'NOT_SET')
+    test_mode_active = (dashboard_mode == "Test Mode")
 
-        if next_phase == 'Complete':
-            st.session_state.test_session_active = False
-            st.success("✅ Test session completed!")
-        else:
-            st.success(f"✅ Advanced to {next_phase} phase")
+    st.write(f"**Dashboard Mode**: {dashboard_mode}")
+    st.write(f"**Test Mode Active**: {'✅' if test_mode_active else '❌'}")
 
+    # Check 2: Test Group Settings
+    test_group = st.session_state.get('test_group', 'NOT_SET')
+    test_group_selection = st.session_state.get('test_group_selection', 'NOT_SET')
+    mentor_type = st.session_state.get('mentor_type', 'NOT_SET')
+    current_mode = st.session_state.get('current_mode', 'NOT_SET')
+
+    st.write(f"**test_group**: {test_group}")
+    st.write(f"**test_group_selection**: {test_group_selection}")
+    st.write(f"**mentor_type**: {mentor_type}")
+    st.write(f"**current_mode**: {current_mode}")
+
+    # Check 3: Test Session Status
+    test_session_active = st.session_state.get('test_session_active', False)
+    test_current_phase = st.session_state.get('test_current_phase', 'NOT_SET')
+    phase_session_id = st.session_state.get('phase_session_id', 'NOT_SET')
+
+    st.write(f"**test_session_active**: {'✅' if test_session_active else '❌'}")
+    st.write(f"**test_current_phase**: {test_current_phase}")
+    st.write(f"**phase_session_id**: {phase_session_id}")
+
+    # Check 4: Messages and Interaction Count
+    messages = st.session_state.get('messages', [])
+    message_count = len(messages)
+
+    st.write(f"**Message Count**: {message_count}")
+
+    # Check 5: Task System Readiness
+    task_system_ready = (
+        test_mode_active and
+        test_group != 'NOT_SET' and
+        test_group is not None and
+        test_session_active
+    )
+
+    st.write(f"**Task System Ready**: {'✅' if task_system_ready else '❌'}")
+
+    # Summary
+    if task_system_ready:
+        st.success("✅ Task system should be working!")
+        if message_count == 0:
+            st.info("💡 Start a conversation to trigger tasks")
+    else:
+        st.error("❌ Task system not ready")
+
+        # Specific recommendations
+        if not test_mode_active:
+            st.warning("🔧 Set Dashboard Mode to 'Test Mode'")
+        if test_group == 'NOT_SET' or test_group is None:
+            st.warning("🔧 Select a test group (MENTOR/GENERIC_AI/CONTROL)")
+        if not test_session_active:
+            st.warning("🔧 Click 'Start Test Session' button")
+
+    # Quick Fix Button
+    if st.button("🔧 Quick Fix: Force Set MENTOR Group"):
+        from thesis_tests.data_models import TestGroup
+        st.session_state.dashboard_mode = 'Test Mode'
+        st.session_state.test_group_selection = 'MENTOR'
+        st.session_state.mentor_type = 'Socratic Agent'
+        st.session_state.current_mode = 'Socratic Agent'
+        st.session_state.test_group = TestGroup.MENTOR
+        st.session_state.test_session_active = True
+        st.session_state.test_current_phase = 'Ideation'
+        if 'phase_session_id' not in st.session_state:
+            from datetime import datetime
+            st.session_state.phase_session_id = f"debug_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        st.success("✅ MENTOR group and Test Mode force-enabled!")
         st.rerun()
 
-    except Exception as e:
-        st.error(f"❌ Failed to advance phase: {e}")
 
-
-def end_test_session():
-    """End the current test session."""
-    try:
-        st.session_state.test_session_active = False
-        st.session_state.test_current_phase = "Ideation"
-
-        # Export session data
-        export_session_data()
-
-        st.success("✅ Test session ended and data exported!")
-        st.rerun()
-
-    except Exception as e:
-        st.error(f"❌ Failed to end test session: {e}")
+# REMOVED: Manual phase control functions
+# Phase progression is handled automatically by the phase progression system
+# Manual phase controls would interfere with research validity and data collection

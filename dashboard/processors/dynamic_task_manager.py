@@ -5,7 +5,7 @@ Implements task detection and progression based on test logic documents
 
 import re
 from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Set
 from enum import Enum
 from dataclasses import dataclass, field
 import streamlit as st
@@ -18,7 +18,8 @@ class TaskType(Enum):
     SPATIAL_PROGRAM = "spatial_program"  # Test 1.2
 
     # Test 2.x series - Visual Development
-    VISUAL_ANALYSIS_2D = "visual_analysis_2d"  # Test 2.1
+    VISUAL_CONCEPTUALIZATION = "visual_conceptualization"  # Test 2.0 - Conceptual visualization (no image required)
+    VISUAL_ANALYSIS_2D = "visual_analysis_2d"  # Test 2.1 - Image-based analysis
     ENVIRONMENTAL_CONTEXTUAL = "environmental_contextual"  # Test 2.2
 
     # Test 3.x series - 3D and Material Systems
@@ -32,10 +33,9 @@ class TaskType(Enum):
 
 @dataclass
 class ActiveTask:
-    """Represents an active dynamic task"""
+    """Represents an active dynamic task - PHASE COMPLETION BASED"""
     task_type: TaskType
     start_time: datetime
-    duration_minutes: int  # Keep for reference but don't use for expiration
     test_group: str  # MENTOR, GENERIC_AI, CONTROL
     current_phase: str  # ideation, visualization, materialization
     trigger_reason: str
@@ -50,15 +50,14 @@ class ActiveTask:
         return False  # Tasks are manually completed or completed by phase progression
 
     @property
-    def time_remaining(self) -> int:
-        """Deprecated - tasks are not time-based"""
-        return 0  # Always return 0 since we don't use time-based expiration
-
-    @property
     def phase_completion_range(self) -> str:
         """Get the phase completion range for this task"""
-        # This will be set by the task manager based on trigger conditions
         return self.progress_indicators.get("phase_completion_range", "Unknown")
+
+    @property
+    def triggered_at_completion(self) -> str:
+        """Get the phase completion percentage when this task was triggered"""
+        return self.progress_indicators.get("triggered_at_completion", "Unknown")
 
 
 class DynamicTaskManager:
@@ -68,47 +67,52 @@ class DynamicTaskManager:
         self.active_tasks: Dict[str, ActiveTask] = {}
         self.task_history: List[ActiveTask] = []
         self.task_triggers = self._initialize_task_triggers()
-        self.task_durations = self._initialize_task_durations()
+        # CRITICAL FIX: Track user's phase completion progression to detect threshold crossings
+        self.user_progression_history: Dict[str, float] = {}  # phase -> last_completion_percent
+        self.triggered_tasks_by_user: Set[TaskType] = set()  # Tasks user has actually seen
+        # REMOVED: self.task_durations - no longer using time-based durations
         
     def _initialize_task_triggers(self) -> Dict[TaskType, Dict[str, Any]]:
-        """Initialize task trigger conditions based on phase completion percentages"""
+        """Initialize task trigger conditions - PHASE COMPLETION BASED ONLY"""
         return {
             # Test 1.1: Architectural Concept Development - START OF IDEATION
             TaskType.ARCHITECTURAL_CONCEPT: {
-                "conversation_length": 1,  # Trigger after first exchange
-                "keywords": ["concept", "idea", "approach", "design", "community", "center", "warehouse"],
                 "phase_requirement": "ideation",
                 "trigger_once": True,
                 "phase_completion_min": 0.0,   # Trigger at start of ideation
                 "phase_completion_max": 15.0   # Don't trigger if ideation is already 15% complete
             },
 
-            # Test 1.2: Spatial Program Development - MID IDEATION (20-35% completion)
+            # Test 1.2: Spatial Program Development - MID IDEATION (20-80% completion)
             TaskType.SPATIAL_PROGRAM: {
-                "conversation_length": 2,
-                "keywords": ["space", "program", "function", "room", "area", "circulation", "spatial"],
                 "phase_requirement": "ideation",
                 "requires_previous": [TaskType.ARCHITECTURAL_CONCEPT],
                 "trigger_once": True,
-                "phase_completion_min": 20.0,  # Trigger when ideation is 20% complete
-                "phase_completion_max": 35.0   # Don't trigger if ideation is already 35% complete
+                "phase_completion_min": 48.0,  # Trigger when ideation is 25% complete
+                "phase_completion_max": 70.0   # EXTENDED WINDOW - allow retroactive triggering up to 80%
             },
 
-            # Test 2.1: 2D Design Development & Analysis - START OF VISUALIZATION
+            # Test 2.0: Visual Conceptualization - START OF VISUALIZATION (no image required)
+            TaskType.VISUAL_CONCEPTUALIZATION: {
+                "phase_requirement": "visualization",
+                "requires_previous": [TaskType.SPATIAL_PROGRAM],
+                "trigger_once": True,
+                "phase_completion_min": 0.0,   # Trigger immediately when visualization starts
+                "phase_completion_max": 25.0   # Trigger in first quarter of visualization
+            },
+
+            # Test 2.1: 2D Design Development & Analysis - IMAGE-BASED VISUALIZATION
             TaskType.VISUAL_ANALYSIS_2D: {
                 "image_upload": True,
                 "image_types": ["floor_plan", "elevation", "section", "sketch"],
                 "phase_requirement": "visualization",
                 "trigger_once": False,  # Can trigger multiple times
-                "conversation_length": 0,  # No conversation length requirement for image uploads
                 "phase_completion_min": 0.0,   # Trigger immediately when visualization starts
                 "phase_completion_max": 50.0   # Trigger in first half of visualization
             },
 
             # Test 2.2: Environmental & Contextual Integration - MID VISUALIZATION
             TaskType.ENVIRONMENTAL_CONTEXTUAL: {
-                "conversation_length": 3,
-                "keywords": ["environment", "context", "site", "climate", "surroundings", "integration"],
                 "phase_requirement": "visualization",
                 "trigger_once": True,
                 "phase_completion_min": 30.0,  # Trigger when visualization is 30% complete
@@ -117,8 +121,6 @@ class DynamicTaskManager:
 
             # Test 3.1: 3D Spatial Analysis & Material Systems - START OF MATERIALIZATION
             TaskType.SPATIAL_ANALYSIS_3D: {
-                "conversation_length": 1,
-                "keywords": ["material", "structure", "construction", "3d", "volume", "technical", "building"],
                 "phase_requirement": "materialization",
                 "trigger_once": True,
                 "phase_completion_min": 0.0,   # Trigger at start of materialization
@@ -127,8 +129,6 @@ class DynamicTaskManager:
 
             # Test 3.2: Realization & Implementation Strategy - MID MATERIALIZATION
             TaskType.REALIZATION_IMPLEMENTATION: {
-                "conversation_length": 2,
-                "keywords": ["implementation", "realization", "construction", "strategy", "execution", "build"],
                 "phase_requirement": "materialization",
                 "requires_previous": [TaskType.SPATIAL_ANALYSIS_3D],
                 "trigger_once": True,
@@ -138,8 +138,6 @@ class DynamicTaskManager:
 
             # Test 4.1: Design Evolution Analysis - LATE IN ANY PHASE (75%+ completion)
             TaskType.DESIGN_EVOLUTION: {
-                "conversation_length": 4,
-                "keywords": ["evolution", "change", "development", "progress", "journey", "reflection"],
                 "phase_requirement": None,  # Can trigger in any phase
                 "trigger_once": True,
                 "phase_completion_min": 75.0,  # Trigger when any phase is 75% complete
@@ -148,8 +146,6 @@ class DynamicTaskManager:
 
             # Test 4.2: Knowledge Transfer Challenge - VERY LATE IN ANY PHASE (85%+ completion)
             TaskType.KNOWLEDGE_TRANSFER: {
-                "conversation_length": 5,
-                "keywords": ["knowledge", "transfer", "learning", "teach", "explain", "share"],
                 "phase_requirement": None,  # Can trigger in any phase
                 "requires_previous": [TaskType.DESIGN_EVOLUTION],
                 "trigger_once": True,
@@ -158,57 +154,272 @@ class DynamicTaskManager:
             }
         }
     
-    def _initialize_task_durations(self) -> Dict[TaskType, int]:
-        """Initialize task durations based on test documents - FROM ACTUAL TEST DURATIONS"""
-        return {
-            TaskType.ARCHITECTURAL_CONCEPT: 15,         # Test 1.1: 15 minutes (from document)
-            TaskType.SPATIAL_PROGRAM: 10,              # Test 1.2: 10 minutes (from document)
-            TaskType.VISUAL_ANALYSIS_2D: 20,           # Test 2.1: 20 minutes (from document)
-            TaskType.ENVIRONMENTAL_CONTEXTUAL: 10,     # Test 2.2: 10 minutes (from document)
-            TaskType.SPATIAL_ANALYSIS_3D: 20,          # Test 3.1: 20 minutes (from document)
-            TaskType.REALIZATION_IMPLEMENTATION: 15,   # Test 3.2: 15 minutes (from document)
-            TaskType.DESIGN_EVOLUTION: 10,             # Test 4.1: 10 minutes (from document)
-            TaskType.KNOWLEDGE_TRANSFER: 15            # Test 4.2: 15 minutes (from document)
-        }
+    # REMOVED: _initialize_task_durations - no longer using time-based durations
+    # Tasks complete based on phase progression, not time limits
     
     def check_task_triggers(self, user_input: str, conversation_history: List[Dict],
                           current_phase: str, test_group: str,
                           image_uploaded: bool = False, image_analysis: Optional[Dict] = None,
                           phase_completion_percent: float = 0.0) -> Optional[TaskType]:
-        """Check if any subtasks should be triggered based on conversation state"""
-        
+        """Check if any subtasks should be triggered based on conversation state and threshold crossing"""
+
         # Clean up expired tasks first
         self._cleanup_expired_tasks()
-        
-        # Check each task type for trigger conditions
-        for task_type, conditions in self.task_triggers.items():
-            if self._should_trigger_task(task_type, conditions, user_input, conversation_history,
-                                       current_phase, test_group, image_uploaded, image_analysis, phase_completion_percent):
-                return task_type
+
+        # CRITICAL FIX: Update progression history and detect threshold crossings
+        last_completion = self.user_progression_history.get(current_phase, 0.0)
+        self.user_progression_history[current_phase] = phase_completion_percent
+
+        print(f"🎯 THRESHOLD_CHECK: {current_phase} phase: {last_completion:.1f}% → {phase_completion_percent:.1f}%")
+
+        # Check for threshold crossings and missed tasks
+        triggered_tasks = self._detect_threshold_crossings(
+            current_phase, last_completion, phase_completion_percent,
+            user_input, conversation_history, test_group, image_uploaded, image_analysis
+        )
+
+        if triggered_tasks:
+            # CRITICAL FIX: Return the most relevant task, not just the first one
+            # Priority: Current threshold tasks > Retroactive tasks
+            current_threshold_tasks = []
+            retroactive_tasks = []
+
+            for task in triggered_tasks:
+                conditions = self.task_triggers.get(task, {})
+                min_completion = conditions.get("phase_completion_min", 0.0)
+                max_completion = conditions.get("phase_completion_max", 100.0)
+
+                # Check if this is a current threshold task (within range)
+                if min_completion <= phase_completion_percent <= max_completion:
+                    current_threshold_tasks.append(task)
+                else:
+                    retroactive_tasks.append(task)
+
+            # Return current threshold task first, then retroactive
+            if current_threshold_tasks:
+                selected_task = current_threshold_tasks[0]
+                print(f"🎯 SELECTED: {selected_task.value} (current threshold task)")
+                return selected_task
+            elif retroactive_tasks:
+                selected_task = retroactive_tasks[0]
+                print(f"🎯 SELECTED: {selected_task.value} (retroactive task)")
+                return selected_task
 
         return None
+
+    def _is_task_allowed_for_group(self, task_type: TaskType, test_group: str) -> bool:
+        """Check if a task is allowed for the specified test group"""
+
+        # MENTOR mode: All 8 tasks allowed
+        mentor_tasks = {
+            TaskType.ARCHITECTURAL_CONCEPT,      # 1.1
+            TaskType.SPATIAL_PROGRAM,           # 1.2
+            TaskType.VISUAL_ANALYSIS_2D,        # 2.1
+            TaskType.ENVIRONMENTAL_CONTEXTUAL,   # 2.2
+            TaskType.SPATIAL_ANALYSIS_3D,       # 3.1
+            TaskType.REALIZATION_IMPLEMENTATION, # 3.2
+            TaskType.DESIGN_EVOLUTION,          # 4.1
+            TaskType.KNOWLEDGE_TRANSFER         # 4.2
+        }
+
+        # GENERIC_AI mode: Only 5 tasks allowed
+        generic_ai_tasks = {
+            TaskType.ARCHITECTURAL_CONCEPT,      # 1.1
+            TaskType.VISUAL_ANALYSIS_2D,        # 2.1
+            TaskType.SPATIAL_ANALYSIS_3D,       # 3.1
+            TaskType.DESIGN_EVOLUTION,          # 4.1
+            TaskType.KNOWLEDGE_TRANSFER         # 4.2
+        }
+
+        # CONTROL mode: Only 5 tasks allowed
+        control_tasks = {
+            TaskType.ARCHITECTURAL_CONCEPT,      # 1.1
+            TaskType.VISUAL_ANALYSIS_2D,        # 2.1
+            TaskType.SPATIAL_ANALYSIS_3D,       # 3.1
+            TaskType.DESIGN_EVOLUTION,          # 4.1
+            TaskType.KNOWLEDGE_TRANSFER         # 4.2
+        }
+
+        if test_group == "MENTOR":
+            return task_type in mentor_tasks
+        elif test_group == "GENERIC_AI":
+            return task_type in generic_ai_tasks
+        elif test_group == "CONTROL":
+            return task_type in control_tasks
+        else:
+            # Default to MENTOR tasks for unknown groups
+            return task_type in mentor_tasks
+
+    def _detect_threshold_crossings(self, current_phase: str, last_completion: float,
+                                   current_completion: float, user_input: str,
+                                   conversation_history: List[Dict], test_group: str,
+                                   image_uploaded: bool, image_analysis: Optional[Dict]) -> List[TaskType]:
+        """Detect tasks that should trigger based on threshold crossings"""
+
+        triggered_tasks = []
+
+        # Get all tasks for the current phase, sorted by trigger threshold
+        phase_tasks = []
+        for task_type, conditions in self.task_triggers.items():
+            if conditions.get("phase_requirement") == current_phase:
+                min_completion = conditions.get("phase_completion_min", 0.0)
+                phase_tasks.append((task_type, conditions, min_completion))
+
+        # Sort by trigger threshold (earliest tasks first)
+        phase_tasks.sort(key=lambda x: x[2])
+
+        print(f"🎯 CHECKING_CROSSINGS: Found {len(phase_tasks)} tasks for {current_phase} phase")
+
+        for task_type, conditions, min_completion in phase_tasks:
+            max_completion = conditions.get("phase_completion_max", 100.0)
+
+            # CRITICAL FIX: Check if threshold was crossed OR if we're in the trigger window
+            threshold_crossed = (
+                last_completion < min_completion <= current_completion or  # Crossed minimum threshold
+                (min_completion <= current_completion <= max_completion)   # Currently within trigger range
+            )
+
+            # Check if user has already seen this task
+            already_triggered = task_type in self.triggered_tasks_by_user
+            already_completed = any(task.task_type == task_type for task in self.task_history)
+            already_active = task_type.value in self.active_tasks
+
+            print(f"   🎯 {task_type.value}: {min_completion:.0f}-{max_completion:.0f}% | "
+                  f"Crossed: {threshold_crossed} | Seen: {already_triggered} | "
+                  f"Completed: {already_completed} | Active: {already_active}")
+
+            if threshold_crossed and not already_triggered and not already_completed and not already_active:
+                # Verify other conditions (prerequisites, image requirements, etc.)
+                if self._verify_task_conditions(task_type, conditions, user_input, conversation_history,
+                                              current_phase, test_group, image_uploaded, image_analysis):
+                    triggered_tasks.append(task_type)
+                    self.triggered_tasks_by_user.add(task_type)  # Mark as seen
+                    # CRITICAL FIX: Automatically mark task as completed to allow subsequent tasks
+                    self._auto_complete_task(task_type, f"Triggered at {current_completion:.1f}% completion")
+                    print(f"   ✅ THRESHOLD_CROSSED: {task_type.value} triggered at {current_completion:.1f}%")
+                else:
+                    print(f"   ❌ THRESHOLD_CROSSED but conditions not met: {task_type.value}")
+            elif current_completion >= min_completion and not already_triggered and not already_completed and not already_active:
+                # RETROACTIVE TRIGGERING: User exceeded threshold but never saw the task
+                if self._verify_task_conditions(task_type, conditions, user_input, conversation_history,
+                                              current_phase, test_group, image_uploaded, image_analysis):
+                    triggered_tasks.append(task_type)
+                    self.triggered_tasks_by_user.add(task_type)  # Mark as seen
+                    # CRITICAL FIX: Automatically mark task as completed to allow subsequent tasks
+                    self._auto_complete_task(task_type, f"Retroactive trigger at {current_completion:.1f}% completion")
+                    print(f"   ✅ RETROACTIVE_TRIGGER: {task_type.value} triggered at {current_completion:.1f}% (missed threshold)")
+
+        return triggered_tasks
+
+    def _verify_task_conditions(self, task_type: TaskType, conditions: Dict[str, Any],
+                               user_input: str, conversation_history: List[Dict],
+                               current_phase: str, test_group: str,
+                               image_uploaded: bool, image_analysis: Optional[Dict]) -> bool:
+        """Verify that task conditions (prerequisites, image requirements, etc.) are met"""
+
+        # Check prerequisite tasks (MANDATORY - must be completed first)
+        required_previous = conditions.get("requires_previous", [])
+        if required_previous:
+            completed_tasks = [task.task_type for task in self.task_history]
+            if not all(req_task in completed_tasks for req_task in required_previous):
+                print(f"      ❌ Prerequisites not met: {[req.value for req in required_previous]}")
+                return False
+
+        # Check image upload requirement (MANDATORY for image-based tasks)
+        if conditions.get("image_upload", False) and not image_uploaded:
+            print(f"      ❌ Image upload required but not provided")
+            return False
+
+        # Check image type requirement (MANDATORY for image-based tasks)
+        if image_uploaded and image_analysis:
+            required_types = conditions.get("image_types", [])
+            if required_types:
+                image_type = image_analysis.get("image_type", "unknown")
+                if image_type not in required_types:
+                    print(f"      ❌ Image type {image_type} not in required types: {required_types}")
+                    return False
+
+        return True
+
+    def check_phase_transition_tasks(self, from_phase: str, to_phase: str,
+                                   user_input: str, conversation_history: List[Dict],
+                                   test_group: str, image_uploaded: bool = False,
+                                   image_analysis: Optional[Dict] = None) -> List[TaskType]:
+        """Check for missed tasks during phase transitions and trigger new phase tasks"""
+
+        triggered_tasks = []
+
+        print(f"🔄 PHASE_TRANSITION: {from_phase} → {to_phase}")
+
+        # 1. Check for missed tasks in the previous phase (retroactive triggering)
+        if from_phase in self.user_progression_history:
+            final_completion = self.user_progression_history[from_phase]
+            print(f"   📊 Final {from_phase} completion: {final_completion:.1f}%")
+
+            # Find all tasks that should have triggered in the previous phase
+            for task_type, conditions in self.task_triggers.items():
+                if conditions.get("phase_requirement") == from_phase:
+                    min_completion = conditions.get("phase_completion_min", 0.0)
+                    max_completion = conditions.get("phase_completion_max", 100.0)
+
+                    # Check if user exceeded the trigger range but never saw the task
+                    already_triggered = task_type in self.triggered_tasks_by_user
+                    already_completed = any(task.task_type == task_type for task in self.task_history)
+
+                    if (final_completion >= min_completion and not already_triggered and not already_completed):
+                        if self._verify_task_conditions(task_type, conditions, user_input, conversation_history,
+                                                      from_phase, test_group, image_uploaded, image_analysis):
+                            triggered_tasks.append(task_type)
+                            self.triggered_tasks_by_user.add(task_type)
+                            print(f"   ✅ MISSED_TASK_RECOVERY: {task_type.value} from {from_phase} phase")
+
+        # 2. Check for tasks that should trigger at the start of the new phase
+        self.user_progression_history[to_phase] = 0.0  # Initialize new phase
+
+        for task_type, conditions in self.task_triggers.items():
+            if conditions.get("phase_requirement") == to_phase:
+                min_completion = conditions.get("phase_completion_min", 0.0)
+
+                # Trigger tasks that start at 0% of the new phase
+                if min_completion == 0.0:
+                    already_triggered = task_type in self.triggered_tasks_by_user
+                    already_completed = any(task.task_type == task_type for task in self.task_history)
+                    already_active = task_type.value in self.active_tasks
+
+                    if not already_triggered and not already_completed and not already_active:
+                        if self._verify_task_conditions(task_type, conditions, user_input, conversation_history,
+                                                      to_phase, test_group, image_uploaded, image_analysis):
+                            triggered_tasks.append(task_type)
+                            self.triggered_tasks_by_user.add(task_type)
+                            print(f"   ✅ NEW_PHASE_TASK: {task_type.value} for {to_phase} phase start")
+
+        return triggered_tasks
 
     def _should_trigger_task(self, task_type: TaskType, conditions: Dict[str, Any],
                            user_input: str, conversation_history: List[Dict],
                            current_phase: str, test_group: str,
                            image_uploaded: bool = False, image_analysis: Optional[Dict] = None,
                            phase_completion_percent: float = 0.0) -> bool:
-        """Check if specific task should be triggered"""
-        
+        """Check if specific task should be triggered - MODE-SPECIFIC TASK FILTERING"""
+
+        # CRITICAL: Check if task is allowed for this test group
+        if not self._is_task_allowed_for_group(task_type, test_group):
+            return False
+
         # Check if task is already active or completed
         if task_type.value in self.active_tasks:
             return False
-        
+
         if conditions.get("trigger_once", False):
             if any(task.task_type == task_type for task in self.task_history):
                 return False
-        
-        # Check phase requirement
+
+        # Check phase requirement (MANDATORY)
         phase_req = conditions.get("phase_requirement")
         if phase_req and current_phase != phase_req:
             return False
 
-        # Check phase completion requirement (ENHANCED WITH RANGES)
+        # Check phase completion requirement (PRIMARY TRIGGER CONDITION)
         min_completion = conditions.get("phase_completion_min", 0.0)
         max_completion = conditions.get("phase_completion_max", 100.0)
 
@@ -216,49 +427,47 @@ class DynamicTaskManager:
             return False
 
         if phase_completion_percent > max_completion:
-            return False
+            # Special case: If phase completion is very high (>80%) and this is a missed task,
+            # allow triggering to ensure users don't miss important tasks
+            if (phase_completion_percent > 80.0 and
+                task_type in [TaskType.SPATIAL_PROGRAM] and
+                not any(task.task_type == task_type for task in self.task_history)):
+                print(f"🎯 LATE_TRIGGER: Allowing {task_type.value} at {phase_completion_percent:.1f}% (missed task recovery)")
+            else:
+                return False
 
-        # Check conversation length requirement
-        min_length = conditions.get("conversation_length", 0)
-        if len(conversation_history) < min_length:
-            return False
-        
-        # Check image upload requirement
+        # CRITICAL CHANGE: Phase completion in range is sufficient for most tasks
+        # Only check additional conditions for special cases
+
+        # Check prerequisite tasks (MANDATORY - must be completed first)
+        required_previous = conditions.get("requires_previous", [])
+        if required_previous:
+            completed_tasks = [task.task_type for task in self.task_history]
+            if not all(req_task in completed_tasks for req_task in required_previous):
+                return False
+
+        # Check image upload requirement (MANDATORY for image-based tasks)
         if conditions.get("image_upload", False) and not image_uploaded:
             return False
-        
-        # Check image type requirement
+
+        # Check image type requirement (MANDATORY for image-based tasks)
         if image_uploaded and image_analysis:
             required_types = conditions.get("image_types", [])
             if required_types:
                 image_type = image_analysis.get("image_type", "unknown")
                 if image_type not in required_types:
                     return False
-        
-        # Check keyword requirements
-        keywords = conditions.get("keywords", [])
-        if keywords:
-            text_to_check = f"{user_input} {' '.join([msg.get('content', '') for msg in conversation_history[-3:]])}"
-            keyword_matches = sum(1 for keyword in keywords if keyword.lower() in text_to_check.lower())
-            if keyword_matches < 2:  # Require at least 2 keyword matches
-                return False
-        
-        # Check prerequisite tasks
-        required_previous = conditions.get("requires_previous", [])
-        if required_previous:
-            completed_tasks = [task.task_type for task in self.task_history]
-            if not all(req_task in completed_tasks for req_task in required_previous):
-                return False
-        
+
+        # PHASE COMPLETION OVERRIDE: If we reach here and phase completion is in range,
+        # trigger the task regardless of keywords or conversation length
+        print(f"🎯 TASK TRIGGER: {task_type.value} at {phase_completion_percent:.1f}% completion (range: {min_completion:.0f}-{max_completion:.0f}%)")
         return True
     
     def activate_task(self, task_type: TaskType, test_group: str, current_phase: str,
                      trigger_reason: str, task_data: Optional[Dict[str, Any]] = None,
                      phase_completion_percent: float = 0.0) -> ActiveTask:
-        """Activate a new dynamic task"""
-        
-        duration = self.task_durations.get(task_type, 15)
-        
+        """Activate a new dynamic task - PHASE COMPLETION BASED"""
+
         # Get phase completion range for this task
         task_conditions = self.task_triggers.get(task_type, {})
         min_completion = task_conditions.get("phase_completion_min", 0.0)
@@ -268,7 +477,6 @@ class DynamicTaskManager:
         task = ActiveTask(
             task_type=task_type,
             start_time=datetime.now(),
-            duration_minutes=duration,  # Keep for reference
             test_group=test_group,
             current_phase=current_phase,
             trigger_reason=trigger_reason,
@@ -282,9 +490,9 @@ class DynamicTaskManager:
         task.progress_indicators["triggered_at_completion"] = f"{phase_completion_percent:.1f}%"
         
         self.active_tasks[task_type.value] = task
-        
-        print(f"🎯 TASK_MANAGER: Activated {task_type.value} for {test_group} ({duration} min)")
-        
+
+        print(f"🎯 TASK_MANAGER: Activated {task_type.value} for {test_group} (phase completion: {phase_completion_percent:.1f}%)")
+
         return task
     
     def _get_completion_criteria(self, task_type: TaskType) -> List[str]:
@@ -320,17 +528,40 @@ class DynamicTaskManager:
     
     def complete_task(self, task_type: TaskType, completion_reason: str = "Natural completion"):
         """Mark a task as completed and move to history"""
-        
+
         if task_type.value in self.active_tasks:
             task = self.active_tasks[task_type.value]
             task.progress_indicators["completion_reason"] = completion_reason
             task.progress_indicators["completion_time"] = datetime.now().isoformat()
-            
+
             # Move to history
             self.task_history.append(task)
             del self.active_tasks[task_type.value]
-            
+
             print(f"✅ TASK_MANAGER: Completed {task_type.value} - {completion_reason}")
+
+    def _auto_complete_task(self, task_type: TaskType, completion_reason: str = "Auto-completed after trigger"):
+        """Automatically mark a task as completed to allow subsequent tasks to trigger"""
+        from datetime import datetime
+
+        # Create a mock completed task for the task history
+        # This allows subsequent tasks with prerequisites to trigger
+        mock_task = ActiveTask(
+            task_type=task_type,
+            start_time=datetime.now(),
+            test_group="AUTO",
+            current_phase="auto",
+            trigger_reason=completion_reason
+        )
+
+        mock_task.progress_indicators["completion_reason"] = completion_reason
+        mock_task.progress_indicators["completion_time"] = datetime.now().isoformat()
+        mock_task.progress_indicators["phase_completion_range"] = "auto"
+
+        # Add to history to satisfy prerequisite checks
+        self.task_history.append(mock_task)
+
+        print(f"🔄 TASK_MANAGER: Auto-completed {task_type.value} - {completion_reason}")
     
     def _cleanup_expired_tasks(self):
         """Remove expired tasks and move them to history"""
@@ -363,7 +594,8 @@ class DynamicTaskManager:
             "active_task_details": {
                 task_id: {
                     "type": task.task_type.value,
-                    "time_remaining": task.time_remaining,
+                    "phase_completion_range": task.phase_completion_range,
+                    "triggered_at_completion": task.triggered_at_completion,
                     "test_group": task.test_group,
                     "phase": task.current_phase
                 }

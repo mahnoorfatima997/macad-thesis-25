@@ -12,12 +12,13 @@ from datetime import datetime
 
 # Import advanced gamification systems
 try:
-    from .progress_tracking import progress_tracker
-    from .achievement_system import achievement_system
-    from .interactive_diagrams import interactive_diagrams
-    from .spatial_3d import spatial_3d
-    from .adaptive_difficulty import adaptive_difficulty
-    from .storytelling_framework import storytelling_framework
+    from .advanced_gamification_components.progress_tracking import progress_tracker
+    # ADVANCED GAMIFICATION FILES MOVED TO ANOTHER FOLDER AND DISABLED
+    # from .achievement_system import achievement_system
+    # from .interactive_diagrams import interactive_diagrams
+    # from .spatial_3d import spatial_3d
+    # from .adaptive_difficulty import adaptive_difficulty
+    # from .storytelling_framework import storytelling_framework
 except ImportError:
     # Fallback if advanced systems aren't available
     progress_tracker = None
