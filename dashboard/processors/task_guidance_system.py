@@ -87,26 +87,6 @@ class TaskGuidanceSystem:
                 ]
             },
 
-            TaskType.VISUAL_CONCEPTUALIZATION: {
-                "task_assignment": """**◉ TASK 2.0: Visual Conceptualization**
-
-**Your Assignment**: Begin translating your spatial program into visual concepts for your community center.
-
-**Consider**:
-• How will your architectural concept be expressed visually?
-• What are the key spatial relationships that need to be communicated?
-• How do you envision the transition from industrial warehouse to community space?
-• What visual strategies will help convey the community-centered nature of your design?
-
-**Duration**: 15 minutes""",
-                "socratic_questions": [
-                    "What visual language will best communicate your community-centered approach?",
-                    "How do you see the industrial character of the warehouse informing your visual expression?",
-                    "What aspects of your spatial program are most important to visualize first?",
-                    "How might different community members interpret your visual concepts?"
-                ]
-            },
-
             TaskType.VISUAL_ANALYSIS_2D: {
                 "task_assignment": """**◉ TASK 2.1: 2D Design Development & Analysis**
 
@@ -223,16 +203,16 @@ class TaskGuidanceSystem:
         }
     
     def _initialize_generic_ai_tasks(self) -> Dict[TaskType, Dict[str, Any]]:
-        """GENERIC AI GROUP: Direct information delivery and examples"""
+        """GENERIC AI GROUP: Direct information delivery and examples - 5 TASKS ONLY"""
         return {
             TaskType.ARCHITECTURAL_CONCEPT: {
-                "task_assignment": """**◉ TASK 1.1: Architectural Concept Development**
+                "task_assignment": """**◉ TASK 1.1: Architectural Concept Development with Design Move Tracking**
 
-**Your Assignment**: You are tasked with designing a community center for a diverse urban neighborhood of 15,000 residents. The site is a former industrial warehouse (150m x 80m x 12m height). 
+**Your Assignment**: You are tasked with designing a community center for a diverse urban neighborhood of 15,000 residents. The site is a former industrial warehouse (150m x 80m x 12m height).
 
-**Consider**: 
+**Consider**:
 • Community needs assessment and cultural sensitivity
-• Sustainability and adaptive reuse principles  
+• Sustainability and adaptive reuse principles
 • Flexible programming for diverse activities
 • Integration with existing urban fabric
 
@@ -244,51 +224,17 @@ class TaskGuidanceSystem:
                     "Cultural sensitivity approaches: community input sessions, local art integration, flexible spaces for diverse cultural practices."
                 ]
             },
-            
-            TaskType.SPATIAL_PROGRAM: {
-                "task_assignment": """**◉ TASK 1.2: Spatial Program Development**
 
-**Your Assignment**: Based on your community center concept, develop a detailed spatial program. 
+            TaskType.VISUAL_ANALYSIS_2D: {
+                "task_assignment": """**◉ TASK 2.1: Design Development with Multimodal Linkography**
 
-**Consider**: 
-• Circulation patterns and adjacency requirements
-• Flexibility needs and community input integration
-• Functional relationships between spaces
-• How spaces reflect community social patterns
-
-**Duration**: 10 minutes""",
-                "direct_information": [
-                    "Typical community center spatial program: Entry/lobby (10%), multipurpose hall (30%), meeting rooms (20%), kitchen/café (15%), support spaces (15%), circulation (10%).",
-                    "Adjacency principles: noisy activities (gym, events) separate from quiet (library, offices); kitchen adjacent to multipurpose hall; childcare with direct outdoor access.",
-                    "Circulation strategies: central spine with branches, ring circulation for flexibility, multiple entries for different user groups.",
-                    "Flexibility approaches: moveable partitions, multi-use furniture, adaptable lighting and AV systems."
-                ]
-            },
-
-            TaskType.VISUAL_CONCEPTUALIZATION: {
-                "task_assignment": """**◉ TASK 2.0: Visual Conceptualization**
-
-**Your Assignment**: Begin developing visual concepts for your community center design.
+**Your Assignment**: Transform your concept into visual representations through sketches and diagrams. Focus on spatial arrangements and visualization techniques.
 
 **Consider**:
 • Visual representation strategies for community spaces
 • Architectural drawing conventions and communication methods
 • Relationship between spatial program and visual expression
 • Community-centered design visualization approaches
-
-**Duration**: 15 minutes""",
-                "direct_information": [
-                    "Common visualization approaches: bubble diagrams for adjacencies, circulation diagrams, massing studies, perspective sketches.",
-                    "Architectural drawing types: floor plans (1:100-1:200), sections (1:100), elevations (1:100), axonometric projections.",
-                    "Community center visualization priorities: public spaces, circulation flow, indoor-outdoor connections, accessibility routes.",
-                    "Industrial conversion visualization: showing existing vs. new elements, material contrasts, scale transitions."
-                ]
-            },
-
-            TaskType.VISUAL_ANALYSIS_2D: {
-                "task_assignment": """**◉ TASK 2.1: 2D Design Development & Analysis**
-
-**Your Assignment**: Transform your community center concept into visual representations. Create spatial diagrams, section studies, or perspective sketches. Consider: circulation patterns, spatial relationships, and environmental systems.
 
 **Duration**: 20 minutes""",
                 "direct_information": [
@@ -299,24 +245,16 @@ class TaskGuidanceSystem:
                 ]
             },
 
-            TaskType.ENVIRONMENTAL_CONTEXTUAL: {
-                "task_assignment": """**◉ TASK 2.2: Environmental & Contextual Integration**
-
-**Your Assignment**: Integrate your community center design with environmental factors: natural lighting, ventilation, solar orientation, and urban context. Consider how the building responds to its surroundings.
-
-**Duration**: 10 minutes""",
-                "direct_information": [
-                    "Industrial window strategies: clerestory windows for even daylighting, operable windows for natural ventilation, light shelves to reduce glare.",
-                    "Urban context responses: match neighboring building heights, use complementary materials, respect street wall continuity, create transition zones.",
-                    "Environmental systems: passive solar heating, cross-ventilation through existing openings, thermal mass of concrete structure, green roof for stormwater.",
-                    "Site integration: permeable paving, native landscaping, outdoor gathering spaces, connections to public transit."
-                ]
-            },
-
             TaskType.SPATIAL_ANALYSIS_3D: {
-                "task_assignment": """**◉ TASK 3.1: 3D Spatial Analysis & Material Systems**
+                "task_assignment": """**◉ TASK 3.1: Technical Implementation with Construction Logic**
 
-**Your Assignment**: Develop detailed spatial model and material systems for your community center. Consider: 3D relationships, material selection for adaptive reuse, structural integration, and construction methodology.
+**Your Assignment**: Develop technical details and construction strategies for your community center. Focus on material selection, structural systems, and implementation methodology.
+
+**Consider**:
+• Material selection for adaptive reuse
+• Structural integration with existing warehouse
+• Construction methodology and phasing
+• Technical specifications and details
 
 **Duration**: 20 minutes""",
                 "direct_information": [
@@ -327,26 +265,52 @@ class TaskGuidanceSystem:
                 ]
             },
 
-            TaskType.REALIZATION_IMPLEMENTATION: {
-                "task_assignment": """**◉ TASK 3.2: Realization & Implementation Strategy**
+            TaskType.DESIGN_EVOLUTION: {
+                "task_assignment": """**◉ TASK 4.1: Design Evolution Analysis with Complete Move Network**
 
-**Your Assignment**: Develop a comprehensive implementation strategy for your community center, including: phased construction, community engagement process, funding strategies, and long-term stewardship plans.
+**Your Assignment**: Review your complete design process from initial concept through technical implementation. Analyze how your understanding evolved and what key insights shaped your decisions.
+
+**Consider**:
+• How your design thinking progressed through each phase
+• Key decision points and their rationale
+• Integration of technical and social considerations
+• Learning outcomes from the design process
+
+**Duration**: 10 minutes""",
+                "direct_information": [
+                    "Design evolution analysis: document initial assumptions vs. final decisions, identify critical turning points, trace concept development.",
+                    "Move network analysis: map connections between ideas, identify influential design moves, analyze decision-making patterns.",
+                    "Integration assessment: evaluate how technical, social, and cultural factors were balanced throughout the process.",
+                    "Learning documentation: articulate key insights, transferable principles, and areas for future development."
+                ]
+            },
+
+            TaskType.KNOWLEDGE_TRANSFER: {
+                "task_assignment": """**◉ TASK 4.2: Comparative Linkographic Analysis**
+
+**Your Assignment**: Compare your design approach with alternative methodologies and document patterns that could inform future projects.
+
+**Consider**:
+• Comparison with other design approaches
+• Pattern identification across design phases
+• Transferable insights and methodologies
+• Cross-group learning opportunities
 
 **Duration**: 15 minutes""",
                 "direct_information": [
-                    "Phasing strategies: Phase 1 (basic infrastructure), Phase 2 (core programs), Phase 3 (specialized spaces), Phase 4 (outdoor areas).",
-                    "Funding sources: municipal bonds, community development grants, corporate sponsorships, crowdfunding campaigns, in-kind donations.",
-                    "Community engagement: design charrettes, focus groups, cultural advisory committees, youth design workshops, elder interviews.",
-                    "Stewardship models: community management board, professional facility management, volunteer coordination, revenue-generating programs."
+                    "Comparative analysis methods: side-by-side process comparison, pattern identification, methodology evaluation.",
+                    "Design approach documentation: systematic vs. intuitive methods, AI-assisted vs. independent work, structured vs. exploratory processes.",
+                    "Pattern recognition: recurring themes, successful strategies, common challenges, effective solutions.",
+                    "Knowledge transfer strategies: principle extraction, case study development, methodology documentation, best practice identification."
                 ]
             }
         }
     
     def _initialize_control_tasks(self) -> Dict[TaskType, Dict[str, Any]]:
-        """CONTROL GROUP: Minimal prompts and self-direction"""
+        """CONTROL GROUP: Minimal prompts and self-direction - 5 TASKS ONLY"""
         return {
             TaskType.ARCHITECTURAL_CONCEPT: {
-                "task_assignment": """**◉ TASK 1.1: Architectural Concept Development**
+                "task_assignment": """**◉ TASK 1.1: Self-Directed Architectural Concept Development with Natural Move Tracking**
 
 **Your Assignment**: You are tasked with designing a community center for a diverse urban neighborhood of 15,000 residents. The site is a former industrial warehouse (150m x 80m x 12m height). Consider: community needs, cultural sensitivity, sustainability, and adaptive reuse principles.
 
@@ -355,74 +319,62 @@ class TaskGuidanceSystem:
 **Duration**: 15 minutes""",
                 "minimal_prompt": "Continue developing your community center concept. Document your thinking process and design decisions as you work through the challenge."
             },
-            
-            TaskType.SPATIAL_PROGRAM: {
-                "task_assignment": """**◉ TASK 1.2: Spatial Program Development**
-
-**Your Assignment**: Based on your community center concept, develop a detailed spatial program. Consider: circulation patterns, adjacency requirements, flexibility needs, and community input integration.
-
-**Duration**: 10 minutes""",
-                "minimal_prompt": "Proceed with developing your spatial program. Consider the relationships between different spaces and how they support community activities."
-            },
-
-            TaskType.VISUAL_CONCEPTUALIZATION: {
-                "task_assignment": """**◉ TASK 2.0: Visual Conceptualization**
-
-**Your Assignment**: Begin developing visual concepts for your community center design. Consider how to translate your spatial program into visual form.
-
-**Duration**: 15 minutes""",
-                "minimal_prompt": "Proceed with visual conceptualization. Consider how your spatial program can be expressed visually."
-            },
 
             TaskType.VISUAL_ANALYSIS_2D: {
-                "task_assignment": """**◉ TASK 2.1: 2D Design Development & Analysis**
+                "task_assignment": """**◉ TASK 2.1: Self-Directed Design Development with Natural Multimodal Linkography**
 
-**Your Assignment**: Transform your community center concept into visual representations. Create spatial diagrams, section studies, or perspective sketches. Consider: circulation patterns, spatial relationships, and environmental systems. Work at your own pace using the available tools.
+**Your Assignment**: Transform your concept into visual representations through independent work. Create spatial diagrams, section studies, or perspective sketches. Work at your own pace using the available tools.
+
+**Consider**:
+• Circulation patterns and spatial relationships
+• Environmental systems and site integration
+• Visual communication of your design ideas
+• Independent development of design solutions
 
 **Duration**: 20 minutes""",
                 "minimal_prompt": "Continue with your visual design development. Use sketches, diagrams, or written descriptions to develop your spatial ideas."
             },
 
-            TaskType.ENVIRONMENTAL_CONTEXTUAL: {
-                "task_assignment": """**◉ TASK 2.2: Environmental & Contextual Integration**
-
-**Your Assignment**: Integrate your community center design with environmental factors: natural lighting, ventilation, solar orientation, and urban context. Consider how the building responds to its surroundings.
-
-**Duration**: 10 minutes""",
-                "minimal_prompt": "Proceed with environmental and contextual integration. Consider how your design responds to site conditions and neighborhood context."
-            },
-
             TaskType.SPATIAL_ANALYSIS_3D: {
-                "task_assignment": """**◉ TASK 3.1: 3D Spatial Analysis & Material Systems**
+                "task_assignment": """**◉ TASK 3.1: Autonomous Technical Implementation with Independent Construction Logic**
 
-**Your Assignment**: Develop detailed spatial model and material systems for your community center. Consider: 3D relationships, material selection for adaptive reuse, structural integration, and construction methodology.
+**Your Assignment**: Develop technical details and construction strategies for your community center through independent work. Focus on material selection, structural systems, and implementation methodology.
+
+**Consider**:
+• 3D relationships and material selection for adaptive reuse
+• Structural integration with existing warehouse
+• Construction methodology and phasing
+• Self-directed technical problem solving
 
 **Duration**: 20 minutes""",
                 "minimal_prompt": "Work on the three-dimensional and material aspects of your design. Consider how materials and structure support your concept."
             },
 
-            TaskType.REALIZATION_IMPLEMENTATION: {
-                "task_assignment": """**◉ TASK 3.2: Realization & Implementation Strategy**
-
-**Your Assignment**: Develop a comprehensive implementation strategy for your community center, including: phased construction, community engagement process, funding strategies, and long-term stewardship plans.
-
-**Duration**: 15 minutes""",
-                "minimal_prompt": "Develop your implementation strategy. Consider practical aspects of realizing your design and engaging the community."
-            },
-
             TaskType.DESIGN_EVOLUTION: {
-                "task_assignment": """**◉ TASK 4.1: Design Evolution Analysis**
+                "task_assignment": """**◉ TASK 4.1: Self-Directed Design Evolution Analysis with Natural Move Networks**
 
-**Your Assignment**: Review your complete design process from initial concept through implementation strategy. Consider how your understanding evolved and what key insights shaped your decisions.
+**Your Assignment**: Review your complete design process from initial concept through technical implementation through independent reflection. Consider how your understanding evolved and what key insights shaped your decisions.
+
+**Consider**:
+• How your design thinking progressed through each phase
+• Key decision points and their rationale
+• Self-directed learning and problem-solving approaches
+• Natural cognitive development patterns
 
 **Duration**: 10 minutes""",
                 "minimal_prompt": "Reflect on your design process and how your ideas have developed. Document your key insights and decisions."
             },
 
             TaskType.KNOWLEDGE_TRANSFER: {
-                "task_assignment": """**◉ TASK 4.2: Knowledge Transfer Challenge**
+                "task_assignment": """**◉ TASK 4.2: Independent Pattern Documentation**
 
-**Your Assignment**: Articulate your design knowledge and insights for transfer to others. Consider what you learned about adaptive reuse, community engagement, and design methodology.
+**Your Assignment**: Document your design approach and insights through self-assessment and natural pattern recognition. Focus on what you learned through independent work.
+
+**Consider**:
+• Self-assessment of design methodology
+• Natural pattern recognition in your process
+• Independent learning outcomes
+• Knowledge valuable for future projects
 
 **Duration**: 15 minutes""",
                 "minimal_prompt": "Document your learning outcomes and insights. Consider what knowledge would be valuable to share with other designers."

@@ -39,6 +39,7 @@ def build_workflow(state_cls, handlers, route_decision_fn):
             "balanced_guidance": "analysis_agent",
             "knowledge_only": "domain_expert",
             "socratic_focus": "analysis_agent",
+            "error": "synthesizer",  # CRITICAL FIX: Handle error route
             "default": "analysis_agent",
         },
     )

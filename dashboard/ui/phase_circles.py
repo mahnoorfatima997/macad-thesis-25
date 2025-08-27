@@ -47,13 +47,12 @@ def render_phase_circles(phase_system, session_id: str) -> None:
 
     # Create three columns for the circles
     col1, col2, col3 = st.columns(3)
-
     with col1:
         _render_single_phase_circle(
             phase_name="Ideation",
             percentage=ideation_percent,
             is_active=(active_phase == 'ideation'),
-            color="#3498db"  # Blue
+            color='#dcc188'  # Yellow
         )
 
     with col2:
@@ -61,7 +60,7 @@ def render_phase_circles(phase_system, session_id: str) -> None:
             phase_name="Visualization",
             percentage=visualization_percent,
             is_active=(active_phase == 'visualization'),
-            color="#2ecc71"  # Green
+            color='#cf436f' #Pink
         )
 
     with col3:
@@ -69,7 +68,7 @@ def render_phase_circles(phase_system, session_id: str) -> None:
             phase_name="Materialization",
             percentage=materialization_percent,
             is_active=(active_phase == 'materialization'),
-            color="#e74c3c"  # Red
+            color='#784c80'  # Purple
         )
 
 

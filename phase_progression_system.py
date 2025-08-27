@@ -1598,7 +1598,8 @@ class PhaseProgressionSystem:
             "phase_progress": {
                 "completed_steps": [step.value for step in current_phase_progress.completed_steps],
                 "average_score": current_phase_progress.average_score,
-                "is_complete": current_phase_progress.is_complete
+                "is_complete": current_phase_progress.is_complete,
+                "completion_percent": current_phase_progress.completion_percent  # CRITICAL FIX: Include completion percentage
             },
             "next_question": next_question.question_text if next_question else None,
             "phase_complete": current_phase_progress.is_complete,
@@ -1947,10 +1948,11 @@ class PhaseProgressionSystem:
         print(f"   🧮 CALCULATION: (50% × {engagement_ratio:.2f}) + (30% × {quality_ratio:.2f}) + (15% × {concept_ratio:.2f}) + (5% × {visual_ratio:.2f})")
         print(f"   🧮 CALCULATION: {0.50 * engagement_ratio:.2f} + {0.30 * quality_ratio:.2f} + {0.15 * concept_ratio:.2f} + {0.05 * visual_ratio:.2f} = {percent/100:.2f}")
 
-        # Special case: If all 4 core steps are completed, ensure high completion
-        if len(phase_progress.completed_steps) >= 4 and current_phase_interactions >= 3:
-            percent = max(percent, 85.0)
-            print(f"   🎯 ALL STEPS BONUS: 4 steps completed, minimum 85%")
+        # CRITICAL FIX: Remove forced completion jump - let natural progression work
+        # This was causing abnormal jumps from 52% to 85% and breaking task trigger windows
+        # if len(phase_progress.completed_steps) >= 4 and current_phase_interactions >= 3:
+        #     percent = max(percent, 85.0)
+        #     print(f"   🎯 ALL STEPS BONUS: 4 steps completed, minimum 85%")
 
         # Clamp to [0, 100]
         percent = max(0.0, min(100.0, percent))
@@ -2055,9 +2057,15 @@ class PhaseProgressionSystem:
 
         if has_meaningful_engagement and has_sufficient_quality and has_good_completion and has_core_concepts:
             phase_progress.is_complete = True
-            phase_progress.completion_percent = 100.0  # Ensure completed phases show 100%
-            print(f"   🎉 PHASE MARKED COMPLETE! 🎨 IMAGE GENERATION WILL BE TRIGGERED!")
-            print(f"   📈 COMPLETION SET TO 100%")
+            # CRITICAL FIX: Don't force 100% - preserve natural progression for task triggering
+            # Only set to 100% if already very high (>90%) to avoid breaking task trigger windows
+            if phase_progress.completion_percent < 90.0:
+                phase_progress.completion_percent = min(95.0, phase_progress.completion_percent + 10.0)
+                print(f"   🎉 PHASE MARKED COMPLETE! Completion adjusted to {phase_progress.completion_percent:.1f}% (preserving task trigger windows)")
+            else:
+                phase_progress.completion_percent = 100.0
+                print(f"   🎉 PHASE MARKED COMPLETE! 🎨 IMAGE GENERATION WILL BE TRIGGERED!")
+                print(f"   📈 COMPLETION SET TO 100%")
             self._advance_to_next_phase(session)
     
     def _advance_to_next_phase(self, session: SessionState):

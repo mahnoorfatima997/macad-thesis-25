@@ -216,26 +216,9 @@ class ModeProcessor:
                     image_analysis = analysis.get('detailed_analysis', {})
                     break
 
-        # Get phase completion percentage from session state
-        phase_completion_percent = 0.0
-        try:
-            # Try to get phase completion from phase progression system
-            if hasattr(st.session_state, 'phase_session_id') and st.session_state.phase_session_id:
-                # Import phase progression system
-                import sys
-                import os
-                sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-                from phase_progression_system import PhaseProgressionSystem
-
-                phase_system = PhaseProgressionSystem()
-                session = phase_system.sessions.get(st.session_state.phase_session_id)
-                if session and session.current_phase:
-                    current_progress = session.phase_progress.get(session.current_phase)
-                    if current_progress:
-                        phase_completion_percent = current_progress.completion_percent
-                        print(f"🎯 TASK_TRIGGER: Phase completion: {phase_completion_percent:.1f}%")
-        except Exception as e:
-            print(f"⚠️ Could not get phase completion: {e}")
+        # CRITICAL FIX: Get phase completion from dashboard (updated after phase processing)
+        phase_completion_percent = st.session_state.get('current_phase_completion', 0.0)
+        print(f"🎯 TASK_TRIGGER: Using updated phase completion: {phase_completion_percent:.1f}%")
 
         # TASK SYSTEM: Only process tasks if in Test Mode and task system is initialized
         triggered_task = None
@@ -329,28 +312,66 @@ class ModeProcessor:
             pass
 
         elif test_group == TestGroup.GENERIC_AI:
-            # Generic AI mode: Timer-based or interaction-count-based transitions
-            phase_interaction_limits = {
-                'Ideation': 4,  # 4 interactions before moving to visualization
-                'Visualization': 4,  # 4 interactions before moving to materialization
-                'Materialization': 6  # 6 interactions before completion
-            }
-
-            limit = phase_interaction_limits.get(current_phase, 999)
-            if interaction_count >= limit:
-                self._advance_phase_automatically()
+            # GENERIC_AI mode: MANUAL phase progression via UI buttons
+            # No automatic transitions - user controls when to advance
+            pass
 
         elif test_group == TestGroup.CONTROL:
-            # Control mode: Similar to Generic AI but with different thresholds
-            phase_interaction_limits = {
-                'Ideation': 5,  # Slightly more interactions since no AI guidance
-                'Visualization': 5,
-                'Materialization': 7
-            }
+            # CONTROL mode: MANUAL phase progression via UI buttons
+            # No automatic transitions - user controls when to advance
+            pass
 
-            limit = phase_interaction_limits.get(current_phase, 999)
-            if interaction_count >= limit:
-                self._advance_phase_automatically()
+    def advance_phase_manually(self, reason: str = "Manual advancement"):
+        """Manually advance to the next phase (for GENERIC_AI and CONTROL modes)"""
+
+        current_phase = st.session_state.get('test_current_phase', 'Ideation')
+
+        phase_progression = {
+            'Ideation': 'Visualization',
+            'Visualization': 'Materialization',
+            'Materialization': 'Complete'
+        }
+
+        next_phase = phase_progression.get(current_phase, 'Complete')
+
+        if next_phase != 'Complete':
+            st.session_state.test_current_phase = next_phase
+            print(f"🔄 MANUAL_PHASE: Advanced from {current_phase} to {next_phase} ({reason})")
+
+            # Log phase transition if data collector is available
+            if self.data_collector and hasattr(self.data_collector, 'log_phase_transition'):
+                self.data_collector.log_phase_transition(
+                    from_phase=current_phase.lower(),
+                    to_phase=next_phase.lower(),
+                    trigger_reason=f"manual_{reason}"
+                )
+
+            # Handle phase transition with proper task checking
+            test_group = st.session_state.get('test_group', TestGroup.MENTOR).name
+            self._handle_phase_transition(
+                from_phase=current_phase.lower(),
+                to_phase=next_phase.lower(),
+                test_group=test_group,
+                user_input=f"Manual phase transition to {next_phase}: {reason}"
+            )
+
+            # Add a system message about phase transition
+            phase_transition_message = f"**Phase Transition**: Moving from {current_phase} to {next_phase} phase. ({reason})"
+
+            if 'messages' not in st.session_state:
+                st.session_state.messages = []
+
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": phase_transition_message,
+                "timestamp": datetime.now().isoformat(),
+                "phase_transition": True
+            })
+
+            # Trigger rerun to update UI
+            st.rerun()
+        else:
+            print(f"🏁 MANUAL_PHASE: Already at final phase ({current_phase})")
 
     def _advance_phase_automatically(self):
         """Automatically advance to the next phase"""
@@ -954,16 +975,16 @@ class ModeProcessor:
         return response
 
     async def _process_generic_ai_mode(self, user_input: str) -> str:
-        """Process using generic AI."""
+        """Process using Generic AI mode - Direct assistance without scaffolding"""
         # Ensure session is initialized
         if not st.session_state.session_id:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        # Use test dashboard's generic AI mode
-        if not self.test_dashboard:
-            return "Generic AI mode is not available."
-        
-        response = self.test_dashboard.generic_ai_env.process_input(user_input)
+
+        # Get current phase for context
+        current_phase = st.session_state.get('test_current_phase', 'Ideation').lower()
+
+        # Use actual Generic AI logic from thesis_tests
+        response = await self._get_generic_ai_response(user_input, current_phase)
         
         # Log interaction
         try:
@@ -1005,19 +1026,102 @@ class ModeProcessor:
             print(f"Warning: Could not log interaction: {e}")
         
         return response
-    
+
+    async def _get_generic_ai_response(self, user_input: str, phase: str) -> str:
+        """Get direct AI response using GPT-4 (from thesis_tests/generic_ai_environment.py)"""
+        try:
+            # Import OpenAI
+            import openai
+
+            # Get API key
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                return self._get_generic_ai_fallback_response(user_input, phase)
+
+            # Initialize client
+            client = openai.OpenAI(api_key=api_key)
+
+            # Create system prompt based on phase
+            system_prompt = self._create_generic_ai_system_prompt(phase)
+
+            # Get response from OpenAI
+            response = client.chat.completions.create(
+                model="gpt-4-turbo-preview",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_input}
+                ],
+                temperature=0.7,
+                max_tokens=500
+            )
+
+            return response.choices[0].message.content
+
+        except Exception as e:
+            print(f"Generic AI API error: {e}")
+            return self._get_generic_ai_fallback_response(user_input, phase)
+
+    def _create_generic_ai_system_prompt(self, phase: str) -> str:
+        """Create system prompt for Generic AI based on phase"""
+        base_prompt = """You are a helpful AI assistant providing direct, specific guidance for architectural design.
+        Provide concrete suggestions, examples, and recommendations. Be informative and comprehensive."""
+
+        phase_context = {
+            "ideation": """
+            The user is in the ideation phase, developing initial concepts for a
+            community center in a former industrial warehouse. Provide specific
+            ideas, examples, and suggestions to help them develop their concept.
+            """,
+            "visualization": """
+            The user is visualizing their design through sketches and diagrams.
+            Help with spatial arrangements, visualization techniques, and specific
+            layout suggestions.
+            """,
+            "materialization": """
+            The user is developing technical details and construction strategies.
+            Provide specific material recommendations, structural solutions, and
+            technical specifications.
+            """
+        }
+
+        return base_prompt + phase_context.get(phase, "")
+
+    def _get_generic_ai_fallback_response(self, user_input: str, phase: str) -> str:
+        """Fallback responses when API is not available"""
+        fallback_responses = {
+            "ideation": [
+                "For community center design, consider flexible spaces that can accommodate multiple activities. Think about how different age groups will use the space.",
+                "Industrial warehouses offer great opportunities for adaptive reuse. The high ceilings and open floor plates are perfect for community gathering spaces.",
+                "Consider the cultural diversity of your neighborhood. How can the design reflect and celebrate different community traditions?"
+            ],
+            "visualization": [
+                "Try creating bubble diagrams to show relationships between different spaces. This will help you understand circulation patterns.",
+                "Section drawings are particularly useful for warehouse conversions - they show how you can use the vertical space effectively.",
+                "Consider drawing sight lines to understand how people will move through and experience the space."
+            ],
+            "materialization": [
+                "For warehouse conversions, consider exposing the existing steel structure as a design feature while adding warm materials like wood for comfort.",
+                "Think about acoustic separation between active and quiet spaces. Sound-absorbing materials will be important in a large open space.",
+                "Sustainable strategies might include natural ventilation through existing windows and adding insulation to improve energy performance."
+            ]
+        }
+
+        import random
+        responses = fallback_responses.get(phase, fallback_responses["ideation"])
+        return random.choice(responses)
+
     async def _process_control_mode(self, user_input: str) -> str:
-        """Process using control mode (no AI)."""
+        """Process using Control mode - No AI assistance, minimal self-directed prompts"""
         # Ensure session is initialized
         if not st.session_state.session_id:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        # Use test dashboard's control mode
-        if not self.test_dashboard:
-            return "Control mode is not available."
-        
-        response = self.test_dashboard.control_env.process_input(user_input)
-        
+
+        # Get current phase for context
+        current_phase = st.session_state.get('test_current_phase', 'Ideation').lower()
+
+        # Use actual Control logic from thesis_tests - minimal guidance only
+        response = self._get_control_response(user_input, current_phase)
+
         # Log interaction
         try:
             interaction = InteractionData(
@@ -1056,8 +1160,53 @@ class ModeProcessor:
                 )
         except Exception as e:
             print(f"Warning: Could not log interaction: {e}")
-        
+
         return response
+
+    def _get_control_response(self, user_input: str, phase: str) -> str:
+        """Get minimal control response (from thesis_tests/control_environment.py)"""
+        # Control mode provides minimal, non-directive prompts
+        # Based on the actual thesis_tests implementation
+
+        # Acknowledge input and provide minimal continuation prompt
+        acknowledgments = [
+            "Continue working on your design.",
+            "Proceed with your development.",
+            "Keep developing your ideas.",
+            "Continue with your approach.",
+            "Proceed as you see fit."
+        ]
+
+        # Phase-specific minimal prompts
+        phase_prompts = {
+            "ideation": [
+                "Consider your design concept further.",
+                "Think about your approach to the community center.",
+                "Develop your initial ideas.",
+                "Continue conceptualizing your design."
+            ],
+            "visualization": [
+                "Work on visualizing your design.",
+                "Continue developing your visual representations.",
+                "Proceed with your design visualization.",
+                "Keep working on your spatial arrangements."
+            ],
+            "materialization": [
+                "Continue with your technical development.",
+                "Work on the implementation aspects.",
+                "Proceed with your material considerations.",
+                "Continue developing your construction approach."
+            ]
+        }
+
+        import random
+
+        # Combine acknowledgment with phase-specific prompt
+        acknowledgment = random.choice(acknowledgments)
+        phase_prompt = random.choice(phase_prompts.get(phase, phase_prompts["ideation"]))
+
+        # Very minimal response - just acknowledgment and continuation
+        return f"{acknowledgment} {phase_prompt}"
 
     def _extract_design_moves(self, user_input: str, response: str, test_phase: TestPhase) -> Dict[str, Any]:
         """Extract design moves for linkography analysis based on test logic documents"""
