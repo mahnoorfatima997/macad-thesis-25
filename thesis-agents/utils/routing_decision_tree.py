@@ -202,11 +202,11 @@ class AdvancedRoutingDecisionTree:
                 r"i'm curious about", r"i want to dive deeper", r"how might i",
                 r"what if i", r"i'm working on understanding", r"help me think through",
                 r"i'm trying to figure out", r"i'm wondering about",
-                # Added former design_problem patterns - these are design exploration, not problems
-                r"i'm stuck", r"having trouble", r"not sure how",
-                r"difficulty with", r"challenge with", r"issue with",
-                r"struggling with", r"can't figure out", r"don't know how",
-                r"layout.*problem", r"spatial.*problem", r"design.*challenge"
+                # ISSUE 1 FIX: More specific design exploration patterns (not specific problems)
+                r"i'm stuck.*understanding", r"having trouble.*understanding", r"not sure how.*works",
+                r"difficulty.*understanding", r"challenge.*understanding", r"issue.*understanding",
+                r"struggling.*understanding", r"can't figure out.*concept", r"don't know how.*works",
+                r"layout.*exploration", r"spatial.*exploration", r"design.*exploration"
             ],
             "creative_exploration": [
                 r"what if", r"imagine", r"suppose",
@@ -222,7 +222,11 @@ class AdvancedRoutingDecisionTree:
                 r"what else can i", r"what else should i", r"what else could i",
                 r"what other", r"what more", r"additional", r"further",
                 r"would like to focus", r"need more help", r"help.*about",
-                r"best approach", r"best way", r"approach.*to"
+                r"best approach", r"best way", r"approach.*to",
+                # ISSUE 1 FIX: Add patterns for specific problems that need solutions
+                r"challenge.*i'm facing", r"challenge.*facing", r"problem.*i'm facing",
+                r"issue.*i'm facing", r"difficulty.*i'm facing", r"struggling.*with.*how to",
+                r"the challenge.*is.*how to", r"my challenge.*is", r"facing.*is.*how to"
             ],
 
             # Feedback and evaluation
@@ -296,7 +300,14 @@ class AdvancedRoutingDecisionTree:
                 r"this is the best", r"my.*is.*best", r"optimal", r"ideal", r"flawless",
                 r"this is the", r"this will", r"my design is",
                 r"just.*randomly", r"doesn't matter", r"any.*will work",
-                r"i will just", r"i'll just", r"simply", r"easy"
+                r"i will just", r"i'll just", r"simply", r"easy",
+                # ADDED: Enhanced patterns for dismissive overconfidence
+                r"my.*approach.*is.*great", r"my.*is.*great", r"approach.*is.*great",
+                r"nothing.*need.*to.*be.*done", r"nothing.*needs.*to.*be.*done",
+                r"nothing.*to.*improve", r"no.*need.*to.*improve", r"don't.*need.*to.*improve",
+                r"already.*perfect", r"already.*good.*enough", r"good.*enough.*as.*is",
+                r"no.*changes.*needed", r"no.*improvements.*needed", r"fine.*as.*it.*is",
+                r"think.*my.*.*is.*great.*and", r"my.*.*is.*great.*and.*nothing"
             ],
 
             # Conversation management
@@ -483,9 +494,9 @@ class AdvancedRoutingDecisionTree:
                 "agents": ["context_agent", "domain_expert", "socratic_tutor", "cognitive_enhancement"]
             },
 
-            # COGNITIVE CHALLENGE ROUTES
+            # COGNITIVE CHALLENGE ROUTES - CRITICAL: High priority for overconfidence detection
             "overconfident_statement": {
-                "priority": 12,
+                "priority": 4.5,  # FIXED: Higher priority to catch overconfident statements before other routes
                 "route": RouteType.COGNITIVE_CHALLENGE,
                 "conditions": ["user_intent == 'overconfident_statement'"],
                 "description": "Overconfident statement - reality check challenge",
@@ -833,9 +844,13 @@ class AdvancedRoutingDecisionTree:
             # Use context agent's interaction_type as user_intent if available
             interaction_type = classification.get("interaction_type", "")
             user_input = classification.get("user_input", "")
+            original_user_intent = classification.get("user_intent", "")
 
             if interaction_type and interaction_type != "unknown":
                 user_intent = interaction_type
+            elif original_user_intent and original_user_intent not in ["unknown", ""]:
+                # FIXED: Preserve original user_intent if it was already correctly classified
+                user_intent = original_user_intent
             else:
                 # Fallback to pattern-based classification
                 user_intent = self.classify_user_intent(user_input, context)
@@ -910,8 +925,9 @@ class AdvancedRoutingDecisionTree:
             # GAMIFICATION: Check for intelligent triggers but RESPECT higher priority routes
             gamification_triggers = cognitive_offloading.get("gamification_triggers", [])
             if gamification_triggers:
-                # CRITICAL FIX: Don't override confusion_expression or other high-priority intents
-                if user_intent not in ["confusion_expression", "example_request"]:
+                # CRITICAL FIX: Don't override confusion_expression, example_request, or knowledge_request
+                high_priority_intents = ["confusion_expression", "example_request", "knowledge_request", "cognitive_offloading"]
+                if user_intent not in high_priority_intents:
                     # Apply gamification-enhanced routing
                     enhanced_route = self._apply_gamification_routing(gamification_triggers, enhanced_classification, context)
                     if enhanced_route:
@@ -994,13 +1010,25 @@ class AdvancedRoutingDecisionTree:
             
         except Exception as e:
             logger.error(f"Error in advanced routing decision: {e}")
-            return RoutingDecision(
-                route=RouteType.ERROR,
-                reason=f"Routing error: {str(e)}",
-                confidence=0.0,
-                rule_applied="error",
-                classification=classification  # Now guaranteed to be defined
-            )
+            # CRITICAL FIX: For task-related messages, provide fallback routing instead of error
+            user_input = classification.get('user_input', '').lower()
+            if any(word in user_input for word in ['task', 'subtask', 'guidance', 'architectural concept', 'spatial program']):
+                logger.info("Task-related message detected, using balanced_guidance fallback")
+                return RoutingDecision(
+                    route=RouteType.BALANCED_GUIDANCE,
+                    reason=f"Task message fallback routing (original error: {str(e)})",
+                    confidence=0.7,
+                    rule_applied="task_fallback",
+                    classification=classification
+                )
+            else:
+                return RoutingDecision(
+                    route=RouteType.ERROR,
+                    reason=f"Routing error: {str(e)}",
+                    confidence=0.0,
+                    rule_applied="error",
+                    classification=classification  # Now guaranteed to be defined
+                )
     
     def _evaluate_rule(self, rule: Dict[str, Any], classification: Dict[str, Any], context: RoutingContext) -> bool:
         """Evaluate if a rule applies"""
@@ -1221,6 +1249,41 @@ class AdvancedRoutingDecisionTree:
         triggers = []
         message_lower = message.lower().strip()
 
+        # CRITICAL FIX: Check for design exploration patterns FIRST to prevent gamification
+        design_exploration_indicators = [
+            # Planning and approach statements
+            'i am thinking about', 'i\'m thinking about', 'thinking about',
+            'considering', 'exploring', 'approach this', 'how should i',
+            'what would be the best', 'how might i', 'i would like to',
+            'i want to', 'first focus on', 'focus on', 'starting with',
+            # Design process language
+            'design approach', 'design strategy', 'design process',
+            'spatial organization', 'layout design', 'space planning',
+            'user flow', 'circulation', 'organize spaces', 'planning',
+            # Program and functional language
+            'program elements', 'program requirements', 'functional requirements',
+            'spaces for the', 'provide right program', 'right program elements',
+            'community needs', 'user needs', 'building requirements',
+            # Specific architectural elements (not transformation)
+            'within the building', 'in the building', 'building layout',
+            'interior spaces', 'spatial arrangement', 'space organization',
+            # CRITICAL FIX: Add descriptive design concept patterns
+            'parents can watch', 'children playing', 'playground nooks',
+            'central spaces', 'visually engaging', 'different activities',
+            'spaces where', 'areas where', 'zones where', 'places where',
+            'can watch', 'can see', 'can observe', 'visual connection',
+            'sightlines', 'sight lines', 'visual access', 'supervision',
+            # CRITICAL FIX: Add user experience design questions (architectural, not gamification)
+            'experience these', 'experience the', 'feel welcoming', 'feel accessible',
+            'accessible to', 'welcoming to', 'workshop classrooms', 'classroom',
+            'same layout', 'layout can', 'truly feel', 'different groups',
+            'elderly visitor', 'child experience', 'user groups', 'age groups'
+        ]
+
+        if any(indicator in message_lower for indicator in design_exploration_indicators):
+            print(f"🎮 ROUTING_SKIP: Design exploration detected - no gamification triggers")
+            return []  # Return empty list to prevent gamification
+
         # 1. ROLE-PLAY TRIGGERS - Same patterns as challenge_generator.py
         role_play_patterns = [
             'how would a visitor feel', 'how would', 'what would', 'from the perspective of',
@@ -1318,8 +1381,24 @@ class AdvancedRoutingDecisionTree:
     def _apply_gamification_routing(self, triggers: List[str], classification: Dict[str, Any], context: RoutingContext) -> RouteType | None:
         """Apply gamification-enhanced routing based on detected triggers."""
 
-        # Priority-based trigger routing with enhanced interactivity - REDUCED SOCRATIC OVERRIDE
+        # Priority-based trigger routing with enhanced interactivity - FIXED: Check if gamification is allowed
         for trigger in triggers:
+            # CRITICAL FIX: Check if gamification is actually allowed before routing to cognitive challenge
+            gamification_triggers = [
+                "low_engagement_challenge", "reality_check_challenge", "creative_constraint_challenge",
+                "comparison_challenge", "perspective_shift_challenge"
+            ]
+
+            if trigger in gamification_triggers:
+                # Check if gamification should be applied by looking at context
+                # CRITICAL FIX: context is a RoutingContext object, not a dict
+                gamification_allowed = getattr(context, 'gamification_allowed', True)
+                if hasattr(context, 'classification') and context.classification:
+                    gamification_allowed = context.classification.get("gamification_allowed", True)
+                if not gamification_allowed:
+                    print(f"🎮 ROUTING FIX: {trigger} detected but gamification not allowed - routing to socratic_exploration")
+                    return RouteType.SOCRATIC_EXPLORATION
+
             if trigger == "low_engagement_challenge":
                 return RouteType.COGNITIVE_CHALLENGE
             elif trigger == "reality_check_challenge":

@@ -81,9 +81,18 @@ def render_system_status():
     st.markdown("### System Status")
     st.info("**Vision**: GPT Vision Available")
     st.info("**Agents**: Multi-Agent System Ready")
-    
+
     # Routing metadata toggle
     st.checkbox("Show route/agents meta in replies", key="show_routing_meta")
+
+def render_system_status_simplified():
+    """Render simplified system status for test mode."""
+    st.markdown("### System Status")
+    st.info("**Research System**: Ready")
+
+    # Routing metadata toggle (for research purposes)
+    st.checkbox("Show routing metadata", key="show_routing_meta",
+                help="Display technical routing information for research analysis")
 
 
 def render_current_session_status():
@@ -120,10 +129,124 @@ def render_session_management(data_collector=None):
         st.success("Data collector reset!")
         st.rerun()
     
-    # Export data button
-    if st.button("💾 Export Data"):
-        export_session_data(data_collector)
+    # Export data button - ONLY in Test Mode
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+    if dashboard_mode == "Test Mode":
+        if st.button("💾 Export Data"):
+            export_session_data(data_collector)
+    else:
+        st.info("📊 Export functionality is only available in Test Mode for research data collection.")
 
+
+def render_mode_selection():
+    """Render mode selection - Test Mode vs Flexible Mode."""
+
+    st.markdown("### Dashboard Mode")
+
+    mode_options = {
+        "Test Mode": "🔬 Research testing with fixed community center challenge",
+        "Flexible Mode": "⚙️ Original mentor.py with templates and flexible options"
+    }
+
+    selected_mode = st.selectbox(
+        "Select Mode:",
+        list(mode_options.keys()),
+        format_func=lambda x: mode_options[x],
+        help="Choose between research test mode or flexible mentor mode"
+    )
+
+    # Update session state
+    st.session_state.dashboard_mode = selected_mode
+
+    return selected_mode
+
+def render_test_mode_primary():
+    """Render test mode as the primary interface."""
+
+    # Test group selection (replaces mentor type)
+    st.markdown("### Test Group Assignment")
+
+    test_group_options = {
+        "MENTOR": "Mentor - Multi-agent scaffolding system",
+        "GENERIC_AI": "Generic AI - Direct AI assistance",
+        "CONTROL": "No AI - Self-directed design work"
+    }
+
+    selected_test_group = st.selectbox(
+        "Test Condition:",
+        list(test_group_options.keys()),
+        format_func=lambda x: test_group_options[x],
+        help="Select the experimental condition for this session"
+    )
+
+    # Map test group to mentor type for compatibility
+    mentor_type_mapping = {
+        "MENTOR": "Socratic Agent",
+        "GENERIC_AI": "Raw GPT",
+        "CONTROL": "No AI"
+    }
+
+    # Update session state
+    st.session_state.test_group_selection = selected_test_group
+    st.session_state.mentor_type = mentor_type_mapping[selected_test_group]
+    st.session_state.current_mode = mentor_type_mapping[selected_test_group]
+
+    # CRITICAL: Also set test_group for task system compatibility
+    from thesis_tests.data_models import TestGroup
+    test_group_enum_mapping = {
+        "MENTOR": TestGroup.MENTOR,
+        "GENERIC_AI": TestGroup.GENERIC_AI,
+        "CONTROL": TestGroup.CONTROL
+    }
+    st.session_state.test_group = test_group_enum_mapping[selected_test_group]
+
+    # Test session status
+    if st.session_state.get('test_session_active', False):
+        participant_id = st.session_state.get('participant_id', 'unified_user')
+        st.success(f"**Active Test Session**")
+        st.write(f"Participant: {participant_id}")
+        st.write(f"Condition: {test_group_options[selected_test_group]}")
+
+        # Phase information
+        current_phase = st.session_state.get('test_current_phase', 'Ideation')
+        st.write(f"Phase: {current_phase}")
+
+        # REMOVED: Duplicate phase control buttons
+        # Phase progression is handled automatically by the phase progression system
+        # Manual phase controls would interfere with research validity
+    else:
+        # Start test session
+        if st.button("Start Test Session", type="primary"):
+            initialize_test_session()
+
+    # DEBUG: Task System Status
+    debug_task_system_status()
+
+    return selected_test_group
+
+def render_flexible_mode_options():
+    """Render flexible mode options (original mentor.py functionality)."""
+
+    st.markdown("### Flexible Mode Options")
+
+    # Import here to avoid circular imports
+    from dashboard.config.settings import MENTOR_TYPES
+
+    # Original mentor type selection
+    mentor_type = st.selectbox(
+        "Mentor Type:",
+        MENTOR_TYPES,
+        index=0,
+        help="Mentor: Multi-agent system that challenges and guides thinking\n"
+             "Generic AI: Direct GPT responses for comparison\n"
+             "No AI: Hardcoded questions only, no AI assistance (control group)"
+    )
+
+    # Update session state
+    st.session_state.mentor_type = mentor_type
+    st.session_state.current_mode = mentor_type
+
+    return mentor_type
 
 def render_pretest_section():
     """Render pre-test visibility toggle in the sidebar."""
@@ -140,7 +263,14 @@ def render_pretest_section():
 
 
 def export_session_data(data_collector=None):
-    """Export session data functionality with enhanced research metrics."""
+    """Export session data functionality with enhanced research metrics - ONLY in Test Mode."""
+
+    # MODE RESTRICTION: Only allow export in Test Mode
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+    if dashboard_mode != "Test Mode":
+        st.error("🚫 Export functionality is only available in Test Mode for research data collection.")
+        return
+
     if not st.session_state.get('messages', []):
         st.warning("No data to export")
         return
@@ -247,32 +377,161 @@ def export_session_data(data_collector=None):
 
 
 def render_complete_sidebar(data_collector=None) -> str:
-    """Render the complete sidebar with all components."""
+    """Render the complete sidebar with mode selection."""
     with st.sidebar:
-        st.header("⚙️ Configuration")
-        
+        # Mode selection first
+        selected_mode = render_mode_selection()
+
+        st.markdown("---")
+
+        # Render appropriate mode interface
+        if selected_mode == "Test Mode":
+            render_test_mode_primary()
+        else:  # Flexible Mode
+            render_flexible_mode_options()
+
+        st.markdown("---")
+        st.subheader("⚙️ System Configuration")
+
+        # Pre-test section (available in both modes)
+        render_pretest_section()
+
         # API Key status
         render_api_status()
 
         # Dropbox status
         render_dropbox_status()
 
-        # Pre-test section (placed near top)
-        render_pretest_section()
-        
         # Participant info
         render_participant_info()
-        
+
         # Session info
         render_session_info()
-        
-        # System status
-        render_system_status()
-        
-        # Current session status
-        render_current_session_status()
-        
+
+        # System status (simplified)
+        render_system_status_simplified()
+
         # Session management
         render_session_management(data_collector)
-        
-    return "Main"  # Single-flow: no page selector 
+
+        # Dynamic task status (if in test mode)
+        dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+        if dashboard_mode == "Test Mode" and data_collector:
+            try:
+                # Get mode processor from session state if available
+                mode_processor = st.session_state.get('mode_processor')
+                if mode_processor and hasattr(mode_processor, 'render_active_tasks_ui'):
+                    mode_processor.render_active_tasks_ui()
+            except Exception as e:
+                print(f"⚠️ Error rendering task UI: {e}")
+
+    return "Main"  # Single-flow: no page selector
+
+
+def initialize_test_session():
+    """Initialize a new test session."""
+    try:
+        # Set test session as active
+        st.session_state.test_session_active = True
+        st.session_state.test_current_phase = "Ideation"
+        st.session_state.test_session_start = datetime.now()
+
+        # Clear previous messages to start fresh
+        st.session_state.messages = []
+
+        # Initialize phase system for test mode
+        if 'phase_session_id' not in st.session_state:
+            st.session_state.phase_session_id = f"test_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        st.success("✅ Test session initialized!")
+        st.rerun()
+
+    except Exception as e:
+        st.error(f"❌ Failed to initialize test session: {e}")
+
+
+def debug_task_system_status():
+    """Debug function to check task system status in the sidebar"""
+
+    st.markdown("---")
+    st.markdown("### 🔍 DEBUG: Task System Status")
+
+    # Check 1: Dashboard Mode
+    dashboard_mode = st.session_state.get('dashboard_mode', 'NOT_SET')
+    test_mode_active = (dashboard_mode == "Test Mode")
+
+    st.write(f"**Dashboard Mode**: {dashboard_mode}")
+    st.write(f"**Test Mode Active**: {'✅' if test_mode_active else '❌'}")
+
+    # Check 2: Test Group Settings
+    test_group = st.session_state.get('test_group', 'NOT_SET')
+    test_group_selection = st.session_state.get('test_group_selection', 'NOT_SET')
+    mentor_type = st.session_state.get('mentor_type', 'NOT_SET')
+    current_mode = st.session_state.get('current_mode', 'NOT_SET')
+
+    st.write(f"**test_group**: {test_group}")
+    st.write(f"**test_group_selection**: {test_group_selection}")
+    st.write(f"**mentor_type**: {mentor_type}")
+    st.write(f"**current_mode**: {current_mode}")
+
+    # Check 3: Test Session Status
+    test_session_active = st.session_state.get('test_session_active', False)
+    test_current_phase = st.session_state.get('test_current_phase', 'NOT_SET')
+    phase_session_id = st.session_state.get('phase_session_id', 'NOT_SET')
+
+    st.write(f"**test_session_active**: {'✅' if test_session_active else '❌'}")
+    st.write(f"**test_current_phase**: {test_current_phase}")
+    st.write(f"**phase_session_id**: {phase_session_id}")
+
+    # Check 4: Messages and Interaction Count
+    messages = st.session_state.get('messages', [])
+    message_count = len(messages)
+
+    st.write(f"**Message Count**: {message_count}")
+
+    # Check 5: Task System Readiness
+    task_system_ready = (
+        test_mode_active and
+        test_group != 'NOT_SET' and
+        test_group is not None and
+        test_session_active
+    )
+
+    st.write(f"**Task System Ready**: {'✅' if task_system_ready else '❌'}")
+
+    # Summary
+    if task_system_ready:
+        st.success("✅ Task system should be working!")
+        if message_count == 0:
+            st.info("💡 Start a conversation to trigger tasks")
+    else:
+        st.error("❌ Task system not ready")
+
+        # Specific recommendations
+        if not test_mode_active:
+            st.warning("🔧 Set Dashboard Mode to 'Test Mode'")
+        if test_group == 'NOT_SET' or test_group is None:
+            st.warning("🔧 Select a test group (MENTOR/GENERIC_AI/CONTROL)")
+        if not test_session_active:
+            st.warning("🔧 Click 'Start Test Session' button")
+
+    # Quick Fix Button
+    if st.button("🔧 Quick Fix: Force Set MENTOR Group"):
+        from thesis_tests.data_models import TestGroup
+        st.session_state.dashboard_mode = 'Test Mode'
+        st.session_state.test_group_selection = 'MENTOR'
+        st.session_state.mentor_type = 'Socratic Agent'
+        st.session_state.current_mode = 'Socratic Agent'
+        st.session_state.test_group = TestGroup.MENTOR
+        st.session_state.test_session_active = True
+        st.session_state.test_current_phase = 'Ideation'
+        if 'phase_session_id' not in st.session_state:
+            from datetime import datetime
+            st.session_state.phase_session_id = f"debug_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        st.success("✅ MENTOR group and Test Mode force-enabled!")
+        st.rerun()
+
+
+# REMOVED: Manual phase control functions
+# Phase progression is handled automatically by the phase progression system
+# Manual phase controls would interfere with research validity and data collection

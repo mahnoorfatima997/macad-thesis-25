@@ -1,0 +1,2 @@
+never assume and always make sure you have the right information from the codebase.
+api keys are in .env file, use if you really need it.

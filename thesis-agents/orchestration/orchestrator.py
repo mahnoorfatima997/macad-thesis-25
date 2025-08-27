@@ -147,6 +147,8 @@ class LangGraphOrchestrator:
             building_type_confidence=continuity_context.get("building_type_confidence", 0.0),
             design_phase_detected=continuity_context.get("design_phase_detected", ""),
             phase_confidence=continuity_context.get("phase_confidence", 0.0),
+            # CRITICAL FIX: Extract is_first_message from classification
+            is_first_message=classification.get("is_first_message", False),
         )
 
         decision = self.routing_decision_tree.decide_route(routing_context)
@@ -335,6 +337,10 @@ class LangGraphOrchestrator:
         # Intervention routes
         elif routing_path == "cognitive_intervention":
             return self._synthesize_cognitive_intervention_response(agent_results)
+
+        # Error handling route
+        elif routing_path == "error":
+            return self._synthesize_error_response(agent_results, user_input, classification)
 
         # Legacy route handling for backward compatibility
         elif routing_path == "technical_question":
@@ -814,6 +820,41 @@ class LangGraphOrchestrator:
             fallback_response = "Synthesis:\n- Insight: I'd be happy to help you explore this topic\n- Direction: What specific aspect would you like to focus on?\n- Watch: Consider how your design decisions will impact the user experience"
             return fallback_response, "balanced_guidance"
 
+    def _synthesize_error_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
+        """Handle error routing gracefully"""
+        try:
+            # Try to provide a helpful response despite the error
+            error_response = "I apologize, but I encountered a technical issue while processing your request. Let me try to help you with your design question.\n\n"
+
+            # Try to extract any available agent responses
+            domain_result = agent_results.get("domain", {})
+            socratic_result = agent_results.get("socratic", {})
+
+            if hasattr(domain_result, 'to_dict'):
+                domain_result = domain_result.to_dict()
+            if hasattr(socratic_result, 'to_dict'):
+                socratic_result = socratic_result.to_dict()
+
+            # If we have any agent responses, use them
+            if domain_result and domain_result.get('response_text'):
+                error_response += domain_result.get('response_text', '')
+            elif socratic_result and socratic_result.get('response_text'):
+                error_response += socratic_result.get('response_text', '')
+            else:
+                # Provide a generic helpful response based on the user input
+                if any(word in user_input.lower() for word in ['circulation', 'flow', 'movement']):
+                    error_response += "Regarding circulation design, consider how people will move through your space naturally. Think about main pathways, secondary routes, and how different user groups might navigate the building."
+                elif any(word in user_input.lower() for word in ['layout', 'organization', 'space']):
+                    error_response += "For spatial organization, consider the relationships between different functions, adjacency requirements, and how spaces can support the activities they're designed for."
+                else:
+                    error_response += "I'd be happy to help you explore your design question. Could you provide more details about what specific aspect you'd like to focus on?"
+
+            return error_response, "error"
+
+        except Exception as e:
+            # Ultimate fallback
+            return "I apologize, but I'm experiencing technical difficulties. Please try rephrasing your question, and I'll do my best to help.", "error"
+
     # ------------- Metadata helpers (ported minimally) -------------
 
     def _build_metadata(self, response_type: str, agent_results: Dict[str, Any], routing_decision: Dict, classification: Dict, state: WorkflowState = None) -> Dict[str, Any]:
@@ -892,9 +933,10 @@ class LangGraphOrchestrator:
                     current_phase_progress = phase_progress.get(current_phase_name, {})
                     completion_percent = current_phase_progress.get("completion_percent", 0.0)
 
-                    print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
-                    print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
-                    print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
+                    # DEBUG: PRINT REMOVED
+                    #print(f"🔍 ORCHESTRATOR DEBUG: Phase progress data: {phase_progress}")
+                    #print(f"🔍 ORCHESTRATOR DEBUG: Current phase progress: {current_phase_progress}")
+                    #print(f"🔍 ORCHESTRATOR DEBUG: Completion percent: {completion_percent}")
 
                     # Estimate step based on completion
                     if completion_percent < 25:
@@ -995,17 +1037,18 @@ class LangGraphOrchestrator:
             if hasattr(cognitive_result, 'metadata') and cognitive_result.metadata:
                 if 'gamification_display' in cognitive_result.metadata:
                     gamification_metadata = cognitive_result.metadata['gamification_display']
-                    print(f"🎮 ORCHESTRATOR: Found gamification metadata from AgentResponse: {gamification_metadata}")
+                    
+                    #print(f"🎮 ORCHESTRATOR: Found gamification metadata from AgentResponse: {gamification_metadata}")
             # If it's a dict, use the old method
             elif isinstance(cognitive_result, dict) and cognitive_result.get("metadata", {}).get("gamification_display"):
                 gamification_metadata = cognitive_result.get("metadata", {}).get("gamification_display", {})
-                print(f"🎮 ORCHESTRATOR: Found gamification metadata from dict: {gamification_metadata}")
+                #print(f"🎮 ORCHESTRATOR: Found gamification metadata from dict: {gamification_metadata}")
 
         # Also check routing decision for gamification triggers
         detailed_routing = routing_decision.get("detailed_routing_decision", {}) or state.get("detailed_routing_decision", {}) if state else {}
         gamification_triggers = detailed_routing.get("metadata", {}).get("gamification_triggers", [])
         if gamification_triggers:
-            print(f"🎮 ORCHESTRATOR: Found gamification triggers: {gamification_triggers}")
+            #print(f"🎮 ORCHESTRATOR: Found gamification triggers: {gamification_triggers}")
             if not gamification_metadata:
                 # Create gamification metadata from triggers
                 gamification_metadata = {

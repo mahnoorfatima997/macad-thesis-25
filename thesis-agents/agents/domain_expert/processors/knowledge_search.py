@@ -656,11 +656,24 @@ class KnowledgeSearchProcessor:
             arch_count = sum(1 for term in arch_terms if term in title or term in snippet)
             score += arch_count * 0.1
             
-            # Source reliability
-            reliable_sources = ['.edu', 'wikipedia', 'archdaily', 'dezeen', 'architectural']
+            # ENHANCED: Source reliability with comprehensive authoritative sources
             url = result.get('url', '').lower()
-            if any(source in url for source in reliable_sources):
+
+            # Tier 3: Wikipedia and other reference sources (check first to avoid .org conflict)
+            if any(source in url for source in ['wikipedia', 'britannica', 'jstor']):
                 score += 0.2
+
+            # Tier 1: Academic and government sources (highest priority)
+            elif any(source in url for source in ['.edu', '.gov', 'mit.edu', 'harvard.edu', 'stanford.edu',
+                           'cambridge.org', 'oxford.edu', 'unesco.org', 'aia.org', 'riba.org']):
+                score += 0.4
+
+            # Tier 2: Professional organizations and established publications
+            elif any(source in url for source in [
+                'archdaily', 'dezeen', 'architectural', 'architecturalreview', 'metropolismag',
+                'archinet', 'worldarchitecture', 'e-architect', 'inhabitat', 'designboom'
+            ]):
+                score += 0.3
             
             return min(score, 1.0)
             

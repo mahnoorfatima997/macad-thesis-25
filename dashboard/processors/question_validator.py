@@ -37,7 +37,14 @@ class QuestionValidator:
             'roof', 'foundation', 'lighting', 'ventilation', 'sustainability',
             'zoning', 'code', 'accessibility', 'circulation', 'layout', 'scale',
             'proportion', 'context', 'environment', 'landscape', 'urban', 'residential',
-            'commercial', 'institutional', 'industrial', 'renovation', 'adaptive'
+            'commercial', 'institutional', 'industrial', 'renovation', 'adaptive',
+            # Additional keywords from user messages
+            'warehouse', 'hall', 'flexible', 'studios', 'lounges', 'workshop', 'spaces',
+            'entrance', 'entrances', 'outdoor', 'courtyards', 'green', 'pockets',
+            'thresholds', 'interior', 'exterior', 'gathering', 'community', 'connectors',
+            'access', 'points', 'welcoming', 'safe', 'active', 'span', 'central',
+            'edges', 'rooms', 'spill', 'connected', 'scales', 'activity', 'areas',
+            'porous', 'sealed', 'gateways', 'events', 'inside', 'explore', 'carved'
         ]
         
         # Friendly redirection messages
@@ -95,15 +102,19 @@ class QuestionValidator:
                 }
         
         # Check if it's obviously architecture-related
-        architecture_score = sum(1 for keyword in self.architecture_keywords 
-                                if keyword in input_lower)
-        
+        found_keywords = [keyword for keyword in self.architecture_keywords
+                         if keyword in input_lower]
+        architecture_score = len(found_keywords)
+
+        print(f"🔍 KEYWORD CHECK: Found {architecture_score} architecture keywords: {found_keywords[:5]}")
+
         if architecture_score >= 2:
+            print(f"✅ QUICK VALIDATION: Passed with {architecture_score} keywords")
             return {
                 'is_appropriate': True,
                 'is_on_topic': True,
                 'confidence': 0.8,
-                'reason': 'Contains multiple architecture-related keywords',
+                'reason': f'Contains {architecture_score} architecture-related keywords: {", ".join(found_keywords[:3])}',
                 'suggested_response': None
             }
         
@@ -167,7 +178,10 @@ Respond with a JSON object:
     "educational_potential": "high/medium/low/none"
 }}
 
-Be generous with architecture-related questions, even if they're creative or unconventional. Only flag as inappropriate if clearly problematic.
+Be VERY generous with architecture-related questions, even if they're creative, unconventional, or use non-standard terminology.
+Architecture includes: building design, spatial planning, urban design, interior design, landscape architecture, construction, materials, sustainability, community spaces, adaptive reuse, and any discussion of built environments.
+Only flag as inappropriate if clearly harmful, illegal, or completely unrelated to any aspect of the built environment.
+Default to APPROPRIATE and ON-TOPIC unless there's a clear reason not to.
 """
 
             response = self.client.chat.completions.create(
@@ -178,21 +192,27 @@ Be generous with architecture-related questions, even if they're creative or unc
             )
             
             result_text = response.choices[0].message.content.strip()
-            
+            print(f"🤖 LLM VALIDATION RESPONSE: {result_text}")
+
             # Parse JSON response
             import json
             try:
                 result = json.loads(result_text)
             except json.JSONDecodeError:
+                print(f"⚠️ JSON parsing failed, using fallback")
                 # Fallback parsing if JSON is malformed
                 result = self._parse_validation_fallback(result_text)
-            
+
+            print(f"🔍 LLM VALIDATION RESULT: {result}")
+
             # Add suggested response if inappropriate or off-topic
             if not result.get('is_appropriate', True) or not result.get('is_on_topic', True):
+                print(f"🚫 LLM flagged as inappropriate/off-topic")
                 result['suggested_response'] = self._get_random_redirection()
             else:
+                print(f"✅ LLM approved as appropriate and on-topic")
                 result['suggested_response'] = None
-                
+
             return result
             
         except Exception as e:
@@ -207,17 +227,24 @@ Be generous with architecture-related questions, even if they're creative or unc
             }
     
     def _parse_validation_fallback(self, text: str) -> Dict[str, Any]:
-        """Fallback parsing if JSON parsing fails."""
+        """Fallback parsing if JSON parsing fails - defaults to permissive."""
         text_lower = text.lower()
-        
-        is_appropriate = 'true' in text_lower and 'is_appropriate' in text_lower
-        is_on_topic = 'true' in text_lower and 'is_on_topic' in text_lower
-        
+
+        # Look for explicit negative indicators
+        is_inappropriate = any(word in text_lower for word in ['inappropriate', 'harmful', 'illegal', 'false'])
+        is_off_topic = 'off-topic' in text_lower or 'unrelated' in text_lower
+
+        # Default to appropriate and on-topic unless explicitly flagged
+        is_appropriate = not is_inappropriate
+        is_on_topic = not is_off_topic
+
+        print(f"🔄 FALLBACK PARSING: appropriate={is_appropriate}, on_topic={is_on_topic}")
+
         return {
             'is_appropriate': is_appropriate,
             'is_on_topic': is_on_topic,
             'confidence': 0.6,
-            'reason': 'Fallback parsing used',
+            'reason': 'Fallback parsing used - defaulting to permissive',
             'educational_potential': 'medium'
         }
     

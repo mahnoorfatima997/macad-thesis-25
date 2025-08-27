@@ -28,7 +28,9 @@ from dashboard.ui.chat_components import (
 from dashboard.ui.sidebar_components import render_complete_sidebar
 from dashboard.ui.analysis_components import render_cognitive_analysis_dashboard, render_metrics_summary, render_phase_progress_section
 from dashboard.ui.phase_circles import render_phase_circles, render_phase_metrics
+from dashboard.ui.manual_phase_controls import render_manual_phase_controls, render_phase_completion_indicator, should_show_manual_controls
 from dashboard.processors.mode_processors import ModeProcessor
+from dashboard.processors.dynamic_task_manager import DynamicTaskManager
 from dashboard.analysis.phase_analyzer import PhaseAnalyzer
 from dashboard.core.image_database import ImageDatabase
 
@@ -36,13 +38,19 @@ from dashboard.core.image_database import ImageDatabase
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from phase_progression_system import PhaseProgressionSystem
 from thesis_tests.test_dashboard import TestDashboard
-from thesis_tests.data_models import InteractionData, TestPhase
+from thesis_tests.data_models import InteractionData, TestPhase, TestGroup
+
+# Test mode components now integrated into sidebar_components.py
 
 
-# Configure Streamlit (must be first Streamlit command)
-st.set_page_config(**PAGE_CONFIG)
+# Page config moved to mentor.py to avoid multiple calls
 
 # Cached resources
+@st.cache_resource
+def get_cached_task_manager():
+    """Get cached task manager instance."""
+    return DynamicTaskManager()
+
 @st.cache_resource
 def get_cached_orchestrator():
     """Get cached orchestrator instance."""
@@ -114,14 +122,26 @@ class UnifiedArchitecturalDashboard:
         # Image database
         self.image_database = ImageDatabase()
         
-        # Data collector: store once in session
+        # Data collector: store once in session with enhanced test integration
         if 'data_collector' not in st.session_state:
             # Import InteractionLogger from the correct location
             import sys
             import os
             sys.path.append(os.path.join(os.path.dirname(__file__), '../thesis-agents'))
             from data_collection.interaction_logger import InteractionLogger
-            st.session_state.data_collector = InteractionLogger(session_id="unified_dashboard_session")
+
+            # Get test group and participant info from session state
+            test_group = st.session_state.get('test_group', 'MENTOR')
+            if hasattr(test_group, 'value'):
+                test_group = test_group.value
+            participant_id = st.session_state.get('participant_id', 'unified_user')
+            session_id = st.session_state.get('session_id', 'unified_dashboard_session')
+
+            st.session_state.data_collector = InteractionLogger(
+                session_id=session_id,
+                test_group=test_group,
+                participant_id=participant_id
+            )
         self.data_collector = st.session_state.data_collector
         
         # Test dashboard lazy load (spacy heavy)
@@ -136,20 +156,22 @@ class UnifiedArchitecturalDashboard:
             test_dashboard=self.test_dashboard,
             image_database=self.image_database
         )
+
+        # Store mode processor in session state for sidebar access
+        st.session_state.mode_processor = self.mode_processor
     
     def run(self):
         """Main run method for the dashboard."""
         # Render sidebar
         render_complete_sidebar(self.data_collector)
 
-        # ENHANCED: Add gamification progress to sidebar
-        try:
-            from dashboard.ui.gamification_components import render_gamification_sidebar, render_advanced_gamification_dashboard
-            render_gamification_sidebar()
+        # Test mode components now integrated into sidebar
 
-            # Check if advanced gamification dashboard should be shown
-            if st.session_state.get('show_advanced_gamification', False):
-                render_advanced_gamification_dashboard()
+        # ENHANCED: Add gamification progress to sidebar (simplified for test mode)
+        try:
+            from dashboard.ui.gamification_components import render_gamification_sidebar
+            render_gamification_sidebar()
+            # Note: Advanced gamification dashboard removed for test mode focus
 
         except Exception as e:
             print(f"⚠️ Error rendering gamification sidebar: {e}")
@@ -169,20 +191,32 @@ class UnifiedArchitecturalDashboard:
         # Mode configuration using full width
         render_mode_configuration()
 
-        # Mentor type selection
-        mentor_type = render_mentor_type_selection()
-        st.session_state.mentor_type = mentor_type
-        st.session_state.current_mode = mentor_type  # Map to current_mode for compatibility
+        # Check dashboard mode from sidebar
+        dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
 
-        # Template prompts
-        selected_template = render_template_selection()
+        if dashboard_mode == "Test Mode":
+            # Test mode: Fixed community center challenge, no templates
+            mentor_type = st.session_state.get('mentor_type', 'Socratic Agent')
+            skill_level = "Intermediate"  # Fixed for research consistency
 
-        # Skill level selection
-        skill_level = render_skill_level_selection()
+            # Project description input with fixed challenge (no templates)
+            project_description, uploaded_file = render_project_description_input("")
 
-        # Project description input with inline image upload
-        template_text = TEMPLATE_PROMPTS.get(selected_template, "")
-        project_description, uploaded_file = render_project_description_input(template_text)
+        else:  # Flexible Mode
+            # Original mentor.py functionality with templates
+            mentor_type = render_mentor_type_selection()
+            st.session_state.mentor_type = mentor_type
+            st.session_state.current_mode = mentor_type
+
+            # Template prompts (only in flexible mode)
+            selected_template = render_template_selection()
+
+            # Skill level selection (flexible in flexible mode)
+            skill_level = render_skill_level_selection()
+
+            # Project description input with template support
+            template_text = TEMPLATE_PROMPTS.get(selected_template, "")
+            project_description, uploaded_file = render_project_description_input(template_text)
         
         # Start analysis button (centered, no form rectangle)
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -213,7 +247,7 @@ class UnifiedArchitecturalDashboard:
         elif not project_description.strip():
             project_description = "Please analyze my architectural project"
         
-        with st.spinner("🧠 Analyzing your design..."):
+        with st.spinner("Analyzing your design..."):
             try:
                 # Initialize session
                 ensure_session_started()
@@ -433,6 +467,9 @@ class UnifiedArchitecturalDashboard:
             # PHASE QUESTION DISPLAY: Show current phase question if available
             self._render_current_phase_question()
 
+            # MANUAL PHASE CONTROLS: Show for GENERIC_AI and CONTROL modes
+            self._render_manual_phase_controls()
+
             # FIXED: Check for game responses that need processing
             if st.session_state.get('should_process_message', False):
                 # Get the last message (which should be the game response)
@@ -491,6 +528,30 @@ class UnifiedArchitecturalDashboard:
 
         except Exception as e:
             print(f"⚠️ UI: Error displaying phase question: {e}")
+
+    def _render_manual_phase_controls(self):
+        """Render manual phase controls for GENERIC_AI and CONTROL modes."""
+        try:
+            # Only show in Test Mode
+            dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+            if dashboard_mode != 'Test Mode':
+                return
+
+            # Get current test group
+            test_group = st.session_state.get('test_group')
+            if not test_group:
+                return
+
+            # Only show for GENERIC_AI and CONTROL modes
+            if should_show_manual_controls(test_group):
+                # Render phase completion indicator
+                render_phase_completion_indicator(test_group)
+
+                # Render manual phase controls
+                render_manual_phase_controls(self.mode_processor, test_group)
+
+        except Exception as e:
+            print(f"⚠️ Error rendering manual phase controls: {e}")
 
     def _handle_chat_input(self, user_input: str, uploaded_image=None):
         """Handle new chat input from the user with optional image."""
@@ -560,7 +621,88 @@ class UnifiedArchitecturalDashboard:
 
         # Process ALL user responses through phase system (not just Socratic ones)
         print(f"🎯 DASHBOARD: Processing user response for phases...")
-        self._process_user_response_for_phases(user_input)
+        phase_result = self._process_user_response_for_phases(user_input)
+
+        # CRITICAL FIX: Store updated phase completion for task manager
+        updated_phase_completion = 0.0
+        if phase_result and 'phase_progress' in phase_result:
+            phase_progress = phase_result['phase_progress']
+            # CRITICAL FIX: phase_progress is a dict with completion_percent key
+            if isinstance(phase_progress, dict):
+                updated_phase_completion = phase_progress.get('completion_percent', 0.0)
+                print(f"🎯 DASHBOARD: Found completion_percent in phase_progress dict: {updated_phase_completion:.1f}%")
+            elif hasattr(phase_progress, 'completion_percent'):
+                updated_phase_completion = phase_progress.completion_percent
+                print(f"🎯 DASHBOARD: Found completion_percent in phase_progress object: {updated_phase_completion:.1f}%")
+            st.session_state.current_phase_completion = updated_phase_completion
+            print(f"🎯 DASHBOARD: Updated phase completion stored: {updated_phase_completion:.1f}%")
+
+        # CRITICAL FIX: Check for task triggers with updated completion
+        if phase_result and updated_phase_completion > 0:
+            task_manager = get_cached_task_manager()
+            current_phase = phase_result.get('current_phase', 'ideation')
+
+            print(f"🎯 DASHBOARD: Checking task triggers at {updated_phase_completion:.1f}% in {current_phase} phase")
+
+            triggered_task = task_manager.check_task_triggers(
+                user_input=user_input,
+                conversation_history=st.session_state.messages,
+                current_phase=current_phase,
+                test_group=st.session_state.get('test_group', 'MENTOR'),
+                image_uploaded=False,
+                image_analysis=None,
+                phase_completion_percent=updated_phase_completion
+            )
+
+            if triggered_task:
+                task_name = triggered_task.value if hasattr(triggered_task, 'value') else str(triggered_task)
+                print(f"🎯 DASHBOARD: Task triggered: {task_name}")
+
+                # Store triggered task for UI display
+                st.session_state.triggered_task = {
+                    'task_name': task_name,
+                    'task_type': triggered_task,
+                    'completion_percent': updated_phase_completion,
+                    'phase': current_phase,
+                    'triggered_at': datetime.now().isoformat()
+                }
+
+                # Display task message immediately
+                from dashboard.processors.dynamic_task_manager import TaskType
+                task_type_enum = None
+                for task_enum in TaskType:
+                    if task_enum.value == task_name:
+                        task_type_enum = task_enum
+                        break
+
+                task_config = task_manager.task_triggers.get(task_type_enum, {}) if task_type_enum else {}
+
+                # Create user-friendly task names and descriptions
+                task_display_names = {
+                    'architectural_concept': 'Architectural Concept Development',
+                    'spatial_program': 'Spatial Program Development',
+                    'visual_conceptualization': 'Visual Conceptualization',
+                    'visual_analysis_2d': '2D Visual Analysis',
+                    'environmental_contextual': 'Environmental Context Analysis'
+                }
+
+                task_descriptions = {
+                    'architectural_concept': 'Develop and refine your core architectural concepts and design approach.',
+                    'spatial_program': 'Define and organize the spatial program and functional relationships.',
+                    'visual_conceptualization': 'Create visual representations of your design concepts.',
+                    'visual_analysis_2d': 'Analyze and develop 2D visual representations of your design.',
+                    'environmental_contextual': 'Consider environmental and contextual factors in your design.'
+                }
+
+                display_name = task_display_names.get(task_name, task_name.replace('_', ' ').title())
+                description = task_descriptions.get(task_name, f'Task {task_name} has been triggered.')
+
+                st.success(f"🎯 **New Task Available**: {display_name}")
+                st.info(f"📋 {description}")
+
+                print(f"✅ DASHBOARD: Task {task_name} displayed in UI")
+            else:
+                print(f"🎯 DASHBOARD: No tasks triggered at {updated_phase_completion:.1f}%")
 
         # Handle Socratic response state management
         if st.session_state.awaiting_socratic_response:
@@ -645,53 +787,59 @@ class UnifiedArchitecturalDashboard:
         try:
             print(f"🔍 DASHBOARD: Bundling image analysis with text for: {image_filename}")
 
-            # Get comprehensive image analysis using GPT Vision with caching
+            # Get enhanced image analysis using comprehensive vision analyzer
             import sys
             import os
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
             from vision.comprehensive_vision_analyzer import ComprehensiveVisionAnalyzer
 
-            # Initialize analyzer with caching enabled (default)
+            # Initialize enhanced analyzer
             analyzer = ComprehensiveVisionAnalyzer(domain="architecture", use_cache=True)
 
-            # Get project context from session state if available
-            project_context = st.session_state.get('project_description', user_input)
+            # Build comprehensive project context string
+            current_phase = getattr(st.session_state, 'current_phase', 'unknown')
+            building_type = getattr(st.session_state, 'project_type', 'unknown')
+            conversation_summary = self._get_conversation_summary()
+            project_description = getattr(st.session_state, 'project_description', user_input)
 
-            # Check if we already have this analysis cached in session state
-            session_analyses = st.session_state.get('image_analyses', [])
+            project_context = f"Current Phase: {current_phase}, Building Type: {building_type}, Project: {project_description}, Context: {conversation_summary[:300]}"
+
+            # Check if we already have this enhanced analysis cached in session state
+            session_analyses = st.session_state.get('enhanced_image_analyses', [])
             for analysis in session_analyses:
-                if analysis['path'] == image_path and analysis.get('project_context') == project_context:
-                    print(f"⚡ DASHBOARD: Using session-cached analysis for: {image_filename}")
-                    image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
-                    bundled_message = f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+                if analysis['path'] == image_path:
+                    print(f"⚡ DASHBOARD: Using session-cached enhanced analysis for: {image_filename}")
+                    cached_analysis = analysis['detailed_analysis']
+                    contextual_response = analyzer.generate_contextual_response(cached_analysis, user_input)
+                    bundled_message = f"{user_input}\n\n[ENHANCED IMAGE ANALYSIS: {contextual_response}]"
                     return bundled_message
 
-            # Perform comprehensive image analysis (will use cache if available)
+            # Perform enhanced comprehensive image analysis
             import asyncio
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
             try:
-                # Get detailed image understanding for chat context
-                detailed_understanding = loop.run_until_complete(
+                # Get enhanced comprehensive analysis with context
+                enhanced_analysis = loop.run_until_complete(
                     analyzer.get_detailed_image_understanding(image_path, project_context)
                 )
 
-                # Extract the chat-ready description
-                image_description = detailed_understanding.get('chat_summary', 'Image analysis completed.')
+                # Generate contextual chat response
+                contextual_response = analyzer.generate_contextual_response(enhanced_analysis, user_input)
 
-                print(f"✅ DASHBOARD: Image analysis complete - {len(image_description)} chars")
+                print(f"✅ DASHBOARD: Enhanced image analysis complete - Confidence: {enhanced_analysis.get('confidence_score', 0.7)}")
 
-                # Bundle the text and image analysis as one unified message
-                bundled_message = f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+                # Bundle the text and enhanced image analysis as one unified message
+                bundled_message = f"{user_input}\n\n[ENHANCED IMAGE ANALYSIS: {contextual_response}]"
 
-                # Store the detailed analysis for potential future reference
-                if 'image_analyses' not in st.session_state:
-                    st.session_state.image_analyses = []
-                st.session_state.image_analyses.append({
+                # Store in session state for potential future reference
+                if 'enhanced_image_analyses' not in st.session_state:
+                    st.session_state.enhanced_image_analyses = []
+                st.session_state.enhanced_image_analyses.append({
                     "filename": image_filename,
                     "path": image_path,
-                    "detailed_analysis": detailed_understanding,
+                    "detailed_analysis": enhanced_analysis,
                     "project_context": project_context,
                     "timestamp": datetime.now().isoformat()
                 })
@@ -702,9 +850,12 @@ class UnifiedArchitecturalDashboard:
                 loop.close()
 
         except Exception as e:
-            print(f"⚠️ DASHBOARD: Image analysis failed, using basic bundling: {e}")
-            # Fallback to basic image reference
-            return f"{user_input}\n\n[Image uploaded: {image_filename} - Analysis unavailable]"
+            print(f"⚠️ DASHBOARD: Enhanced image analysis failed, using contextual fallback: {e}")
+            # Fallback to contextual message based on session state
+            building_type = getattr(st.session_state, 'project_type', 'architectural project')
+            current_phase = getattr(st.session_state, 'current_phase', 'design')
+            fallback_response = f"I can see you've uploaded an architectural image for your {building_type}. While I had some difficulty with the detailed analysis, I can tell this appears to be related to your {current_phase} phase work. Let's discuss what you're working on and how I can help you develop this further."
+            return f"{user_input}\n\n[IMAGE UPLOADED: {fallback_response}]"
 
     def _process_user_response_for_phases(self, user_input: str):
         """Process user response through the phase progression system."""
@@ -717,7 +868,7 @@ class UnifiedArchitecturalDashboard:
 
             if "error" in phase_result:
                 print(f"❌ PHASE ERROR: {phase_result['error']}")
-                return
+                return None
 
             # Log the phase progression results
             print(f"✅ PHASE PROCESSING COMPLETE:")
@@ -761,10 +912,14 @@ class UnifiedArchitecturalDashboard:
                 # Mark that we need to rerun after response generation
                 st.session_state.pending_rerun = True
 
+            # CRITICAL FIX: Return phase result for task manager
+            return phase_result
+
         except Exception as e:
             print(f"❌ PHASE PROCESSING ERROR: {e}")
             import traceback
             traceback.print_exc()
+            return None
 
     def _generate_and_display_response(self, user_input: str, image_path: str = None):
         """Generate and display the AI response with optional image."""
@@ -848,11 +1003,11 @@ class UnifiedArchitecturalDashboard:
                     gamification_display = response_metadata.get("gamification", {})
 
                 # DEBUG: Log gamification data for troubleshooting
-                if gamification_display:
-                    print(f"🎮 UI DEBUG: Gamification data found: {gamification_display.get('is_gamified', False)}")
-                    print(f"🎮 UI DEBUG: Display type: {gamification_display.get('display_type', 'none')}")
-                else:
-                    print(f"🎮 UI DEBUG: No gamification data found in metadata keys: {list(response_metadata.keys())}")
+                # if gamification_display:
+                #     #print(f"🎮 UI DEBUG: Gamification data found: {gamification_display.get('is_gamified', False)}")
+                #     print(f"🎮 UI DEBUG: Display type: {gamification_display.get('display_type', 'none')}")
+                # else:
+                #     print(f"🎮 UI DEBUG: No gamification data found in metadata keys: {list(response_metadata.keys())}")
 
                 # Add assistant message with gamification info and generated image
                 assistant_message = {
@@ -1309,8 +1464,11 @@ class UnifiedArchitecturalDashboard:
 
             col1, col2, col3 = st.columns(3)
 
+            # Use unique keys based on image URL and timestamp to avoid conflicts
+            image_key = str(hash(generated_image.get('url', '') + str(generated_image.get('phase', ''))))[-8:]
+
             with col1:
-                if st.button("✅ Yes, this captures my ideas", key=f"feedback_yes_{generated_image.get('phase', 'unknown')}"):
+                if st.button("✅ Yes, this captures my ideas", key=f"feedback_yes_{image_key}"):
                     st.success("Great! This confirms we're aligned on your design direction.")
                     # Store positive feedback
                     if 'image_feedback' not in st.session_state:
@@ -1322,7 +1480,7 @@ class UnifiedArchitecturalDashboard:
                     })
 
             with col2:
-                if st.button("🤔 Partially, but needs adjustment", key=f"feedback_partial_{generated_image.get('phase', 'unknown')}"):
+                if st.button("🤔 Partially, but needs adjustment", key=f"feedback_partial_{image_key}"):
                     st.info("Thanks for the feedback! Let's continue refining your design ideas.")
                     # Store partial feedback
                     if 'image_feedback' not in st.session_state:
@@ -1334,7 +1492,7 @@ class UnifiedArchitecturalDashboard:
                     })
 
             with col3:
-                if st.button("❌ No, this doesn't match", key=f"feedback_no_{generated_image.get('phase', 'unknown')}"):
+                if st.button("❌ No, this doesn't match", key=f"feedback_no_{image_key}"):
                     st.warning("No problem! Let's continue exploring your design ideas to better understand your vision.")
                     # Store negative feedback
                     if 'image_feedback' not in st.session_state:
@@ -1364,15 +1522,34 @@ class UnifiedArchitecturalDashboard:
         print(f"📝 DASHBOARD: Marked image as processed: {filename}")
 
     def _get_existing_image_analysis(self, user_input: str, image_path: str) -> str:
-        """Get existing image analysis from session state."""
+        """Get existing enhanced image analysis from session state."""
+        # First check for enhanced analyses
+        enhanced_analyses = st.session_state.get('enhanced_image_analyses', [])
+        for analysis in enhanced_analyses:
+            if analysis['path'] == image_path:
+                # Import the comprehensive analyzer to generate a fresh contextual response
+                import sys
+                import os
+                sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
+                from vision.comprehensive_vision_analyzer import ComprehensiveVisionAnalyzer
+
+                analyzer = ComprehensiveVisionAnalyzer()
+                cached_analysis = analysis['detailed_analysis']
+                contextual_response = analyzer.generate_contextual_response(cached_analysis, user_input)
+                return f"{user_input}\n\n[ENHANCED IMAGE ANALYSIS: {contextual_response}]"
+
+        # Fallback to legacy analyses if available
         session_analyses = st.session_state.get('image_analyses', [])
         for analysis in session_analyses:
             if analysis['path'] == image_path:
                 image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
                 return f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
 
-        # Fallback if no analysis found
-        return f"{user_input}\n\n[UPLOADED IMAGE: Analysis not available]"
+        # Final fallback if no analysis found
+        building_type = getattr(st.session_state, 'project_type', 'architectural project')
+        return f"{user_input}\n\n[IMAGE REFERENCE: I can see you're referencing a previously uploaded image for your {building_type}. Let's continue our discussion based on what we've already analyzed.]"
+
+    # Test action handlers removed - now handled in sidebar_components.py
 
 
 def main():

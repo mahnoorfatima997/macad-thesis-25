@@ -25,29 +25,35 @@ def make_context_node(context_agent, progression_manager, first_response_generat
         logger.info(f"Context node: user_messages count: {len(user_messages)}, assistant_messages count: {len(assistant_messages)}")
         logger.info(f"Context node: last_message: {last_message[:100]}...")
         
-        # Check if this is truly the first meaningful interaction - FIXED: Only first user message
+        # Check if this is the EXACT moment for progressive opening
+        # CRITICAL: Progressive opening triggers ONLY when:
+        # - Exactly 2 user messages (brief + first real message)
+        # - Zero assistant messages (no previous responses)
+        # - No image upload in the conversation
+        # This ensures it triggers only ONCE per conversation at the right moment
+        has_image_upload = any(
+            m.get("has_uploaded_image", False) or "image" in m.get("content", "").lower()
+            for m in student_state.messages
+        )
+
         is_first_message = (
-            len(user_messages) == 1 and len(assistant_messages) == 0  # Only the very first user message with no assistant response
+            len(user_messages) == 2 and
+            len(assistant_messages) == 0 and
+            not has_image_upload
         )
         
-        # Additional check: if the message contains clear project description patterns, treat as first message
-        if not is_first_message and last_message:
-            project_description_patterns = [
-                "i am designing", "i'm designing", "i am working on", "i'm working on",
-                "i am creating", "i'm creating", "i am building", "i'm building",
-                "my project is", "my design is", "i want to create", "i want to design",
-                "i want to build", "i plan to", "i'm planning to", "my goal is",
-                "i have a project", "i'm working on a", "this is my project"
-            ]
-            if any(pattern in last_message.lower() for pattern in project_description_patterns):
-                is_first_message = True
-                logger.info("Context node: Detected project description pattern, treating as first message")
+        # CRITICAL: Progressive opening only triggers at the exact right moment
+        if not is_first_message:
+            logger.info(f"Context node: Progressive opening will NOT trigger - conditions not met (user_messages: {len(user_messages)}, assistant_messages: {len(assistant_messages)}, has_image: {has_image_upload})")
         
         # 1208-If still not first message, try to get input classification to see if it's a project description
         if not is_first_message and last_message:
             try:
-                # Import and use the input classification processor to check if this is a project description
-                from ...agents.context_agent.processors.input_classification import InputClassificationProcessor
+                # FIXED: Use absolute import to avoid relative import warning
+                import sys
+                import os
+                sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+                from agents.context_agent.processors.input_classification import InputClassificationProcessor
                 classifier = InputClassificationProcessor()
                 # Create a minimal state for classification
                 temp_state = type('TempState', (), {'messages': []})()
@@ -56,9 +62,10 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                     is_first_message = True
                     logger.info("Context node: Input classification detected project_description, treating as first message")
             except Exception as e:
-                logger.warning(f"Context node: Could not perform input classification check: {e}")
+                # FIXED: Reduced warning verbosity - this is not critical
+                logger.debug(f"Context node: Input classification check skipped: {e}")
         
-        logger.info(f"Context node: is_first_message determined as: {is_first_message}")
+        logger.info(f"Context node: is_first_message determined as: {is_first_message} (user_messages: {len(user_messages)}, assistant_messages: {len(assistant_messages)}, has_image: {has_image_upload})")
 
         if is_first_message:
             first_response_result = await first_response_generator.generate_first_response(last_message, student_state)
@@ -70,6 +77,17 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                 student_state.building_type = building_type
                 print(f"🔍 DEBUG: Updated student_state.building_type to: {student_state.building_type}")
             
+            # CRITICAL FIX: Add routing information to response metadata
+            response_metadata = first_response_result.get("metadata", {})
+            response_metadata.update({
+                "routing_path": "progressive_opening",
+                "response_type": "progressive_opening",
+                "ai_reasoning": f"First message - using progressive conversation system for {building_type} project",
+                "interaction_type": "first_message",
+                "user_intent": "first_message",
+                "agents_used": ["context_agent", "first_response_generator"],
+            })
+
             result_state: WorkflowState = {
                 **state,
                 "student_state": student_state,  # Ensure the updated state is referenced
@@ -93,7 +111,7 @@ def make_context_node(context_agent, progression_manager, first_response_generat
                     "reasoning": f"First message - using progressive conversation system for {building_type} project",
                 },
                 "final_response": first_response_result.get("response_text", ""),
-                "response_metadata": first_response_result.get("metadata", {}),
+                "response_metadata": response_metadata,
                 "progression_data": progression_analysis,
             }
 

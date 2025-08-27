@@ -1,0 +1,4716 @@
+[
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:23:50.496761",
+    "interaction_number": 1,
+    "student_input": "I am designing a community center in Spain by transforming and old warehouse building. I am at initial design stage.",
+    "input_length": 20,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "unknown",
+    "confidence_level": "unknown",
+    "engagement_level": "unknown",
+    "agent_response": "Hello there! It's fantastic to hear about your exciting project to transform an old warehouse into a community center. Spain has such a rich architectural history, and this setting could add a unique character to your design. \n\nI encourage you to consider the warehouse's original function and how that can influence your design. Perhaps the industrial elements can be incorporated in a way that adds a distinctive flair to the final outcome. \n\nFurthermore, thinking about the diverse needs of the co",
+    "response_length": 81,
+    "routing_path": "progressive_opening",
+    "agents_used": [
+      "context_agent",
+      "first_response_generator"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "context_agent",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "unknown",
+    "phase_confidence": 0.5,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 8,
+    "design_moves": [
+      {
+        "content": "I am designing a community center in Spain by transforming and old warehouse building.",
+        "timestamp": "2025-08-25T15:23:50.496022",
+        "micro_timestamp": 1756128230.496022,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.07300000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 86,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 0.5214285714285715
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I am at initial design stage.",
+        "timestamp": "2025-08-25T15:23:50.596022",
+        "micro_timestamp": 1756128230.596022,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.024000000000000004,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 29,
+          "has_question": false,
+          "word_count": 6,
+          "complexity_score": 0.4
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Hello there!",
+        "timestamp": "2025-08-25T15:23:50.696022",
+        "micro_timestamp": 1756128230.696022,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.011000000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 12,
+          "has_question": false,
+          "word_count": 2,
+          "complexity_score": 0.55
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 2
+      },
+      {
+        "content": "It's fantastic to hear about your exciting project to transform an old warehouse into a community center.",
+        "timestamp": "2025-08-25T15:23:50.796022",
+        "micro_timestamp": 1756128230.796022,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.08900000000000001,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 105,
+          "has_question": false,
+          "word_count": 17,
+          "complexity_score": 0.5235294117647059
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Spain has such a rich architectural history, and this setting could add a unique character to your design.",
+        "timestamp": "2025-08-25T15:23:50.896022",
+        "micro_timestamp": 1756128230.896022,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.107,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 106,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.5944444444444444
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "I encourage you to consider the warehouse's original function and how that can influence your design.",
+        "timestamp": "2025-08-25T15:23:50.996022",
+        "micro_timestamp": 1756128230.996022,
+        "phase": "unknown",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.0946,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 101,
+          "has_question": false,
+          "word_count": 16,
+          "complexity_score": 0.5375
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "Perhaps the industrial elements can be incorporated in a way that adds a distinctive flair to the final outcome.",
+        "timestamp": "2025-08-25T15:23:51.096022",
+        "micro_timestamp": 1756128231.096022,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 5,
+        "cognitive_load": 0.094,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 112,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.4947368421052632
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 6
+      },
+      {
+        "content": "Furthermore, thinking about the diverse needs of the co",
+        "timestamp": "2025-08-25T15:23:51.196022",
+        "micro_timestamp": 1756128231.196022,
+        "phase": "unknown",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 6,
+        "cognitive_load": 0.055999999999999994,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 55,
+          "has_question": false,
+          "word_count": 9,
+          "complexity_score": 0.6222222222222222
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {},
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": true,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": true,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": true,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:24:22.947142",
+    "interaction_number": 2,
+    "student_input": "I would like to first focus on layout design and spatial organization within the building to provide right program elements and spaces for the community.",
+    "input_length": 25,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "progressive_opening",
+    "agents_used": [
+      "context_agent",
+      "first_response_generator"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "context_agent",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 2,
+    "design_moves": [
+      {
+        "content": "I would like to first focus on layout design and spatial organization within the building to provide right program elements and spaces for the community.",
+        "timestamp": "2025-08-25T15:24:22.946012",
+        "micro_timestamp": 1756128262.946012,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.129,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 153,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.516
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:24:23.046012",
+        "micro_timestamp": 1756128263.046012,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:24:55.559564",
+    "interaction_number": 3,
+    "student_input": "I would like to first focus on layout design and spatial organization within the building to provide right program elements and spaces for the community.",
+    "input_length": 25,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "Your focus on layout design and spatial organization is a crucial starting point for ensuring the community center effectively serves its users.\n\nBy prioritizing the right program elements and spaces, you're setting the foundation for a design that can truly cater to the community's needs.\n\nConsider how the unique characteristics of the local community, such as cultural practices or prevalent age groups, and the specific features of your site, like natural light or existing vegetation, might inf",
+    "response_length": 77,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 4,
+    "design_moves": [
+      {
+        "content": "I would like to first focus on layout design and spatial organization within the building to provide right program elements and spaces for the community.",
+        "timestamp": "2025-08-25T15:24:55.559332",
+        "micro_timestamp": 1756128295.559332,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.129,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 153,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.516
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 1
+      },
+      {
+        "content": "Your focus on layout design and spatial organization is a crucial starting point for ensuring the community center effectively serves its users.",
+        "timestamp": "2025-08-25T15:24:55.659332",
+        "micro_timestamp": 1756128295.659332,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.12300000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 144,
+          "has_question": false,
+          "word_count": 22,
+          "complexity_score": 0.5590909090909091
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 2
+      },
+      {
+        "content": "By prioritizing the right program elements and spaces, you're setting the foundation for a design that can truly cater to the community's needs.",
+        "timestamp": "2025-08-25T15:24:55.759332",
+        "micro_timestamp": 1756128295.759332,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.145,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 144,
+          "has_question": false,
+          "word_count": 23,
+          "complexity_score": 0.6304347826086956
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Consider how the unique characteristics of the local community, such as cultural practices or prevalent age groups, and the specific features of your site, like natural light or existing vegetation, might inf",
+        "timestamp": "2025-08-25T15:24:55.859332",
+        "micro_timestamp": 1756128295.859332,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.3355,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 208,
+          "has_question": false,
+          "word_count": 32,
+          "complexity_score": 0.953125
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "general",
+      "general",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 0.5,
+        "question_quality": 0.6666666666666666,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0.7619047619047619
+      },
+      "complexity_metrics": {
+        "overall_score": 0.3333333333333333,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 0.3666666666666667,
+        "complexity_progression": 0.5555555555555556
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.0,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.25,
+        "skill_development": 0.25,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.275,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.4358333333333333,
+      "scientific_confidence": 0.5458333333333333
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "low",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "shallow",
+      "learning_progression": "stable"
+    },
+    "context_classification": {
+      "interaction_type": "design_exploration",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "intermediate",
+      "learning_intent": "general_inquiry",
+      "context_dependency": "medium",
+      "classification_confidence": 0.6,
+      "last_message": "I would like to first focus on layout design and spatial organization within the building to provide right program elements and spaces for the community.",
+      "user_input": "I would like to first focus on layout design and spatial organization within the building to provide right program elements and spaces for the community.",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": false,
+      "user_intent": "design_exploration",
+      "context_agent_confidence": 0.0,
+      "routing_path": "socratic_exploration"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "milestone_context": {
+          "milestone_type": "phase_entry",
+          "phase": "exploration",
+          "required_actions": [],
+          "success_criteria": [],
+          "agent_guidance": {
+            "primary_role": "Analyze user input and conversation context",
+            "focus_areas": [
+              "intent classification",
+              "conversation state",
+              "routing decisions"
+            ],
+            "milestone_context": "Current milestone: phase_entry in exploration phase",
+            "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": true,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:25:28.606932",
+    "interaction_number": 4,
+    "student_input": "I\u2019m converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+    "input_length": 45,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "socratic_exploration",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 3,
+    "design_moves": [
+      {
+        "content": "I\u2019m converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall.",
+        "timestamp": "2025-08-25T15:25:28.605708",
+        "micro_timestamp": 1756128328.605708,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.15600000000000003,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 135,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.78
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+        "timestamp": "2025-08-25T15:25:28.705708",
+        "micro_timestamp": 1756128328.705708,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.1386,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 150,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.504
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:25:28.805708",
+        "micro_timestamp": 1756128328.805708,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:26:11.169912",
+    "interaction_number": 5,
+    "student_input": "I\u2019m converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+    "input_length": 45,
+    "input_type": "general_statement",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "uncertain",
+    "engagement_level": "high",
+    "agent_response": "**Synthesis:**\n- Insight: Create distinct zones within the warehouse that break up the large industrial space into smaller, more intimate areas.\n\nUse partitions, curtains, or movable walls to define spaces for different activities such as cultural events, workshops, and the market hall.\n\nThis approach helps reduce the overwhelming vastness of the warehouse, making each section feel more approachable and human-scaled.\n- Direction: Transforming an industrial-scale warehouse into a human and welcom",
+    "response_length": 71,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 7,
+    "design_moves": [
+      {
+        "content": "I\u2019m converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall.",
+        "timestamp": "2025-08-25T15:26:11.169514",
+        "micro_timestamp": 1756128371.169514,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.15600000000000003,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 135,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.78
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+        "timestamp": "2025-08-25T15:26:11.269514",
+        "micro_timestamp": 1756128371.269514,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.1386,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 150,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.504
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "**Synthesis:**",
+        "timestamp": "2025-08-25T15:26:11.369514",
+        "micro_timestamp": 1756128371.369514,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 14,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "- Insight: Create distinct zones within the warehouse that break up the large industrial space into smaller, more intimate areas.",
+        "timestamp": "2025-08-25T15:26:11.469514",
+        "micro_timestamp": 1756128371.469514,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.17,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 129,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.8500000000000001
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Use partitions, curtains, or movable walls to define spaces for different activities such as cultural events, workshops, and the market hall.",
+        "timestamp": "2025-08-25T15:26:11.569514",
+        "micro_timestamp": 1756128371.569514,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.205,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 141,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.9761904761904762
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "This approach helps reduce the overwhelming vastness of the warehouse, making each section feel more approachable and human-scaled.",
+        "timestamp": "2025-08-25T15:26:11.669514",
+        "micro_timestamp": 1756128371.669514,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.1584,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 131,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.7333333333333333
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "- Direction: Transforming an industrial-scale warehouse into a human and welcom",
+        "timestamp": "2025-08-25T15:26:11.769514",
+        "micro_timestamp": 1756128371.769514,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 5,
+        "cognitive_load": 0.09099999999999998,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 79,
+          "has_question": false,
+          "word_count": 11,
+          "complexity_score": 0.8272727272727272
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "analysis",
+      "general",
+      "general",
+      "general",
+      "synthesis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 0.7,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.4666666666666667,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 0.5133333333333334,
+        "complexity_progression": 1.0
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.0,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.35,
+        "skill_development": 0.35,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.385,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.49416666666666664,
+      "scientific_confidence": 0.6475
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "low",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "progressing"
+    },
+    "context_classification": {
+      "interaction_type": "improvement_seeking",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "is_response_to_question": false,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "intermediate",
+      "learning_intent": "general_inquiry",
+      "context_dependency": "high",
+      "classification_confidence": 0.6,
+      "last_message": "I\u2019m converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+      "user_input": "I\u2019m converting this warehouse into a community center with spaces for cultural activities, flexible workshops, and a small market hall. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": false,
+      "user_intent": "improvement_seeking",
+      "context_agent_confidence": 0.0,
+      "primary_gap": "brief_development",
+      "agent_coordination": {
+        "other_responses": {
+          "socratic_tutor": {
+            "response_text": "",
+            "response_type": "socratic",
+            "key_insights": []
+          },
+          "analysis_agent": {
+            "cognitive_state": {},
+            "primary_gap": "",
+            "understanding_level": "moderate"
+          }
+        },
+        "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+      },
+      "routing_path": "balanced_guidance"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your intermediate level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "intermediate",
+              "confidence": 0.7666666666666666,
+              "indicators": {
+                "beginner": 0,
+                "intermediate": 5,
+                "advanced": 0
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 19.285714285714285,
+                "word_count": 135,
+                "sentence_count": 7,
+                "complexity_score": 0.9642857142857142
+              },
+              "reasoning": "5 intermediate-level terms detected; complex sentence structure; assessed as intermediate"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "conversation_phase": "discovery",
+              "opening_strategy": {
+                "opening_message": "Hey there! It's fantastic that you're diving into residential architecture. Let's explore how functional design can transform a house into a home, ensuring every space works perfectly for those living there.",
+                "primary_dimension": "functional",
+                "opening_questions": [
+                  "What is the primary purpose of your design?",
+                  "Who are the main users and what do they need?"
+                ],
+                "exploration_prompts": [
+                  "Let's explore how the program influences the spatial organization",
+                  "Consider how user needs might evolve over time",
+                  "Think about the relationship between function and form"
+                ],
+                "knowledge_gaps": [
+                  "programming",
+                  "user analysis",
+                  "functional relationships"
+                ],
+                "complexity_level": "beginner",
+                "suggested_approach": "problem_breakdown"
+              },
+              "relevant_dimensions": [
+                "functional",
+                "spatial",
+                "aesthetic"
+              ],
+              "user_profile": {
+                "knowledge_level": "beginner",
+                "learning_style": "balanced",
+                "interests": [
+                  "residential",
+                  "cultural"
+                ],
+                "strengths": [],
+                "gaps": [],
+                "engagement_patterns": [],
+                "conversation_preferences": [],
+                "milestone_progress": {}
+              },
+              "milestone": {
+                "milestone_type": "phase_entry",
+                "phase": "discovery",
+                "dimension": "functional",
+                "topic": "residential",
+                "user_understanding": "beginner",
+                "confidence_level": "neutral",
+                "engagement_level": "medium",
+                "progress_percentage": 0.0,
+                "required_actions": [],
+                "success_criteria": [],
+                "timestamp": "2025-08-25T15:25:54.321195",
+                "metadata": {}
+              },
+              "next_steps": [
+                "Ask follow-up questions to deepen understanding",
+                "Explore related design space dimensions",
+                "Begin building foundational knowledge",
+                "Identify specific areas of interest"
+              ]
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "phase_analysis": {
+          "phase": "ideation",
+          "step": "initial_context_reasoning",
+          "confidence": 0.7,
+          "progression_score": 0.25,
+          "current_phase": "ideation",
+          "current_step": "initial_context_reasoning",
+          "phase_confidence": 0.7
+        },
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:26:57.952079",
+    "interaction_number": 6,
+    "student_input": "workshop  zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up. Can you walk me through the fundamental principles step by step?",
+    "input_length": 55,
+    "input_type": "improvement_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "balanced_guidance",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 4,
+    "design_moves": [
+      {
+        "content": "workshop  zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design.",
+        "timestamp": "2025-08-25T15:26:57.951634",
+        "micro_timestamp": 1756128417.951634,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.144,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 169,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.576
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I think I need to build my understanding of community center design for elder people from the ground up.",
+        "timestamp": "2025-08-25T15:26:58.051634",
+        "micro_timestamp": 1756128418.051634,
+        "phase": "ideation",
+        "move_type": "reflection",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.0688,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 104,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.4526315789473684
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "Can you walk me through the fundamental principles step by step?",
+        "timestamp": "2025-08-25T15:26:58.151634",
+        "micro_timestamp": 1756128418.151634,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.054000000000000006,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 64,
+          "has_question": true,
+          "word_count": 11,
+          "complexity_score": 0.4909090909090909
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:26:58.251634",
+        "micro_timestamp": 1756128418.251634,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "reflection",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:27:53.324301",
+    "interaction_number": 7,
+    "student_input": "workshop  zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up. Can you walk me through the fundamental principles step by step?",
+    "input_length": 55,
+    "input_type": "improvement_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "uncertain",
+    "engagement_level": "high",
+    "agent_response": "Designing a community center is a multifaceted endeavor that requires careful consideration of both functional and aesthetic elements to serve as a dynamic hub for community engagement.\n\nHere is a comprehensive synthesis of key concepts, practical guidance, and relevant considerations to inform the design and development of community centers.\n\n### Key Concepts and Principles\n1. **Heart of the Community**: Community centers are often regarded as the heart of a city, town, or neighborhood.\n\nThey s",
+    "response_length": 75,
+    "routing_path": "knowledge_with_challenge",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 7,
+    "design_moves": [
+      {
+        "content": "workshop  zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design.",
+        "timestamp": "2025-08-25T15:27:53.323734",
+        "micro_timestamp": 1756128473.323734,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.144,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 169,
+          "has_question": false,
+          "word_count": 25,
+          "complexity_score": 0.576
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I think I need to build my understanding of community center design for elder people from the ground up.",
+        "timestamp": "2025-08-25T15:27:53.423734",
+        "micro_timestamp": 1756128473.423734,
+        "phase": "ideation",
+        "move_type": "reflection",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.0688,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 104,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.4526315789473684
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Can you walk me through the fundamental principles step by step?",
+        "timestamp": "2025-08-25T15:27:53.523734",
+        "micro_timestamp": 1756128473.523734,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.054000000000000006,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 64,
+          "has_question": true,
+          "word_count": 11,
+          "complexity_score": 0.4909090909090909
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Designing a community center is a multifaceted endeavor that requires careful consideration of both functional and aesthetic elements to serve as a dynamic hub for community engagement.",
+        "timestamp": "2025-08-25T15:27:53.623734",
+        "micro_timestamp": 1756128473.623734,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.17490000000000003,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 185,
+          "has_question": false,
+          "word_count": 27,
+          "complexity_score": 0.5888888888888889
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "Here is a comprehensive synthesis of key concepts, practical guidance, and relevant considerations to inform the design and development of community centers.",
+        "timestamp": "2025-08-25T15:27:53.723734",
+        "micro_timestamp": 1756128473.723734,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.216,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 157,
+          "has_question": false,
+          "word_count": 22,
+          "complexity_score": 0.8181818181818181
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "### Key Concepts and Principles",
+        "timestamp": "2025-08-25T15:27:53.823734",
+        "micro_timestamp": 1756128473.823734,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.032400000000000005,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 31,
+          "has_question": false,
+          "word_count": 5,
+          "complexity_score": 0.54
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "**Heart of the Community**: Community centers are often regarded as the heart of a city, town, or neighborhood.",
+        "timestamp": "2025-08-25T15:27:54.023734",
+        "micro_timestamp": 1756128474.023734,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.166,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 111,
+          "has_question": false,
+          "word_count": 18,
+          "complexity_score": 0.9222222222222223
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.20000004768371582,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "reflection",
+      "general",
+      "analysis",
+      "synthesis",
+      "synthesis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 0.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.6666666666666666,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 0.7333333333333334,
+        "complexity_progression": 1.0
+      },
+      "reflection_metrics": {
+        "overall_score": 0.8,
+        "self_assessment": 0.3333333333333333,
+        "process_awareness": 0.8,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.5,
+        "skill_development": 0.5,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.55,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.6716666666666666,
+      "scientific_confidence": 0.775
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "high",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "progressing"
+    },
+    "context_classification": {
+      "interaction_type": "knowledge_seeking",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "understanding",
+      "context_dependency": "medium",
+      "classification_confidence": 0.6,
+      "last_message": "workshop  zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up. Can you walk me through the fundamental principles step by step?",
+      "user_input": "workshop  zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up. Can you walk me through the fundamental principles step by step?",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": true,
+      "user_intent": "knowledge_seeking",
+      "context_agent_confidence": 0.0,
+      "primary_gap": "brief_development",
+      "agent_coordination": {
+        "other_responses": {
+          "socratic_tutor": {
+            "response_text": "",
+            "response_type": "socratic",
+            "key_insights": []
+          },
+          "analysis_agent": {
+            "cognitive_state": {},
+            "primary_gap": "",
+            "understanding_level": "moderate"
+          }
+        },
+        "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+      },
+      "routing_path": "knowledge_with_challenge"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your intermediate level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "intermediate",
+              "confidence": 0.8333333333333334,
+              "indicators": {
+                "beginner": 0,
+                "intermediate": 5,
+                "advanced": 0
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 18.214285714285715,
+                "word_count": 255,
+                "sentence_count": 14,
+                "complexity_score": 0.9107142857142858
+              },
+              "reasoning": "5 intermediate-level terms detected; complex sentence structure; assessed as intermediate"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "current_phase": "exploration",
+              "phase_transition": true,
+              "new_milestone": {
+                "milestone_type": "phase_entry",
+                "phase": "exploration",
+                "dimension": null,
+                "topic": "residential",
+                "user_understanding": "unknown",
+                "confidence_level": "unknown",
+                "engagement_level": "unknown",
+                "progress_percentage": 0.0,
+                "required_actions": [],
+                "success_criteria": [],
+                "timestamp": "2025-08-25T15:27:22.844360",
+                "metadata": {}
+              },
+              "progression_guidance": {
+                "phase_objectives": [
+                  "Deepen understanding of key concepts",
+                  "Explore multiple perspectives and approaches",
+                  "Address knowledge gaps",
+                  "Build foundational knowledge"
+                ],
+                "suggested_approaches": [
+                  "Provide examples and case studies",
+                  "Ask probing questions",
+                  "Introduce new concepts gradually",
+                  "Connect to user's existing knowledge"
+                ],
+                "success_indicators": [
+                  "User demonstrates growing understanding",
+                  "Knowledge gaps being addressed",
+                  "User asks deeper questions",
+                  "Concepts being connected"
+                ],
+                "next_phase_preparation": [
+                  "Prepare synthesis activities",
+                  "Identify connection opportunities",
+                  "Plan insight formation support",
+                  "Design application preparation"
+                ]
+              },
+              "conversation_summary": {
+                "total_milestones": 2,
+                "current_phase": "exploration",
+                "opened_dimensions": [],
+                "user_profile": {
+                  "knowledge_level": "beginner",
+                  "learning_style": "balanced",
+                  "interests": [
+                    "residential",
+                    "cultural"
+                  ],
+                  "strengths": [],
+                  "gaps": [],
+                  "engagement_patterns": [],
+                  "conversation_preferences": [],
+                  "milestone_progress": {}
+                },
+                "learning_progress": {
+                  "status": "in_progress",
+                  "progress": 0.4,
+                  "phases_completed": 1,
+                  "current_phase_progress": 0.5
+                },
+                "conversation_quality": {
+                  "quality": "needs_improvement",
+                  "score": 0.0,
+                  "engagement_trend": "declining",
+                  "understanding_trend": "declining"
+                },
+                "project_context": {
+                  "building_type": "community_center"
+                },
+                "challenges": [
+                  "Processing complex information",
+                  "Connecting theoretical concepts"
+                ],
+                "opportunities": [
+                  "Learning from examples",
+                  "Developing analytical skills"
+                ]
+              }
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "phase_analysis": {
+          "phase": "ideation",
+          "step": "initial_context_reasoning",
+          "confidence": 0.8,
+          "progression_score": 0.25,
+          "current_phase": "ideation",
+          "current_step": "initial_context_reasoning",
+          "phase_confidence": 0.8
+        },
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": true,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:29:37.376050",
+    "interaction_number": 8,
+    "student_input": "I am not sure about how to approach biophilic design. can you provide examples?",
+    "input_length": 14,
+    "input_type": "knowledge_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "knowledge_with_challenge",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 3,
+    "design_moves": [
+      {
+        "content": "I am not sure about how to approach biophilic design.",
+        "timestamp": "2025-08-25T15:29:37.375304",
+        "micro_timestamp": 1756128577.375304,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.05280000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 53,
+          "has_question": false,
+          "word_count": 10,
+          "complexity_score": 0.44000000000000006
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "can you provide examples?",
+        "timestamp": "2025-08-25T15:29:37.475304",
+        "micro_timestamp": 1756128577.475304,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.024200000000000003,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 25,
+          "has_question": true,
+          "word_count": 4,
+          "complexity_score": 0.55
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:29:37.575304",
+        "micro_timestamp": 1756128577.575304,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "synthesis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:30:17.575767",
+    "interaction_number": 9,
+    "student_input": "I am not sure about how to approach biophilic design. can you provide examples?",
+    "input_length": 14,
+    "input_type": "knowledge_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "uncertain",
+    "engagement_level": "medium",
+    "agent_response": "It's excellent that you're delving into biophilic design, especially within the context of a community center.\n\nThis approach not only enhances the aesthetic and experiential qualities of a building but also fosters well-being and connectivity with nature.\n\nLet's break it down into manageable parts.\n\nFirstly, consider the integration of natural elements.\n\nYou might explore the use of natural light by designing large windows or skylights.\n\nIncorporating water features or indoor gardens can also c",
+    "response_length": 74,
+    "routing_path": "socratic_clarification",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "visualization",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 8,
+    "design_moves": [
+      {
+        "content": "I am not sure about how to approach biophilic design.",
+        "timestamp": "2025-08-25T15:30:17.574074",
+        "micro_timestamp": 1756128617.574074,
+        "phase": "visualization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.05808000000000001,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 53,
+          "has_question": false,
+          "word_count": 10,
+          "complexity_score": 0.44000000000000006
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "can you provide examples?",
+        "timestamp": "2025-08-25T15:30:17.674074",
+        "micro_timestamp": 1756128617.674074,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.026400000000000003,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 25,
+          "has_question": true,
+          "word_count": 4,
+          "complexity_score": 0.55
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "It's excellent that you're delving into biophilic design, especially within the context of a community center.",
+        "timestamp": "2025-08-25T15:30:17.774074",
+        "micro_timestamp": 1756128617.774074,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.13319999999999999,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 110,
+          "has_question": false,
+          "word_count": 16,
+          "complexity_score": 0.69375
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 2
+      },
+      {
+        "content": "This approach not only enhances the aesthetic and experiential qualities of a building but also fosters well-being and connectivity with nature.",
+        "timestamp": "2025-08-25T15:30:17.874074",
+        "micro_timestamp": 1756128617.874074,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.1488,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 144,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.5904761904761905
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Let's break it down into manageable parts.",
+        "timestamp": "2025-08-25T15:30:17.974074",
+        "micro_timestamp": 1756128617.974074,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.0432,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 42,
+          "has_question": false,
+          "word_count": 7,
+          "complexity_score": 0.5142857142857143
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Firstly, consider the integration of natural elements.",
+        "timestamp": "2025-08-25T15:30:18.074074",
+        "micro_timestamp": 1756128618.074074,
+        "phase": "visualization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.0726,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 54,
+          "has_question": false,
+          "word_count": 7,
+          "complexity_score": 0.7857142857142857
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 5
+      },
+      {
+        "content": "You might explore the use of natural light by designing large windows or skylights.",
+        "timestamp": "2025-08-25T15:30:18.174074",
+        "micro_timestamp": 1756128618.174074,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 5,
+        "cognitive_load": 0.084,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 83,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 0.5
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 6
+      },
+      {
+        "content": "Incorporating water features or indoor gardens can also c",
+        "timestamp": "2025-08-25T15:30:18.274074",
+        "micro_timestamp": 1756128618.274074,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 6,
+        "cognitive_load": 0.0588,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 57,
+          "has_question": false,
+          "word_count": 9,
+          "complexity_score": 0.5444444444444445
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "general",
+      "general",
+      "general",
+      "general",
+      "analysis",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 0.6666666666666666,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.8,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 0.8800000000000001,
+        "complexity_progression": 0.3111111111111111
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.3333333333333333,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.6,
+        "skill_development": 0.6,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.66,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.64,
+      "scientific_confidence": 0.775
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "moderate",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "regressing"
+    },
+    "context_classification": {
+      "interaction_type": "confusion_expression",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "medium",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "intermediate",
+      "learning_intent": "general_inquiry",
+      "context_dependency": "medium",
+      "classification_confidence": 0.6,
+      "last_message": "I am not sure about how to approach biophilic design. can you provide examples?",
+      "user_input": "I am not sure about how to approach biophilic design. can you provide examples?",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": true,
+      "user_intent": "confusion_expression",
+      "context_agent_confidence": 0.0,
+      "routing_path": "socratic_clarification"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "milestone_context": {
+          "milestone_type": "insight_formation",
+          "phase": "synthesis",
+          "required_actions": [
+            "Make connections between ideas",
+            "Identify patterns and relationships",
+            "Form principles or guidelines"
+          ],
+          "success_criteria": [
+            "Connections between ideas made",
+            "Patterns or relationships identified",
+            "Principles or guidelines formed"
+          ],
+          "agent_guidance": {
+            "primary_role": "Provide cognitive challenges and enhancement",
+            "focus_areas": [
+              "cognitive challenges",
+              "skill development",
+              "complex thinking"
+            ],
+            "milestone_context": "Current milestone: insight_formation in synthesis phase",
+            "guidance": "Provide challenges that support insight_formation objectives, focusing on ['Connections between ideas made', 'Patterns or relationships identified', 'Principles or guidelines formed']"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": true,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": true,
+    "provides_scaffolding": false,
+    "maintains_engagement": true,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:33:02.548482",
+    "interaction_number": 10,
+    "student_input": "What if I flip the program arrangement \u2014 placing the workshops in the brighter central hall and moving the market activities into the side wings? Would that create a more engaging flow for people moving through the center?",
+    "input_length": 38,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "socratic_clarification",
+    "agents_used": [
+      "socratic_tutor",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 3,
+    "design_moves": [
+      {
+        "content": "What if I flip the program arrangement \u2014 placing the workshops in the brighter central hall and moving the market activities into the side wings?",
+        "timestamp": "2025-08-25T15:33:02.547464",
+        "micro_timestamp": 1756128782.547464,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.1331,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 145,
+          "has_question": true,
+          "word_count": 25,
+          "complexity_score": 0.484
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "Would that create a more engaging flow for people moving through the center?",
+        "timestamp": "2025-08-25T15:33:02.647464",
+        "micro_timestamp": 1756128782.647464,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.064,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 76,
+          "has_question": true,
+          "word_count": 13,
+          "complexity_score": 0.49230769230769234
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:33:02.747464",
+        "micro_timestamp": 1756128782.747464,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:33:45.999981",
+    "interaction_number": 11,
+    "student_input": "What if I flip the program arrangement \u2014 placing the workshops in the brighter central hall and moving the market activities into the side wings? Would that create a more engaging flow for people moving through the center?",
+    "input_length": 38,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "high",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "When planning and designing a community center, it's crucial to approach the project with a strategic and well-informed mindset.\n\nCommunity centers are pivotal social infrastructures that provide communal spaces for a variety of activities and services, and they often rely on public funding.\n\nHere, we will explore the key concepts and principles involved in the program arrangement flow of community centers, offer practical guidance, and discuss considerations specific to these projects.\n\n### Key",
+    "response_length": 73,
+    "routing_path": "knowledge_with_challenge",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "visualization",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 5,
+    "design_moves": [
+      {
+        "content": "What if I flip the program arrangement \u2014 placing the workshops in the brighter central hall and moving the market activities into the side wings?",
+        "timestamp": "2025-08-25T15:33:45.999836",
+        "micro_timestamp": 1756128825.999836,
+        "phase": "visualization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.15972,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 145,
+          "has_question": true,
+          "word_count": 25,
+          "complexity_score": 0.484
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "Would that create a more engaging flow for people moving through the center?",
+        "timestamp": "2025-08-25T15:33:46.099836",
+        "micro_timestamp": 1756128826.099836,
+        "phase": "visualization",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.09215999999999999,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 76,
+          "has_question": true,
+          "word_count": 13,
+          "complexity_score": 0.49230769230769234
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "When planning and designing a community center, it's crucial to approach the project with a strategic and well-informed mindset.",
+        "timestamp": "2025-08-25T15:33:46.199836",
+        "micro_timestamp": 1756128826.199836,
+        "phase": "visualization",
+        "move_type": "transformation",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.21671999999999997,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 128,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.6789473684210526
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "Community centers are pivotal social infrastructures that provide communal spaces for a variety of activities and services, and they often rely on public funding.",
+        "timestamp": "2025-08-25T15:33:46.299836",
+        "micro_timestamp": 1756128826.299836,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.1956,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 162,
+          "has_question": false,
+          "word_count": 24,
+          "complexity_score": 0.6791666666666667
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "Here, we will explore the key concepts and principles involved in the program arrangement flow of community centers, offer practical guidance, and discuss considerations specific to these projects.",
+        "timestamp": "2025-08-25T15:33:46.399836",
+        "micro_timestamp": 1756128826.399836,
+        "phase": "visualization",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.36576000000000003,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 197,
+          "has_question": false,
+          "word_count": 28,
+          "complexity_score": 0.9071428571428571
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "synthesis",
+      "transformation",
+      "general",
+      "synthesis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 0.9333333333333333,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 1.0,
+        "complexity_progression": 0.8444444444444444
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.0,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.7,
+        "skill_development": 0.7,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.77,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.6983333333333333,
+      "scientific_confidence": 0.775
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "low",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "medium",
+      "learning_progression": "progressing"
+    },
+    "context_classification": {
+      "interaction_type": "implementation_request",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": false,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "intermediate",
+      "learning_intent": "general_inquiry",
+      "context_dependency": "high",
+      "classification_confidence": 0.65,
+      "last_message": "What if I flip the program arrangement \u2014 placing the workshops in the brighter central hall and moving the market activities into the side wings? Would that create a more engaging flow for people moving through the center?",
+      "user_input": "What if I flip the program arrangement \u2014 placing the workshops in the brighter central hall and moving the market activities into the side wings? Would that create a more engaging flow for people moving through the center?",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": false,
+      "user_intent": "implementation_request",
+      "context_agent_confidence": 0.0,
+      "primary_gap": "brief_development",
+      "agent_coordination": {
+        "other_responses": {
+          "socratic_tutor": {
+            "response_text": "",
+            "response_type": "socratic",
+            "key_insights": []
+          },
+          "analysis_agent": {
+            "cognitive_state": {},
+            "primary_gap": "",
+            "understanding_level": "moderate"
+          }
+        },
+        "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+      },
+      "routing_path": "knowledge_with_challenge"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "response_text": "I've analyzed your unknown project. Based on your intermediate level and current ideation phase, I can help you explore the key design considerations and next steps.",
+        "response_type": "analysis",
+        "cognitive_flags": [],
+        "enhancement_metrics": {
+          "cognitive_offloading_prevention_score": 0.4,
+          "deep_thinking_engagement_score": 0.5,
+          "knowledge_integration_score": 0.6000000000000001,
+          "scaffolding_effectiveness_score": 0.2,
+          "learning_progression_score": 0.7,
+          "metacognitive_awareness_score": 0.2,
+          "overall_cognitive_score": 0.43333333333333335,
+          "scientific_confidence": 0.8999999999999999
+        },
+        "progress_update": {
+          "phase_progress": {},
+          "milestone_progress": {},
+          "cognitive_state": {},
+          "learning_progression": {},
+          "skill_level_update": null,
+          "engagement_level_update": null
+        },
+        "journey_alignment": {
+          "current_phase": "ideation",
+          "phase_progress": 0.0,
+          "milestone_progress": {},
+          "next_milestone": null,
+          "journey_progress": 0.0,
+          "phase_confidence": 0.5,
+          "milestone_questions_asked": []
+        },
+        "metadata": {
+          "analysis_result": {
+            "skill_assessment": {
+              "skill_level": "intermediate",
+              "confidence": 0.8666666666666667,
+              "indicators": {
+                "beginner": 0,
+                "intermediate": 6,
+                "advanced": 0
+              },
+              "complexity_metrics": {
+                "avg_sentence_length": 17.058823529411764,
+                "word_count": 290,
+                "sentence_count": 17,
+                "complexity_score": 0.8529411764705882
+              },
+              "reasoning": "6 intermediate-level terms detected; complex sentence structure; assessed as intermediate"
+            },
+            "phase_analysis": {
+              "phase": "ideation",
+              "confidence": 0.7,
+              "phase_scores": {
+                "ideation": 0.7,
+                "visualization": 0.2,
+                "materialization": 0.1
+              },
+              "progression_ready": false,
+              "next_phase": null,
+              "phase_recommendations": [],
+              "progression_score": 0.3,
+              "completed_milestones": 1,
+              "total_milestones": 5,
+              "next_milestone": null,
+              "milestone_completion": 0.0
+            },
+            "text_analysis": {
+              "building_type": "unknown",
+              "key_themes": [
+                "design",
+                "architecture"
+              ],
+              "program_requirements": [
+                "functional spaces",
+                "user needs"
+              ],
+              "constraints": [],
+              "design_goals": [],
+              "complexity_level": "moderate",
+              "detail_level": "medium"
+            },
+            "visual_analysis": {
+              "has_visual": false,
+              "visual_type": "",
+              "spatial_elements": [],
+              "design_elements": [],
+              "technical_elements": [],
+              "phase_indicators": []
+            },
+            "cognitive_state": {
+              "engagement_level": 0.7,
+              "confidence_level": 0.6,
+              "understanding_level": 0.7,
+              "cognitive_load": 0.5,
+              "flags": [],
+              "needs_support": false
+            },
+            "synthesis": {
+              "cognitive_challenges": [
+                "complex_program_requirements"
+              ],
+              "learning_opportunities": [
+                "sustainable_design",
+                "user_centered_approach"
+              ],
+              "missing_considerations": [
+                "accessibility",
+                "building_codes"
+              ],
+              "next_focus_areas": [
+                "site_analysis",
+                "program_development"
+              ],
+              "recommendations": []
+            },
+            "conversation_progression": {
+              "current_phase": "synthesis",
+              "phase_transition": true,
+              "new_milestone": {
+                "milestone_type": "phase_entry",
+                "phase": "synthesis",
+                "dimension": null,
+                "topic": "general",
+                "user_understanding": "unknown",
+                "confidence_level": "unknown",
+                "engagement_level": "unknown",
+                "progress_percentage": 0.0,
+                "required_actions": [],
+                "success_criteria": [],
+                "timestamp": "2025-08-25T15:33:28.691889",
+                "metadata": {}
+              },
+              "progression_guidance": {
+                "phase_objectives": [
+                  "Connect different ideas and concepts",
+                  "Identify patterns and relationships",
+                  "Form insights and principles",
+                  "Prepare for practical application"
+                ],
+                "suggested_approaches": [
+                  "Help identify connections between ideas",
+                  "Ask synthesis questions",
+                  "Encourage pattern recognition",
+                  "Support insight formation"
+                ],
+                "success_indicators": [
+                  "User identifies patterns and relationships",
+                  "Insights and principles emerging",
+                  "User can explain concepts in their own words",
+                  "Ready for practical application"
+                ],
+                "next_phase_preparation": [
+                  "Prepare application opportunities",
+                  "Identify practice scenarios",
+                  "Plan feedback strategies",
+                  "Design confidence building"
+                ]
+              },
+              "conversation_summary": {
+                "total_milestones": 3,
+                "current_phase": "synthesis",
+                "opened_dimensions": [],
+                "user_profile": {
+                  "knowledge_level": "beginner",
+                  "learning_style": "balanced",
+                  "interests": [
+                    "residential",
+                    "cultural"
+                  ],
+                  "strengths": [],
+                  "gaps": [],
+                  "engagement_patterns": [],
+                  "conversation_preferences": [],
+                  "milestone_progress": {}
+                },
+                "learning_progress": {
+                  "status": "in_progress",
+                  "progress": 0.6,
+                  "phases_completed": 2,
+                  "current_phase_progress": 0.5
+                },
+                "conversation_quality": {
+                  "quality": "needs_improvement",
+                  "score": 0.0,
+                  "engagement_trend": "declining",
+                  "understanding_trend": "declining"
+                },
+                "project_context": {
+                  "building_type": "community_center"
+                },
+                "challenges": [
+                  "Integrating diverse concepts",
+                  "Forming coherent insights"
+                ],
+                "opportunities": [
+                  "Creating innovative solutions",
+                  "Building design confidence"
+                ]
+              }
+            }
+          }
+        },
+        "quality_score": 0.5,
+        "confidence_score": 0.5,
+        "agent_name": "analysis_agent",
+        "processing_time": 0.0,
+        "sources_used": [],
+        "error_message": null,
+        "fallback_used": false,
+        "phase_analysis": {
+          "phase": "ideation",
+          "step": "initial_context_reasoning",
+          "confidence": 0.9,
+          "progression_score": 0.25,
+          "current_phase": "ideation",
+          "current_step": "initial_context_reasoning",
+          "phase_confidence": 0.9
+        },
+        "conversation_progression": {},
+        "current_milestone": null,
+        "milestone_assessment": {},
+        "agent_guidance": {},
+        "visual_context": {
+          "has_visual": false
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": true,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": true,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": true,
+    "provides_scaffolding": false,
+    "maintains_engagement": true,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:34:33.148777",
+    "interaction_number": 12,
+    "student_input": "local artist can use the central space as a collaboration area and hold exhibitions very often by turning space into different small exhibition nooks. can you provide some examples about how to change a courtyard to an exbition space?",
+    "input_length": 39,
+    "input_type": "knowledge_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "knowledge_with_challenge",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 3,
+    "design_moves": [
+      {
+        "content": "local artist can use the central space as a collaboration area and hold exhibitions very often by turning space into different small exhibition nooks.",
+        "timestamp": "2025-08-25T15:34:33.148624",
+        "micro_timestamp": 1756128873.148624,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.127,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 150,
+          "has_question": false,
+          "word_count": 24,
+          "complexity_score": 0.5291666666666667
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "can you provide some examples about how to change a courtyard to an exbition space?",
+        "timestamp": "2025-08-25T15:34:33.248624",
+        "micro_timestamp": 1756128873.248624,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.0759,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 83,
+          "has_question": true,
+          "word_count": 15,
+          "complexity_score": 0.45999999999999996
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:34:33.348624",
+        "micro_timestamp": 1756128873.348624,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:35:18.316526",
+    "interaction_number": 13,
+    "student_input": "local artist can use the central space as a collaboration area and hold exhibitions very often by turning space into different small exhibition nooks. can you provide some examples about how to change a courtyard to an exbition space?",
+    "input_length": 39,
+    "input_type": "knowledge_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "Designing a courtyard for flexible exhibition space within a community center involves a blend of adaptability, accessibility, and aesthetic appeal.\n\nKey approaches include modularity and versatility, which allow the space to be reconfigured easily to accommodate various exhibition formats.\n\nFor instance, incorporating movable walls or partitions can create intimate nooks for displaying artwork while also allowing the space to open up for larger gatherings or collaborative projects.\n\nAdditionall",
+    "response_length": 68,
+    "routing_path": "knowledge_only",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "visualization",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 6,
+    "design_moves": [
+      {
+        "content": "local artist can use the central space as a collaboration area and hold exhibitions very often by turning space into different small exhibition nooks.",
+        "timestamp": "2025-08-25T15:35:18.316223",
+        "micro_timestamp": 1756128918.316223,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.1524,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 150,
+          "has_question": false,
+          "word_count": 24,
+          "complexity_score": 0.5291666666666667
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "can you provide some examples about how to change a courtyard to an exbition space?",
+        "timestamp": "2025-08-25T15:35:18.416223",
+        "micro_timestamp": 1756128918.416223,
+        "phase": "visualization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.09108,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 83,
+          "has_question": true,
+          "word_count": 15,
+          "complexity_score": 0.45999999999999996
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Designing a courtyard for flexible exhibition space within a community center involves a blend of adaptability, accessibility, and aesthetic appeal.",
+        "timestamp": "2025-08-25T15:35:18.516223",
+        "micro_timestamp": 1756128918.516223,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.20279999999999998,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 148,
+          "has_question": false,
+          "word_count": 20,
+          "complexity_score": 0.845
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "Key approaches include modularity and versatility, which allow the space to be reconfigured easily to accommodate various exhibition formats.",
+        "timestamp": "2025-08-25T15:35:18.616223",
+        "micro_timestamp": 1756128918.616223,
+        "phase": "visualization",
+        "move_type": "transformation",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.23855999999999997,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 141,
+          "has_question": false,
+          "word_count": 19,
+          "complexity_score": 0.7473684210526316
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "For instance, incorporating movable walls or partitions can create intimate nooks for displaying artwork while also allowing the space to open up for larger gatherings or collaborative projects.",
+        "timestamp": "2025-08-25T15:35:18.716223",
+        "micro_timestamp": 1756128918.716223,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.23399999999999999,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 194,
+          "has_question": false,
+          "word_count": 28,
+          "complexity_score": 0.6964285714285714
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 4
+      },
+      {
+        "content": "Additionall",
+        "timestamp": "2025-08-25T15:35:18.816223",
+        "micro_timestamp": 1756128918.816223,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.012,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "general",
+      "analysis",
+      "general",
+      "transformation",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 1.0,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.0,
+        "integration_level": 1.0,
+        "complexity_progression": 0.8666666666666667
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.0,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.85,
+        "skill_development": 0.85,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 0.935,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.7525,
+      "scientific_confidence": 0.775
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "low",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "deep",
+      "learning_progression": "progressing"
+    },
+    "context_classification": {
+      "interaction_type": "example_request",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": true,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "intermediate",
+      "learning_intent": "general_inquiry",
+      "context_dependency": "medium",
+      "classification_confidence": 0.6,
+      "last_message": "local artist can use the central space as a collaboration area and hold exhibitions very often by turning space into different small exhibition nooks. can you provide some examples about how to change a courtyard to an exbition space?",
+      "user_input": "local artist can use the central space as a collaboration area and hold exhibitions very often by turning space into different small exhibition nooks. can you provide some examples about how to change a courtyard to an exbition space?",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": true,
+      "user_intent": "example_request",
+      "context_agent_confidence": 0.0,
+      "primary_gap": "brief_development",
+      "agent_coordination": {
+        "other_responses": {
+          "socratic_tutor": {
+            "response_text": "",
+            "response_type": "socratic",
+            "key_insights": []
+          },
+          "analysis_agent": {
+            "cognitive_state": {},
+            "primary_gap": "",
+            "understanding_level": "moderate"
+          }
+        },
+        "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+      },
+      "routing_path": "knowledge_only"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "visual_context": {
+          "has_visual": false
+        },
+        "milestone_context": {
+          "milestone_type": "insight_formation",
+          "phase": "synthesis",
+          "required_actions": [
+            "Make connections between ideas",
+            "Identify patterns and relationships",
+            "Form principles or guidelines"
+          ],
+          "success_criteria": [
+            "Connections between ideas made",
+            "Patterns or relationships identified",
+            "Principles or guidelines formed"
+          ],
+          "agent_guidance": {
+            "primary_role": "Provide cognitive challenges and enhancement",
+            "focus_areas": [
+              "cognitive challenges",
+              "skill development",
+              "complex thinking"
+            ],
+            "milestone_context": "Current milestone: insight_formation in synthesis phase",
+            "guidance": "Provide challenges that support insight_formation objectives, focusing on ['Connections between ideas made', 'Patterns or relationships identified', 'Principles or guidelines formed']"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:39:22.438469",
+    "interaction_number": 14,
+    "student_input": "placement of exhibition and clusers of modular furniture is a great idea to consider. I am aslo curious about how outdoor relationship can be enhanced. can you provide some example projects for community center that has a strong relationship with their surroundings?",
+    "input_length": 42,
+    "input_type": "improvement_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "knowledge_only",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 4,
+    "design_moves": [
+      {
+        "content": "placement of exhibition and clusers of modular furniture is a great idea to consider.",
+        "timestamp": "2025-08-25T15:39:22.438334",
+        "micro_timestamp": 1756129162.438334,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.0864,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 85,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 0.5142857142857143
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I am aslo curious about how outdoor relationship can be enhanced.",
+        "timestamp": "2025-08-25T15:39:22.538334",
+        "micro_timestamp": 1756129162.538334,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.060500000000000005,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 65,
+          "has_question": false,
+          "word_count": 11,
+          "complexity_score": 0.5
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "can you provide some example projects for community center that has a strong relationship with their surroundings?",
+        "timestamp": "2025-08-25T15:39:22.638334",
+        "micro_timestamp": 1756129162.638334,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.10779999999999999,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 114,
+          "has_question": true,
+          "word_count": 17,
+          "complexity_score": 0.5764705882352941
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:39:22.738334",
+        "micro_timestamp": 1756129162.738334,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "synthesis",
+      "analysis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:40:25.047539",
+    "interaction_number": 15,
+    "student_input": "placement of exhibition and clusers of modular furniture is a great idea to consider. I am aslo curious about how outdoor relationship can be enhanced. can you provide some example projects for community center that has a strong relationship with their surroundings?",
+    "input_length": 42,
+    "input_type": "improvement_seeking",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "1. **[Sanlinqiao Community Centre](https://www.archdaily.com/1029733/inhabited-landscapes-20-cultural-and-community-centers-in-rural-areas)**: This project in China underwent a renovation to enhance connectivity and accessibility.\n\nIt features transformed outdoor spaces, including a sports plaza, to increase engagement and vibrancy.\n\nThe design incorporates both indoor and outdoor areas, fostering community interaction.\n2. **[Churchill Meadows Community Centre](https://www.architecturalrecord.co",
+    "response_length": 46,
+    "routing_path": "knowledge_only",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "visualization",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 10,
+    "design_moves": [
+      {
+        "content": "placement of exhibition and clusers of modular furniture is a great idea to consider.",
+        "timestamp": "2025-08-25T15:40:25.047185",
+        "micro_timestamp": 1756129225.047185,
+        "phase": "visualization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.09504000000000003,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 85,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 0.5142857142857143
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "I am aslo curious about how outdoor relationship can be enhanced.",
+        "timestamp": "2025-08-25T15:40:25.147185",
+        "micro_timestamp": 1756129225.147185,
+        "phase": "visualization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.0726,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 65,
+          "has_question": false,
+          "word_count": 11,
+          "complexity_score": 0.5
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "can you provide some example projects for community center that has a strong relationship with their surroundings?",
+        "timestamp": "2025-08-25T15:40:25.247185",
+        "micro_timestamp": 1756129225.247185,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.11759999999999998,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 114,
+          "has_question": true,
+          "word_count": 17,
+          "complexity_score": 0.5764705882352941
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "**[Sanlinqiao Community Centre](https://www.",
+        "timestamp": "2025-08-25T15:40:25.447185",
+        "micro_timestamp": 1756129225.447185,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.036,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 44,
+          "has_question": false,
+          "word_count": 3,
+          "complexity_score": 1.0
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.20000004768371582,
+        "next_move": 2
+      },
+      {
+        "content": "archdaily.",
+        "timestamp": "2025-08-25T15:40:25.547185",
+        "micro_timestamp": 1756129225.547185,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.012,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 10,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "com/1029733/inhabited-landscapes-20-cultural-and-community-centers-in-rural-areas)**: This project in China underwent a renovation to enhance connectivity and accessibility.",
+        "timestamp": "2025-08-25T15:40:25.647185",
+        "micro_timestamp": 1756129225.647185,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.156,
+        "context": {
+          "sentence_position": 3,
+          "text_length": 173,
+          "has_question": false,
+          "word_count": 13,
+          "complexity_score": 1.0
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 4
+      },
+      {
+        "content": "It features transformed outdoor spaces, including a sports plaza, to increase engagement and vibrancy.",
+        "timestamp": "2025-08-25T15:40:25.747185",
+        "micro_timestamp": 1756129225.747185,
+        "phase": "visualization",
+        "move_type": "transformation",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 4,
+        "cognitive_load": 0.19655999999999996,
+        "context": {
+          "sentence_position": 4,
+          "text_length": 102,
+          "has_question": false,
+          "word_count": 14,
+          "complexity_score": 0.8357142857142856
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 5
+      },
+      {
+        "content": "The design incorporates both indoor and outdoor areas, fostering community interaction.",
+        "timestamp": "2025-08-25T15:40:25.847185",
+        "micro_timestamp": 1756129225.847185,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 5,
+        "cognitive_load": 0.10559999999999999,
+        "context": {
+          "sentence_position": 5,
+          "text_length": 87,
+          "has_question": false,
+          "word_count": 11,
+          "complexity_score": 0.7999999999999999
+        },
+        "previous_move": 4,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 6
+      },
+      {
+        "content": "**[Churchill Meadows Community Centre](https://www.",
+        "timestamp": "2025-08-25T15:40:26.047185",
+        "micro_timestamp": 1756129226.047185,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 6,
+        "cognitive_load": 0.048,
+        "context": {
+          "sentence_position": 7,
+          "text_length": 51,
+          "has_question": false,
+          "word_count": 4,
+          "complexity_score": 1.0
+        },
+        "previous_move": 5,
+        "temporal_gap": 0.20000004768371582,
+        "next_move": 7
+      },
+      {
+        "content": "architecturalrecord.",
+        "timestamp": "2025-08-25T15:40:26.147185",
+        "micro_timestamp": 1756129226.147185,
+        "phase": "visualization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 7,
+        "cognitive_load": 0.012,
+        "context": {
+          "sentence_position": 8,
+          "text_length": 20,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 6,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "analysis",
+      "general",
+      "general",
+      "general",
+      "general",
+      "transformation",
+      "general",
+      "general",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0.93
+      },
+      "complexity_metrics": {
+        "overall_score": 1.0,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.2,
+        "integration_level": 1.0,
+        "complexity_progression": 0.9333333333333333
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.0,
+        "process_awareness": 0.5,
+        "decision_justification": 0.0,
+        "reflection_depth": 0.0
+      },
+      "progression_metrics": {
+        "overall_score": 0.95,
+        "skill_development": 0.95,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 1.0,
+        "learning_velocity": 0.3333333333333333
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.7775,
+      "scientific_confidence": 0.775
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "low",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "deep",
+      "learning_progression": "progressing"
+    },
+    "context_classification": {
+      "interaction_type": "example_request",
+      "understanding_level": "medium",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": false,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "general_inquiry",
+      "context_dependency": "high",
+      "classification_confidence": 0.6,
+      "last_message": "placement of exhibition and clusers of modular furniture is a great idea to consider. I am aslo curious about how outdoor relationship can be enhanced. can you provide some example projects for community center that has a strong relationship with their surroundings?",
+      "user_input": "placement of exhibition and clusers of modular furniture is a great idea to consider. I am aslo curious about how outdoor relationship can be enhanced. can you provide some example projects for community center that has a strong relationship with their surroundings?",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": false,
+      "user_intent": "example_request",
+      "context_agent_confidence": 0.0,
+      "primary_gap": "brief_development",
+      "agent_coordination": {
+        "other_responses": {
+          "socratic_tutor": {
+            "response_text": "",
+            "response_type": "socratic",
+            "key_insights": []
+          },
+          "analysis_agent": {
+            "cognitive_state": {},
+            "primary_gap": "",
+            "understanding_level": "moderate"
+          }
+        },
+        "coordination_notes": "Domain expert can build upon or complement other agents' responses"
+      },
+      "routing_path": "knowledge_only"
+    },
+    "agent_data": {
+      "analysis_result": {
+        "visual_context": {
+          "has_visual": false
+        },
+        "milestone_context": {
+          "milestone_type": "insight_formation",
+          "phase": "synthesis",
+          "required_actions": [
+            "Make connections between ideas",
+            "Identify patterns and relationships",
+            "Form principles or guidelines"
+          ],
+          "success_criteria": [
+            "Connections between ideas made",
+            "Patterns or relationships identified",
+            "Principles or guidelines formed"
+          ],
+          "agent_guidance": {
+            "primary_role": "Provide cognitive challenges and enhancement",
+            "focus_areas": [
+              "cognitive challenges",
+              "skill development",
+              "complex thinking"
+            ],
+            "milestone_context": "Current milestone: insight_formation in synthesis phase",
+            "guidance": "Provide challenges that support insight_formation objectives, focusing on ['Connections between ideas made', 'Patterns or relationships identified', 'Principles or guidelines formed']"
+          }
+        }
+      },
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:43:32.740971",
+    "interaction_number": 16,
+    "student_input": "Considering a plaza in front of the warehouse building, connected to the inner gardens, could actually foster a stronger sense of community belonging. This idea got me thinking about creating a user journey through the central hub \u2014 almost like a story that guides people from arrival, into moments of pause, and then outward toward workshops or market spaces. How can I design that narrative flow so it feels natural rather than forced?",
+    "input_length": 73,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "medium",
+    "confidence_level": "medium",
+    "engagement_level": "high",
+    "agent_response": "Processing...",
+    "response_length": 1,
+    "routing_path": "knowledge_only",
+    "agents_used": [
+      "socratic_tutor",
+      "domain_expert",
+      "analysis_agent",
+      "cognitive_enhancement"
+    ],
+    "response_type": "mentor_response",
+    "primary_agent": "socratic_tutor",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.8,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "ideation",
+    "phase_confidence": 0.8,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.5,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 4,
+    "design_moves": [
+      {
+        "content": "Considering a plaza in front of the warehouse building, connected to the inner gardens, could actually foster a stronger sense of community belonging.",
+        "timestamp": "2025-08-25T15:43:32.739312",
+        "micro_timestamp": 1756129412.739312,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.19140000000000004,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 150,
+          "has_question": false,
+          "word_count": 23,
+          "complexity_score": 0.7565217391304349
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "This idea got me thinking about creating a user journey through the central hub \u2014 almost like a story that guides people from arrival, into moments of pause, and then outward toward workshops or market spaces.",
+        "timestamp": "2025-08-25T15:43:32.839312",
+        "micro_timestamp": 1756129412.839312,
+        "phase": "ideation",
+        "move_type": "synthesis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.2952,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 209,
+          "has_question": false,
+          "word_count": 36,
+          "complexity_score": 0.6833333333333333
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "How can I design that narrative flow so it feels natural rather than forced?",
+        "timestamp": "2025-08-25T15:43:32.939312",
+        "micro_timestamp": 1756129412.939312,
+        "phase": "ideation",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.0693,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 76,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.45
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 1
+      },
+      {
+        "content": "Processing.",
+        "timestamp": "2025-08-25T15:43:33.039312",
+        "micro_timestamp": 1756129413.039312,
+        "phase": "ideation",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.01,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 11,
+          "has_question": false,
+          "word_count": 1,
+          "complexity_score": 1.0
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "synthesis",
+      "analysis",
+      "general"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {},
+      "complexity_metrics": {},
+      "reflection_metrics": {},
+      "progression_metrics": {},
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.0,
+      "scientific_confidence": 0.0
+    },
+    "cognitive_state": {
+      "engagement_level": "unknown",
+      "cognitive_load": "unknown",
+      "metacognitive_awareness": "unknown",
+      "passivity_level": "unknown",
+      "overconfidence_level": "unknown",
+      "conversation_depth": "unknown",
+      "learning_progression": "unknown"
+    },
+    "context_classification": {
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high"
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": false,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": false,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": true,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  },
+  {
+    "session_id": "unified_session_20250825_152323",
+    "timestamp": "2025-08-25T15:44:13.847440",
+    "interaction_number": 17,
+    "student_input": "Considering a plaza in front of the warehouse building, connected to the inner gardens, could actually foster a stronger sense of community belonging. This idea got me thinking about creating a user journey through the central hub \u2014 almost like a story that guides people from arrival, into moments of pause, and then outward toward workshops or market spaces. How can I design that narrative flow so it feels natural rather than forced?",
+    "input_length": 73,
+    "input_type": "direct_question",
+    "student_skill_level": "intermediate",
+    "understanding_level": "high",
+    "confidence_level": "confident",
+    "engagement_level": "high",
+    "agent_response": "\"Tell the story of the plaza as it awakens each morning, a vibrant stage set for the dance of community life.\n\nHow does the flow of paths and spaces guide visitors from the inviting entrance, through the lush inner gardens, and into the bustling market areas, creating moments that inspire connection and pause?\n\nWhat emotions do these transitions evoke, and how can the architectural elements\u2014like seating, lighting, and landscaping\u2014enhance this narrative journey to deepen the sense of belonging?",
+    "response_length": 78,
+    "routing_path": "cognitive_challenge",
+    "agents_used": [
+      "cognitive_enhancement"
+    ],
+    "response_type": "socratic agent",
+    "primary_agent": "cognitive_enhancement",
+    "cognitive_flags": [],
+    "cognitive_flags_count": 0,
+    "confidence_score": 0.6,
+    "sources_used": [],
+    "knowledge_integrated": false,
+    "sources_count": 0,
+    "response_time": 1.0,
+    "current_phase": "materialization",
+    "phase_confidence": 0.7,
+    "phase_characteristics": {},
+    "phase_progression_score": 0.25,
+    "phase_duration": 0,
+    "phase_scores": {},
+    "phase_recommendations": [],
+    "design_moves_count": 6,
+    "design_moves": [
+      {
+        "content": "Considering a plaza in front of the warehouse building, connected to the inner gardens, could actually foster a stronger sense of community belonging.",
+        "timestamp": "2025-08-25T15:44:13.847239",
+        "micro_timestamp": 1756129453.847239,
+        "phase": "materialization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 1,
+        "cognitive_load": 0.24882000000000007,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 150,
+          "has_question": false,
+          "word_count": 23,
+          "complexity_score": 0.7565217391304349
+        },
+        "previous_move": null,
+        "temporal_gap": 0.0,
+        "next_move": 2
+      },
+      {
+        "content": "This idea got me thinking about creating a user journey through the central hub \u2014 almost like a story that guides people from arrival, into moments of pause, and then outward toward workshops or market spaces.",
+        "timestamp": "2025-08-25T15:44:13.947239",
+        "micro_timestamp": 1756129453.947239,
+        "phase": "materialization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "student",
+        "move_number": 2,
+        "cognitive_load": 0.31980000000000003,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 209,
+          "has_question": false,
+          "word_count": 36,
+          "complexity_score": 0.6833333333333333
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 3
+      },
+      {
+        "content": "How can I design that narrative flow so it feels natural rather than forced?",
+        "timestamp": "2025-08-25T15:44:14.047239",
+        "micro_timestamp": 1756129454.047239,
+        "phase": "materialization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "student",
+        "move_number": 3,
+        "cognitive_load": 0.09009,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 76,
+          "has_question": true,
+          "word_count": 14,
+          "complexity_score": 0.45
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 1
+      },
+      {
+        "content": "\"Tell the story of the plaza as it awakens each morning, a vibrant stage set for the dance of community life.",
+        "timestamp": "2025-08-25T15:44:14.147239",
+        "micro_timestamp": 1756129454.147239,
+        "phase": "materialization",
+        "move_type": "general",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 1,
+        "cognitive_load": 0.14300000000000002,
+        "context": {
+          "sentence_position": 0,
+          "text_length": 109,
+          "has_question": false,
+          "word_count": 21,
+          "complexity_score": 0.5238095238095238
+        },
+        "previous_move": 3,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": 2
+      },
+      {
+        "content": "How does the flow of paths and spaces guide visitors from the inviting entrance, through the lush inner gardens, and into the bustling market areas, creating moments that inspire connection and pause?",
+        "timestamp": "2025-08-25T15:44:14.247239",
+        "micro_timestamp": 1756129454.247239,
+        "phase": "materialization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 2,
+        "cognitive_load": 0.37895000000000006,
+        "context": {
+          "sentence_position": 1,
+          "text_length": 200,
+          "has_question": true,
+          "word_count": 32,
+          "complexity_score": 0.828125
+        },
+        "previous_move": 1,
+        "temporal_gap": 0.10000014305114746,
+        "next_move": 3
+      },
+      {
+        "content": "What emotions do these transitions evoke, and how can the architectural elements\u2014like seating, lighting, and landscaping\u2014enhance this narrative journey to deepen the sense of belonging?",
+        "timestamp": "2025-08-25T15:44:14.347239",
+        "micro_timestamp": 1756129454.347239,
+        "phase": "materialization",
+        "move_type": "analysis",
+        "modality": "text",
+        "source": "agent",
+        "move_number": 3,
+        "cognitive_load": 0.33748000000000006,
+        "context": {
+          "sentence_position": 2,
+          "text_length": 185,
+          "has_question": true,
+          "word_count": 25,
+          "complexity_score": 0.9440000000000001
+        },
+        "previous_move": 2,
+        "temporal_gap": 0.09999990463256836,
+        "next_move": null
+      }
+    ],
+    "move_types": [
+      "analysis",
+      "general",
+      "analysis",
+      "general",
+      "analysis",
+      "analysis"
+    ],
+    "move_modalities": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "scientific_metrics": {
+      "engagement_metrics": {
+        "overall_score": 0.7,
+        "interaction_frequency": 1.0,
+        "question_quality": 1.0,
+        "exploration_depth": 0.63,
+        "engagement_consistency": 0
+      },
+      "complexity_metrics": {
+        "overall_score": 1.0,
+        "problem_complexity": 0.5,
+        "solution_sophistication": 0.2,
+        "integration_level": 1.0,
+        "complexity_progression": 1.0
+      },
+      "reflection_metrics": {
+        "overall_score": 0.5,
+        "self_assessment": 0.0,
+        "process_awareness": 0.5,
+        "decision_justification": 0.5,
+        "reflection_depth": 0.3333333333333333
+      },
+      "progression_metrics": {
+        "overall_score": 1.0,
+        "skill_development": 1.0,
+        "knowledge_acquisition": 0.0,
+        "competency_growth": 1.0,
+        "learning_velocity": 0.0
+      },
+      "improvement_metrics": {},
+      "phase_metrics": {},
+      "overall_cognitive_score": 0.79,
+      "scientific_confidence": 0.775
+    },
+    "cognitive_state": {
+      "engagement_level": "high",
+      "cognitive_load": "optimal",
+      "metacognitive_awareness": "low",
+      "passivity_level": "low",
+      "overconfidence_level": "low",
+      "conversation_depth": "deep",
+      "learning_progression": "progressing"
+    },
+    "context_classification": {
+      "interaction_type": "improvement_seeking",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "is_response_to_question": false,
+      "is_technical_question": false,
+      "is_feedback_request": false,
+      "confidence_score": 0.0,
+      "question_complexity": "advanced",
+      "learning_intent": "general_inquiry",
+      "context_dependency": "high",
+      "classification_confidence": 0.65,
+      "last_message": "Considering a plaza in front of the warehouse building, connected to the inner gardens, could actually foster a stronger sense of community belonging. This idea got me thinking about creating a user journey through the central hub \u2014 almost like a story that guides people from arrival, into moments of pause, and then outward toward workshops or market spaces. How can I design that narrative flow so it feels natural rather than forced?",
+      "user_input": "Considering a plaza in front of the warehouse building, connected to the inner gardens, could actually foster a stronger sense of community belonging. This idea got me thinking about creating a user journey through the central hub \u2014 almost like a story that guides people from arrival, into moments of pause, and then outward toward workshops or market spaces. How can I design that narrative flow so it feels natural rather than forced?",
+      "cognitive_offloading_detected": false,
+      "cognitive_offloading_type": "none",
+      "cognitive_offloading_confidence": 0.0,
+      "is_pure_knowledge_request": false,
+      "user_intent": "improvement_seeking",
+      "context_agent_confidence": 0.0
+    },
+    "agent_data": {
+      "analysis_result": {},
+      "domain_expert_result": {},
+      "socratic_result": {},
+      "cognitive_enhancement_result": {}
+    },
+    "performance_metrics": {
+      "cognitive_offloading_prevention": true,
+      "deep_thinking_encouragement": false,
+      "scaffolding_effectiveness": false,
+      "engagement_maintenance": false,
+      "skill_adaptation": false,
+      "response_complexity": 1.0,
+      "agent_selection_appropriateness": false,
+      "response_coherence": true
+    },
+    "prevents_cognitive_offloading": true,
+    "encourages_deep_thinking": false,
+    "provides_scaffolding": false,
+    "maintains_engagement": false,
+    "adapts_to_skill_level": false,
+    "multi_agent_coordination": false,
+    "appropriate_agent_selection": false,
+    "response_coherence": true
+  }
+]

@@ -12,12 +12,13 @@ from datetime import datetime
 
 # Import advanced gamification systems
 try:
-    from .progress_tracking import progress_tracker
-    from .achievement_system import achievement_system
-    from .interactive_diagrams import interactive_diagrams
-    from .spatial_3d import spatial_3d
-    from .adaptive_difficulty import adaptive_difficulty
-    from .storytelling_framework import storytelling_framework
+    from .advanced_gamification_components.progress_tracking import progress_tracker
+    # ADVANCED GAMIFICATION FILES MOVED TO ANOTHER FOLDER AND DISABLED
+    # from .achievement_system import achievement_system
+    # from .interactive_diagrams import interactive_diagrams
+    # from .spatial_3d import spatial_3d
+    # from .adaptive_difficulty import adaptive_difficulty
+    # from .storytelling_framework import storytelling_framework
 except ImportError:
     # Fallback if advanced systems aren't available
     progress_tracker = None
@@ -1194,10 +1195,8 @@ def complete_advanced_challenge(challenge_type: str, success: bool, time_spent: 
         st.info("📚 Learning opportunity! Every challenge teaches us something new.")
 
 def render_gamification_sidebar() -> None:
-    """Render gamification progress in sidebar."""
+    """Render gamification progress in sidebar - simplified for test mode."""
     tracker = GamificationTracker()
     tracker.render_progress_sidebar()
 
-    # Add quick access to advanced features
-    if st.sidebar.button("🎮 Advanced Gamification"):
-        st.session_state['show_advanced_gamification'] = True
+    # Advanced gamification button removed for test mode focus

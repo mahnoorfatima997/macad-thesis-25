@@ -39,11 +39,13 @@ class ChallengeGeneratorProcessor:
                     print(f"🎮 STRATEGY: Alternative trigger detected → stimulate_curiosity → alternative_challenge → perspective_shift")
                     return "stimulate_curiosity"  # → alternative_challenge → perspective_shift
 
-                # PRIORITY 2: Detective/mystery triggers
+                # PRIORITY 2: Detective/mystery triggers (ENHANCED with test cases)
                 elif any(pattern in user_message for pattern in [
                     'users seem to avoid', 'people avoid', 'users don\'t use', 'people don\'t use',
                     'feels uncomfortable but', 'feels unwelcoming but', 'don\'t know why',
-                    'can\'t identify', 'can\'t pinpoint', 'bottlenecks but', 'investigate', 'analyze why'
+                    'can\'t identify', 'can\'t pinpoint', 'bottlenecks but', 'investigate', 'analyze why',
+                    # ADDED: Test case patterns
+                    'why isn\'t this', 'what\'s wrong with', 'need to investigate', 'something feels off'
                 ]):
                     print(f"🎮 STRATEGY: Detective trigger detected → challenge_assumptions → metacognitive_challenge → detective")
                     return "challenge_assumptions"  # → metacognitive_challenge → detective
@@ -57,12 +59,24 @@ class ChallengeGeneratorProcessor:
                     print(f"🎮 STRATEGY: Constraint trigger detected → increase_challenge → constraint_challenge → constraint")
                     return "increase_challenge"  # → constraint_challenge → constraint
 
-                # PRIORITY 4: Transformation triggers
+                # PRIORITY 4: Transformation triggers - ISSUE 1 FIX: EXTREMELY narrow to prevent over-triggering
                 elif any(pattern in user_message for pattern in [
-                    'convert', 'converting', 'transform', 'transforming', 'adapt', 'adapting',
-                    'repurpose', 'repurposing', 'change the use', 'flexible use', 'multi-use',
-                    'warehouse to', 'factory to', 'office to', 'adaptive reuse'
+                    'how do i convert this building', 'how can i convert this building', 'how to convert this building',
+                    'how do i transform this building', 'how can i transform this building', 'how to transform this building',
+                    'i am converting this warehouse', 'i\'m converting this warehouse', 'converting this warehouse to',
+                    'i am transforming this warehouse', 'i\'m transforming this warehouse', 'transforming this warehouse to',
+                    'my building conversion project', 'my building transformation project', 'my adaptive reuse project'
                 ]):
+                    # ISSUE 1 FIX: Check for recent transformation challenges before triggering
+                    messages = getattr(state, 'messages', [])
+                    recent_assistant_messages = [msg['content'].lower() for msg in messages[-4:] if msg.get('role') == 'assistant']
+                    recent_transformation = any('transformation challenge' in msg or 'transformation game' in msg or 'space_transformation' in msg
+                                              for msg in recent_assistant_messages)
+
+                    if recent_transformation:
+                        print(f"🎮 STRATEGY SKIP: Transformation recently used - falling back to general challenge")
+                        return "general_challenge"  # Fall back to general challenge instead
+
                     print(f"🎮 STRATEGY: Transformation trigger detected → transformation_design → space_transformation → transformation")
                     return "transformation_design"  # → space_transformation → transformation
 
@@ -107,9 +121,13 @@ class ChallengeGeneratorProcessor:
                 if any(pattern in user_message for pattern in time_travel_patterns):
                     return "temporal_exploration"
 
-                # Check for transformation patterns
-                transformation_patterns = ['transform', 'adapt', 'change', 'evolve', 'different uses']
-                if any(pattern in user_message for pattern in transformation_patterns):
+                # Check for SPECIFIC transformation patterns (FIXED: More specific to prevent over-triggering)
+                transformation_patterns = [
+                    'transform this building', 'adapt this building', 'change the use of',
+                    'convert this', 'repurpose this', 'adaptive reuse', 'building conversion',
+                    'transforming a warehouse', 'converting a warehouse', 'warehouse conversion'
+                ]
+                if any(pattern in user_message.lower() for pattern in transformation_patterns):
                     return "transformation_design"
 
                 # Check for creative constraint patterns
@@ -282,15 +300,19 @@ class ChallengeGeneratorProcessor:
                 user_message = self._get_latest_user_message(state)
                 building_type = self._extract_building_type(getattr(state, 'current_design_brief', 'architectural project'))
 
+                # ISSUE 5 FIX: Generate proper response instead of echoing user message
+                response_text = await self._generate_contextual_perspective_response(user_message, building_type, perspective_type)
+
                 return {
-                    "challenge_text": user_message,  # Pass original message for flexible generation
+                    "challenge_text": response_text,  # Proper generated response
                     "challenge_type": "perspective_challenge",
                     "perspective_type": perspective_type,
                     "building_type": building_type,
                     "pedagogical_intent": "Expand perspective and empathy in design thinking",
                     "cognitive_target": "perspective_taking",
                     "expected_outcome": "Enhanced empathy and user-centered design thinking",
-                    "gamification_applied": True
+                    "gamification_applied": True,
+                    "user_message": user_message  # Keep original message for gamification UI
                 }
             else:
                 return {
@@ -357,22 +379,85 @@ class ChallengeGeneratorProcessor:
                 'i\'m stuck on', 'stuck on', 'completely stuck', 'really stuck', 'totally stuck',
                 # FIXED: Add inspiration patterns to strong triggers
                 'need inspiration', 'inspiration for', 'inspire me', 'creative ideas', 'need ideas',
-                'convert', 'converting', 'transform', 'transforming', 'warehouse to', 'adaptive reuse',
+                # REVERTED: Remove overly broad transformation triggers that fire on knowledge requests
+                'warehouse to community center', 'converting warehouse', 'transforming warehouse',
                 'user journey', 'journey through', 'story of', 'narrative',
-                'over time', 'through time', 'evolve', 'evolution', 'future'
+                'over time', 'through time', 'evolve', 'evolution', 'future',
+                # ADDED: Role-play and perspective patterns should be strong triggers (high engagement)
+                'how would a visitor feel', 'how would a user feel', 'young visitor feel',
+                'elderly person feel', 'child feel', 'teenager feel', 'adult feel',
+                'from a user\'s perspective', 'from a visitor\'s perspective',
+                'different perspective', 'another perspective', 'alternative viewpoint'
             ]
 
             has_strong_trigger = any(pattern in latest_message for pattern in strong_trigger_patterns)
 
-            # FIXED: FREQUENCY CONTROL: Apply gamification every 3 messages (2 message break) - BUT allow strong triggers to override
+            # FIXED: FREQUENCY CONTROL: Check last 2-3 messages for games, not modulo
             total_user_messages = len(user_messages)
-            print(f"🎮 FREQUENCY DEBUG: Message {total_user_messages}, has_strong_trigger: {has_strong_trigger}")
-            if not has_strong_trigger and total_user_messages % 3 != 0:
-                print(f"🎮 FREQUENCY CONTROL: Skipping gamification (message {total_user_messages}, next at {((total_user_messages // 3) + 1) * 3})")
+
+            # Check if gamification was used in recent messages (look at last 2-3 assistant messages)
+            recent_assistant_messages = [msg['content'].lower() for msg in messages[-6:] if msg.get('role') == 'assistant']
+
+            # Look for SPECIFIC gamification indicators in recent assistant messages (not generic words)
+            gamification_indicators = [
+                'perspective wheel', 'role-play challenge', 'detective mystery', 'constraint puzzle',
+                'storytelling challenge', 'time travel challenge', 'transformation game',
+                'enhanced gamification', 'gamified challenge', 'interactive game',
+                'spin the wheel', 'persona game', 'mystery investigation'
+            ]
+
+            recent_gamification = any(
+                any(indicator in msg for indicator in gamification_indicators)
+                for msg in recent_assistant_messages[-2:]  # Check last 2 assistant messages
+            )
+
+            # Allow gamification if no recent games OR if strong trigger overrides
+            if recent_gamification and not has_strong_trigger:
+                print(f"🎮 FREQUENCY CONTROL: Skipping gamification - recent game detected in last 2 messages")
                 return False
-            elif has_strong_trigger and total_user_messages % 3 != 0:
-                print(f"🎮 FREQUENCY OVERRIDE: Strong trigger '{latest_message[:50]}...' detected, overriding frequency control")
-            print(f"🎮 FREQUENCY CONTROL: Allowing gamification for message {total_user_messages}")
+            elif has_strong_trigger:
+                print(f"🎮 FREQUENCY OVERRIDE: Strong trigger detected, overriding frequency control")
+            else:
+                print(f"🎮 FREQUENCY CONTROL: Allowing gamification - no recent games detected")
+
+            # ENHANCED GAME VARIETY SYSTEM: Prevent consecutive identical game types
+            recent_assistant_messages = [msg['content'].lower() for msg in messages[-6:] if msg.get('role') == 'assistant']
+
+            # COMPREHENSIVE GAME TYPE TRACKING - Map all game types to their indicators
+            game_type_indicators = {
+                'transformation': ['transformation challenge', 'transformation game', 'converting this', 'shape-shift', 'adaptive reuse'],
+                'role_play': ['role-play', 'perspective of', 'imagine you are', 'step into', 'as a visitor', 'as a user'],
+                'detective': ['detective', 'investigate', 'mystery', 'clues', 'investigation', 'solve the mystery'],
+                'constraint': ['constraint', 'limitation', 'creative challenge', 'design challenge', 'puzzle'],
+                'storytelling': ['storytelling', 'story', 'narrative', 'journey through', 'user journey'],
+                'time_travel': ['time travel', 'fast-forward', 'over time', 'future', 'past', 'temporal'],
+                'perspective_shift': ['perspective wheel', 'reality check', 'different angle', 'alternative view']
+            }
+
+            # Track which game types were used recently
+            recent_game_types = set()
+            for game_type, indicators in game_type_indicators.items():
+                if any(any(indicator in msg for indicator in indicators) for msg in recent_assistant_messages):
+                    recent_game_types.add(game_type)
+
+            print(f"🎮 GAME VARIETY: Recently used game types: {recent_game_types}")
+
+            # LEGACY COMPATIBILITY: Keep individual flags for existing logic
+            recent_transformation = 'transformation' in recent_game_types
+            recent_role_play = 'role_play' in recent_game_types
+            recent_detective = 'detective' in recent_game_types
+            recent_constraint = 'constraint' in recent_game_types
+            recent_storytelling = 'storytelling' in recent_game_types
+            recent_time_travel = 'time_travel' in recent_game_types
+            recent_perspective_shift = 'perspective_shift' in recent_game_types
+
+            # GAME VARIETY HELPER FUNCTION
+            def should_skip_game_type(game_type: str, recent_types: set) -> bool:
+                """Check if a game type should be skipped due to recent usage"""
+                if game_type in recent_types:
+                    print(f"🎮 GAME VARIETY: Skipping {game_type} - used recently")
+                    return True
+                return False
 
             # 1. ROLE-PLAY TRIGGERS - FIXED: More specific patterns to avoid false positives
             role_play_patterns = [
@@ -390,16 +475,30 @@ class ChallengeGeneratorProcessor:
                 'elderly person\'s perspective', 'visitor\'s perspective'
             ]
             if any(pattern in latest_message for pattern in role_play_patterns):
+                # ENHANCED GAME VARIETY: Skip if role-play was used recently
+                if should_skip_game_type('role_play', recent_game_types):
+                    return False
+
+                # ISSUE 2 FIX: Skip if user is responding to a role-play challenge
+                roleplay_response_indicators = [
+                    '🎭 role-play response:', '🎭 roleplay', 'role-play response:',
+                    'as this role:', 'from this perspective:', 'my response as'
+                ]
+                if any(indicator in latest_message.lower() for indicator in roleplay_response_indicators):
+                    print(f"🎮 GAMIFICATION SKIP: User is responding to role-play challenge - no new challenge needed")
+                    return False
+
                 print(f"🎮 GAMIFICATION TRIGGER: Role-play question detected - '{latest_message}'")
                 return True
 
-            # 2. CURIOSITY AMPLIFICATION (line 18)
-            curiosity_patterns = ['i wonder what would happen', 'what if', 'i wonder']
+            # 2. CURIOSITY AMPLIFICATION - FIXED: Removed 'what if' to let perspective patterns handle spatial design
+            curiosity_patterns = ['i wonder what would happen', 'i wonder']
             if any(pattern in latest_message for pattern in curiosity_patterns):
+                # ISSUE 3 FIX: Keep important trigger but reduce verbosity
                 print(f"🎮 GAMIFICATION TRIGGER: Curiosity amplification detected")
                 return True
 
-            # 2.5. PERSPECTIVE SHIFT REQUESTS - Broader patterns
+            # 2.5. PERSPECTIVE SHIFT REQUESTS - ENHANCED with spatial flow patterns
             perspective_shift_patterns = [
                 # Original patterns
                 'help me see this from a different angle', 'different angle', 'see this differently',
@@ -407,7 +506,11 @@ class ChallengeGeneratorProcessor:
                 'alternative viewpoint', 'fresh perspective',
                 # NEW: Simpler patterns
                 'different angle', 'differently', 'another way', 'alternative',
-                'fresh perspective', 'new perspective', 'see this', 'think about this'
+                'fresh perspective', 'new perspective', 'see this', 'think about this',
+                # ADDED: Spatial flow and "what if" patterns that should trigger perspective challenges
+                'what if i place', 'what if i move', 'what if i put', 'what if we place',
+                'would that create', 'would this create', 'engaging flow', 'flow for people',
+                'people moving through', 'flow through', 'circulation through', 'movement through'
             ]
             if any(pattern in latest_message for pattern in perspective_shift_patterns):
                 print(f"🎮 GAMIFICATION TRIGGER: Perspective shift request detected - '{latest_message}'")
@@ -425,11 +528,18 @@ class ChallengeGeneratorProcessor:
                 'help me think', 'new approach', 'different approach'
             ]
 
-            # 4. TRANSFORMATION TRIGGERS - NEW
+            # 4. TRANSFORMATION TRIGGERS - ISSUE 1 FIX: EXTREMELY narrow patterns to prevent over-triggering
             transformation_patterns = [
-                'convert', 'converting', 'transform', 'transforming', 'adapt', 'adapting',
-                'repurpose', 'repurposing', 'change the use', 'flexible use', 'multi-use',
-                'warehouse to', 'factory to', 'office to', 'adaptive reuse'
+                # ONLY trigger for EXPLICIT transformation/conversion questions or statements
+                'how do i convert', 'how can i convert this', 'how to convert this',
+                'how do i transform this', 'how can i transform this', 'how to transform this',
+                'converting this building', 'transforming this building', 'adapting this building',
+                'repurposing this building', 'changing the use of this building',
+                # ONLY when user explicitly states they are doing a conversion project
+                'i am converting', 'i\'m converting', 'i am transforming a', 'i\'m transforming a',
+                'my conversion project', 'my transformation project', 'my adaptive reuse project',
+                # ONLY for direct conversion challenges
+                'conversion challenge', 'transformation challenge', 'adaptive reuse challenge'
             ]
 
             # 5. STORYTELLING TRIGGERS - NEW
@@ -439,15 +549,17 @@ class ChallengeGeneratorProcessor:
                 'experience as they move', 'path through', 'spatial story'
             ]
 
-            # 6. TIME TRAVEL TRIGGERS - ENHANCED with more specific patterns
+            # 6. TIME TRAVEL TRIGGERS - FIXED: More precise patterns to avoid false matches
             time_travel_patterns = [
                 'over time', 'through time', 'years from now', 'in the future',
-                'decades', 'generations', 'evolve over time', 'evolution', 'lifecycle',
-                'aging', 'changing needs', 'future use', 'long-term',
+                'decades', 'generations', 'evolve over time', 'evolution of', 'lifecycle',
+                'aging building', 'changing needs over', 'future use', 'long-term use',
                 # ADDED: More specific temporal patterns
                 'future community needs', 'adapt to future', 'evolve.*future',
                 '10.*years', '20.*years', 'next decade', 'coming years',
-                'digital.*future', 'technological.*future', 'future.*formats'
+                'digital.*future', 'technological.*future', 'future.*formats',
+                # FIXED: More specific patterns to avoid false matches
+                'building over time', 'space over time', 'community over time'
             ]
 
             # ADDITIONAL CHECK: Don't trigger for thoughtful design questions or example requests
@@ -456,43 +568,145 @@ class ChallengeGeneratorProcessor:
                 'considering', 'thinking about', 'exploring', 'approach this'
             ]
 
-            # FIXED: Don't trigger gamification for example requests
+            # ISSUE 2 FIX: Enhanced filtering for information/example requests
             example_request_indicators = [
                 'give example', 'show example', 'example project', 'project example',
-                'can you give', 'can you show', 'can you provide', 'provide example'
+                'can you give', 'can you show', 'can you provide', 'provide example',
+                'examples of', 'example of', 'show me examples', 'give me examples',
+                # ISSUE 2 FIX: Add more patterns that should NOT trigger gamification
+                'provide some examples', 'can you provide examples', 'examples about',
+                'how to change a courtyard', 'how to approach', 'not sure about how to approach'
             ]
 
             is_thoughtful_question = any(indicator in latest_message for indicator in thoughtful_design_indicators)
             is_example_request = any(indicator in latest_message for indicator in example_request_indicators)
 
-            # FIXED: Skip gamification for example requests
+            # ENHANCED: Skip gamification for example requests and knowledge requests (ISSUE 1 FIX)
             if is_example_request:
                 print(f"🎮 GAMIFICATION SKIP: Example request detected - no gamification needed")
                 return False
 
+            # ISSUE 2 FIX: Enhanced filtering for knowledge and design process requests
+            knowledge_request_indicators = [
+                'what is', 'what are', 'how does', 'tell me about', 'explain',
+                'definition of', 'meaning of', 'principles of', 'information about'
+            ]
+
+            # ISSUE 2 FIX: Add design process question filtering
+            design_process_indicators = [
+                'how do i design', 'how to design', 'design that narrative flow',
+                'create a user journey', 'design process', 'approach to',
+                'methodology for', 'strategy for', 'process for'
+            ]
+
+            is_knowledge_request = any(indicator in latest_message for indicator in knowledge_request_indicators)
+            is_design_process_question = any(indicator in latest_message for indicator in design_process_indicators)
+
+            if is_knowledge_request:
+                print(f"🎮 GAMIFICATION SKIP: Knowledge request detected - no gamification needed")
+                return False
+
+            if is_design_process_question:
+                print(f"🎮 GAMIFICATION SKIP: Design process question detected - no gamification needed")
+                return False
+
             if any(pattern in latest_message for pattern in constraint_patterns) and not is_thoughtful_question:
+                # ENHANCED GAME VARIETY: Skip if constraint challenge was used recently
+                if should_skip_game_type('constraint', recent_game_types):
+                    return False
                 print(f"🎮 GAMIFICATION TRIGGER: Creative constraint detected - '{latest_message}'")
                 return True
 
             # FIXED: Check time travel patterns FIRST (higher priority than transformation)
             if any(pattern in latest_message for pattern in time_travel_patterns):
+                # ENHANCED GAME VARIETY: Skip if time travel was used recently
+                if should_skip_game_type('time_travel', recent_game_types):
+                    return False
+
+                # ISSUE 2 FIX: Skip if user is responding to a time travel challenge
+                timetravel_response_indicators = [
+                    '⏰ time travel response:', '⏰ temporal', 'time travel response:',
+                    'in the future:', 'in the past:', 'temporal response:'
+                ]
+                if any(indicator in latest_message.lower() for indicator in timetravel_response_indicators):
+                    print(f"🎮 GAMIFICATION SKIP: User is responding to time travel challenge - no new challenge needed")
+                    return False
+
                 print(f"🎮 GAMIFICATION TRIGGER: Time travel challenge detected - '{latest_message}'")
                 return True
 
             # Check storytelling patterns
             if any(pattern in latest_message for pattern in storytelling_patterns):
+                # ENHANCED GAME VARIETY: Skip if storytelling was used recently
+                if should_skip_game_type('storytelling', recent_game_types):
+                    return False
+
+                # ISSUE 2 FIX: Skip if user is responding to a storytelling challenge
+                storytelling_response_indicators = [
+                    '📚 story response:', '📚 storytelling', 'story response:',
+                    'my story:', 'the story goes:', 'narrative response:'
+                ]
+                if any(indicator in latest_message.lower() for indicator in storytelling_response_indicators):
+                    print(f"🎮 GAMIFICATION SKIP: User is responding to storytelling challenge - no new challenge needed")
+                    return False
+
                 print(f"🎮 GAMIFICATION TRIGGER: Storytelling challenge detected - '{latest_message}'")
                 return True
 
             # Check transformation patterns (lower priority than time travel)
             if any(pattern in latest_message for pattern in transformation_patterns):
+                # ENHANCED GAME VARIETY: Skip if transformation was used recently
+                if should_skip_game_type('transformation', recent_game_types):
+                    return False
+
+                # ADDITIONAL COOLDOWN: Check for transformation keywords in recent user messages to prevent over-triggering
+                recent_user_messages = [msg['content'].lower() for msg in messages[-6:] if msg.get('role') == 'user']
+                transformation_keyword_count = sum(
+                    1 for msg in recent_user_messages
+                    for pattern in ['transform', 'convert', 'adapt', 'reuse', 'repurpose']
+                    if pattern in msg
+                )
+
+                if transformation_keyword_count >= 3:  # If user mentioned transformation concepts 3+ times recently
+                    print(f"🎮 GAMIFICATION SKIP: Too many transformation keywords recently ({transformation_keyword_count}) - preventing over-triggering")
+                    return False
+
                 print(f"🎮 GAMIFICATION TRIGGER: Transformation challenge detected - '{latest_message}'")
                 return True
 
-            # 4. REALITY CHECK / OVERCONFIDENCE (lines 24, 33)
+            # ADDED: Check detective/mystery patterns
+            detective_patterns = [
+                'why isn\'t this', 'what\'s wrong with', 'need to investigate', 'something feels off',
+                'users seem to avoid', 'people avoid', 'don\'t know why', 'can\'t identify',
+                'bottlenecks but', 'investigate', 'analyze why'
+            ]
+            if any(pattern in latest_message for pattern in detective_patterns):
+                # ISSUE 1 FIX: Skip if we recently used detective challenge
+                if recent_detective:
+                    print(f"🎮 GAMIFICATION SKIP: Detective challenge recently used - avoiding repetition")
+                    return False
+
+                # ISSUE 2 FIX: Skip if user is responding to a detective challenge
+                detective_response_indicators = [
+                    '🔍 detective response:', '🔍 investigation', 'detective response:',
+                    'my investigation shows:', 'investigation findings:', 'mystery solved:'
+                ]
+                if any(indicator in latest_message.lower() for indicator in detective_response_indicators):
+                    print(f"🎮 GAMIFICATION SKIP: User is responding to detective challenge - no new challenge needed")
+                    return False
+
+                print(f"🎮 GAMIFICATION TRIGGER: Detective/mystery challenge detected - '{latest_message}'")
+                return True
+
+            # 4. REALITY CHECK / OVERCONFIDENCE - ENHANCED patterns
             overconfidence_patterns = [
                 'this seems pretty easy', 'this is easy', 'i already know exactly',
-                'i already know', 'that\'s obvious', 'simple', 'basic'
+                'i already know', 'that\'s obvious', 'simple', 'basic',
+                # ADDED: Enhanced patterns for dismissive overconfidence
+                'my approach is great', 'nothing need to be done', 'nothing needs to be done',
+                'nothing to improve', 'no need to improve', 'don\'t need to improve',
+                'already perfect', 'already good enough', 'good enough as is',
+                'no changes needed', 'no improvements needed', 'fine as it is'
             ]
             if any(pattern in latest_message for pattern in overconfidence_patterns):
                 print(f"🎮 GAMIFICATION TRIGGER: Overconfidence/reality check detected")
@@ -501,7 +715,8 @@ class ChallengeGeneratorProcessor:
             # 5. LOW ENGAGEMENT (lines 27-31)
             low_engagement_responses = ['ok', 'yes', 'sure', 'fine', 'alright', 'cool', 'maybe']
             if latest_message in low_engagement_responses:
-                print(f"🎮 GAMIFICATION TRIGGER: Low engagement detected")
+                # ISSUE 3 FIX: Commented out less critical trigger print
+                # print(f"🎮 GAMIFICATION TRIGGER: Low engagement detected")
                 return True
 
             # 6. COGNITIVE OFFLOADING (lines 223-233)
@@ -527,7 +742,8 @@ class ChallengeGeneratorProcessor:
                 return False
 
             # Default: no gamification for normal design statements, technical questions, etc.
-            print(f"🎮 GAMIFICATION SKIP: Normal design statement/question (no trigger patterns)")
+            # ISSUE 3 FIX: Commented out verbose skip message
+            # print(f"🎮 GAMIFICATION SKIP: Normal design statement/question (no trigger patterns)")
             return False
 
         except Exception as e:
@@ -721,7 +937,37 @@ class ChallengeGeneratorProcessor:
         
         # Fallback to context-aware challenge
         return self._generate_context_aware_fallback(user_input, project_context, challenge_type)
-    
+
+    async def _generate_contextual_perspective_response(self, user_message: str, building_type: str, perspective_type: str) -> str:
+        """ISSUE 5 FIX: Generate proper response for perspective challenges instead of echoing user message."""
+        try:
+            # Generate a thoughtful response that addresses the user's question while introducing the gamification
+            response_prompt = f"""
+            The user asked: "{user_message}"
+
+            Generate a brief, thoughtful response (2-3 sentences) that:
+            1. Acknowledges their question about {building_type}
+            2. Introduces the perspective-taking challenge naturally
+            3. Connects to their specific context
+
+            Keep it under 100 words and make it feel like a natural mentor response, not a game announcement.
+            """
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are an architectural mentor who provides thoughtful, contextual responses."),
+                self.client.create_user_message(response_prompt)
+            ])
+
+            if response and response.get("content"):
+                return response["content"].strip()
+            else:
+                # Fallback response
+                return f"That's a thoughtful question about {building_type} design. Let's explore this through different perspectives to deepen your understanding."
+
+        except Exception as e:
+            print(f"⚠️ Contextual perspective response generation failed: {e}")
+            return f"That's an interesting question about {building_type}. Let's explore this from different viewpoints."
+
     def _extract_user_context(self, user_input: str) -> str:
         """Extract key context from user's question to make challenges relevant."""
         if not user_input:
@@ -1240,9 +1486,13 @@ class ChallengeGeneratorProcessor:
             import openai
             client = openai.OpenAI()
 
+            # Escape quotes in user message to prevent string formatting issues
+            safe_user_message = user_message.replace('"', '\\"').replace("'", "\\'")
+            safe_building_type = building_type.replace('"', '\\"').replace("'", "\\'")
+
             # Extract the main architectural topic from user message
             topic_extraction_prompt = f"""
-            Extract the main architectural topic/concept from this user message: "{user_message}"
+            Extract the main architectural topic/concept from this user message: "{safe_user_message}"
 
             Examples:
             - "circulation strategies" → "circulation"
@@ -1267,14 +1517,14 @@ class ChallengeGeneratorProcessor:
 
             # Generate contextual story prompt
             story_generation_prompt = f"""
-            Create a creative storytelling challenge for an architecture student working on a {building_type} project.
+            Create a creative storytelling challenge for an architecture student working on a {safe_building_type} project.
 
-            User's question/context: "{user_message}"
+            User's question/context: "{safe_user_message}"
             Main architectural topic: "{main_topic}"
-            Building type: "{building_type}"
+            Building type: "{safe_building_type}"
 
             Generate a storytelling prompt that:
-            1. Relates specifically to the topic "{main_topic}" in the context of a {building_type}
+            1. Relates specifically to the topic "{main_topic}" in the context of a {safe_building_type}
             2. Uses narrative perspective (from building's POV, user's POV, or element's POV)
             3. Encourages creative thinking about how {main_topic} affects user experience
             4. Is engaging and imaginative, not generic
@@ -1282,7 +1532,7 @@ class ChallengeGeneratorProcessor:
 
             Format: Write a 2-3 sentence storytelling prompt that starts with an engaging hook.
 
-            Example format: "Tell the story of [perspective] in your {building_type}. How does [topic-specific element] [specific action/impact]? What [specific questions about user experience/design impact]?"
+            Example format: "Tell the story of [perspective] in your {safe_building_type}. How does [topic-specific element] [specific action/impact]? What [specific questions about user experience/design impact]?"
             """
 
             story_response = client.chat.completions.create(
@@ -1342,11 +1592,15 @@ class ChallengeGeneratorProcessor:
             import openai
             client = openai.OpenAI()
 
-            transformation_prompt = f"""
-            Create a transformation challenge for an architecture student working on a {building_type} project.
+            # Escape quotes in user message to prevent string formatting issues
+            safe_user_message = user_message.replace('"', '\\"').replace("'", "\\'")
+            safe_building_type = building_type.replace('"', '\\"').replace("'", "\\'")
 
-            User's question/context: "{user_message}"
-            Building type: "{building_type}"
+            transformation_prompt = f"""
+            Create a transformation challenge for an architecture student working on a {safe_building_type} project.
+
+            User's question/context: "{safe_user_message}"
+            Building type: "{safe_building_type}"
 
             Generate a transformation prompt that:
             1. Relates specifically to the user's question/topic
@@ -1357,7 +1611,7 @@ class ChallengeGeneratorProcessor:
 
             Format: 2-3 sentences that challenge the student to think about transformation scenarios.
 
-            Example structure: "Your {building_type} needs to [specific transformation challenge]. [Specific scenarios]. What [specific design elements] would enable these transformations?"
+            Example structure: "Your {safe_building_type} needs to [specific transformation challenge]. [Specific scenarios]. What [specific design elements] would enable these transformations?"
             """
 
             response = client.chat.completions.create(

@@ -13,11 +13,46 @@ from typing import Dict, Any, List
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dashboard.config.settings import INPUT_MODES, MENTOR_TYPES, TEMPLATE_PROMPTS, SKILL_LEVELS
 
+# COMMENTED AND REPLACED WITH THE FUNCTION BELOW
+# def safe_markdown_to_html(text: str) -> str:
+#     """
+#     Convert markdown formatting to HTML while safely escaping other content.
+#     Handles **bold** formatting and preserves line breaks.
+#     """
+#     if text is None:
+#         return ""
 
+#     # Normalize newlines and preserve line breaks
+#     normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
+
+#     # Convert markdown bold (**text**) to HTML <strong> while safely escaping other content
+#     html_parts: List[str] = []
+#     last_idx = 0
+
+#     for match in re.finditer(r"\*\*(.+?)\*\*", normalized, flags=re.DOTALL):
+#         start, end = match.span()
+#         inner = match.group(1)
+#         # escape text before bold
+#         html_parts.append(escape(normalized[last_idx:start]))
+#         # add bold with escaped inner text
+#         html_parts.append(f"<strong>{escape(inner)}</strong>")
+#         last_idx = end
+
+#     # Add remaining text
+#     html_parts.append(escape(normalized[last_idx:]))
+#     html = "".join(html_parts)
+
+#     # Convert newlines to <br> tags for proper display
+#     html = html.replace("\n", "<br>")
+
+#     return html
+
+
+#ADDED FOR TRUNCATION
 def safe_markdown_to_html(text: str) -> str:
     """
     Convert markdown formatting to HTML while safely escaping other content.
-    Handles **bold** formatting and preserves line breaks.
+    Handles **bold**, *italic*, ### headers, [links](url), and preserves line breaks.
     """
     if text is None:
         return ""
@@ -25,27 +60,75 @@ def safe_markdown_to_html(text: str) -> str:
     # Normalize newlines and preserve line breaks
     normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
 
-    # Convert markdown bold (**text**) to HTML <strong> while safely escaping other content
+    # Step 1: Convert markdown headers (### Header) to HTML <h3> tags
+    def replace_header(match):
+        level = len(match.group(1))  # Count the # symbols
+        header_text = match.group(2).strip()
+        return f'<h{level}>{escape(header_text)}</h{level}>'
+
+    # Process headers first (supports h1-h6)
+    header_processed = re.sub(r'^(#{1,6})\s+(.+)$', replace_header, normalized, flags=re.MULTILINE)
+
+    # Step 2: Convert markdown links [text](url) to HTML <a> tags
+    def replace_link(match):
+        link_text = match.group(1)
+        link_url = match.group(2)
+        # Escape the link text but keep the URL as-is for functionality
+        return f'<a href="{escape(link_url)}" target="_blank" rel="noopener noreferrer">{escape(link_text)}</a>'
+
+    # Process links
+    link_processed = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, header_processed)
+
+    # Step 3: Convert markdown bold (**text**) and italic (*text*) to HTML
     html_parts: List[str] = []
     last_idx = 0
 
-    for match in re.finditer(r"\*\*(.+?)\*\*", normalized, flags=re.DOTALL):
+    # Process both bold and italic formatting - bold first to avoid conflicts
+    for match in re.finditer(r'(\*\*(.+?)\*\*|\*([^*]+?)\*)', link_processed, flags=re.DOTALL):
         start, end = match.span()
-        inner = match.group(1)
-        # escape text before bold
-        html_parts.append(escape(normalized[last_idx:start]))
-        # add bold with escaped inner text
-        html_parts.append(f"<strong>{escape(inner)}</strong>")
+
+        # Add escaped text before the match
+        before_text = link_processed[last_idx:start]
+        if '<a href=' in before_text or '</a>' in before_text or '<h' in before_text:
+            # Don't escape if it contains HTML tags
+            html_parts.append(before_text)
+        else:
+            html_parts.append(escape(before_text))
+
+        # Determine if it's bold or italic
+        if match.group(0).startswith('**'):
+            # Bold formatting
+            bold_content = match.group(2)
+            if '<a href=' in bold_content or '</a>' in bold_content:
+                html_parts.append(f"<strong>{bold_content}</strong>")
+            else:
+                html_parts.append(f"<strong>{escape(bold_content)}</strong>")
+        else:
+            # Italic formatting
+            italic_content = match.group(3)
+            if '<a href=' in italic_content or '</a>' in italic_content:
+                html_parts.append(f"<em>{italic_content}</em>")
+            else:
+                html_parts.append(f"<em>{escape(italic_content)}</em>")
+
         last_idx = end
 
-    # Add remaining text
-    html_parts.append(escape(normalized[last_idx:]))
-    html = "".join(html_parts)
+    # Add any remaining text after the last match
+    remaining_text = link_processed[last_idx:]
+    if '<a href=' in remaining_text or '</a>' in remaining_text or '<h' in remaining_text:
+        # Don't escape if it contains HTML tags
+        html_parts.append(remaining_text)
+    else:
+        html_parts.append(escape(remaining_text))
 
-    # Convert newlines to <br> tags for proper display
-    html = html.replace("\n", "<br>")
+    # Join all parts and convert newlines to <br> tags
+    html_content = "".join(html_parts)
+    html_with_breaks = html_content.replace("\n", "<br>")
 
-    return html
+    return html_with_breaks
+
+
+
 
 
 def render_chat_message(message: Dict[str, Any]):
@@ -324,8 +407,11 @@ def render_single_message(message: Dict[str, Any]):
             if message.get("generated_image"):
                 print(f"🎨 DEBUG: Found generated_image in message, calling render function")
                 _render_generated_image_in_chat(message["generated_image"])
-            else:
-                print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
+
+            # Check for active task to render (like gamification)
+            _render_task_if_active()
+            # else:
+            #     print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
 
 
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
@@ -434,7 +520,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
 
         # STEP 5: Add conversation continuity prompt
         st.markdown("---")
-        st.markdown("💬 **Continue the conversation by sharing your thoughts, questions, or insights from this challenge.**")
+        st.markdown("**Continue the conversation by sharing your thoughts, questions, or insights from this challenge.**")
 
         # Add timestamp
         st.markdown(
@@ -635,7 +721,7 @@ def render_welcome_section():
     st.markdown("""
     <div class="top-section">
     <div class="greeting">
-        Welcome to your AI Mentor!
+        Welcome to Mentor!
     </div>
     <p style="text-align: center; color: #888; margin-top: 1rem;">
         Describe your project or upload an image to get started. You can work with text descriptions, 
@@ -699,52 +785,162 @@ def render_initial_image_upload():
 
 
 def render_mentor_type_selection():
-    """Render mentor type selection component."""
-    mentor_type = st.selectbox(
-        "Mentor Type:",
-        MENTOR_TYPES,
-        index=0,
-        help="Socratic Agent: Multi-agent system that challenges and guides thinking\n"
-             "Raw GPT: Direct GPT responses for comparison\n"
-             "No AI: Hardcoded questions only, no AI assistance (control group)"
-    )
-    return mentor_type
+    """Render mentor type selection component - conditional based on mode."""
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+
+    if dashboard_mode == "Test Mode":
+        # Test mode: display current test condition (read-only)
+        test_group = st.session_state.get('test_group_selection', 'MENTOR')
+        mentor_type = st.session_state.get('mentor_type', 'Socratic Agent')
+
+        test_group_descriptions = {
+            "MENTOR": "Socratic Agent - Multi-agent scaffolding system",
+            "GENERIC_AI": "Raw GPT - Direct AI assistance",
+            "CONTROL": "No AI - Self-directed design work"
+        }
+
+        st.info(f"**Test Condition**: {test_group_descriptions.get(test_group, 'Unknown')}")
+        return mentor_type
+    else:
+        # Flexible mode: original mentor type selection
+        mentor_type = st.selectbox(
+            "Mentor Type:",
+            MENTOR_TYPES,
+            index=0,
+            help="Socratic Agent: Multi-agent system that challenges and guides thinking\n"
+                 "Raw GPT: Direct GPT responses for comparison\n"
+                 "No AI: Hardcoded questions only, no AI assistance (control group)"
+        )
+        return mentor_type
 
 
 def render_template_selection():
-    """Render template selection component."""
-    selected_template = st.selectbox(
-        "Quick Start Templates:",
-        list(TEMPLATE_PROMPTS.keys()),
-        help="Choose a template to get started quickly, or write your own description below"
-    )
-    return selected_template
+    """Render template selection component - only in flexible mode."""
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+
+    if dashboard_mode == "Flexible Mode":
+        selected_template = st.selectbox(
+            "Quick Start Templates:",
+            list(TEMPLATE_PROMPTS.keys()),
+            help="Choose a template to get started quickly, or write your own description below"
+        )
+        return selected_template
+    else:
+        # Test mode: no template selection
+        return "Select a template..."
 
 
 def render_skill_level_selection():
-    """Render skill level selection component."""
-    skill_level = st.selectbox(
-        "Your Skill Level:",
-        SKILL_LEVELS,
-        index=1,
-        help="This helps the AI provide appropriate guidance"
-    )
-    return skill_level
+    """Render skill level selection component - conditional based on mode."""
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
 
+    if dashboard_mode == "Test Mode":
+        # Test mode: fixed intermediate level
+        skill_level = "Intermediate"
+        st.info(f"**Skill Level**: {skill_level} (Fixed for research consistency)")
+        return skill_level
+    # else:
+    #     # Flexible mode: original selection
+    #     skill_level = st.selectbox(
+    #         "Your Skill Level:",
+    #         SKILL_LEVELS,
+    #         index=1,
+    #         help="This helps the AI provide appropriate guidance"
+    #     )
+        return skill_level
+
+
+def render_main_design_task():
+    """Render the main design task prominently for test mode."""
+    st.markdown("### Design Challenge")
+
+    # Main task from test documents
+    main_task = """
+    **You are tasked with designing a community center for a diverse urban neighborhood of 15,000 residents.**
+
+    **Site**: Former industrial warehouse (150m x 80m x 12m height)
+
+    **Key Considerations**:
+    - Community needs assessment and cultural sensitivity
+    - Sustainability and adaptive reuse principles
+    - Flexible programming for diverse activities
+    - Integration with existing urban fabric
+    """
+
+    st.markdown(main_task)
+
+    # Phase-specific subtasks
+    current_phase = st.session_state.get('test_current_phase', 'Ideation')
+
+    if current_phase == 'Ideation':
+        subtask = """
+        **Current Phase: Ideation**
+
+        Develop your initial concept considering:
+        - What questions should we ask about this community?
+        - How can the existing industrial character be preserved and enhanced?
+        - What successful warehouse-to-community transformations can inform your approach?
+        """
+    elif current_phase == 'Visualization':
+        subtask = """
+        **Current Phase: Visualization**
+
+        Based on your concept, develop spatial visualizations:
+        - Create diagrams showing circulation patterns and adjacency requirements
+        - Sketch key spatial relationships and community interaction zones
+        - Visualize how the existing structure integrates with new program elements
+        """
+    elif current_phase == 'Materialization':
+        subtask = """
+        **Current Phase: Materialization**
+
+        Develop technical implementation details:
+        - Specify materials and construction methods that support your design vision
+        - Detail how new systems integrate with preserved industrial elements
+        - Address structural modifications within the existing grid system
+        """
+    else:
+        subtask = "**Ready to begin design process**"
+
+    st.markdown(subtask)
+
+    return main_task
 
 def render_project_description_input(template_text: str):
     """Render project description input area with inline image upload."""
+    dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
+
+    if dashboard_mode == "Test Mode":
+        # Test mode: Display fixed design challenge
+        render_main_design_task()
+
+        # st.markdown("### Let`s Start!")
+        # st.write("Define your project first: I am designing ...")
+    else:
+        # Flexible mode: Original template-based input
+        st.markdown("### 📝 Project Description")
+        st.write("Describe your architectural project or use a template below:")
+
     # Create columns for project description and image upload
     col1, col2 = st.columns([0.85, 0.15])
 
     with col1:
-        project_description = st.text_area(
-            "Project Description:",
-            value=template_text,
-            placeholder="Describe your architectural project here...",
-            height=120,
-            help="Provide details about your architectural project, design goals, constraints, or specific questions"
-        )
+        if dashboard_mode == "Test Mode":
+            project_description = st.text_area(
+                "Define your project first:",
+                value="",  # Start empty for test mode
+                placeholder="I am designing ...",
+                height=120,
+                help="I am designing ..."
+            )
+        else:
+            project_description = st.text_area(
+                "Project Description:",
+                value=template_text,
+                placeholder="Describe your architectural project here...",
+                height=120,
+                help="Provide details about your architectural project, design goals, constraints, or specific questions"
+            )
 
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)  # Add some spacing to align with text area
@@ -881,3 +1077,65 @@ def _clean_agent_response(agent_response: str) -> str:
         return ""
 
     return clean_content.strip()
+
+
+def _render_task_if_active():
+    """Render active task UI component if present (like gamification)"""
+    try:
+        # Check if there's an active task to render
+        active_task_data = st.session_state.get('active_task', None)
+
+        if active_task_data and active_task_data.get('should_render', False):
+            print(f"🎯 TASK_UI: Rendering active task component")
+
+            # Import task UI renderer
+            from dashboard.ui.task_ui_renderer import TaskUIRenderer
+
+            # Extract task data
+            task = active_task_data['task']
+            guidance_type = active_task_data['guidance_type']
+            user_input = active_task_data.get('user_input', '')
+
+            # Get actual task content from guidance system
+            from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+            guidance_system = TaskGuidanceSystem()
+
+            # Get the real task assignment based on test group
+            if task.test_group == "MENTOR":
+                task_data = guidance_system.mentor_tasks.get(task.task_type, {})
+            elif task.test_group == "GENERIC_AI":
+                task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
+            elif task.test_group == "CONTROL":
+                task_data = guidance_system.control_tasks.get(task.task_type, {})
+            else:
+                task_data = {}
+
+            # Get the actual task assignment content
+            task_content = task_data.get("task_assignment", f"🎯 TASK {task.task_type.value.replace('_', ' ').title()}: Complete the design challenge")
+
+            # Add specific guidance content based on type
+            if guidance_type == "socratic" and task_data.get("socratic_questions"):
+                questions = task_data["socratic_questions"]
+                if questions:
+                    task_content += f"\n\n**Guided Exploration Question:**\n{questions[0]}"
+            elif guidance_type == "direct" and task_data.get("direct_information"):
+                info_list = task_data["direct_information"]
+                if info_list:
+                    info_text = "\n".join([f"• {info}" for info in info_list[:2]])  # Show first 2 items
+                    task_content += f"\n\n**Helpful Information:**\n{info_text}"
+            elif guidance_type == "minimal" and task_data.get("minimal_prompt"):
+                task_content += f"\n\n**Guidance:** {task_data['minimal_prompt']}"
+
+            # Render the task UI component with real content
+            renderer = TaskUIRenderer()
+            renderer.render_task_component(task, task_content, guidance_type)
+
+            # Mark as rendered to avoid duplicate rendering
+            st.session_state['active_task']['should_render'] = False
+
+            print(f"🎯 TASK_UI: Task component rendered successfully")
+
+    except Exception as e:
+        print(f"🎯 TASK_UI ERROR: Failed to render task component: {e}")
+        import traceback
+        traceback.print_exc()

@@ -81,6 +81,17 @@ except ImportError as e:
 except Exception as e:
     print(f"⚠️ Warning: Secrets manager initialization failed: {e}")
 
+import streamlit as st
+
+# Configure Streamlit page (must be first Streamlit command)
+PAGE_CONFIG = {
+    "page_title": "MEGA Architectural Mentor",
+    "page_icon": "🏗️",
+    "layout": "wide",
+    "initial_sidebar_state": "expanded"
+}
+st.set_page_config(**PAGE_CONFIG)
+
 from dashboard.unified_dashboard import UnifiedArchitecturalDashboard
 
 def main():

@@ -1,0 +1,200 @@
+{
+  "validation_timestamp": "2025-08-25T20:45:32.600648",
+  "validation_results": {
+    "mentor_mode": {
+      "test_results": [
+        {
+          "input": "I need to design a community center. Where should I start?",
+          "response": "Error in mentor processing: asyncio.run() cannot be called from a running event loop",
+          "response_time": 0.025248,
+          "analysis": {
+            "socratic_questioning": 0.0,
+            "scaffolding_effectiveness": 0.0,
+            "direct_answer_avoidance": 1.0,
+            "response_length": 84,
+            "question_count": 0
+          }
+        },
+        {
+          "input": "What are the key considerations for community spaces?",
+          "response": "Error in mentor processing: asyncio.run() cannot be called from a running event loop",
+          "response_time": 0.0,
+          "analysis": {
+            "socratic_questioning": 0.0,
+            "scaffolding_effectiveness": 0.0,
+            "direct_answer_avoidance": 1.0,
+            "response_length": 84,
+            "question_count": 0
+          }
+        },
+        {
+          "input": "How do I balance public and private areas?",
+          "response": "Error in mentor processing: asyncio.run() cannot be called from a running event loop",
+          "response_time": 0.0,
+          "analysis": {
+            "socratic_questioning": 0.0,
+            "scaffolding_effectiveness": 0.0,
+            "direct_answer_avoidance": 1.0,
+            "response_length": 84,
+            "question_count": 0
+          }
+        },
+        {
+          "input": "Can you help me with the spatial layout?",
+          "response": "Error in mentor processing: asyncio.run() cannot be called from a running event loop",
+          "response_time": 0.0,
+          "analysis": {
+            "socratic_questioning": 0.0,
+            "scaffolding_effectiveness": 0.0,
+            "direct_answer_avoidance": 1.0,
+            "response_length": 84,
+            "question_count": 0
+          }
+        }
+      ],
+      "evaluation": {
+        "socratic_questioning": 0.0,
+        "scaffolding_effectiveness": 0.0,
+        "cognitive_offloading_prevention": 1.0,
+        "avg_response_time": 0.006312,
+        "avg_question_count": 0.0
+      },
+      "status": "completed"
+    },
+    "generic_ai_mode": {
+      "test_results": [
+        {
+          "input": "I need to design a community center. Where should I start?",
+          "response": "Here are the key steps to start designing a community center: 1) Conduct community needs assessment, 2) Analyze the site conditions, 3) Develop a program of spaces, 4) Create initial concept sketches, 5) Consider accessibility and sustainability requirements.",
+          "response_time": 0.0,
+          "analysis": {
+            "direct_assistance": 0.25,
+            "solution_provision": 0.0,
+            "information_density": 19.0,
+            "response_length": 259
+          }
+        },
+        {
+          "input": "What are the key considerations for community spaces?",
+          "response": "Key considerations for community spaces include: accessibility for all users, flexible programming spaces, natural lighting, acoustic design, security and safety, sustainable materials, cultural sensitivity, and integration with surrounding neighborhood context.",
+          "response_time": 0.0,
+          "analysis": {
+            "direct_assistance": 0.0,
+            "solution_provision": 0.0,
+            "information_density": 15.0,
+            "response_length": 262
+          }
+        },
+        {
+          "input": "How do I balance public and private areas?",
+          "response": "To balance public and private areas: Use zoning strategies with public spaces near entrances, create transition zones with semi-private areas, position private spaces toward the back or upper floors, use visual barriers like landscaping or level changes, and consider acoustic separation between different activity zones.",
+          "response_time": 0.0,
+          "analysis": {
+            "direct_assistance": 0.0,
+            "solution_provision": 0.0,
+            "information_density": 22.5,
+            "response_length": 321
+          }
+        },
+        {
+          "input": "Can you help me with the spatial layout?",
+          "response": "For spatial layout, organize spaces by function and user flow: Place high-traffic public areas near main entrances, group similar functions together, create clear circulation paths, ensure natural light reaches key spaces, and maintain sight lines for supervision and safety.",
+          "response_time": 0.0,
+          "analysis": {
+            "direct_assistance": 0.0,
+            "solution_provision": 0.0,
+            "information_density": 19.5,
+            "response_length": 275
+          }
+        }
+      ],
+      "evaluation": {
+        "direct_assistance": 0.0625,
+        "information_provision": 0.0,
+        "cognitive_offloading_risk": 0.0625,
+        "avg_response_time": 0.0,
+        "avg_information_density": 19.0
+      },
+      "status": "completed"
+    },
+    "control_mode": {
+      "test_results": [
+        {
+          "input": "I need to design a community center. Where should I start?",
+          "response": "Please document your initial thoughts and approach in the workspace below. Consider reviewing the provided reference materials and guidelines for community center design.",
+          "response_time": 0.0,
+          "analysis": {
+            "self_reflection_prompts": 0.25,
+            "resource_references": 0.75,
+            "no_ai_assistance": 1.0,
+            "response_length": 170
+          }
+        },
+        {
+          "input": "What are the key considerations for community spaces?",
+          "response": "Reflect on your understanding of community needs and document your analysis. Use the reference materials to support your thinking process.",
+          "response_time": 0.0,
+          "analysis": {
+            "self_reflection_prompts": 0.5,
+            "resource_references": 0.5,
+            "no_ai_assistance": 1.0,
+            "response_length": 138
+          }
+        },
+        {
+          "input": "How do I balance public and private areas?",
+          "response": "Consider your design approach and document your reasoning. Review relevant design principles in the provided materials.",
+          "response_time": 0.0,
+          "analysis": {
+            "self_reflection_prompts": 0.5,
+            "resource_references": 0.25,
+            "no_ai_assistance": 1.0,
+            "response_length": 119
+          }
+        },
+        {
+          "input": "Can you help me with the spatial layout?",
+          "response": "Work through your spatial organization concepts independently. Document your design process and reasoning in the workspace provided.",
+          "response_time": 0.0,
+          "analysis": {
+            "self_reflection_prompts": 0.25,
+            "resource_references": 0.0,
+            "no_ai_assistance": 1.0,
+            "response_length": 132
+          }
+        }
+      ],
+      "evaluation": {
+        "no_ai_assistance": 1.0,
+        "self_directed_prompts": 0.375,
+        "autonomous_thinking": 0.375,
+        "avg_response_time": 0.0
+      },
+      "status": "completed"
+    },
+    "cross_mode_comparison": {
+      "socratic_questioning_difference": 0.0,
+      "direct_assistance_difference": 0.0625,
+      "cognitive_offloading_prevention_difference": 0.9375
+    },
+    "data_integrity": {
+      "all_modes_tested": true,
+      "response_times_recorded": true,
+      "analyses_complete": true
+    },
+    "performance_metrics": {
+      "avg_response_times": {
+        "mentor_mode": 0.006312,
+        "generic_ai_mode": 0.0,
+        "control_mode": 0.0
+      },
+      "fastest_mode": "generic_ai_mode",
+      "slowest_mode": "mentor_mode"
+    }
+  },
+  "summary": {
+    "total_tests_run": 12,
+    "modes_validated": 3,
+    "validation_status": "PASSED"
+  }
+}

@@ -7,7 +7,7 @@ class UserExperienceConfig:
     MAX_RESPONSE_LENGTH = 400  # Generous limit for complete responses
     MAX_COGNITIVE_INTERVENTION_LENGTH = 350
     MAX_SOCRATIC_RESPONSE_LENGTH = 400  # Increased for complete Socratic responses
-    MAX_DOMAIN_EXPERT_RESPONSE_LENGTH = 600  # Increased for comprehensive knowledge
+    MAX_DOMAIN_EXPERT_RESPONSE_LENGTH = 700  # INCREASED: Fix URL truncation in example responses
     
     # METRICS DISPLAY SETTINGS
     SHOW_SCIENTIFIC_METRICS = True  # Hide verbose metrics from user
