@@ -1422,7 +1422,8 @@ class PhaseProgressionSystem:
                 image_result = self.image_generator.generate_phase_image(
                     design_description,
                     next_phase.value.lower(),
-                    f"{project_type} design project"
+                    f"{project_type} design project",
+                    session.session_id
                 )
 
                 if image_result.get("success"):
@@ -2102,7 +2103,8 @@ class PhaseProgressionSystem:
                 image_result = self.image_generator.generate_phase_image(
                     design_description,
                     session.current_phase.value.lower(),
-                    f"{project_type} design project"
+                    f"{project_type} design project",
+                    session.session_id
                 )
 
                 if image_result.get("success"):
