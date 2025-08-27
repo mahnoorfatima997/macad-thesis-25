@@ -787,53 +787,59 @@ class UnifiedArchitecturalDashboard:
         try:
             print(f"🔍 DASHBOARD: Bundling image analysis with text for: {image_filename}")
 
-            # Get comprehensive image analysis using GPT Vision with caching
+            # Get enhanced image analysis using comprehensive vision analyzer
             import sys
             import os
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
             from vision.comprehensive_vision_analyzer import ComprehensiveVisionAnalyzer
 
-            # Initialize analyzer with caching enabled (default)
+            # Initialize enhanced analyzer
             analyzer = ComprehensiveVisionAnalyzer(domain="architecture", use_cache=True)
 
-            # Get project context from session state if available
-            project_context = st.session_state.get('project_description', user_input)
+            # Build comprehensive project context string
+            current_phase = getattr(st.session_state, 'current_phase', 'unknown')
+            building_type = getattr(st.session_state, 'project_type', 'unknown')
+            conversation_summary = self._get_conversation_summary()
+            project_description = getattr(st.session_state, 'project_description', user_input)
 
-            # Check if we already have this analysis cached in session state
-            session_analyses = st.session_state.get('image_analyses', [])
+            project_context = f"Current Phase: {current_phase}, Building Type: {building_type}, Project: {project_description}, Context: {conversation_summary[:300]}"
+
+            # Check if we already have this enhanced analysis cached in session state
+            session_analyses = st.session_state.get('enhanced_image_analyses', [])
             for analysis in session_analyses:
-                if analysis['path'] == image_path and analysis.get('project_context') == project_context:
-                    print(f"⚡ DASHBOARD: Using session-cached analysis for: {image_filename}")
-                    image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
-                    bundled_message = f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+                if analysis['path'] == image_path:
+                    print(f"⚡ DASHBOARD: Using session-cached enhanced analysis for: {image_filename}")
+                    cached_analysis = analysis['detailed_analysis']
+                    contextual_response = analyzer.generate_contextual_response(cached_analysis, user_input)
+                    bundled_message = f"{user_input}\n\n[ENHANCED IMAGE ANALYSIS: {contextual_response}]"
                     return bundled_message
 
-            # Perform comprehensive image analysis (will use cache if available)
+            # Perform enhanced comprehensive image analysis
             import asyncio
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
             try:
-                # Get detailed image understanding for chat context
-                detailed_understanding = loop.run_until_complete(
+                # Get enhanced comprehensive analysis with context
+                enhanced_analysis = loop.run_until_complete(
                     analyzer.get_detailed_image_understanding(image_path, project_context)
                 )
 
-                # Extract the chat-ready description
-                image_description = detailed_understanding.get('chat_summary', 'Image analysis completed.')
+                # Generate contextual chat response
+                contextual_response = analyzer.generate_contextual_response(enhanced_analysis, user_input)
 
-                print(f"✅ DASHBOARD: Image analysis complete - {len(image_description)} chars")
+                print(f"✅ DASHBOARD: Enhanced image analysis complete - Confidence: {enhanced_analysis.get('confidence_score', 0.7)}")
 
-                # Bundle the text and image analysis as one unified message
-                bundled_message = f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
+                # Bundle the text and enhanced image analysis as one unified message
+                bundled_message = f"{user_input}\n\n[ENHANCED IMAGE ANALYSIS: {contextual_response}]"
 
-                # Store the detailed analysis for potential future reference
-                if 'image_analyses' not in st.session_state:
-                    st.session_state.image_analyses = []
-                st.session_state.image_analyses.append({
+                # Store in session state for potential future reference
+                if 'enhanced_image_analyses' not in st.session_state:
+                    st.session_state.enhanced_image_analyses = []
+                st.session_state.enhanced_image_analyses.append({
                     "filename": image_filename,
                     "path": image_path,
-                    "detailed_analysis": detailed_understanding,
+                    "detailed_analysis": enhanced_analysis,
                     "project_context": project_context,
                     "timestamp": datetime.now().isoformat()
                 })
@@ -844,9 +850,12 @@ class UnifiedArchitecturalDashboard:
                 loop.close()
 
         except Exception as e:
-            print(f"⚠️ DASHBOARD: Image analysis failed, using basic bundling: {e}")
-            # Fallback to basic image reference
-            return f"{user_input}\n\n[Image uploaded: {image_filename} - Analysis unavailable]"
+            print(f"⚠️ DASHBOARD: Enhanced image analysis failed, using contextual fallback: {e}")
+            # Fallback to contextual message based on session state
+            building_type = getattr(st.session_state, 'project_type', 'architectural project')
+            current_phase = getattr(st.session_state, 'current_phase', 'design')
+            fallback_response = f"I can see you've uploaded an architectural image for your {building_type}. While I had some difficulty with the detailed analysis, I can tell this appears to be related to your {current_phase} phase work. Let's discuss what you're working on and how I can help you develop this further."
+            return f"{user_input}\n\n[IMAGE UPLOADED: {fallback_response}]"
 
     def _process_user_response_for_phases(self, user_input: str):
         """Process user response through the phase progression system."""
@@ -1455,8 +1464,11 @@ class UnifiedArchitecturalDashboard:
 
             col1, col2, col3 = st.columns(3)
 
+            # Use unique keys based on image URL and timestamp to avoid conflicts
+            image_key = str(hash(generated_image.get('url', '') + str(generated_image.get('phase', ''))))[-8:]
+
             with col1:
-                if st.button("✅ Yes, this captures my ideas", key=f"feedback_yes_{generated_image.get('phase', 'unknown')}"):
+                if st.button("✅ Yes, this captures my ideas", key=f"feedback_yes_{image_key}"):
                     st.success("Great! This confirms we're aligned on your design direction.")
                     # Store positive feedback
                     if 'image_feedback' not in st.session_state:
@@ -1468,7 +1480,7 @@ class UnifiedArchitecturalDashboard:
                     })
 
             with col2:
-                if st.button("🤔 Partially, but needs adjustment", key=f"feedback_partial_{generated_image.get('phase', 'unknown')}"):
+                if st.button("🤔 Partially, but needs adjustment", key=f"feedback_partial_{image_key}"):
                     st.info("Thanks for the feedback! Let's continue refining your design ideas.")
                     # Store partial feedback
                     if 'image_feedback' not in st.session_state:
@@ -1480,7 +1492,7 @@ class UnifiedArchitecturalDashboard:
                     })
 
             with col3:
-                if st.button("❌ No, this doesn't match", key=f"feedback_no_{generated_image.get('phase', 'unknown')}"):
+                if st.button("❌ No, this doesn't match", key=f"feedback_no_{image_key}"):
                     st.warning("No problem! Let's continue exploring your design ideas to better understand your vision.")
                     # Store negative feedback
                     if 'image_feedback' not in st.session_state:
@@ -1510,15 +1522,32 @@ class UnifiedArchitecturalDashboard:
         print(f"📝 DASHBOARD: Marked image as processed: {filename}")
 
     def _get_existing_image_analysis(self, user_input: str, image_path: str) -> str:
-        """Get existing image analysis from session state."""
+        """Get existing enhanced image analysis from session state."""
+        # First check for enhanced analyses
+        enhanced_analyses = st.session_state.get('enhanced_image_analyses', [])
+        for analysis in enhanced_analyses:
+            if analysis['path'] == image_path:
+                # Import the comprehensive analyzer to generate a fresh contextual response
+                import sys
+                import os
+                sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../thesis-agents'))
+                from vision.comprehensive_vision_analyzer import ComprehensiveVisionAnalyzer
+
+                analyzer = ComprehensiveVisionAnalyzer()
+                cached_analysis = analysis['detailed_analysis']
+                contextual_response = analyzer.generate_contextual_response(cached_analysis, user_input)
+                return f"{user_input}\n\n[ENHANCED IMAGE ANALYSIS: {contextual_response}]"
+
+        # Fallback to legacy analyses if available
         session_analyses = st.session_state.get('image_analyses', [])
         for analysis in session_analyses:
             if analysis['path'] == image_path:
                 image_description = analysis['detailed_analysis'].get('chat_summary', 'Image analysis completed.')
                 return f"{user_input}\n\n[UPLOADED IMAGE ANALYSIS: {image_description}]"
 
-        # Fallback if no analysis found
-        return f"{user_input}\n\n[UPLOADED IMAGE: Analysis not available]"
+        # Final fallback if no analysis found
+        building_type = getattr(st.session_state, 'project_type', 'architectural project')
+        return f"{user_input}\n\n[IMAGE REFERENCE: I can see you're referencing a previously uploaded image for your {building_type}. Let's continue our discussion based on what we've already analyzed.]"
 
     # Test action handlers removed - now handled in sidebar_components.py
 

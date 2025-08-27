@@ -34,15 +34,15 @@ class ReplicateImageGenerator:
         self.models = {
             ImageStyle.ROUGH_SKETCH: {
                 "model": "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-                "style_prompt": "rough architectural sketch, hand-drawn, pencil on paper, conceptual design, loose lines, architectural drawing style, black and white"
+                "style_prompt": "very rough architectural sketch, extremely sketchy hand-drawn lines, loose gestural marks, pencil on paper, conceptual ideation sketch, unfinished drawing quality, architectural brainstorming sketch, black and white, minimal detail"
             },
             ImageStyle.ARCHITECTURAL_FORM: {
                 "model": "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-                "style_prompt": "architectural form study, clean lines, 3D massing model, architectural visualization, modern design, white background, professional architectural rendering"
+                "style_prompt": "completed architectural sketch with watercolor, finished drawing with color washes, architectural painting style, design development sketch, marker rendering style, artistic architectural illustration, colored architectural drawing"
             },
             ImageStyle.DETAILED_RENDER: {
                 "model": "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-                "style_prompt": "detailed architectural rendering, photorealistic, professional architecture visualization, high quality, detailed materials and textures, architectural photography style"
+                "style_prompt": "photorealistic 3D architectural rendering, high-quality 3D visualization, realistic materials and lighting, professional architectural render, detailed construction elements, architectural photography style, realistic textures and finishes"
             }
         }
 
@@ -115,11 +115,11 @@ class ReplicateImageGenerator:
         
         # Create phase-specific prompt
         if image_style == ImageStyle.ROUGH_SKETCH:
-            prompt = f"Rough architectural sketch of {clean_description}{context_addition}. {style_prompt}. Simple, conceptual, hand-drawn style."
+            prompt = f"Very rough, sketchy architectural concept drawing of {clean_description}{context_addition}. {style_prompt}. Extremely loose, unfinished sketch quality, architectural ideation drawing."
         elif image_style == ImageStyle.ARCHITECTURAL_FORM:
-            prompt = f"Architectural form study of {clean_description}{context_addition}. {style_prompt}. Clean, professional, 3D visualization."
+            prompt = f"Completed architectural sketch with color of {clean_description}{context_addition}. {style_prompt}. Finished drawing with watercolor or marker style, architectural painting."
         else:  # DETAILED_RENDER
-            prompt = f"Detailed architectural rendering of {clean_description}{context_addition}. {style_prompt}. Photorealistic, high-quality visualization."
+            prompt = f"Photorealistic 3D architectural rendering of {clean_description}{context_addition}. {style_prompt}. High-quality 3D visualization with realistic materials and lighting."
         
         return prompt
 
