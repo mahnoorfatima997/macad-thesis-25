@@ -46,8 +46,9 @@ def make_context_node(context_agent, progression_manager, first_response_generat
         if not is_first_message:
             logger.info(f"Context node: Progressive opening will NOT trigger - conditions not met (user_messages: {len(user_messages)}, assistant_messages: {len(assistant_messages)}, has_image: {has_image_upload})")
         
-        # 1208-If still not first message, try to get input classification to see if it's a project description
-        if not is_first_message and last_message:
+        # FIXED: Only allow project_description override if there are NO assistant messages yet
+        # This prevents detailed descriptions in ongoing conversations from triggering progressive_opening
+        if not is_first_message and last_message and len(assistant_messages) == 0:
             try:
                 # FIXED: Use absolute import to avoid relative import warning
                 import sys

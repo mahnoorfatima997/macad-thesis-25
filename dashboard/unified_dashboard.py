@@ -149,16 +149,26 @@ class UnifiedArchitecturalDashboard:
             st.session_state.test_dashboard = None
         self.test_dashboard = st.session_state.test_dashboard
         
-        # Mode processor
-        self.mode_processor = ModeProcessor(
-            orchestrator=self.orchestrator,
-            data_collector=self.data_collector,
-            test_dashboard=self.test_dashboard,
-            image_database=self.image_database
-        )
+        # Mode processor - CRITICAL FIX: Persist mode processor to maintain task manager state
+        if 'mode_processor' not in st.session_state or st.session_state.mode_processor is None:
+            print(f"🔍 DASHBOARD_DEBUG: Creating new mode processor instance")
+            self.mode_processor = ModeProcessor(
+                orchestrator=self.orchestrator,
+                data_collector=self.data_collector,
+                test_dashboard=self.test_dashboard,
+                image_database=self.image_database
+            )
+            # Store mode processor in session state for persistence
+            st.session_state.mode_processor = self.mode_processor
+        else:
+            print(f"🔍 DASHBOARD_DEBUG: Using existing mode processor from session state")
+            self.mode_processor = st.session_state.mode_processor
 
-        # Store mode processor in session state for sidebar access
-        st.session_state.mode_processor = self.mode_processor
+            # Update references in case they changed
+            self.mode_processor.orchestrator = self.orchestrator
+            self.mode_processor.data_collector = self.data_collector
+            self.mode_processor.test_dashboard = self.test_dashboard
+            self.mode_processor.image_database = self.image_database
     
     def run(self):
         """Main run method for the dashboard."""

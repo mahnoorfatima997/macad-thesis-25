@@ -7,6 +7,7 @@ import re
 import sys
 import os
 from html import escape
+from datetime import datetime
 from typing import Dict, Any, List
 
 # Add parent directory to path
@@ -153,6 +154,9 @@ def render_chat_interface():
         # Render all messages in the chat
         for i, message in enumerate(st.session_state.messages):
             render_single_message(message)
+
+            # CRITICAL FIX: Render tasks that should appear after this specific message
+            _render_tasks_for_message(i)
         
         st.markdown("""
             </div>
@@ -408,8 +412,7 @@ def render_single_message(message: Dict[str, Any]):
                 print(f"🎨 DEBUG: Found generated_image in message, calling render function")
                 _render_generated_image_in_chat(message["generated_image"])
 
-            # Check for active task to render (like gamification)
-            _render_task_if_active()
+            # REMOVED: Centralized task rendering - tasks now render per message chronologically
             # else:
             #     print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
 
@@ -1079,63 +1082,116 @@ def _clean_agent_response(agent_response: str) -> str:
     return clean_content.strip()
 
 
-def _render_task_if_active():
-    """Render active task UI component if present (like gamification)"""
+def _render_tasks_for_message(message_index: int):
+    """Render tasks that should appear after this specific message"""
     try:
-        # Check if there's an active task to render
-        active_task_data = st.session_state.get('active_task', None)
+        task_display_queue = st.session_state.get('task_display_queue', [])
 
-        if active_task_data and active_task_data.get('should_render', False):
-            print(f"🎯 TASK_UI: Rendering active task component")
+        if not task_display_queue:
+            return
 
-            # Import task UI renderer
-            from dashboard.ui.task_ui_renderer import TaskUIRenderer
+        # Find tasks linked to this message
+        for task_entry in task_display_queue:
+            linked_message = task_entry.get('message_index', -1)
+            should_render = task_entry.get('should_render', False)
+            already_displayed = task_entry.get('displayed', False)
 
-            # Extract task data
-            task = active_task_data['task']
-            guidance_type = active_task_data['guidance_type']
-            user_input = active_task_data.get('user_input', '')
+            # Render task if it's linked to this message and not yet displayed
+            if (linked_message == message_index and should_render and not already_displayed):
+                task = task_entry['task']
+                task_id = task_entry['task_id']
 
-            # Get actual task content from guidance system
-            from dashboard.processors.task_guidance_system import TaskGuidanceSystem
-            guidance_system = TaskGuidanceSystem()
+                print(f"🎯 MESSAGE_TASK: Rendering {task.task_type.value} after message {message_index}")
 
-            # Get the real task assignment based on test group
-            if task.test_group == "MENTOR":
-                task_data = guidance_system.mentor_tasks.get(task.task_type, {})
-            elif task.test_group == "GENERIC_AI":
-                task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
-            elif task.test_group == "CONTROL":
-                task_data = guidance_system.control_tasks.get(task.task_type, {})
-            else:
-                task_data = {}
+                # Create unique container for this message-task combination
+                container_key = f"msg_{message_index}_task_{task_id}"
 
-            # Get the actual task assignment content
-            task_content = task_data.get("task_assignment", f"🎯 TASK {task.task_type.value.replace('_', ' ').title()}: Complete the design challenge")
+                with st.container(key=container_key):
+                    _render_single_task_component(task_entry)
 
-            # Add specific guidance content based on type
-            if guidance_type == "socratic" and task_data.get("socratic_questions"):
-                questions = task_data["socratic_questions"]
-                if questions:
-                    task_content += f"\n\n**Guided Exploration Question:**\n{questions[0]}"
-            elif guidance_type == "direct" and task_data.get("direct_information"):
-                info_list = task_data["direct_information"]
-                if info_list:
-                    info_text = "\n".join([f"• {info}" for info in info_list[:2]])  # Show first 2 items
-                    task_content += f"\n\n**Helpful Information:**\n{info_text}"
-            elif guidance_type == "minimal" and task_data.get("minimal_prompt"):
-                task_content += f"\n\n**Guidance:** {task_data['minimal_prompt']}"
+                # Mark as displayed
+                task_entry['displayed'] = True
+                task_entry['display_time'] = datetime.now().isoformat()
 
-            # Render the task UI component with real content
-            renderer = TaskUIRenderer()
-            renderer.render_task_component(task, task_content, guidance_type)
-
-            # Mark as rendered to avoid duplicate rendering
-            st.session_state['active_task']['should_render'] = False
-
-            print(f"🎯 TASK_UI: Task component rendered successfully")
+                print(f"🎯 MESSAGE_TASK: {task.task_type.value} rendered after message {message_index}")
 
     except Exception as e:
-        print(f"🎯 TASK_UI ERROR: Failed to render task component: {e}")
+        print(f"⚠️ Error rendering tasks for message {message_index}: {e}")
+
+
+def _render_task_if_active():
+    """DEPRECATED: Legacy function - tasks now render per message"""
+    # This function is no longer used - tasks render chronologically per message
+    pass
+
+
+def _render_single_task_component(task_entry):
+    """Render a single task component with unique container"""
+    try:
+        task = task_entry['task']
+        task_id = task_entry['task_id']
+        guidance_type = task_entry.get('guidance_type', 'socratic')
+
+        # Get actual task content from guidance system
+        from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+        guidance_system = TaskGuidanceSystem()
+
+        # Get the real task assignment based on test group
+        if task.test_group == "MENTOR":
+            task_data = guidance_system.mentor_tasks.get(task.task_type, {})
+        elif task.test_group == "GENERIC_AI":
+            task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
+        elif task.test_group == "CONTROL":
+            task_data = guidance_system.control_tasks.get(task.task_type, {})
+        else:
+            task_data = {}
+
+        if not task_data:
+            print(f"⚠️ No task data found for {task.task_type.value} in {guidance_type} mode")
+            return
+
+        # Get the actual task assignment content
+        task_content = task_data.get("task_assignment", f"🎯 TASK {task.task_type.value.replace('_', ' ').title()}: Complete the design challenge")
+
+        # Add specific guidance content based on type
+        if guidance_type == "socratic" and task_data.get("socratic_questions"):
+            questions = task_data["socratic_questions"]
+            if questions:
+                task_content += f"\n\n**Guided Exploration Question:**\n{questions[0]}"
+        elif guidance_type == "direct" and task_data.get("direct_information"):
+            info_list = task_data["direct_information"]
+            if info_list:
+                info_text = "\n".join([f"• {info}" for info in info_list[:2]])  # Show first 2 items
+                task_content += f"\n\n**Helpful Information:**\n{info_text}"
+        elif guidance_type == "minimal" and task_data.get("minimal_prompt"):
+            task_content += f"\n\n**Guidance:** {task_data['minimal_prompt']}"
+
+        # CRITICAL FIX: Create unique container for this specific task instance
+        container_key = f"task_container_{task_id}"
+        print(f"🚨 CONTAINER_DEBUG: Creating container with key: {container_key}")
+        print(f"🚨 CONTAINER_DEBUG: Task type: {task.task_type.value}")
+        print(f"🚨 CONTAINER_DEBUG: Task content preview: {task_content[:100]}...")
+
+        try:
+            with st.container(key=container_key):
+                print(f"🚨 INSIDE_CONTAINER: Rendering {task.task_type.value} in container {container_key}")
+
+                # Import and render task UI
+                from dashboard.ui.task_ui_renderer import TaskUIRenderer
+                renderer = TaskUIRenderer()
+                renderer.render_task_component(task, task_content, guidance_type)
+
+                print(f"🚨 CONTAINER_SUCCESS: Task {task_id} rendered in container {container_key}")
+
+        except Exception as container_error:
+            print(f"🚨 CONTAINER_ERROR: Failed to create container {container_key}: {container_error}")
+            # Fallback: render without container
+            from dashboard.ui.task_ui_renderer import TaskUIRenderer
+            renderer = TaskUIRenderer()
+            renderer.render_task_component(task, task_content, guidance_type)
+            print(f"🚨 FALLBACK_RENDER: Task {task_id} rendered without container")
+
+    except Exception as e:
+        print(f"⚠️ Error rendering single task component: {e}")
         import traceback
         traceback.print_exc()

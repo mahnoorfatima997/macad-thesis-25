@@ -46,7 +46,7 @@ class TaskUIRenderer:
                 "gradient": f"linear-gradient(135deg, {THESIS_COLORS['primary_violet']} 0%, {THESIS_COLORS['primary_rose']} 50%, {THESIS_COLORS['primary_pink']} 100%)",
                 "icon": "◈",  # Geometric shape instead of emoji
                 "style_name": "Guided Exploration",
-                "emphasis": "socratic questioning"
+                "emphasis": "Socratic Questioning"
             },
             "GENERIC_AI": {
                 "primary": THESIS_COLORS['primary_purple'],
@@ -150,7 +150,18 @@ class TaskUIRenderer:
             """, unsafe_allow_html=True)
 
         # Render task assignment in clean box
-        self._render_task_assignment_box(task_assignment, theme)
+        duration = self._extract_task_duration(task_content)
+        considerations = self._extract_task_considerations_list(task_content)
+
+        self._render_task_assignment_box(
+            task_assignment,
+            theme,
+            duration=duration,
+            considerations=considerations
+        )
+
+
+
 
         # Render guidance based on type with actual content
         self._render_clean_guidance_with_content(task_content, guidance_type, theme)
@@ -175,37 +186,55 @@ class TaskUIRenderer:
                 title = line.replace('**◉ TASK', '').replace('**', '').replace(':', '').strip()
                 return title if title else "DESIGN TASK"
         return "DESIGN TASK"
-
+    #2708
     def _extract_clean_assignment(self, content: str) -> str:
-        """Extract clean assignment description without redundant formatting"""
+        """Extract assignment text ONLY (exclude Consider bullets and Duration)."""
         lines = content.split('\n')
         assignment_lines = []
         in_assignment = False
 
-        for line in lines:
-            # Look for assignment section with various formats
-            if ('**Your Assignment**' in line or 'Your Assignment:' in line or
-                'Assignment:' in line or line.strip().startswith('**Your Assignment')):
-                in_assignment = True
-                # If the assignment is on the same line, extract it
-                if ':' in line:
-                    assignment_part = line.split(':', 1)[1].strip()
-                    if assignment_part:
-                        clean_assignment = assignment_part.replace('**', '').replace('*', '').strip()
-                        if clean_assignment and len(clean_assignment) > 10:
-                            assignment_lines.append(clean_assignment)
+        for raw in lines:
+            line = raw.strip()
+            if not line:
                 continue
-            elif in_assignment and line.startswith('**') and line.endswith('**') and 'Assignment' not in line:
-                # End of assignment section
-                break
-            elif in_assignment and line.strip() and not line.startswith('🎯') and not line.startswith('**Guided'):
-                # Clean the line of excessive formatting
-                clean_line = line.replace('**', '').replace('*', '').strip()
-                if clean_line and len(clean_line) > 3:  # Avoid single characters
-                    assignment_lines.append(clean_line)
 
-        result = ' '.join(assignment_lines) if assignment_lines else "Complete the design challenge assignment."
-        return result
+            # Enter assignment block
+            if (
+                '**Your Assignment**' in line
+                or line.startswith('Your Assignment:')
+                or line.startswith('Assignment:')
+                or line.startswith('**Your Assignment')
+            ):
+                in_assignment = True
+                # If the assignment starts on this same line after a colon, grab it
+                if ':' in line:
+                    part = line.split(':', 1)[1].strip()
+                    if part:
+                        assignment_lines.append(self._strip_md(part))
+                continue
+
+            if in_assignment:
+                # STOP when we reach Consider or Duration or a new bold header
+                if (
+                    line.startswith('**Consider**')
+                    or line.startswith('Consider')
+                    or line.lower().startswith('duration')
+                    or (line.startswith('**') and 'Assignment' not in line)
+                ):
+                    break
+
+                # Skip bullet lines (they belong to Consider)
+                if line.startswith('•') or line.startswith('- '):
+                    continue
+
+                # Keep normal text as part of the assignment
+                assignment_lines.append(self._strip_md(line))
+
+        return ' '.join(assignment_lines).strip() or "Complete the design challenge assignment."
+    
+    def _strip_md(self, s: str) -> str:
+        """Remove simple Markdown emphasis markers."""
+        return s.replace('**', '').replace('*', '').strip()
 
     def _inject_task_animations(self) -> None:
         """Inject CSS animations matching gamification style"""
@@ -234,32 +263,46 @@ class TaskUIRenderer:
         </style>
         """, unsafe_allow_html=True)
 
-    def _render_task_assignment_box(self, assignment: str, theme: Dict[str, str]) -> None:
-        """Render task assignment in clean box matching gamification style"""
-        st.markdown(f"""
-        <div style="
-            background: {UI_COLORS['background']};
-            border-left: 5px solid {theme['primary']};
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 0 10px 10px 0;
-            box-shadow: 0 4px 15px rgba(79, 58, 62, 0.1);
-        ">
-            <div style="
-                color: {theme['primary']};
-                font-weight: bold;
-                font-size: 1.1em;
-                margin-bottom: 10px;
-            ">◆ Your Assignment</div>
-            <div style="
-                color: {UI_COLORS['text_primary']};
-                line-height: 1.6;
-                font-size: 1.05em;
-            ">
-                {assignment}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+    #2708
+    def _extract_task_considerations_list(self, content: str) -> list[str]:
+        """Return bullet items (no HTML) from the '**Consider**' section."""
+        lines = content.split('\n')
+        items, in_block = [], False
+        for line in lines:
+            if '**Consider**' in line:
+                in_block = True
+                continue
+            if in_block:
+                if line.startswith('•'):
+                    items.append(line[1:].strip())  # drop the leading bullet
+                elif line.startswith('**'):  # next bold header ends the block
+                    break
+        return items
+
+    from typing import Optional, Dict
+
+    def _render_task_assignment_box(
+        self,
+        assignment: str,
+        theme: Dict[str, str],
+        duration: Optional[str] = None,
+        considerations: Optional[list[str]] = None,
+    ) -> None:
+        """Render assignment with optional duration + considerations using native Streamlit (no HTML)."""
+        with st.container():
+            # Header
+            st.markdown(f"**◆ Your Assignment**")
+            # Body
+            st.markdown(assignment)
+
+            # Duration (small caption)
+            if duration:
+                st.caption(f"⏱ Duration: {duration}")
+
+            # Considerations as a normal Markdown list
+            if considerations:
+                st.markdown("**Key considerations**")
+                st.markdown("\n".join(f"- {c}" for c in considerations))
 
     def _render_clean_guidance(self, task: ActiveTask, guidance_type: str, theme: Dict[str, str]) -> None:
         """Render clean guidance based on test group"""
@@ -395,12 +438,12 @@ class TaskUIRenderer:
             <div style="
                 color: {theme['primary']};
                 font-weight: bold;
-                font-size: 1.2em;
+                font-size: 0.95em;
                 margin-bottom: 10px;
             ">◈ Guided Exploration</div>
             <div style="
                 color: {UI_COLORS['text_primary']};
-                font-size: 1.05em;
+                font-size: 0.95em;
                 line-height: 1.5;
                 font-style: italic;
             ">
@@ -424,12 +467,12 @@ class TaskUIRenderer:
             <div style="
                 color: {theme['primary']};
                 font-weight: bold;
-                font-size: 1.2em;
+                font-size: 1.0em;
                 margin-bottom: 10px;
             ">◉ Information Support</div>
             <div style="
                 color: {UI_COLORS['text_primary']};
-                font-size: 1.05em;
+                font-size: 1.00em;
                 line-height: 1.5;
             ">
                 Direct information and examples will be provided to help you
@@ -510,18 +553,19 @@ class TaskUIRenderer:
             <div style="
                 color: {theme['primary']};
                 font-weight: bold;
-                font-size: 1.2em;
+                font-size: 1em;
                 margin-bottom: 15px;
                 text-align: center;
             ">◉ Helpful Information</div>
             <div style="
                 color: {UI_COLORS['text_primary']};
-                font-size: 1.05em;
+                font-size: 1em;
                 line-height: 1.6;
                 background: rgba(255,255,255,0.7);
                 padding: 15px;
                 border-radius: 10px;
                 border-left: 4px solid {theme['primary']};
+                font-style: italic;
             ">
                 {guidance_content.replace('•', '▸')}
             </div>
@@ -541,13 +585,14 @@ class TaskUIRenderer:
             <div style="
                 color: {theme['primary']};
                 font-weight: bold;
-                font-size: 1.2em;
+                font-size: 1.0em;
                 margin-bottom: 15px;
                 text-align: center;
             ">◐ Self-Directed Work</div>
             <div style="
                 color: {UI_COLORS['text_primary']};
-                font-size: 1.05em;
+                font-size: 1.00em;
+                font-style: italic;
                 line-height: 1.6;
                 background: rgba(255,255,255,0.7);
                 padding: 15px;
@@ -578,7 +623,7 @@ class TaskUIRenderer:
         if considerations:
             considerations_html = f"""
             <div style="margin-top: 10px;">
-                <h4 style="color: #666; margin: 0 0 8px 0; font-size: 1em;">🎯 KEY CONSIDERATIONS</h4>
+                <h4 style="color: #666; margin: 0 0 8px 0; font-size: 1em;">KEY CONSIDERATIONS</h4>
                 <ul style="margin: 0; padding-left: 20px; color: #555;">
                     {''.join([f'<li style="margin-bottom: 5px;">{item[1:].strip()}</li>' for item in considerations])}
                 </ul>

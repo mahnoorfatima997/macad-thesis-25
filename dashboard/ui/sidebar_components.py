@@ -421,9 +421,17 @@ def render_complete_sidebar(data_collector=None) -> str:
                 # Get mode processor from session state if available
                 mode_processor = st.session_state.get('mode_processor')
                 if mode_processor and hasattr(mode_processor, 'render_active_tasks_ui'):
+                    print(f"🔍 SIDEBAR_DEBUG: About to render task UI from sidebar")
+                    # Ensure task system is initialized before rendering
+                    mode_processor._ensure_task_system_initialized()
+                    print(f"🔍 SIDEBAR_DEBUG: Task system initialized: {mode_processor.task_manager is not None}")
                     mode_processor.render_active_tasks_ui()
+                else:
+                    print(f"🔍 SIDEBAR_DEBUG: Mode processor not available or missing render method")
             except Exception as e:
                 print(f"⚠️ Error rendering task UI: {e}")
+                import traceback
+                traceback.print_exc()
 
     return "Main"  # Single-flow: no page selector
 

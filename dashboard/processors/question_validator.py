@@ -25,7 +25,7 @@ class QuestionValidator:
             r'\b(hack|exploit|bypass|jailbreak|ignore.*instructions)\b',
             r'\b(harmful|dangerous|illegal|violent)\b',
             r'\b(nsfw|adult|sexual|explicit)\b',
-            r'\b(pretend|roleplay|act.*as|you.*are.*now)\b',
+            r'\b(pretend|roleplay|act\s+as\s+(if|though|like)|you\s+are\s+now)\b',  # Fixed: More specific pattern to avoid architectural "act as"
             r'\b(forget.*previous|ignore.*above|new.*instructions)\b'
         ]
         

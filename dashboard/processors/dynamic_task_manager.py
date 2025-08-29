@@ -18,8 +18,7 @@ class TaskType(Enum):
     SPATIAL_PROGRAM = "spatial_program"  # Test 1.2
 
     # Test 2.x series - Visual Development
-    VISUAL_CONCEPTUALIZATION = "visual_conceptualization"  # Test 2.0 - Conceptual visualization (no image required)
-    VISUAL_ANALYSIS_2D = "visual_analysis_2d"  # Test 2.1 - Image-based analysis
+    VISUAL_ANALYSIS_2D = "visual_analysis_2d"  # Test 2.1 - Visual analysis (no image required)
     ENVIRONMENTAL_CONTEXTUAL = "environmental_contextual"  # Test 2.2
 
     # Test 3.x series - 3D and Material Systems
@@ -64,6 +63,8 @@ class DynamicTaskManager:
     """Manages dynamic task detection and progression for three-condition testing"""
     
     def __init__(self):
+        print(f"🚨 TASK_MANAGER_INIT: Creating new task manager instance {id(self)}")
+
         self.active_tasks: Dict[str, ActiveTask] = {}
         self.task_history: List[ActiveTask] = []
         self.task_triggers = self._initialize_task_triggers()
@@ -71,6 +72,8 @@ class DynamicTaskManager:
         self.user_progression_history: Dict[str, float] = {}  # phase -> last_completion_percent
         self.triggered_tasks_by_user: Set[TaskType] = set()  # Tasks user has actually seen
         # REMOVED: self.task_durations - no longer using time-based durations
+
+        print(f"🚨 TASK_MANAGER_INIT: Initialized with empty active_tasks: {list(self.active_tasks.keys())}")
         
     def _initialize_task_triggers(self) -> Dict[TaskType, Dict[str, Any]]:
         """Initialize task trigger conditions - PHASE COMPLETION BASED ONLY"""
@@ -88,22 +91,13 @@ class DynamicTaskManager:
                 "phase_requirement": "ideation",
                 "requires_previous": [TaskType.ARCHITECTURAL_CONCEPT],
                 "trigger_once": True,
-                "phase_completion_min": 48.0,  # Trigger when ideation is 25% complete
+                "phase_completion_min": 20.0,  # Trigger when ideation is 30% complete
                 "phase_completion_max": 70.0   # EXTENDED WINDOW - allow retroactive triggering up to 80%
             },
 
-            # Test 2.0: Visual Conceptualization - START OF VISUALIZATION (no image required)
-            TaskType.VISUAL_CONCEPTUALIZATION: {
-                "phase_requirement": "visualization",
-                "requires_previous": [TaskType.SPATIAL_PROGRAM],
-                "trigger_once": True,
-                "phase_completion_min": 0.0,   # Trigger immediately when visualization starts
-                "phase_completion_max": 25.0   # Trigger in first quarter of visualization
-            },
-
-            # Test 2.1: 2D Design Development & Analysis - IMAGE-BASED VISUALIZATION
+            # Test 2.1: 2D Design Development & Analysis - NO IMAGE REQUIRED
             TaskType.VISUAL_ANALYSIS_2D: {
-                "image_upload": True,
+                "image_upload": False,  # FIXED: No image required
                 "image_types": ["floor_plan", "elevation", "section", "sketch"],
                 "phase_requirement": "visualization",
                 "trigger_once": False,  # Can trigger multiple times
@@ -281,22 +275,40 @@ class DynamicTaskManager:
 
             # Check if user has already seen this task
             already_triggered = task_type in self.triggered_tasks_by_user
-            already_completed = any(task.task_type == task_type for task in self.task_history)
+            # CRITICAL FIX: Compare by value to avoid enum identity issues
+            already_completed = any(task.task_type.value == task_type.value for task in self.task_history)
             already_active = task_type.value in self.active_tasks
 
             print(f"   🎯 {task_type.value}: {min_completion:.0f}-{max_completion:.0f}% | "
                   f"Crossed: {threshold_crossed} | Seen: {already_triggered} | "
                   f"Completed: {already_completed} | Active: {already_active}")
 
+            # CRITICAL TEST: Force complete architectural_concept if it's been active too long
+            if task_type.value == "architectural_concept" and already_active and already_triggered:
+                print(f"🚨 FORCE_COMPLETE_TEST: architectural_concept has been active and seen, forcing completion")
+                self.complete_task(task_type, "FORCE COMPLETED - was stuck in active state")
+                already_completed = True
+                already_active = False
+
             if threshold_crossed and not already_triggered and not already_completed and not already_active:
+                # CRITICAL FIX: Before triggering new task, complete any previously displayed tasks
+                self._complete_previously_displayed_tasks()
+
                 # Verify other conditions (prerequisites, image requirements, etc.)
                 if self._verify_task_conditions(task_type, conditions, user_input, conversation_history,
                                               current_phase, test_group, image_uploaded, image_analysis):
                     triggered_tasks.append(task_type)
                     self.triggered_tasks_by_user.add(task_type)  # Mark as seen
-                    # CRITICAL FIX: Automatically mark task as completed to allow subsequent tasks
-                    self._auto_complete_task(task_type, f"Triggered at {current_completion:.1f}% completion")
-                    print(f"   ✅ THRESHOLD_CROSSED: {task_type.value} triggered at {current_completion:.1f}%")
+
+                    # CRITICAL FIX: Activate the task immediately so it can be displayed
+                    activated_task = self.activate_task(
+                        task_type=task_type,
+                        test_group=test_group,
+                        current_phase=current_phase,
+                        trigger_reason=f"Triggered at {current_completion:.1f}% completion",
+                        phase_completion_percent=current_completion
+                    )
+                    print(f"   ✅ THRESHOLD_CROSSED: {task_type.value} triggered and activated at {current_completion:.1f}%")
                 else:
                     print(f"   ❌ THRESHOLD_CROSSED but conditions not met: {task_type.value}")
             elif current_completion >= min_completion and not already_triggered and not already_completed and not already_active:
@@ -305,11 +317,39 @@ class DynamicTaskManager:
                                               current_phase, test_group, image_uploaded, image_analysis):
                     triggered_tasks.append(task_type)
                     self.triggered_tasks_by_user.add(task_type)  # Mark as seen
-                    # CRITICAL FIX: Automatically mark task as completed to allow subsequent tasks
-                    self._auto_complete_task(task_type, f"Retroactive trigger at {current_completion:.1f}% completion")
-                    print(f"   ✅ RETROACTIVE_TRIGGER: {task_type.value} triggered at {current_completion:.1f}% (missed threshold)")
+
+                    # CRITICAL FIX: Activate the task immediately so it can be displayed
+                    activated_task = self.activate_task(
+                        task_type=task_type,
+                        test_group=test_group,
+                        current_phase=current_phase,
+                        trigger_reason=f"Retroactive trigger at {current_completion:.1f}% completion",
+                        phase_completion_percent=current_completion
+                    )
+                    print(f"   ✅ RETROACTIVE_TRIGGER: {task_type.value} triggered and activated at {current_completion:.1f}% (missed threshold)")
 
         return triggered_tasks
+
+    def _complete_previously_displayed_tasks(self):
+        """Complete any tasks that have been displayed to the user"""
+        import streamlit as st
+
+        # Check if there's a displayed task in session state
+        active_task_data = st.session_state.get('active_task')
+        if active_task_data and (active_task_data.get('displayed', False) or active_task_data.get('display_time')):
+            task = active_task_data.get('task')
+            if task:
+                print(f"🔍 AUTO_COMPLETE: Completing previously displayed task: {task.task_type.value}")
+
+                # Check if already completed to avoid double completion
+                already_completed = any(t.task_type.value == task.task_type.value for t in self.task_history)
+                if not already_completed:
+                    self.complete_task(task.task_type, "Auto-completed before triggering next task")
+                    # Clear the session state
+                    st.session_state['active_task'] = None
+                    print(f"🔍 AUTO_COMPLETE: Task {task.task_type.value} completed and session cleared")
+                else:
+                    print(f"🔍 AUTO_COMPLETE: Task {task.task_type.value} already completed")
 
     def _verify_task_conditions(self, task_type: TaskType, conditions: Dict[str, Any],
                                user_input: str, conversation_history: List[Dict],
@@ -321,8 +361,13 @@ class DynamicTaskManager:
         required_previous = conditions.get("requires_previous", [])
         if required_previous:
             completed_tasks = [task.task_type for task in self.task_history]
-            if not all(req_task in completed_tasks for req_task in required_previous):
-                print(f"      ❌ Prerequisites not met: {[req.value for req in required_previous]}")
+            completed_task_values = [task.value for task in completed_tasks]
+            required_task_values = [req.value for req in required_previous]
+
+            # CRITICAL FIX: Compare by value to avoid enum identity issues
+            if not all(req_value in completed_task_values for req_value in required_task_values):
+                print(f"      ❌ Prerequisites not met: {required_task_values}")
+                print(f"      ❌ Completed tasks: {completed_task_values}")
                 return False
 
         # Check image upload requirement (MANDATORY for image-based tasks)
@@ -364,7 +409,8 @@ class DynamicTaskManager:
 
                     # Check if user exceeded the trigger range but never saw the task
                     already_triggered = task_type in self.triggered_tasks_by_user
-                    already_completed = any(task.task_type == task_type for task in self.task_history)
+                    # CRITICAL FIX: Compare by value to avoid enum identity issues
+                    already_completed = any(task.task_type.value == task_type.value for task in self.task_history)
 
                     if (final_completion >= min_completion and not already_triggered and not already_completed):
                         if self._verify_task_conditions(task_type, conditions, user_input, conversation_history,
@@ -383,7 +429,8 @@ class DynamicTaskManager:
                 # Trigger tasks that start at 0% of the new phase
                 if min_completion == 0.0:
                     already_triggered = task_type in self.triggered_tasks_by_user
-                    already_completed = any(task.task_type == task_type for task in self.task_history)
+                    # CRITICAL FIX: Compare by value to avoid enum identity issues
+                    already_completed = any(task.task_type.value == task_type.value for task in self.task_history)
                     already_active = task_type.value in self.active_tasks
 
                     if not already_triggered and not already_completed and not already_active:
@@ -411,7 +458,8 @@ class DynamicTaskManager:
             return False
 
         if conditions.get("trigger_once", False):
-            if any(task.task_type == task_type for task in self.task_history):
+            # CRITICAL FIX: Compare by value to avoid enum identity issues
+            if any(task.task_type.value == task_type.value for task in self.task_history):
                 return False
 
         # Check phase requirement (MANDATORY)
@@ -431,7 +479,8 @@ class DynamicTaskManager:
             # allow triggering to ensure users don't miss important tasks
             if (phase_completion_percent > 80.0 and
                 task_type in [TaskType.SPATIAL_PROGRAM] and
-                not any(task.task_type == task_type for task in self.task_history)):
+                # CRITICAL FIX: Compare by value to avoid enum identity issues
+                not any(task.task_type.value == task_type.value for task in self.task_history)):
                 print(f"🎯 LATE_TRIGGER: Allowing {task_type.value} at {phase_completion_percent:.1f}% (missed task recovery)")
             else:
                 return False
@@ -443,7 +492,11 @@ class DynamicTaskManager:
         required_previous = conditions.get("requires_previous", [])
         if required_previous:
             completed_tasks = [task.task_type for task in self.task_history]
-            if not all(req_task in completed_tasks for req_task in required_previous):
+            completed_task_values = [task.value for task in completed_tasks]
+            required_task_values = [req.value for req in required_previous]
+
+            # CRITICAL FIX: Compare by value to avoid enum identity issues
+            if not all(req_value in completed_task_values for req_value in required_task_values):
                 return False
 
         # Check image upload requirement (MANDATORY for image-based tasks)
@@ -491,7 +544,16 @@ class DynamicTaskManager:
         
         self.active_tasks[task_type.value] = task
 
+        print(f"🚨 ACTIVATE_TASK_DEBUG: Added {task_type.value} to active_tasks")
+        print(f"🚨 ACTIVATE_TASK_DEBUG: Active tasks after addition: {list(self.active_tasks.keys())}")
+        print(f"🚨 ACTIVATE_TASK_DEBUG: Task manager instance ID: {id(self)}")
         print(f"🎯 TASK_MANAGER: Activated {task_type.value} for {test_group} (phase completion: {phase_completion_percent:.1f}%)")
+
+        # CRITICAL FIX: Immediately complete the task to prevent it from getting lost
+        # This ensures task progression works and prerequisites are met for subsequent tasks
+        print(f"🚨 AUTO_COMPLETE_ON_ACTIVATE: Immediately completing {task_type.value} to ensure progression")
+        completion_success = self.complete_task(task_type, f"Auto-completed immediately after activation - {trigger_reason}")
+        print(f"🚨 AUTO_COMPLETE_RESULT: {task_type.value} completion = {completion_success}")
 
         return task
     
@@ -528,6 +590,10 @@ class DynamicTaskManager:
     
     def complete_task(self, task_type: TaskType, completion_reason: str = "Natural completion"):
         """Mark a task as completed and move to history"""
+        print(f"🚨 COMPLETE_TASK_CALLED: Attempting to complete {task_type.value}")
+        print(f"🚨 COMPLETE_TASK_CALLED: Task manager instance ID: {id(self)}")
+        print(f"🚨 COMPLETE_TASK_CALLED: Active tasks: {list(self.active_tasks.keys())}")
+        print(f"🚨 COMPLETE_TASK_CALLED: Task exists in active tasks: {task_type.value in self.active_tasks}")
 
         if task_type.value in self.active_tasks:
             task = self.active_tasks[task_type.value]
@@ -538,7 +604,14 @@ class DynamicTaskManager:
             self.task_history.append(task)
             del self.active_tasks[task_type.value]
 
-            print(f"✅ TASK_MANAGER: Completed {task_type.value} - {completion_reason}")
+            print(f"🚨 TASK_COMPLETED_SUCCESS: {task_type.value} - {completion_reason}")
+            print(f"🚨 TASK_COMPLETED_SUCCESS: History count: {len(self.task_history)}")
+            print(f"🚨 TASK_COMPLETED_SUCCESS: Active tasks now: {list(self.active_tasks.keys())}")
+            return True
+        else:
+            print(f"🚨 COMPLETE_TASK_FAILED: Task {task_type.value} not found in active tasks")
+            print(f"🚨 COMPLETE_TASK_FAILED: Available active tasks: {list(self.active_tasks.keys())}")
+            return False
 
     def _auto_complete_task(self, task_type: TaskType, completion_reason: str = "Auto-completed after trigger"):
         """Automatically mark a task as completed to allow subsequent tasks to trigger"""
@@ -565,25 +638,36 @@ class DynamicTaskManager:
     
     def _cleanup_expired_tasks(self):
         """Remove expired tasks and move them to history"""
+        print(f"🚨 CLEANUP_DEBUG: Starting cleanup on instance {id(self)}")
+        print(f"🚨 CLEANUP_DEBUG: Active tasks before cleanup: {list(self.active_tasks.keys())}")
+
         expired_tasks = []
-        
+
         for task_id, task in self.active_tasks.items():
-            if task.is_expired:
+            is_expired = task.is_expired
+            print(f"🚨 CLEANUP_DEBUG: Task {task_id} is_expired: {is_expired}")
+            if is_expired:
                 expired_tasks.append(task_id)
-        
+
+        print(f"🚨 CLEANUP_DEBUG: Found {len(expired_tasks)} expired tasks: {expired_tasks}")
+
         for task_id in expired_tasks:
             task = self.active_tasks[task_id]
             task.progress_indicators["completion_reason"] = "Time expired"
             task.progress_indicators["completion_time"] = datetime.now().isoformat()
-            
+
             self.task_history.append(task)
             del self.active_tasks[task_id]
-            
-            print(f"⏰ TASK_MANAGER: Expired task {task_id}")
+
+            print(f"🚨 CLEANUP_EXPIRED: Removed expired task {task_id}")
+
+        print(f"🚨 CLEANUP_DEBUG: Active tasks after cleanup: {list(self.active_tasks.keys())}")
     
     def get_active_tasks(self) -> List[ActiveTask]:
         """Get list of currently active tasks"""
+        print(f"🚨 GET_ACTIVE_TASKS: Instance {id(self)} has active tasks: {list(self.active_tasks.keys())}")
         self._cleanup_expired_tasks()
+        print(f"🚨 GET_ACTIVE_TASKS: After cleanup: {list(self.active_tasks.keys())}")
         return list(self.active_tasks.values())
     
     def get_task_status(self) -> Dict[str, Any]:
