@@ -2885,7 +2885,7 @@ class EnhancedGamificationRenderer:
                             # Reset to safe state
                             story_state = {
                                 'chapter': 2,
-                                'story_points': 10,
+                                'story_points': 35,
                                 'narrative_choices': [story_response],
                                 'show_feedback': False,
                                 'feedback_message': '',
