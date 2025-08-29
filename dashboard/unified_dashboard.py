@@ -707,10 +707,11 @@ class UnifiedArchitecturalDashboard:
                 display_name = task_display_names.get(task_name, task_name.replace('_', ' ').title())
                 description = task_descriptions.get(task_name, f'Task {task_name} has been triggered.')
 
-                st.success(f"🎯 **New Task Available**: {display_name}")
-                st.info(f"📋 {description}")
+                # REMOVED: Task display messages - tasks now render as UI components
+                # st.success(f"🎯 **New Task Available**: {display_name}")
+                # st.info(f"📋 {description}")
 
-                print(f"✅ DASHBOARD: Task {task_name} displayed in UI")
+                print(f"✅ DASHBOARD: Task {task_name} triggered (UI component will render separately)")
             else:
                 print(f"🎯 DASHBOARD: No tasks triggered at {updated_phase_completion:.1f}%")
 

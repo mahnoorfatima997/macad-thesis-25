@@ -2745,6 +2745,11 @@ class EnhancedGamificationRenderer:
     def _render_storytelling_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render interactive storytelling challenge."""
         try:
+            # ISSUE 3 FIX: Check if storytelling is already completed
+            if st.session_state.get('storytelling_completed', False):
+                st.info("🎉 Storytelling challenge already completed! You've submitted your 3-chapter story.")
+                return
+
             # ISSUE 2 FIX: Robust storytelling state initialization with validation
             if 'storytelling_state' not in st.session_state:
                 st.session_state.storytelling_state = {
@@ -2754,7 +2759,8 @@ class EnhancedGamificationRenderer:
                     'story_complete': False,
                     'show_feedback': False,
                     'feedback_message': '',
-                    'feedback_points': 0
+                    'feedback_points': 0,
+                    'completed': False
                 }
 
             story_state = st.session_state.storytelling_state
@@ -2886,35 +2892,37 @@ class EnhancedGamificationRenderer:
                                 'feedback_points': 0
                             }
 
-                        # UI FIX: Set persistent feedback instead of immediate display + rerun
-                        if story_state['story_points'] >= 100:
-                            # Story completion - show immediate feedback with balloons
-                            st.success("🎉 **STORY COMPLETE!** You've crafted a comprehensive narrative!")
+                        # ISSUE 3 FIX: Complete storytelling after 3 submissions
+                        if len(story_state['narrative_choices']) >= 3:
+                            # Story completion after 3 submissions - show immediate feedback with balloons
+                            st.success("🎉 **STORYTELLING CHALLENGE COMPLETE!** You've submitted 3 story chapters!")
                             st.balloons()
 
                             # Show final story summary
                             with st.expander("📖 Your Complete Story", expanded=True):
-                                st.write("**Your Narrative Journey:**")
+                                st.write("**Your 3-Chapter Narrative Journey:**")
                                 for i, choice in enumerate(story_state['narrative_choices'], 1):
                                     st.write(f"**Chapter {i}:** {choice}")
 
-                            # Reset for new story
-                            if st.button("🔄 Start New Story", key="new_story"):
-                                st.session_state['storytelling_state'] = {
-                                    'chapter': 1,
-                                    'story_points': 0,
-                                    'narrative_choices': [],
-                                    'show_feedback': False,
-                                    'feedback_message': '',
-                                    'feedback_points': 0
-                                }
-                                st.rerun()
+                            # Mark storytelling as permanently completed
+                            st.session_state['storytelling_completed'] = True
+
+                            # Clear storytelling state to prevent further challenges
+                            st.session_state['storytelling_state'] = {
+                                'chapter': 1,
+                                'story_points': 0,
+                                'narrative_choices': [],
+                                'show_feedback': False,
+                                'feedback_message': '',
+                                'feedback_points': 0,
+                                'completed': True  # Mark as completed
+                            }
 
                             # Trigger message processing for follow-up
                             st.session_state.should_process_message = True
                             st.session_state.messages.append({
                                 "role": "user",
-                                "content": f"I completed the storytelling challenge! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
+                                "content": f"I completed the storytelling challenge with 3 chapters! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
                             })
                         else:
                             # UI FIX: Set persistent feedback state instead of immediate display + rerun

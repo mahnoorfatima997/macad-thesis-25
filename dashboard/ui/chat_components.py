@@ -1087,8 +1087,18 @@ def _render_tasks_for_message(message_index: int):
     try:
         task_display_queue = st.session_state.get('task_display_queue', [])
 
+        print(f"🔍 RENDER_TASKS_DEBUG: Checking message {message_index}, queue length: {len(task_display_queue)}")
+
         if not task_display_queue:
+            print(f"🔍 RENDER_TASKS_DEBUG: No tasks in display queue")
             return
+
+        # Debug: Show all tasks in queue
+        for i, task_entry in enumerate(task_display_queue):
+            task = task_entry['task']
+            linked_message = task_entry.get('message_index', -1)
+            should_render = task_entry.get('should_render', False)
+            print(f"🔍 QUEUE_TASK_{i}: {task.task_type.value} linked to msg {linked_message}, should_render: {should_render}")
 
         # Find tasks linked to this message
         for task_entry in task_display_queue:
@@ -1096,12 +1106,14 @@ def _render_tasks_for_message(message_index: int):
             should_render = task_entry.get('should_render', False)
             already_displayed = task_entry.get('displayed', False)
 
-            # Render task if it's linked to this message and not yet displayed
-            if (linked_message == message_index and should_render and not already_displayed):
+            print(f"🔍 TASK_CHECK: msg {message_index} vs linked {linked_message}, render: {should_render}")
+
+            # Render task if it's linked to this message (either first time or persistent display)
+            if linked_message == message_index and should_render:
                 task = task_entry['task']
                 task_id = task_entry['task_id']
 
-                print(f"🎯 MESSAGE_TASK: Rendering {task.task_type.value} after message {message_index}")
+                print(f"🎯 RENDERING_TASK: {task.task_type.value} for message {message_index}")
 
                 # Create unique container for this message-task combination
                 container_key = f"msg_{message_index}_task_{task_id}"
@@ -1109,14 +1121,17 @@ def _render_tasks_for_message(message_index: int):
                 with st.container(key=container_key):
                     _render_single_task_component(task_entry)
 
-                # Mark as displayed
-                task_entry['displayed'] = True
-                task_entry['display_time'] = datetime.now().isoformat()
-
-                print(f"🎯 MESSAGE_TASK: {task.task_type.value} rendered after message {message_index}")
+                # Mark as displayed (but keep in queue for persistent display)
+                if not already_displayed:
+                    task_entry['displayed'] = True
+                    task_entry['display_time'] = datetime.now().isoformat()
+                    print(f"🎯 MESSAGE_TASK: {task.task_type.value} first render after message {message_index}")
+                # Task stays in queue for persistent display
 
     except Exception as e:
         print(f"⚠️ Error rendering tasks for message {message_index}: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def _render_task_if_active():

@@ -220,7 +220,7 @@ def render_test_mode_primary():
             initialize_test_session()
 
     # DEBUG: Task System Status
-    debug_task_system_status()
+    #debug_task_system_status()
 
     return selected_test_group
 

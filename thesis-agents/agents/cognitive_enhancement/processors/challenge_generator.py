@@ -637,6 +637,12 @@ class ChallengeGeneratorProcessor:
 
             # Check storytelling patterns
             if any(pattern in latest_message for pattern in storytelling_patterns):
+                # ISSUE 3 FIX: Skip if storytelling challenge is already completed
+                import streamlit as st
+                if hasattr(st, 'session_state') and st.session_state.get('storytelling_completed', False):
+                    print(f"🎮 GAMIFICATION SKIP: Storytelling challenge already completed (3 chapters submitted)")
+                    return False
+
                 # ENHANCED GAME VARIETY: Skip if storytelling was used recently
                 if should_skip_game_type('storytelling', recent_game_types):
                     return False

@@ -323,9 +323,10 @@ class ModeProcessor:
                         st.session_state['task_display_queue'] = []
 
                     # Create unique task display entry
-                    # CRITICAL FIX: Link task to the message that will trigger it
-                    # Task should appear after the CURRENT message (which will be added after this processing)
-                    current_message_index = len(st.session_state.messages)  # This will be the index of the response message
+                    # CRITICAL FIX: Link task to the LAST EXISTING message (user's question)
+                    # Task should appear after the user's message that triggered it
+                    # Current messages: [user1, assistant1, user2] -> task should appear after user2 (index 2)
+                    current_message_index = len(st.session_state.messages) - 1  # Link to the last existing message
 
                     task_display_entry = {
                         'task': task,
@@ -340,6 +341,8 @@ class ModeProcessor:
                     # Add to queue
                     st.session_state['task_display_queue'].append(task_display_entry)
                     print(f"🔍 SESSION_STATE_DEBUG: Task added to display queue. Queue length: {len(st.session_state['task_display_queue'])}")
+                    print(f"🔍 SESSION_STATE_DEBUG: Task {task.task_type.value} linked to message index {current_message_index}")
+                    print(f"🔍 SESSION_STATE_DEBUG: Current messages count: {len(st.session_state.messages)}")
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing UI code
                     st.session_state['active_task'] = task_display_entry
