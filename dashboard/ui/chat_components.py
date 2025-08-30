@@ -1087,18 +1087,8 @@ def _render_tasks_for_message(message_index: int):
     try:
         task_display_queue = st.session_state.get('task_display_queue', [])
 
-        print(f"🔍 RENDER_TASKS_DEBUG: Checking message {message_index}, queue length: {len(task_display_queue)}")
-
         if not task_display_queue:
-            print(f"🔍 RENDER_TASKS_DEBUG: No tasks in display queue")
             return
-
-        # Debug: Show all tasks in queue
-        for i, task_entry in enumerate(task_display_queue):
-            task = task_entry['task']
-            linked_message = task_entry.get('message_index', -1)
-            should_render = task_entry.get('should_render', False)
-            print(f"🔍 QUEUE_TASK_{i}: {task.task_type.value} linked to msg {linked_message}, should_render: {should_render}")
 
         # Find tasks linked to this message
         for task_entry in task_display_queue:
@@ -1106,19 +1096,16 @@ def _render_tasks_for_message(message_index: int):
             should_render = task_entry.get('should_render', False)
             already_displayed = task_entry.get('displayed', False)
 
-            print(f"🔍 TASK_CHECK: msg {message_index} vs linked {linked_message}, render: {should_render}")
-
             # Render task if it's linked to this message (either first time or persistent display)
             if linked_message == message_index and should_render:
                 task = task_entry['task']
                 task_id = task_entry['task_id']
 
-                print(f"🎯 RENDERING_TASK: {task.task_type.value} for message {message_index}")
-
                 # Create unique container for this message-task combination
                 container_key = f"msg_{message_index}_task_{task_id}"
 
-                with st.container(key=container_key):
+                # CRITICAL FIX: Use container without key parameter (Streamlit compatibility)
+                with st.container():
                     _render_single_task_component(task_entry)
 
                 # Mark as displayed (but keep in queue for persistent display)
@@ -1151,18 +1138,30 @@ def _render_single_task_component(task_entry):
         from dashboard.processors.task_guidance_system import TaskGuidanceSystem
         guidance_system = TaskGuidanceSystem()
 
+        # CRITICAL FIX: Get test group from session state if task doesn't have it
+        test_group = getattr(task, 'test_group', None)
+        if not test_group:
+            import streamlit as st
+            session_test_group = st.session_state.get('test_group')
+            if hasattr(session_test_group, 'value'):
+                test_group = session_test_group.value
+            else:
+                test_group = str(session_test_group) if session_test_group else "MENTOR"
+            print(f"🔧 TASK_DATA_FIX: Using session test group: {test_group}")
+
         # Get the real task assignment based on test group
-        if task.test_group == "MENTOR":
+        if test_group == "MENTOR":
             task_data = guidance_system.mentor_tasks.get(task.task_type, {})
-        elif task.test_group == "GENERIC_AI":
+        elif test_group == "GENERIC_AI":
             task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
-        elif task.test_group == "CONTROL":
+        elif test_group == "CONTROL":
             task_data = guidance_system.control_tasks.get(task.task_type, {})
         else:
             task_data = {}
 
         if not task_data:
-            print(f"⚠️ No task data found for {task.task_type.value} in {guidance_type} mode")
+            print(f"⚠️ No task data found for {task.task_type.value} in {test_group} mode")
+            print(f"🔍 TASK_DEBUG: task.test_group={getattr(task, 'test_group', 'NOT_SET')}, session_test_group={st.session_state.get('test_group', 'NOT_SET')}")
             return
 
         # Get the actual task assignment content

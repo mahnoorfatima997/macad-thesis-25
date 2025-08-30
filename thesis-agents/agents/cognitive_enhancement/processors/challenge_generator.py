@@ -374,6 +374,44 @@ class ChallengeGeneratorProcessor:
 
             latest_message = user_messages[-1].get('content', '').lower().strip()
 
+            # CRITICAL FIX: Check if user is responding to a recent gamification challenge
+            # This prevents consecutive game triggering when user responds to games
+            gamification_response_patterns = [
+                # Direct game response indicators
+                'my response to', 'response to the', 'my answer to', 'answer to the',
+                'from the perspective of', 'as the', 'playing the role of',
+                'in this scenario', 'for this challenge', 'my story is',
+                'the story goes', 'continuing the story', 'next chapter',
+                # Emotional/perspective language (common in game responses)
+                'i feel that', 'i think that', 'i believe that', 'i would feel',
+                'from this viewpoint', 'in this role', 'as this character',
+                # Game-specific response patterns
+                'constraint:', 'limitation:', 'challenge:', 'mystery:',
+                'transformation:', 'evolution:', 'adaptation:', 'perspective:',
+                # Common game response starters
+                'well, from', 'looking at this from', 'considering this from',
+                'if i were', 'as someone who', 'thinking about this'
+            ]
+
+            # Check for direct game response patterns
+            is_game_response = any(pattern in latest_message for pattern in gamification_response_patterns)
+
+            # Additional check: Look for game response by examining recent assistant messages for games
+            recent_assistant_messages = [msg['content'].lower() for msg in messages[-4:] if msg.get('role') == 'assistant']
+            recent_game_in_assistant = any(
+                any(indicator in msg for indicator in [
+                    'perspective wheel', 'role-play challenge', 'detective mystery', 'constraint puzzle',
+                    'storytelling challenge', 'time travel challenge', 'transformation game',
+                    'enhanced gamification', 'gamified challenge', 'interactive game'
+                ])
+                for msg in recent_assistant_messages[-1:]  # Check last assistant message
+            )
+
+            if is_game_response or recent_game_in_assistant:
+                print(f"🎮 GAME_RESPONSE_BLOCK: User responding to game or recent game detected - blocking new gamification")
+                print(f"🎮 RESPONSE_DETECTED: Direct_response={is_game_response}, Recent_game={recent_game_in_assistant}")
+                return False
+
             # Check for strong triggers that should override frequency control
             strong_trigger_patterns = [
                 'i\'m stuck on', 'stuck on', 'completely stuck', 'really stuck', 'totally stuck',
@@ -411,9 +449,23 @@ class ChallengeGeneratorProcessor:
                 for msg in recent_assistant_messages[-2:]  # Check last 2 assistant messages
             )
 
+            # ENHANCED FREQUENCY CONTROL: More strict checking
+            # Check if the last assistant message contained gamification
+            last_assistant_message = ""
+            for msg in reversed(messages):
+                if msg.get('role') == 'assistant':
+                    last_assistant_message = msg.get('content', '').lower()
+                    break
+
+            last_message_had_game = any(
+                indicator in last_assistant_message
+                for indicator in gamification_indicators
+            )
+
             # Allow gamification if no recent games OR if strong trigger overrides
-            if recent_gamification and not has_strong_trigger:
-                print(f"🎮 FREQUENCY CONTROL: Skipping gamification - recent game detected in last 2 messages")
+            if (recent_gamification or last_message_had_game) and not has_strong_trigger:
+                print(f"🎮 FREQUENCY CONTROL: Skipping gamification - recent game detected")
+                print(f"🎮 FREQUENCY_DEBUG: recent_gamification={recent_gamification}, last_message_had_game={last_message_had_game}")
                 return False
             elif has_strong_trigger:
                 print(f"🎮 FREQUENCY OVERRIDE: Strong trigger detected, overriding frequency control")
@@ -479,10 +531,18 @@ class ChallengeGeneratorProcessor:
                 if should_skip_game_type('role_play', recent_game_types):
                     return False
 
-                # ISSUE 2 FIX: Skip if user is responding to a role-play challenge
+                # ENHANCED FIX: Skip if user is responding to a role-play challenge
                 roleplay_response_indicators = [
+                    # Direct response indicators
                     '🎭 role-play response:', '🎭 roleplay', 'role-play response:',
-                    'as this role:', 'from this perspective:', 'my response as'
+                    'as this role:', 'from this perspective:', 'my response as',
+                    # Natural role-play response patterns
+                    'as a visitor, i would', 'as a user, i would', 'as an elderly person',
+                    'from the perspective of', 'playing this role', 'in this role',
+                    'as someone who', 'if i were a', 'being a visitor',
+                    # Emotional response patterns (common in role-play responses)
+                    'i would feel', 'i might feel', 'i could feel', 'i would think',
+                    'i would be', 'i would want', 'i would need', 'i would expect'
                 ]
                 if any(indicator in latest_message.lower() for indicator in roleplay_response_indicators):
                     print(f"🎮 GAMIFICATION SKIP: User is responding to role-play challenge - no new challenge needed")
@@ -647,10 +707,18 @@ class ChallengeGeneratorProcessor:
                 if should_skip_game_type('storytelling', recent_game_types):
                     return False
 
-                # ISSUE 2 FIX: Skip if user is responding to a storytelling challenge
+                # ENHANCED FIX: Skip if user is responding to a storytelling challenge
                 storytelling_response_indicators = [
+                    # Direct response indicators
                     '📚 story response:', '📚 storytelling', 'story response:',
-                    'my story:', 'the story goes:', 'narrative response:'
+                    'my story:', 'the story goes:', 'narrative response:',
+                    # Natural storytelling response patterns
+                    'continuing the story', 'next chapter', 'the story continues',
+                    'in this story', 'for this narrative', 'my narrative',
+                    'the narrative goes', 'story chapter', 'chapter of the story',
+                    # Story development patterns
+                    'once upon', 'in the beginning', 'first, the', 'then, the',
+                    'finally, the', 'the journey', 'the experience', 'the tale'
                 ]
                 if any(indicator in latest_message.lower() for indicator in storytelling_response_indicators):
                     print(f"🎮 GAMIFICATION SKIP: User is responding to storytelling challenge - no new challenge needed")

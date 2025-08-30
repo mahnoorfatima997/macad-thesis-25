@@ -164,6 +164,15 @@ class UnifiedArchitecturalDashboard:
             print(f"🔍 DASHBOARD_DEBUG: Using existing mode processor from session state")
             self.mode_processor = st.session_state.mode_processor
 
+            # CRITICAL FIX: Ensure task manager consistency across all components
+            if hasattr(self.mode_processor, 'task_manager') and self.mode_processor.task_manager:
+                session_task_manager = st.session_state.get('task_manager_instance')
+                if session_task_manager and self.mode_processor.task_manager != session_task_manager:
+                    print(f"🚨 DASHBOARD_SYNC: Syncing mode processor to session task manager")
+                    print(f"🚨 DASHBOARD_SYNC: Mode processor: {id(self.mode_processor.task_manager)}")
+                    print(f"🚨 DASHBOARD_SYNC: Session state: {id(session_task_manager)}")
+                    self.mode_processor.task_manager = session_task_manager
+
             # Update references in case they changed
             self.mode_processor.orchestrator = self.orchestrator
             self.mode_processor.data_collector = self.data_collector
@@ -648,7 +657,8 @@ class UnifiedArchitecturalDashboard:
             print(f"🎯 DASHBOARD: Updated phase completion stored: {updated_phase_completion:.1f}%")
 
         # CRITICAL FIX: Check for task triggers with updated completion
-        if phase_result and updated_phase_completion > 0:
+        # IMPORTANT: Include 0% completion to catch phase transition tasks (like Task 2.1)
+        if phase_result and updated_phase_completion >= 0:
             task_manager = get_cached_task_manager()
             current_phase = phase_result.get('current_phase', 'ideation')
 
@@ -910,6 +920,30 @@ class UnifiedArchitecturalDashboard:
             # Handle phase transitions - but don't rerun yet, let response generation complete
             if phase_result.get('phase_transition'):
                 st.success(f"🎉 **Phase Transition**: {phase_result.get('transition_message', 'Moving to next phase!')}")
+
+                # CRITICAL FIX: Handle task triggering during phase transitions
+                previous_phase = phase_result.get('previous_phase', 'unknown')
+                current_phase = phase_result.get('current_phase', 'unknown')
+
+                print(f"🔄 PHASE_TRANSITION_DETECTED: {previous_phase} → {current_phase}")
+
+                # Trigger phase transition task handling
+                if hasattr(self.mode_processor, '_handle_phase_transition'):
+                    test_group = st.session_state.get('test_group', 'MENTOR')
+                    # Convert string to enum if needed
+                    if isinstance(test_group, str):
+                        from processors.mode_processors import TestGroup
+                        test_group = TestGroup.MENTOR if test_group == 'MENTOR' else TestGroup.GENERIC_AI
+
+                    self.mode_processor._handle_phase_transition(
+                        from_phase=previous_phase.lower(),
+                        to_phase=current_phase.lower(),
+                        test_group=test_group,
+                        user_input=f"Phase transition from {previous_phase} to {current_phase}"
+                    )
+                    print(f"🔄 PHASE_TRANSITION_HANDLED: Task triggering completed")
+                else:
+                    print(f"⚠️ PHASE_TRANSITION_WARNING: _handle_phase_transition method not available")
 
                 # Save generated image if available (display will be handled in chat)
                 generated_image = phase_result.get('generated_image')

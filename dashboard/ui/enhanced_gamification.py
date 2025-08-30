@@ -2090,10 +2090,14 @@ class EnhancedGamificationRenderer:
                 "challenge": f"From a {name.lower()}'s perspective: How does this {building_type} serve their specific needs?"
             })
 
+        # CRITICAL FIX: Generate unique key with timestamp to prevent duplicates
+        import time
+        unique_key = f"spin_{wheel_key}_{int(time.time() * 1000000)}"
+
         # Compact spin button
         if st.button(
             f"{theme['icon']} Spin Perspective Wheel",
-            key=f"spin_{wheel_key}",
+            key=unique_key,
             type="primary",
             use_container_width=True
         ):
@@ -2928,7 +2932,7 @@ class EnhancedGamificationRenderer:
                             # UI FIX: Set persistent feedback state instead of immediate display + rerun
                             story_state['show_feedback'] = True
                             story_state['feedback_message'] = "Story continues! Your narrative has been recorded."
-                            story_state['feedback_points'] = 10
+                            story_state['feedback_points'] = 35
 
                         # Update session state
                         st.session_state['storytelling_state'] = story_state

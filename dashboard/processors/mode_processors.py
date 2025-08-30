@@ -340,9 +340,7 @@ class ModeProcessor:
 
                     # Add to queue
                     st.session_state['task_display_queue'].append(task_display_entry)
-                    print(f"🔍 SESSION_STATE_DEBUG: Task added to display queue. Queue length: {len(st.session_state['task_display_queue'])}")
-                    print(f"🔍 SESSION_STATE_DEBUG: Task {task.task_type.value} linked to message index {current_message_index}")
-                    print(f"🔍 SESSION_STATE_DEBUG: Current messages count: {len(st.session_state.messages)}")
+
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing UI code
                     st.session_state['active_task'] = task_display_entry
@@ -450,7 +448,7 @@ class ModeProcessor:
                 )
 
             # Handle phase transition with proper task checking
-            test_group = st.session_state.get('test_group', TestGroup.MENTOR).name
+            test_group = st.session_state.get('test_group', TestGroup.MENTOR)
             self._handle_phase_transition(
                 from_phase=current_phase.lower(),
                 to_phase=next_phase.lower(),
@@ -493,8 +491,18 @@ class ModeProcessor:
             st.session_state.test_current_phase = next_phase
             print(f"🔄 AUTO_PHASE: Advanced from {current_phase} to {next_phase}")
 
-            # CRITICAL FIX: Handle phase transition with proper task checking
-            test_group = st.session_state.get('test_group', TestGroup.MENTOR).name
+            # CRITICAL FIX: Handle phase transition with proper task cleanup and single instance
+            test_group = st.session_state.get('test_group', TestGroup.MENTOR)
+
+            # CRITICAL FIX: Ensure single task manager instance before phase transition
+            self._ensure_task_system_initialized()
+
+            # CRITICAL FIX: Complete previous phase tasks before transitioning
+            if self.task_manager:
+                print(f"🔄 PHASE_CLEANUP: Completing {current_phase.lower()} tasks before transition")
+                self._complete_previous_phase_tasks(current_phase.lower())
+
+            # Handle phase transition
             self._handle_phase_transition(
                 from_phase=current_phase.lower(),
                 to_phase=next_phase.lower(),
@@ -1518,9 +1526,16 @@ class ModeProcessor:
     def _check_and_trigger_tasks(self, user_input: str, current_phase: str, test_group: str, completion_percent: float):
         """Check and trigger tasks based on phase completion percentage"""
         try:
-            if self.task_manager is None:
-                print(f"🎯 TASK_TRIGGER: Task manager not initialized - initializing now")
-                self._ensure_task_system_initialized()
+            # CRITICAL FIX: Always ensure we're using the correct task manager instance
+            self._ensure_task_system_initialized()
+
+            # CRITICAL FIX: Verify we're using the same instance as stored in session state
+            session_task_manager = st.session_state.get('task_manager_instance')
+            if session_task_manager and self.task_manager != session_task_manager:
+                print(f"🚨 TASK_MANAGER_SYNC: Syncing to session state instance")
+                print(f"🚨 TASK_MANAGER_SYNC: Current: {id(self.task_manager) if self.task_manager else None}")
+                print(f"🚨 TASK_MANAGER_SYNC: Session: {id(session_task_manager)}")
+                self.task_manager = session_task_manager
 
             if self.task_manager is None:
                 print(f"🎯 TASK_TRIGGER: Task manager still not initialized - skipping")
@@ -1572,7 +1587,37 @@ class ModeProcessor:
             import traceback
             traceback.print_exc()
 
-    def _handle_phase_transition(self, from_phase: str, to_phase: str, test_group: str, user_input: str):
+    def _complete_previous_phase_tasks(self, phase: str):
+        """Complete all active tasks from the previous phase"""
+        if not self.task_manager:
+            return
+
+        # Define phase-specific tasks
+        phase_tasks = {
+            'ideation': ['architectural_concept', 'spatial_program'],
+            'visualization': ['visual_analysis_2d', 'environmental_contextual'],
+            'materialization': ['spatial_analysis_3d', 'realization_implementation', 'design_evolution', 'knowledge_transfer']
+        }
+
+        tasks_to_complete = phase_tasks.get(phase, [])
+        active_tasks = list(self.task_manager.active_tasks.keys())
+
+        for task_name in tasks_to_complete:
+            if task_name in active_tasks:
+                print(f"🔄 PHASE_CLEANUP: Completing {task_name} from {phase} phase")
+                # Find the task type enum
+                from dashboard.processors.dynamic_task_manager import TaskType
+                task_type = None
+                for tt in TaskType:
+                    if tt.value == task_name:
+                        task_type = tt
+                        break
+
+                if task_type:
+                    self.task_manager.complete_task(task_type, f"Auto-completed during phase transition from {phase}")
+                    print(f"✅ PHASE_CLEANUP: {task_name} completed")
+
+    def _handle_phase_transition(self, from_phase: str, to_phase: str, test_group: TestGroup, user_input: str):
         """Handle phase transitions with proper task checking for missed and new tasks"""
         try:
             if self.task_manager is None:
@@ -1592,7 +1637,7 @@ class ModeProcessor:
                 to_phase=to_phase,
                 user_input=user_input,
                 conversation_history=conversation_history,
-                test_group=test_group,
+                test_group=test_group.name,  # Convert enum to string
                 image_uploaded=False,  # TODO: Add image upload detection
                 image_analysis=None    # TODO: Add image analysis if needed
             )
@@ -1605,7 +1650,7 @@ class ModeProcessor:
 
                 activated_task = self.task_manager.activate_task(
                     task_type=task_to_activate,
-                    test_group=test_group,
+                    test_group=test_group.name,  # Convert enum to string
                     current_phase=to_phase,
                     trigger_reason=f"Phase transition: {from_phase} → {to_phase}",
                     phase_completion_percent=0.0
@@ -1618,7 +1663,7 @@ class ModeProcessor:
                     st.session_state['active_task'] = {
                         'task': activated_task,
                         'user_input': user_input,
-                        'guidance_type': self._get_guidance_type_for_test_group(test_group),
+                        'guidance_type': self._get_guidance_type_for_test_group(test_group.name),  # Convert enum to string
                         'should_render': True
                     }
                 else:
