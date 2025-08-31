@@ -372,14 +372,25 @@ def render_single_message(message: Dict[str, Any]):
 
         # ENHANCED: Check if this is a gamified challenge
         gamification_info = message.get("gamification", {})
-        is_gamified = gamification_info.get("is_gamified", False)
-        display_type = gamification_info.get("display_type", "")
 
-        # PERFORMANCE: Disable debug prints
+        # CRITICAL FIX: Check nested challenge_data structure for gamification
+        challenge_data = gamification_info.get("challenge_data", {})
+        is_gamified = (
+            gamification_info.get("is_gamified", False) or
+            challenge_data.get("gamification_applied", False)
+        )
+        display_type = (
+            gamification_info.get("display_type", "") or
+            challenge_data.get("display_type", "")
+        )
+
+        # DEBUG: Enable one critical debug print to diagnose gamification issue
+        if 'gamification' in message or gamification_info:
+            print(f"🎮 DEBUG: Gamification data found - is_gamified: {is_gamified}, display_type: '{display_type}'")
+            print(f"🎮 DEBUG: Full gamification info: {gamification_info}")
+            print(f"🎮 DEBUG: Challenge data gamification_applied: {challenge_data.get('gamification_applied', False)}")
         # print(f"🎮 DEBUG: Message gamification check:")
         # print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
-        # print(f"🎮 DEBUG: Is gamified: {is_gamified}")
-        # print(f"🎮 DEBUG: Display type: {display_type}")
         # print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
 
         if is_gamified and display_type == "enhanced_visual":
@@ -577,9 +588,9 @@ def _render_generated_image_in_chat(generated_image: dict):
         style = generated_image.get('style', 'visualization')
 
         st.markdown(f"""
-        <div style="margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
-            <div style="font-weight: bold; color: #007bff; margin-bottom: 8px;">
-                🎨 AI-Generated {phase.title()} Visualization
+        <div style="margin: 10px 0; padding: 10px; background-color: #ffffff; border-radius: 8px; border-left: 4px solid #cf436f;">
+            <div style="font-weight: bold; color: #cf436f; margin-bottom: 8px;">
+                ◉ AI-Generated {phase.title()} Image!
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -659,22 +670,22 @@ def _render_generated_image_in_chat(generated_image: dict):
         image_key = str(hash(generated_image['url'] + str(generated_image.get('phase', '')) + str(time.time())))[-8:]
 
         with col1:
-            if st.button("✅ Yes", key=f"feedback_yes_{image_key}", help="This captures my ideas well"):
+            if st.button("✔ Yes", key=f"feedback_yes_{image_key}", help="This captures my ideas well"):
                 st.success("Great! This confirms we're aligned on your design direction.")
                 _store_image_feedback(generated_image, 'positive')
 
         with col2:
-            if st.button("🤔 Partially", key=f"feedback_partial_{image_key}", help="Close, but needs adjustment"):
+            if st.button("◐ Partially", key=f"feedback_partial_{image_key}", help="Close, but needs adjustment"):
                 st.info("Thanks for the feedback! Let's continue refining your design ideas.")
                 _store_image_feedback(generated_image, 'partial')
 
         with col3:
-            if st.button("❌ No", key=f"feedback_no_{image_key}", help="This doesn't match my vision"):
+            if st.button("✘ No", key=f"feedback_no_{image_key}", help="This doesn't match my vision"):
                 st.warning("No problem! Let's continue exploring your design ideas.")
                 _store_image_feedback(generated_image, 'negative')
 
         # Show generation details in an expander
-        with st.expander("🔍 View Generation Details"):
+        with st.expander(" View Generation Details"):
             st.markdown(f"**Phase:** {generated_image.get('phase', 'Unknown')}")
             st.markdown(f"**Style:** {generated_image.get('style', 'Unknown')}")
             st.markdown(f"**Prompt:** {generated_image.get('prompt', 'No prompt available')}")

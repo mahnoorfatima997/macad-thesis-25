@@ -885,7 +885,7 @@ class GamificationDisplay:
                 {achievement['description']}
             </p>
             <div style="margin-top: 15px; font-size: 1.1em; color: {achievement['color']};">
-                <strong>+50 XP Earned! 🌟</strong>
+                <strong>+30 XP Earned! 🌟</strong>
             </div>
         </div>
 

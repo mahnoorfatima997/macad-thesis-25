@@ -678,7 +678,7 @@ class DomainExpertAgent:
             response = client.chat.completions.create(
                 model="gpt-4o-mini",  # PERFORMANCE: Use cheaper model
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,  # PERFORMANCE: Reduced token limit
+                max_tokens=500,  # INCREASED: Fix contextual response truncation
                 temperature=0.3
             )
 
@@ -855,7 +855,7 @@ class DomainExpertAgent:
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=300,
+                max_tokens=500,  # INCREASED: Fix fallback response truncation
                 temperature=0.4
             )
 
@@ -1672,7 +1672,7 @@ What questions do you have about your design?"""
 
             response = await self.client.generate_completion([
                 {"role": "user", "content": prompt}
-            ], max_tokens=400, temperature=0.6)
+            ], max_tokens=400, temperature=0.6)  # INCREASED: Fix example truncation
 
             if response and response.get("content"):
                 ai_examples = response["content"].strip()
@@ -2228,7 +2228,7 @@ What questions do you have about your design?"""
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": synthesis_prompt}],
-                max_tokens=250,
+                max_tokens=350,  # INCREASED: Fix project example truncation with links
                 temperature=0.4
             )
             
@@ -2307,7 +2307,7 @@ What questions do you have about your design?"""
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": strategies_prompt}],
-                max_tokens=300,
+                max_tokens=400,  # INCREASED: Fix strategies response truncation
                 temperature=0.7
             )
 

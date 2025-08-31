@@ -1262,9 +1262,10 @@ Generate a contextual response that builds on their input:
         """
 
         try:
+            # OPTIMIZATION: Reduce token limit for challenging questions
             response = await self.client.generate_completion([
                 {"role": "user", "content": prompt}
-            ], max_tokens=200, temperature=0.7)
+            ], max_tokens=150, temperature=0.7)  # Reduced from 200
             
             ai_generated_response = response.get("content", "").strip()
 

@@ -405,7 +405,14 @@ class ModeProcessor:
             response = await self._process_control_test_mode(user_input, test_phase, image_path)
 
         else:
-            response = "Invalid test group configuration."
+            # CRITICAL FIX: Handle invalid test group gracefully instead of breaking the app
+            print(f"⚠️ INVALID TEST GROUP: {test_group} (type: {type(test_group)})")
+            print(f"⚠️ Expected one of: {[TestGroup.MENTOR, TestGroup.GENERIC_AI, TestGroup.CONTROL]}")
+
+            # Try to recover by defaulting to MENTOR mode
+            print(f"🔧 RECOVERY: Defaulting to MENTOR test group")
+            st.session_state.test_group = TestGroup.MENTOR
+            response = await self._process_mentor_test_mode(user_input, test_phase, image_path)
 
         # Apply dynamic task guidance if tasks are active AND task system is initialized (Test Mode only)
         if self.task_manager is not None and self.task_guidance is not None:
@@ -1721,14 +1728,9 @@ class ModeProcessor:
                     # BACKWARD COMPATIBILITY: Also set active_task
                     st.session_state['active_task'] = task_display_entry
 
-                    # CRITICAL FIX: Render task UI immediately during phase transition
-                    # This ensures students see the task interface before the agent's response
-                    try:
-                        from dashboard.ui.chat_components import render_active_tasks_ui
-                        print(f"🔄 PHASE_TRANSITION_UI: Rendering task UI immediately for {activated_task.task_type.value}")
-                        render_active_tasks_ui()
-                    except Exception as ui_error:
-                        print(f"⚠️ Phase transition UI rendering failed: {ui_error}")
+                    # CRITICAL FIX: Task UI will render automatically via message-based system
+                    # No need for immediate rendering - tasks render chronologically with messages
+                    print(f"🔄 PHASE_TRANSITION_UI: Task {activated_task.task_type.value} will render with next message")
                 else:
                     print(f"🔄 PHASE_TRANSITION_ACTIVATION_FAILED: Could not activate {task_to_activate.value}")
             else:

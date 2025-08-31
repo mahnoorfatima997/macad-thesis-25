@@ -6,6 +6,7 @@ Maintains Streamlit compatibility while adding creative visual enhancements.
 
 import streamlit as st
 import random
+import time
 from typing import Dict, List, Any, Optional
 import json
 import time
@@ -1467,6 +1468,33 @@ class EnhancedGamificationRenderer:
         # Inject enhanced CSS
         self._inject_enhanced_css()
 
+        # COMPLETION CHECK: Prevent re-rendering of completed games
+        if enhanced_type == "detective":
+            # Check if mystery game is already completed - use same key as actual mystery game
+            investigation_key = f"mystery_{building_type}_{hash(user_message)}"
+            mystery_state = st.session_state.get(investigation_key, {})
+            is_solved = mystery_state.get('mystery_solved', False)
+
+            print(f"🎮 COMPLETION_CHECK: enhanced_type={enhanced_type}, investigation_key={investigation_key}, is_solved={is_solved}")
+
+            if is_solved:
+                print(f"🎮 COMPLETION_CHECK: Mystery already solved, showing completion message")
+                # Game is completed - show completion message and exit
+                st.markdown(f"""
+                <div style="
+                    background: {theme['accent']};
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin: 10px 0;
+                    border-left: 4px solid {theme['primary']};
+                    text-align: center;
+                ">
+                    <strong style="color: {theme['primary']}; font-size: 18px;">{theme['symbol']} Mystery Solved!</strong><br>
+                    <span style="color: #2c2328; font-size: 14px;">Investigation complete. Insight recorded.</span>
+                </div>
+                """, unsafe_allow_html=True)
+                return  # Exit early to prevent re-rendering
+
         # If this is a rich cognitive enhancement challenge, render with full content
         if is_cognitive_enhancement and challenge_text:
             self._render_cognitive_enhancement_challenge(challenge_text, enhanced_type, theme, building_type)
@@ -2226,15 +2254,56 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-        # Generate dynamic mystery based on context
-        mystery_data = self.content_generator.generate_mystery_from_context(building_type, challenge_text)
+        # Initialize investigation state first
+        investigation_key = f"mystery_{building_type}_{hash(challenge_text)}"
+        if investigation_key not in st.session_state:
+            st.session_state[investigation_key] = {
+                'investigated_clues': [],
+                'detective_points': 0,
+                'mystery_solved': False,
+                'original_mystery': None,  # Store original mystery when game completes
+                'persistent_mystery': None  # Store mystery content to prevent regeneration
+            }
 
-        mystery = {
-            "case": mystery_data["mystery_description"],
-            "clues": mystery_data["clues"],
-            "red_herrings": mystery_data["red_herrings"],
-            "solution": mystery_data["solution_hint"]
-        }
+        investigation_state = st.session_state[investigation_key]
+
+        # COMPLETION CHECK: If mystery is already solved, show completion state only
+        if investigation_state.get('mystery_solved', False):
+            print(f"🎮 LATE_COMPLETION_CHECK: Mystery already solved, showing completion and freezing game")
+            # Game is completed - show completion message and exit
+            st.markdown(f"""
+            <div style="
+                background: {theme['accent']};
+                padding: 20px;
+                border-radius: 10px;
+                margin: 10px 0;
+                border-left: 4px solid {theme['primary']};
+                text-align: center;
+            ">
+                <strong style="color: {theme['primary']}; font-size: 18px;">{theme['symbol']} Mystery Solved!</strong><br>
+                <span style="color: #2c2328; font-size: 14px;">Investigation complete. Insight recorded.</span>
+            </div>
+            """, unsafe_allow_html=True)
+            return  # Exit early to prevent re-rendering
+
+        # CRITICAL FIX: Use persistent mystery to prevent regeneration
+        if investigation_state.get('persistent_mystery'):
+            # Use stored mystery to prevent regeneration
+            mystery = investigation_state['persistent_mystery']
+            print(f"🎮 MYSTERY_PERSISTENCE: Using stored mystery to prevent regeneration")
+        else:
+            # Generate mystery ONLY ONCE when game starts
+            print(f"🎮 MYSTERY_PERSISTENCE: Generating new mystery for first time")
+            mystery_data = self.content_generator.generate_mystery_from_context(building_type, challenge_text)
+            mystery = {
+                "case": mystery_data["mystery_description"],
+                "clues": mystery_data["clues"],
+                "red_herrings": mystery_data["red_herrings"],
+                "solution": mystery_data["solution_hint"]
+            }
+            # Store the mystery to prevent regeneration
+            investigation_state['persistent_mystery'] = mystery
+            print(f"🎮 MYSTERY_PERSISTENCE: Stored mystery with {len(mystery['clues'])} clues")
 
         # Compact case presentation
         st.markdown(f"""
@@ -2250,90 +2319,61 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-        # Initialize investigation state
-        investigation_key = f"investigation_{building_type}_{hash(mystery['case'])}"
-        if investigation_key not in st.session_state:
-            st.session_state[investigation_key] = {
-                'investigated_clues': [],
-                'detective_points': 0,
-                'mystery_solved': False
-            }
+        # Investigation state already initialized above
 
-        investigation_state = st.session_state[investigation_key]
+        # NEW MYSTERY GAME LOGIC: Option selection with hints
+        all_options = mystery['clues'] + mystery['red_herrings']
+        correct_answer = mystery['clues'][0] if mystery['clues'] else "Unknown"  # First clue is the correct answer
 
-        # Compact clue investigation
-        all_clues = mystery['clues'] + mystery['red_herrings']
+        # Show current hint if user made wrong choice
+        if investigation_state.get('last_wrong_choice'):
+            wrong_choice = investigation_state['last_wrong_choice']
+            hint_text = f"Not quite right. Hint: {wrong_choice} is a red herring. Look for something more fundamental to the design problem."
 
-        # Display clues as compact buttons
-        for i, clue in enumerate(all_clues):
-            is_investigated = clue in investigation_state['investigated_clues']
-            is_important = clue in mystery['clues']
-
-            if is_investigated:
-                if is_important:
-                    button_type = "primary"
-                    prefix = f"{theme['symbol']} ◉"
-                else:
-                    button_type = "secondary"
-                    prefix = f"{theme['symbol']} ◯"
-            else:
-                button_type = "secondary"
-                prefix = f"{theme['symbol']}"
-
-            if st.button(f"{prefix} {clue}", key=f"clue_{i}_{investigation_key}", type=button_type, use_container_width=True):
-                if is_investigated:
-                    # Allow unselecting clues
-                    investigation_state['investigated_clues'].remove(clue)
-                    if is_important and investigation_state['detective_points'] >= 10:
-                        investigation_state['detective_points'] -= 10
-                else:
-                    # Select new clue
-                    investigation_state['investigated_clues'].append(clue)
-                    if is_important:
-                        investigation_state['detective_points'] += 10
-                st.rerun()
-
-        # Add user input for hypothesis
-        if len(investigation_state['investigated_clues']) >= 2:
-            st.markdown("### Your Investigation")
-
-            hypothesis = st.text_area(
-                "What do you think is causing the problem?",
-                placeholder="Based on the evidence, I believe the issue is...",
-                height=100,
-                key=f"hypothesis_{investigation_key}"
-            )
-
-            if st.button(f"{theme['symbol']} Submit Solution", key=f"solve_{investigation_key}", type="primary"):
-                if hypothesis.strip():
-                    investigation_state['mystery_solved'] = True
-                    investigation_state['detective_points'] += 20
-
-                    # INTEGRATE WITH MENTOR: Send game response back to conversation
-                    game_response = f"{hypothesis.strip()}"
-                    if 'messages' not in st.session_state:
-                        st.session_state.messages = []
-                    st.session_state.messages.append({"role": "user", "content": game_response})
-                    st.session_state.should_process_message = True
-                    st.rerun()
-
-        # Show solution after mystery is solved
-        if investigation_state.get('mystery_solved', False):
             st.markdown(f"""
             <div style="
-                background: {theme['accent']};
-                padding: 15px;
+                background: #ffffff;
+                border: 1px solid #ffffff;
                 border-radius: 10px;
+                padding: 15px;
                 margin: 10px 0;
-                border-left: 4px solid {theme['primary']};
+                border-left: 4px solid #cd766d;
             ">
-                <strong style="color: {theme['primary']};">{theme['symbol']} Solution:</strong>
-                <span style="color: #2c2328;">{mystery['solution']}</span>
+                <strong style="color: #cd766d;">● Detective Hint:</strong>
+                <span style="color: #2c2328;">{hint_text}</span>
             </div>
             """, unsafe_allow_html=True)
 
-            # Show only contextual progress (no success message)
-            self._show_contextual_progress("Mystery Investigation", investigation_state['detective_points'], 20)
+        # Display all options as buttons
+        for i, option in enumerate(all_options):
+            is_correct = option == correct_answer
+
+            if st.button(f"{theme['symbol']} {option}", key=f"option_{i}_{investigation_key}", type="secondary", use_container_width=True):
+                if is_correct:
+                    # CORRECT ANSWER - Complete the game immediately
+                    print(f"🎮 MYSTERY_SOLVED: User selected correct answer: {option}")
+                    investigation_state['mystery_solved'] = True
+                    investigation_state['detective_points'] += 50
+                    investigation_state['correct_answer'] = option
+
+                    # COMPLETION TRACKING: Record mystery game completion
+                    try:
+                        from dashboard.ui.gamification_components import complete_advanced_challenge
+                        complete_advanced_challenge("mystery_investigation", True, 180.0)
+                        print(f"🎮 MYSTERY_COMPLETION: Recorded mystery investigation completion")
+                    except Exception as e:
+                        print(f"⚠️ MYSTERY_COMPLETION: Could not record completion: {e}")
+
+                    st.rerun()
+                else:
+                    # WRONG ANSWER - Show hint and continue
+                    print(f"🎮 MYSTERY_WRONG: User selected wrong answer: {option}")
+                    investigation_state['last_wrong_choice'] = option
+                    investigation_state['detective_points'] = max(0, investigation_state['detective_points'] - 5)  # Small penalty
+                    st.rerun()
+
+        # Show completion message if mystery is solved (this is handled by the early completion check above)
+        # The game completion logic is now in the option selection buttons above
 
 
 
@@ -2376,21 +2416,27 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-        # Generate dynamic constraints based on context
-        challenge_data = getattr(st.session_state, 'current_challenge_data', {})
-        constraints = self.content_generator.generate_constraints_from_context(building_type, challenge_text, challenge_data)
-
-        # Initialize constraint selection
+        # Initialize constraint selection first
         constraint_key = f"constraints_{building_type}_{hash(challenge_text)}"
         if constraint_key not in st.session_state:
             st.session_state[constraint_key] = {
                 'selected_constraints': [],
                 'solution': '',
                 'points': 0,
-                'completed': False
+                'completed': False,
+                'original_constraints': None  # Store original constraints when game completes
             }
 
         constraint_state = st.session_state[constraint_key]
+
+        # CRITICAL FIX: Use stored constraints for completed games, generate new ones for active games
+        if constraint_state.get('completed', False) and constraint_state.get('original_constraints'):
+            # Use stored constraints for completed games to prevent name changes
+            constraints = constraint_state['original_constraints']
+        else:
+            # Generate dynamic constraints for active games
+            challenge_data = getattr(st.session_state, 'current_challenge_data', {})
+            constraints = self.content_generator.generate_constraints_from_context(building_type, challenge_text, challenge_data)
 
         # Check if game is completed for frozen state display
         is_completed = constraint_state.get('completed', False)
@@ -2426,9 +2472,11 @@ class EnhancedGamificationRenderer:
                     is_selected = constraint_name in constraint_state['selected_constraints']
 
                     with col:
-                        # ENHANCED CONSTRAINT BUTTON with better styling
+                        # ENHANCED CONSTRAINT BUTTON with better styling and HTML escaping
                         button_style = "primary" if is_selected else "secondary"
-                        button_text = f"{'✓ ' if is_selected else ''}{constraint_data.get('icon', '◐')} {constraint_name}"
+                        # CRITICAL FIX: Escape HTML characters to prevent ">" display issues
+                        safe_constraint_name = constraint_name.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
+                        button_text = f"{'✓ ' if is_selected else ''}{constraint_data.get('icon', '◐')} {safe_constraint_name}"
 
                         # Show button in disabled state if completed
                         if is_completed:
@@ -2467,16 +2515,12 @@ class EnhancedGamificationRenderer:
         # Show solution area when constraints are selected
         if constraint_state['selected_constraints']:
             # Compact challenge display
+            # CRITICAL FIX: Simplified HTML to prevent rendering issues
+            selected_names = ', '.join([name.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;') for name in constraint_state['selected_constraints']])
             st.markdown(f"""
-            <div style="
-                background: {theme['accent']};
-                padding: 15px;
-                border-radius: 10px;
-                margin: 10px 0;
-                border-left: 4px solid {theme['primary']};
-            ">
+            <div style="background: {theme['accent']}; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid {theme['primary']};">
                 <strong style="color: {theme['primary']};">{theme['symbol']} Active Constraints:</strong>
-                <span style="color: #2c2328;">{', '.join(constraint_state['selected_constraints'])}</span>
+                <span style="color: #2c2328;">{selected_names}</span>
             </div>
             """, unsafe_allow_html=True)
 
@@ -2536,6 +2580,8 @@ class EnhancedGamificationRenderer:
                     constraint_state['completed'] = True
                     constraint_state['solution'] = solution
                     constraint_state['points'] += len(constraint_state['selected_constraints']) * 15
+                    # CRITICAL FIX: Store original constraints to prevent name changes after completion
+                    constraint_state['original_constraints'] = constraints
 
                     # Show immediate feedback
                     st.success(f"🎉 Solution submitted! +{len(constraint_state['selected_constraints']) * 15} points")

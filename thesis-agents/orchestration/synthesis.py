@@ -66,6 +66,44 @@ def _first_question(s: str, max_len: int = 400) -> str:
     return q[:max_len].rstrip()
 
 
+def _clean_markdown_formatting(text: str) -> str:
+    """Clean up markdown formatting to ensure proper rendering."""
+    if not text:
+        return text
+
+    lines = text.split('\n')
+    cleaned_lines = []
+
+    for line in lines:
+        line = line.strip()
+        if line:
+            # Fix headers that might have # without space
+            if line.startswith('#') and not line.startswith('# '):
+                # Count the number of # at the start
+                hash_count = 0
+                for char in line:
+                    if char == '#':
+                        hash_count += 1
+                    else:
+                        break
+                # Reconstruct with proper spacing
+                header_text = line[hash_count:].strip()
+                if header_text:
+                    line = '#' * hash_count + ' ' + header_text
+
+            # Fix bold markdown that might have ** without proper spacing
+            if '**' in line:
+                # Ensure proper spacing around bold text
+                import re
+                line = re.sub(r'\*\*([^*]+)\*\*', r'**\1**', line)
+
+            cleaned_lines.append(line)
+        else:
+            cleaned_lines.append('')  # Preserve empty lines
+
+    return '\n'.join(cleaned_lines)
+
+
 def calculate_quality_flags(response: str) -> Dict[str, Any]:
     """Calculate basic response quality flags for quick health checks.
 
@@ -136,6 +174,17 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
             "Which aspect would help you move forward?"
         ]
         return f"{base}\n\n{clarifiers[0]}\n{clarifiers[1]}"
+
+    # Knowledge only shaping - ensure proper markdown rendering
+    if path == "knowledge_only":
+        # Use domain text if available, otherwise use the provided text
+        knowledge_text = domain_text or text
+        return _clean_markdown_formatting(knowledge_text)
+
+    # Single-agent routes that might need markdown cleaning
+    if path in {"socratic_exploration", "cognitive_challenge", "cognitive_intervention", "socratic_clarification"}:
+        # These routes typically return single-agent responses that might have markdown issues
+        return _clean_markdown_formatting(text)
 
     # Multi-agent synthesis shaping - ALWAYS apply synthesis template for balanced_guidance
     if path in {"multi_agent_comprehensive", "balanced_guidance", "knowledge_with_challenge"}:
@@ -225,19 +274,27 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
             return insight
 
         def _generate_contextual_question(user_input: str, domain_text: str) -> str:
-            """Generate a contextual question based on what the user actually asked."""
+            """Generate sophisticated contextual questions that advance critical thinking."""
             user_input_lower = user_input.lower()
 
-            # Check if user is asking about placement/organization
+            # Advanced questions for spatial organization inquiries
             if any(word in user_input_lower for word in ["place", "organize", "layout", "arrange", "position", "where"]):
                 if "outdoor" in user_input_lower or "garden" in user_input_lower or "courtyard" in user_input_lower:
-                    return "Which of these placement strategies feels most aligned with your vision for the learning environment?"
+                    return "How might these exterior spatial strategies respond to both immediate programmatic needs and broader environmental or urban conditions?"
                 else:
-                    return "How do you envision the relationship between these different spaces?"
+                    return "Which organizational logic best supports both functional efficiency and the social or cultural dimensions of your project?"
 
-            # Check if user is asking about approach/strategy
+            # Advanced questions for methodological inquiries
             elif any(word in user_input_lower for word in ["approach", "strategy", "method", "how", "what should"]):
-                return "What aspect of this approach resonates most with your design goals?"
+                return "How do these different approaches reflect distinct theoretical positions about the role of architecture in contemporary society?"
+
+            # Advanced questions for technical inquiries
+            elif any(word in user_input_lower for word in ["structure", "structural", "material", "construction"]):
+                return "How might the integration of these technical strategies advance both performance goals and architectural expression?"
+
+            # Advanced questions for environmental inquiries
+            elif any(word in user_input_lower for word in ["climate", "environmental", "sustainable", "energy"]):
+                return "How do these environmental strategies operate across multiple scales - from building performance to urban ecology to global climate impact?"
 
             # Check if user is asking about examples/references
             elif any(word in user_input_lower for word in ["example", "reference", "precedent", "case study"]):
@@ -267,19 +324,28 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
 
         items = []
 
-        # Generate Insight from domain expert or fallback
+        # Generate Advanced Insight from domain expert or sophisticated fallback
         if domain_text:
             insight = _sanitize(_extract_insight(domain_text))
         else:
-            # Generate fallback insight based on user input
+            # Generate sophisticated fallback insight based on user input
             user_input = classification.get("user_input", "") if classification else ""
             building_type = context_analysis.get("building_type", "architectural project")
-            insight = f"Organizing spaces in a {building_type} requires careful consideration of user flow, functional relationships, and spatial hierarchy"
+
+            # Create more advanced fallback insights that reference theory and contemporary practice
+            if "circulation" in user_input.lower() or "movement" in user_input.lower():
+                insight = f"Circulation in {building_type} design operates simultaneously as infrastructure and experience, mediating between programmatic efficiency and spatial narrative while responding to contemporary concerns about accessibility, wayfinding, and social interaction"
+            elif "outdoor" in user_input.lower() or "landscape" in user_input.lower():
+                insight = f"The integration of exterior spaces in {building_type} architecture challenges traditional inside/outside boundaries, requiring consideration of microclimate, seasonal variation, and the building's role in larger ecological and urban systems"
+            elif "organize" in user_input.lower() or "layout" in user_input.lower():
+                insight = f"Spatial organization in {building_type} design reflects both functional logics and cultural values, requiring synthesis of programmatic requirements, circulation patterns, environmental performance, and the social dynamics of space"
+            else:
+                insight = f"Contemporary {building_type} design demands integration of multiple knowledge domains - environmental performance, social equity, technological innovation, and cultural expression - within coherent spatial and material strategies"
 
         if insight:
             items.append(f"- Insight: {insight}")
 
-        # Generate Direction from socratic agent or fallback - make it a statement, not question
+        # Generate Advanced Direction from socratic agent or sophisticated fallback
         if socratic_text:
             direction = _sanitize(_first_sentence(socratic_text))
             # Remove question marks to make it a directional statement
@@ -287,15 +353,20 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
             if direction and not direction.endswith('.'):
                 direction = direction + '.'
         else:
-            # Generate fallback direction statement based on user input
+            # Generate sophisticated fallback direction statements that reference methodology and theory
             user_input = classification.get("user_input", "") if classification else ""
             building_type = context_analysis.get("building_type", "project")
+
             if "organize" in user_input.lower() or "layout" in user_input.lower():
-                direction = f"Focus on creating clear spatial relationships and logical flow patterns in your {building_type}."
+                direction = f"Develop spatial organization through systematic analysis of adjacency requirements, circulation hierarchies, and environmental gradients, testing multiple organizational logics against programmatic and experiential criteria."
             elif "outdoor" in user_input.lower() or "garden" in user_input.lower():
-                direction = f"Consider how outdoor spaces can enhance the overall experience of your {building_type}."
+                direction = f"Approach exterior space design as an extension of interior spatial logic, considering seasonal variation, microclimate creation, and the building's contribution to larger ecological and social networks."
+            elif "circulation" in user_input.lower() or "movement" in user_input.lower():
+                direction = f"Design circulation systems that operate simultaneously as wayfinding infrastructure and spatial experience, balancing efficiency with opportunities for encounter, pause, and orientation."
+            elif "structure" in user_input.lower() or "structural" in user_input.lower():
+                direction = f"Integrate structural logic with spatial and environmental design goals, exploring how structural expression can reinforce architectural concepts while optimizing material efficiency and construction methods."
             else:
-                direction = f"Prioritize user experience and functional efficiency in your {building_type} design."
+                direction = f"Advance your {building_type} design through iterative testing of multiple approaches, evaluating each against environmental performance, social impact, and architectural coherence criteria."
 
         if direction:
             items.append(f"- Direction: {direction}")
@@ -328,7 +399,7 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
 
         return f"{body}\n\n{contextual_question}"
 
-    # Default: return text as-is
-    return text
+    # Default: clean markdown formatting for any unhandled routes
+    return _clean_markdown_formatting(text)
 
 

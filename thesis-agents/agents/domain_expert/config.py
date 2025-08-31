@@ -7,7 +7,7 @@ from typing import Dict, List, Any
 # Model configuration - ENHANCED: Updated to GPT-4o for better response quality
 DEFAULT_MODEL = "gpt-4o"
 DEFAULT_TEMPERATURE = 0.7
-MAX_TOKENS = 1500  # Increased for generous academic responses
+MAX_TOKENS = 1600  # INCREASED: Fix example project truncation issues
 
 # Enhanced architectural sources for better search results
 ARCHITECTURAL_SOURCES = [

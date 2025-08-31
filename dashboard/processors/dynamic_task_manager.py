@@ -74,7 +74,24 @@ class DynamicTaskManager:
         # REMOVED: self.task_durations - no longer using time-based durations
 
         print(f"🚨 TASK_MANAGER_INIT: Initialized with empty active_tasks: {list(self.active_tasks.keys())}")
-        
+
+    def debug_reset_task_state(self, task_type: Optional[TaskType] = None):
+        """DEBUG: Reset task triggering state for debugging purposes"""
+        if task_type:
+            # Reset specific task
+            self.triggered_tasks_by_user.discard(task_type)
+            if task_type.value in self.active_tasks:
+                del self.active_tasks[task_type.value]
+            self.task_history = [task for task in self.task_history if task.task_type != task_type]
+            print(f"🔄 DEBUG_RESET: Reset state for {task_type.value}")
+        else:
+            # Reset all tasks
+            self.triggered_tasks_by_user.clear()
+            self.active_tasks.clear()
+            self.task_history.clear()
+            self.user_progression_history.clear()
+            print(f"🔄 DEBUG_RESET: Reset all task states")
+
     def _initialize_task_triggers(self) -> Dict[TaskType, Dict[str, Any]]:
         """Initialize task trigger conditions - PHASE COMPLETION BASED ONLY"""
         return {
@@ -102,14 +119,14 @@ class DynamicTaskManager:
                 "phase_requirement": "visualization",
                 "trigger_once": True,  # Can trigger multiple times NOT
                 "phase_completion_min": 0.0,   # Trigger immediately when visualization starts
-                "phase_completion_max": 40.0   # Trigger in first half of visualization
+                "phase_completion_max": 25.0   # Trigger in first half of visualization
             },
 
             # Test 2.2: Environmental & Contextual Integration - MID VISUALIZATION
             TaskType.ENVIRONMENTAL_CONTEXTUAL: {
                 "phase_requirement": "visualization",
                 "trigger_once": True,
-                "phase_completion_min": 40.0,  # Trigger when visualization is 30% complete
+                "phase_completion_min": 30.0,  # Trigger when visualization is 30% complete
                 "phase_completion_max": 70.0   # Don't trigger if visualization is already 70% complete
             },
 
@@ -118,7 +135,7 @@ class DynamicTaskManager:
                 "phase_requirement": "materialization",
                 "trigger_once": True,
                 "phase_completion_min": 0.0,   # Trigger at start of materialization
-                "phase_completion_max": 40.0   # Don't trigger if materialization is already 40% complete
+                "phase_completion_max": 30.0   # Don't trigger if materialization is already 40% complete
             },
 
             # Test 3.2: Realization & Implementation Strategy - MID MATERIALIZATION
@@ -126,16 +143,16 @@ class DynamicTaskManager:
                 "phase_requirement": "materialization",
                 "requires_previous": [TaskType.SPATIAL_ANALYSIS_3D],
                 "trigger_once": True,
-                "phase_completion_min": 40.0,  # Trigger when materialization is 40% complete
-                "phase_completion_max": 50.0   # Don't trigger if materialization is already 80% complete
+                "phase_completion_min": 31.0,  # Trigger when materialization is 40% complete
+                "phase_completion_max": 40.0   # Don't trigger if materialization is already 80% complete
             },
 
             # Test 4.1: Design Evolution Analysis - LATE MATERIALIZATION PHASE
             TaskType.DESIGN_EVOLUTION: {
                 "phase_requirement": "materialization",  # Only in materialization phase
                 "trigger_once": True,
-                "phase_completion_min": 50.0,  # Trigger when materialization is 50% complete
-                "phase_completion_max": 60.0   # Don't trigger if materialization is already 60% complete
+                "phase_completion_min": 41.0,  # Trigger when materialization is 50% complete
+                "phase_completion_max": 50.0   # Don't trigger if materialization is already 60% complete
             },
 
             # Test 4.2: Knowledge Transfer Challenge - VERY LATE MATERIALIZATION PHASE
@@ -143,8 +160,8 @@ class DynamicTaskManager:
                 "phase_requirement": "materialization",  # Only in materialization phase
                 "requires_previous": [TaskType.DESIGN_EVOLUTION],
                 "trigger_once": True,
-                "phase_completion_min": 60.0,  # Trigger when materialization is 60% complete
-                "phase_completion_max": 100.0  # Can trigger up to completion
+                "phase_completion_min": 51.0,  # Trigger when materialization is 60% complete
+                "phase_completion_max": 60.0  # Can trigger up to completion
             }
         }
     
