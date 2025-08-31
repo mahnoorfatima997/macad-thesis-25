@@ -539,6 +539,14 @@ def debug_task_system_status():
         st.success("✅ MENTOR group and Test Mode force-enabled!")
         st.rerun()
 
+    # REAL APP TASK UI TEST BUTTON - TEMPORARILY DISABLED
+    # st.markdown("---")
+    # st.markdown("### 🧪 Real App Testing")
+    # if st.button("🔧 Test All 8 Tasks UI", key="test_all_8_tasks_ui", help="Test task UI rendering in real Streamlit app context"):
+    #     print("🔧 Test All 8 Tasks UI button clicked - setting session state and rerunning")
+    #     st.session_state['show_task_ui_test'] = True
+    #     st.rerun()
+
 
 # REMOVED: Manual phase control functions
 # Phase progression is handled automatically by the phase progression system

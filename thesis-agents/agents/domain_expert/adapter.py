@@ -667,11 +667,18 @@ class DomainExpertAgent:
         Write a complete, naturally-ending response (250-350 words) that provides real value and follows the strategy completeness rule:
         """
 
+        # PERFORMANCE: Check cache first
+        import streamlit as st
+        cache_key = f"domain_expert_{hash(prompt[:100])}_{building_type}"
+        if hasattr(st.session_state, cache_key):
+            print(f"📚 CACHE_HIT: Using cached domain expert response")
+            return getattr(st.session_state, cache_key)
+
         try:
             response = client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4o-mini",  # PERFORMANCE: Use cheaper model
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=500,  # Increased for complete responses
+                max_tokens=400,  # PERFORMANCE: Reduced token limit
                 temperature=0.3
             )
 
@@ -685,6 +692,11 @@ class DomainExpertAgent:
                     ai_response = '.'.join(sentences[:-1]) + '.'
 
             print(f"📚 AI-generated contextual response: {ai_response[:100]}...")
+
+            # PERFORMANCE: Cache the response
+            setattr(st.session_state, cache_key, ai_response)
+            print(f"📚 CACHE_STORE: Cached domain expert response")
+
             return ai_response
 
         except Exception as e:
@@ -931,11 +943,13 @@ What questions do you have about your design?"""
         # PROJECT EXAMPLES: Specific built projects with names, locations, architects
         project_example_keywords = [
             "example projects", "project examples", "examples of projects",
+            "specific example project", "specific example projects", "example project",
             "precedent", "precedents", "case study", "case studies",
             "similar projects", "real project", "built project", "built projects",
             "actual projects", "specific projects", "project references",
             "show me specific", "specific.*projects", "examples of.*projects",
-            "real examples", "built examples", "actual examples"
+            "real examples", "built examples", "actual examples",
+            "give me a specific example", "give me specific example"
         ]
 
         # GENERAL EXAMPLES: Strategies, approaches, concepts, methods (FLEXIBLE MATCHING)
@@ -1073,11 +1087,13 @@ What questions do you have about your design?"""
         user_input_lower = user_input.lower()
         project_example_keywords = [
             "example projects", "project examples", "examples of projects",
+            "specific example project", "specific example projects", "example project",
             "precedent", "precedents", "case study", "case studies",
             "similar projects", "real project", "built project", "built projects",
             "actual projects", "specific projects", "project references",
             "show me specific", "specific.*projects", "examples of.*projects",
-            "real examples", "built examples", "actual examples"
+            "real examples", "built examples", "actual examples",
+            "give me a specific example", "give me specific example"
         ]
 
         # Check for negative context (user explicitly saying they DON'T want examples)

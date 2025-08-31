@@ -1083,23 +1083,41 @@ def _clean_agent_response(agent_response: str) -> str:
 
 
 def _render_tasks_for_message(message_index: int):
-    """Render tasks that should appear after this specific message"""
+    """Render tasks that should appear after this specific message - ONLY ACTIVE TASKS"""
     try:
         task_display_queue = st.session_state.get('task_display_queue', [])
 
         if not task_display_queue:
             return
 
+        # CRITICAL FIX: Get currently active tasks to filter against
+        mode_processor = st.session_state.get('mode_processor')
+        if not mode_processor or not mode_processor.task_manager:
+            return
+
+        active_tasks = mode_processor.task_manager.get_active_tasks()
+        active_task_types = {task.task_type.value for task in active_tasks}
+
+        print(f"🔍 MESSAGE_TASK_FILTER: Active task types: {active_task_types}")
+
         # Find tasks linked to this message
         for task_entry in task_display_queue:
             linked_message = task_entry.get('message_index', -1)
             should_render = task_entry.get('should_render', False)
             already_displayed = task_entry.get('displayed', False)
+            task = task_entry['task']
 
-            # Render task if it's linked to this message (either first time or persistent display)
+            # CRITICAL FIX: Render task UI components for persistence and phase transitions
+            is_currently_active = task.task_type.value in active_task_types
+
+            # Render task if it's linked to this message (regardless of active status for persistence)
             if linked_message == message_index and should_render:
-                task = task_entry['task']
                 task_id = task_entry['task_id']
+
+                if is_currently_active:
+                    print(f"🔍 MESSAGE_TASK_RENDER: Rendering active task {task.task_type.value} for message {message_index}")
+                else:
+                    print(f"🔍 MESSAGE_TASK_RENDER: Rendering completed task {task.task_type.value} for message {message_index} (persistent display)")
 
                 # Create unique container for this message-task combination
                 container_key = f"msg_{message_index}_task_{task_id}"
@@ -1134,9 +1152,13 @@ def _render_single_task_component(task_entry):
         task_id = task_entry['task_id']
         guidance_type = task_entry.get('guidance_type', 'socratic')
 
-        # Get actual task content from guidance system
-        from dashboard.processors.task_guidance_system import TaskGuidanceSystem
-        guidance_system = TaskGuidanceSystem()
+        # CRITICAL FIX: Get guidance system from session state to avoid re-initialization
+        import streamlit as st
+        guidance_system = st.session_state.get('guidance_system')
+        if not guidance_system:
+            from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+            guidance_system = TaskGuidanceSystem()
+            st.session_state['guidance_system'] = guidance_system
 
         # CRITICAL FIX: Get test group from session state if task doesn't have it
         test_group = getattr(task, 'test_group', None)
@@ -1161,6 +1183,7 @@ def _render_single_task_component(task_entry):
 
         if not task_data:
             print(f"⚠️ No task data found for {task.task_type.value} in {test_group} mode")
+            import streamlit as st
             print(f"🔍 TASK_DEBUG: task.test_group={getattr(task, 'test_group', 'NOT_SET')}, session_test_group={st.session_state.get('test_group', 'NOT_SET')}")
             return
 
@@ -1187,6 +1210,9 @@ def _render_single_task_component(task_entry):
         print(f"🚨 CONTAINER_DEBUG: Task content preview: {task_content[:100]}...")
 
         try:
+            # CRITICAL FIX: Import streamlit at function level to ensure proper scope
+            import streamlit as st
+
             with st.container(key=container_key):
                 print(f"🚨 INSIDE_CONTAINER: Rendering {task.task_type.value} in container {container_key}")
 

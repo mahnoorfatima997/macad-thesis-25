@@ -1084,7 +1084,13 @@ class FlexibleContentGenerator:
             }
 
     def generate_time_periods_from_context(self, building_type: str, user_message: str) -> Dict[str, str]:
-        """ENHANCED: Generate rich contextual time periods using AI."""
+        """ENHANCED: Generate rich contextual time periods using AI with caching."""
+
+        # PERFORMANCE: Check cache first to avoid unnecessary API calls
+        cache_key = f"time_periods_{building_type}_{hash(user_message[:50])}"
+        if hasattr(st.session_state, cache_key):
+            print(f"🎮 CACHE_HIT: Using cached time periods for {building_type}")
+            return getattr(st.session_state, cache_key)
 
         # PERFORMANCE: Skip AI if no API key available
         import os
@@ -1141,7 +1147,11 @@ class FlexibleContentGenerator:
             # If parsing failed, use contextual fallback
             if result is None:
                 print("⚠️ Using contextual time periods fallback to preserve rich content")
-                return self._generate_fallback_time_periods(building_type, user_message)
+                result = self._generate_fallback_time_periods(building_type, user_message)
+            else:
+                # PERFORMANCE: Cache successful AI-generated time periods
+                setattr(st.session_state, cache_key, result)
+                print(f"🎮 CACHE_STORE: Cached time periods for {building_type}")
 
             return result
 
@@ -2074,8 +2084,12 @@ class EnhancedGamificationRenderer:
 
         wheel_state = st.session_state[wheel_key]
 
+        # Check if game is completed for frozen state display
+        is_completed = wheel_state.get('response_given', False)
+
         # Generate dynamic perspectives based on context
         perspective_names = self.content_generator.generate_perspectives_from_context(building_type, challenge_text)
+        print(f"🎮 WHEEL_PERSPECTIVES_GENERATED: {len(perspective_names)} perspectives: {perspective_names}")
 
         # Create perspective objects with thesis colors and geometric icons
         icons = ["●", "■", "▲", "◆", "◉", "◈"]
@@ -2090,17 +2104,32 @@ class EnhancedGamificationRenderer:
                 "challenge": f"From a {name.lower()}'s perspective: How does this {building_type} serve their specific needs?"
             })
 
-        # CRITICAL FIX: Generate unique key with timestamp to prevent duplicates
-        import time
-        unique_key = f"spin_{wheel_key}_{int(time.time() * 1000000)}"
+        print(f"🎮 WHEEL_PERSPECTIVES_CREATED: {len(perspectives)} perspective objects created")
 
-        # Compact spin button
-        if st.button(
-            f"{theme['icon']} Spin Perspective Wheel",
-            key=unique_key,
-            type="primary",
-            use_container_width=True
-        ):
+        # CRITICAL FIX: Use static unique key (timestamp keys break Streamlit button handling)
+        unique_key = f"spin_{wheel_key}"
+
+        # Show completion status if completed
+        if is_completed:
+            st.success(f"🎉 Perspective Wheel Challenge Completed! +{wheel_state.get('perspective_points', 0)} points")
+
+        # Spin button - frozen state if completed
+        if is_completed:
+            st.button(
+                f"✓ Perspective Explored",
+                key=f"{unique_key}_disabled",
+                type="secondary",
+                use_container_width=True,
+                disabled=True
+            )
+        else:
+            # Interactive spin button
+            if st.button(
+                f"{theme['icon']} Spin Perspective Wheel",
+                key=unique_key,
+                type="primary",
+                use_container_width=True
+            ):
                 selected_perspective = random.choice(perspectives)
                 wheel_state['spun_perspective'] = selected_perspective
                 wheel_state['response_given'] = False
@@ -2126,26 +2155,38 @@ class EnhancedGamificationRenderer:
             </div>
             """, unsafe_allow_html=True)
 
-            # Compact response area
-            response = st.text_area(
-                "Your insight:",
-                placeholder=f"From this perspective, I see...",
-                height=100,
-                key=f"perspective_response_{wheel_key}"
-            )
+            # Response area - frozen state if completed
+            if is_completed:
+                # Show submitted response in disabled state
+                st.text_area(
+                    "Your submitted insight:",
+                    value="Response submitted successfully",  # Could store actual response if needed
+                    height=100,
+                    key=f"perspective_response_{wheel_key}_disabled",
+                    disabled=True
+                )
+                st.button(f"✓ Perspective Submitted", key=f"submit_perspective_{wheel_key}_disabled", type="secondary", disabled=True)
+            else:
+                # Interactive response area
+                response = st.text_area(
+                    "Your insight:",
+                    placeholder=f"From this perspective, I see...",
+                    height=100,
+                    key=f"perspective_response_{wheel_key}"
+                )
 
-            if st.button(f"{theme['symbol']} Submit Perspective", key=f"submit_perspective_{wheel_key}", type="primary"):
-                if response.strip():
-                    wheel_state['response_given'] = True
-                    wheel_state['perspective_points'] += 20
+                if st.button(f"{theme['symbol']} Submit Perspective", key=f"submit_perspective_{wheel_key}", type="primary"):
+                    if response.strip():
+                        wheel_state['response_given'] = True
+                        wheel_state['perspective_points'] += 20
 
-                    # INTEGRATE WITH MENTOR: Send game response back to conversation
-                    game_response = f"{response.strip()}"
-                    if 'messages' not in st.session_state:
-                        st.session_state.messages = []
-                    st.session_state.messages.append({"role": "user", "content": game_response})
-                    st.session_state.should_process_message = True
-                    st.rerun()
+                        # INTEGRATE WITH MENTOR: Send game response back to conversation
+                        game_response = f"{response.strip()}"
+                        if 'messages' not in st.session_state:
+                            st.session_state.messages = []
+                        st.session_state.messages.append({"role": "user", "content": game_response})
+                        st.session_state.should_process_message = True
+                        st.rerun()
 
         # Show progress after submission
         if wheel_state.get('response_given', False):
@@ -2351,7 +2392,15 @@ class EnhancedGamificationRenderer:
 
         constraint_state = st.session_state[constraint_key]
 
-        # STANDARDIZED CONSTRAINT SELECTION - matches other games
+        # Check if game is completed for frozen state display
+        is_completed = constraint_state.get('completed', False)
+
+        # Show completion status if completed
+        if is_completed:
+            st.success(f"🎉 Constraint Challenge Completed! +{constraint_state.get('points', 0)} points")
+
+        # STANDARDIZED CONSTRAINT SELECTION - show frozen state if completed
+        header_text = "Selected Constraints:" if is_completed else "Select Constraints (max 3):"
         st.markdown(f"""
         <div style="
             background: rgba(255,255,255,0.05);
@@ -2359,9 +2408,10 @@ class EnhancedGamificationRenderer:
             padding: 15px;
             margin: 15px 0;
             border: 1px solid rgba(255,255,255,0.1);
+            {'opacity: 0.7;' if is_completed else ''}
         ">
             <h4 style="color: {theme['primary']}; margin: 0 0 15px 0; font-size: 1.1em;">
-                {theme['symbol']} Select Constraints (max 3):
+                {theme['symbol']} {header_text}
             </h4>
         </div>
         """, unsafe_allow_html=True)
@@ -2380,21 +2430,34 @@ class EnhancedGamificationRenderer:
                         button_style = "primary" if is_selected else "secondary"
                         button_text = f"{'✓ ' if is_selected else ''}{constraint_data.get('icon', '◐')} {constraint_name}"
 
-                        if st.button(
-                            button_text,
-                            key=f"constraint_{constraint_name}_{constraint_key}",
-                            type=button_style,
-                            use_container_width=True,
-                            help=constraint_data.get('impact', 'Design constraint')
-                        ):
-                            if is_selected:
-                                constraint_state['selected_constraints'].remove(constraint_name)
-                            else:
-                                if len(constraint_state['selected_constraints']) < 3:
-                                    constraint_state['selected_constraints'].append(constraint_name)
+                        # Show button in disabled state if completed
+                        if is_completed:
+                            # Frozen state - show selected constraints but disabled
+                            st.button(
+                                button_text,
+                                key=f"constraint_{constraint_name}_{constraint_key}_disabled",
+                                type=button_style,
+                                use_container_width=True,
+                                help="Game completed - constraints locked",
+                                disabled=True
+                            )
+                        else:
+                            # Interactive state - normal functionality
+                            if st.button(
+                                button_text,
+                                key=f"constraint_{constraint_name}_{constraint_key}",
+                                type=button_style,
+                                use_container_width=True,
+                                help=constraint_data.get('impact', 'Design constraint')
+                            ):
+                                if is_selected:
+                                    constraint_state['selected_constraints'].remove(constraint_name)
                                 else:
-                                    st.warning("Maximum 3 constraints allowed. Deselect one first.")
-                            st.rerun()
+                                    if len(constraint_state['selected_constraints']) < 3:
+                                        constraint_state['selected_constraints'].append(constraint_name)
+                                    else:
+                                        st.warning("Maximum 3 constraints allowed. Deselect one first.")
+                                st.rerun()
 
         # Show selection status
         if constraint_state['selected_constraints']:
@@ -2417,31 +2480,58 @@ class EnhancedGamificationRenderer:
             </div>
             """, unsafe_allow_html=True)
 
-            # Compact solution area
-            solution = st.text_area(
-                "Your creative solution:",
-                placeholder="With these constraints, I would...",
-                height=120,
-                key=f"solution_{constraint_key}"
-            )
+            # Solution area and submission logic
+            solution = ""
+            submit_button = False
 
-            # ENHANCED SUBMISSION LOGIC
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                submit_button = st.button(
-                    f"{theme['symbol']} Submit Solution",
-                    key=f"submit_{constraint_key}",
-                    type="primary",
-                    use_container_width=True
+            if is_completed:
+                # FROZEN STATE: Show submitted solution in disabled state
+                st.text_area(
+                    "Your submitted solution:",
+                    value=constraint_state.get('solution', ''),
+                    height=120,
+                    key=f"solution_{constraint_key}_disabled",
+                    disabled=True
                 )
-            with col2:
-                if st.button("🔄 Reset", key=f"reset_{constraint_key}", use_container_width=True):
-                    constraint_state['selected_constraints'] = []
-                    constraint_state['solution'] = ''
-                    st.rerun()
 
-            if submit_button:
-                if solution.strip():
+                # Show disabled buttons
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.button(
+                        f"✓ Solution Submitted",
+                        key=f"submit_{constraint_key}_disabled",
+                        type="secondary",
+                        use_container_width=True,
+                        disabled=True
+                    )
+                with col2:
+                    st.button("🔒 Locked", key=f"reset_{constraint_key}_disabled", use_container_width=True, disabled=True)
+
+            else:
+                # INTERACTIVE STATE: Normal functionality
+                solution = st.text_area(
+                    "Your creative solution:",
+                    placeholder="With these constraints, I would...",
+                    height=120,
+                    key=f"solution_{constraint_key}"
+                )
+
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    submit_button = st.button(
+                        f"{theme['symbol']} Submit Solution",
+                        key=f"submit_{constraint_key}",
+                        type="primary",
+                        use_container_width=True
+                    )
+                with col2:
+                    if st.button("🔄 Reset", key=f"reset_{constraint_key}", use_container_width=True):
+                        constraint_state['selected_constraints'] = []
+                        constraint_state['solution'] = ''
+                        st.rerun()
+
+                # Handle submission
+                if submit_button and solution.strip():
                     # COMPLETE SUBMISSION PROCESSING
                     constraint_state['completed'] = True
                     constraint_state['solution'] = solution
@@ -2950,18 +3040,21 @@ class EnhancedGamificationRenderer:
 
     def _render_time_travel_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render interactive time travel challenge."""
-        # FIXED: Properly initialize and persist session state
-        if 'time_travel_state' not in st.session_state:
-            st.session_state.time_travel_state = {
+        # CRITICAL FIX: Use unique key per game instance (like constraint game)
+        time_key = f"time_travel_{building_type}_{hash(challenge_text)}"
+        if time_key not in st.session_state:
+            st.session_state[time_key] = {
                 'current_era': 'present',
                 'time_points': 0,
                 'temporal_insights': [],
                 'completed': False
             }
-        time_state = st.session_state.time_travel_state
+        time_state = st.session_state[time_key]
 
-        # FIXED: Check if game is completed to prevent regeneration
-        if time_state.get('completed', False):
+        # Check if game is completed for frozen state display
+        is_completed = time_state.get('completed', False)
+
+        if is_completed:
             st.success("✅ **Time Travel Challenge Completed!**")
             with st.expander("⏰ Your Temporal Journey", expanded=False):
                 for i, insight in enumerate(time_state['temporal_insights'], 1):
@@ -2999,9 +3092,10 @@ class EnhancedGamificationRenderer:
         period_keys = list(time_periods.keys())
 
         for period_key in time_periods.keys():
-            if st.button(f"{theme['symbol']} {period_key}", key=f"time_{period_key}", use_container_width=True):
+            if st.button(f"{theme['symbol']} {period_key}", key=f"time_{period_key}_{time_key}", use_container_width=True):
                 time_state['current_era'] = period_key
-                st.session_state['time_travel_state'] = time_state
+                st.session_state[time_key] = time_state
+                st.rerun()  # CRITICAL FIX: Missing rerun() call was preventing UI updates
 
         # Show current time period
         current_era = time_state.get('current_era', period_keys[0] if period_keys else 'present')
@@ -3018,43 +3112,55 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-        # Temporal insight
-        temporal_response = st.text_area(
-            f"What do you observe in the {time_state['current_era']}? How does time affect your design?",
-            key="temporal_response",
-            height=100
-        )
+        # Temporal insight - show frozen state if completed
+        if is_completed:
+            # Show completed state with disabled input
+            st.text_area(
+                f"Your recorded insights from the {time_state['current_era']}:",
+                value=time_state['temporal_insights'][-1]['insight'] if time_state['temporal_insights'] else '',
+                key=f"temporal_response_{time_key}_disabled",
+                height=100,
+                disabled=True
+            )
+            st.button(f"✓ Insights Recorded", key=f"record_temporal_{time_key}_disabled", use_container_width=True, disabled=True)
+        else:
+            # Interactive state
+            temporal_response = st.text_area(
+                f"What do you observe in the {time_state['current_era']}? How does time affect your design?",
+                key=f"temporal_response_{time_key}",
+                height=100
+            )
 
-        if st.button(f"{theme['symbol']} Record Temporal Insight", key="record_temporal", use_container_width=True):
-            if temporal_response:
-                time_state['time_points'] += 15
-                time_state['temporal_insights'].append({
-                    'era': time_state['current_era'],
-                    'insight': temporal_response
-                })
-
-                # FIXED: Add completion logic
-                if time_state['time_points'] >= 45:
-                    time_state['completed'] = True
-                    st.session_state['time_travel_state'] = time_state
-                    st.success("🎉 **TIME TRAVEL COMPLETE!** You've mastered temporal design thinking!")
-                    st.balloons()
-
-                    # Show temporal insights summary
-                    with st.expander("⏰ Your Temporal Journey", expanded=True):
-                        for i, insight in enumerate(time_state['temporal_insights'], 1):
-                            st.write(f"**{i}. {insight['era']}:** {insight['insight']}")
-
-                    # Trigger message processing for follow-up
-                    st.session_state.should_process_message = True
-                    st.session_state.messages.append({
-                        "role": "user",
-                        "content": f"I completed the time travel challenge! I explored: {', '.join([i['era'] for i in time_state['temporal_insights']])}"
+            if st.button(f"{theme['symbol']} Record Temporal Insight", key=f"record_temporal_{time_key}", use_container_width=True):
+                if temporal_response:
+                    time_state['time_points'] += 15
+                    time_state['temporal_insights'].append({
+                        'era': time_state['current_era'],
+                        'insight': temporal_response
                     })
-                else:
-                    st.session_state['time_travel_state'] = time_state
-                    st.success("Temporal insight recorded! Time reveals new perspectives.")
-                    self._show_contextual_progress("Time Travel Challenge", time_state['time_points'], 45)
+
+                    # FIXED: Add completion logic
+                    if time_state['time_points'] >= 45:
+                        time_state['completed'] = True
+                        st.session_state[time_key] = time_state
+                        st.success("🎉 **TIME TRAVEL COMPLETE!** You've mastered temporal design thinking!")
+                        st.balloons()
+
+                        # Show temporal insights summary
+                        with st.expander("⏰ Your Temporal Journey", expanded=True):
+                            for i, insight in enumerate(time_state['temporal_insights'], 1):
+                                st.write(f"**{i}. {insight['era']}:** {insight['insight']}")
+
+                        # Trigger message processing for follow-up
+                        st.session_state.should_process_message = True
+                        st.session_state.messages.append({
+                            "role": "user",
+                            "content": f"I completed the time travel challenge! I explored: {', '.join([i['era'] for i in time_state['temporal_insights']])}"
+                        })
+                    else:
+                        st.session_state[time_key] = time_state
+                        st.success("Temporal insight recorded! Time reveals new perspectives.")
+                        self._show_contextual_progress("Time Travel Challenge", time_state['time_points'], 45)
 
     def _render_transformation_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render interactive transformation challenge."""
@@ -3190,9 +3296,17 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
             st.info("💭 Continue exploring your design ideas!")
             return
 
-        # FIXED: Remove aggressive duplicate prevention that was causing games to disappear
-        # Let individual games handle their own completion logic
-        # This allows games to re-render when users interact with them
+        # PERFORMANCE: Early exit if gamification is disabled or not needed
+        gamification_applied = challenge_data.get("gamification_applied", True)
+        if not gamification_applied:
+            print(f"🎮 EARLY_EXIT: Gamification disabled for this challenge")
+            return
+
+        # FIXED: Remove duplicate prevention that was breaking game interactivity
+        # Games need to re-render to show user interactions and state changes
+        # Individual games handle their own completion logic properly
+        challenge_id = f"{challenge_data.get('challenge_type', 'unknown')}_{challenge_data.get('enhancement_timestamp', 'unknown')}"
+        print(f"🎮 RENDER_ALLOWED: Rendering interactive challenge {challenge_id}")
 
         # Ensure required fields exist with safe defaults and validation
         safe_challenge_data = {

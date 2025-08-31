@@ -250,10 +250,173 @@ class UnifiedArchitecturalDashboard:
             else:
                 self._handle_start_analysis(project_description, uploaded_file, skill_level, mentor_type)
         
+        # REAL APP TASK UI TEST - TEMPORARILY DISABLED
+        if False and st.session_state.get("show_task_ui_test", False):
+            print("🔧 TASK_UI_TEST: Test interface is being rendered")
+            st.markdown("# 🔧 REAL APP TASK UI TEST")
+            st.markdown("Testing all 8 tasks UI rendering in actual Streamlit application context")
+
+            try:
+                # Import and run the test directly here to avoid import issues
+                from dashboard.processors.dynamic_task_manager import TaskType, DynamicTaskManager
+                from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+                from dashboard.ui.chat_components import _render_single_task_component
+                from thesis_tests.data_models import TestGroup
+                from datetime import datetime
+
+                st.success("✅ Successfully imported real application components")
+
+                # Initialize guidance system (same as the real app)
+                if 'guidance_system' not in st.session_state:
+                    st.session_state['guidance_system'] = TaskGuidanceSystem()
+
+                guidance_system = st.session_state['guidance_system']
+                st.success("✅ Guidance system initialized from session state")
+
+                # Initialize task manager (same as real app)
+                if 'task_manager' not in st.session_state:
+                    st.session_state['task_manager'] = DynamicTaskManager()
+
+                task_manager = st.session_state['task_manager']
+                st.success("✅ Task manager initialized from session state")
+
+                # Test REAL phase transition scenarios with actual thresholds
+                phase_scenarios = [
+                    # Ideation phase tasks
+                    {"phase": "ideation", "completion": 5.0, "expected_tasks": ["architectural_concept"]},
+                    {"phase": "ideation", "completion": 35.0, "expected_tasks": ["spatial_program"]},
+
+                    # Visualization phase tasks
+                    {"phase": "visualization", "completion": 5.0, "expected_tasks": ["visual_analysis_2d"]},
+                    {"phase": "visualization", "completion": 45.0, "expected_tasks": ["environmental_contextual"]},
+
+                    # Materialization phase tasks
+                    {"phase": "materialization", "completion": 5.0, "expected_tasks": ["spatial_analysis_3d"]},
+                    {"phase": "materialization", "completion": 45.0, "expected_tasks": ["realization_implementation"]},
+                    {"phase": "materialization", "completion": 55.0, "expected_tasks": ["design_evolution"]},
+                    {"phase": "materialization", "completion": 65.0, "expected_tasks": ["knowledge_transfer"]},
+                ]
+
+                st.markdown(f"## Testing Real Phase Transition Scenarios")
+
+                results = []
+                for i, scenario in enumerate(phase_scenarios):
+                    phase = scenario["phase"]
+                    completion = scenario["completion"]
+                    expected_tasks = scenario["expected_tasks"]
+
+                    st.markdown(f"### Scenario {i+1}: {phase.title()} Phase at {completion}% completion")
+
+                    try:
+                        # Simulate real phase progression (same as actual app)
+                        st.session_state['test_current_phase'] = phase.title()
+
+                        # Create mock conversation history
+                        mock_conversation = [
+                            {"role": "user", "content": f"I'm working on {phase} phase"},
+                            {"role": "assistant", "content": f"Great! Let's explore {phase} concepts."}
+                        ]
+
+                        # Test threshold crossing detection (real system)
+                        triggered_tasks = task_manager._detect_threshold_crossings(
+                            current_phase=phase,
+                            last_completion=completion - 10.0,  # Previous completion
+                            current_completion=completion,      # Current completion
+                            user_input=f"Phase {phase} at {completion}%",
+                            conversation_history=mock_conversation,
+                            test_group="MENTOR",
+                            image_uploaded=False,
+                            image_analysis=None
+                        )
+
+                        st.write(f"🎯 Triggered tasks: {[t.value for t in triggered_tasks]}")
+                        st.write(f"🎯 Expected tasks: {expected_tasks}")
+
+                        # Check if expected tasks were triggered
+                        triggered_task_names = [t.value for t in triggered_tasks]
+                        scenario_success = all(task in triggered_task_names for task in expected_tasks)
+
+                        if scenario_success:
+                            st.success(f"✅ Correct tasks triggered for {phase} at {completion}%")
+
+                            # Test ACTUAL UI RENDERING for triggered tasks
+                            for task_type in triggered_tasks:
+                                if task_type.value in expected_tasks:
+                                    # Get active task from task manager
+                                    active_tasks = task_manager.get_active_tasks()
+                                    active_task = next((t for t in active_tasks if t.task_type == task_type), None)
+
+                                    if active_task:
+                                        st.write(f"   🎨 Testing VISIBLE UI for {task_type.value}")
+
+                                        # Test task data lookup (the actual issue from terminal)
+                                        task_data = guidance_system.mentor_tasks.get(task_type, {})
+                                        if task_data:
+                                            st.success(f"   ✅ Task data found for {task_type.value}")
+
+                                            # NOW TEST ACTUAL UI RENDERING (what user sees)
+                                            try:
+                                                st.write(f"   🖼️ Rendering actual UI component...")
+
+                                                # Create task entry (same as real app)
+                                                task_entry = {
+                                                    'task': active_task,
+                                                    'task_id': f"test_{task_type.value}_{i}",
+                                                    'guidance_type': 'socratic',
+                                                    'should_render': True,
+                                                    'message_index': i,
+                                                    'displayed': False
+                                                }
+
+                                                # Render the ACTUAL UI component (same function as real app)
+                                                with st.container():
+                                                    st.markdown(f"**🎯 TASK UI COMPONENT FOR {task_type.value.upper()}:**")
+                                                    _render_single_task_component(task_entry)
+
+                                                st.success(f"   ✅ UI component VISIBLE for {task_type.value}")
+
+                                            except Exception as ui_error:
+                                                st.error(f"   ❌ UI rendering FAILED for {task_type.value}: {ui_error}")
+                                                scenario_success = False
+                                        else:
+                                            st.error(f"   ❌ No task data found for {task_type.value}")
+                                            scenario_success = False
+
+                            results.append({'scenario': f"{phase} {completion}%", 'success': scenario_success})
+                        else:
+                            st.error(f"❌ Wrong tasks triggered for {phase} at {completion}%")
+                            results.append({'scenario': f"{phase} {completion}%", 'success': False})
+
+                    except Exception as scenario_error:
+                        st.error(f"❌ Scenario failed: {scenario_error}")
+                        results.append({'scenario': f"{phase} {completion}%", 'success': False})
+
+                # Summary
+                successful = sum(1 for r in results if r['success'])
+                st.markdown("---")
+                st.markdown(f"## 📊 RESULTS: {successful}/{len(all_tasks)} tasks successful")
+
+                if successful == len(all_tasks):
+                    st.success("🎉 ALL 8 TASKS WORKING! Task UI system is fully functional!")
+                    st.balloons()
+                elif successful >= 6:
+                    st.warning(f"⚠️ Most tasks working ({successful}/{len(all_tasks)})")
+                else:
+                    st.error(f"❌ Major issues: Only {successful}/{len(all_tasks)} tasks working")
+
+            except Exception as e:
+                st.error(f"❌ Test failed: {e}")
+                st.exception(e)
+
+            if st.button("❌ Close Test"):
+                st.session_state['show_task_ui_test'] = False
+                st.rerun()
+            return
+
         # Chat interface (after analysis)
         if st.session_state.analysis_complete:
             self._render_chat_interface()
-            
+
             # Phase progression insights
             if len(st.session_state.messages) > 0:
                 self._render_phase_insights()
@@ -479,6 +642,8 @@ class UnifiedArchitecturalDashboard:
             # Optional: show pre-test above the chat when enabled via sidebar
             if st.session_state.get("show_pre_test", False):
                 self._render_pretest_block()
+
+
 
             # Display chat messages in modern interface
             render_chat_interface()

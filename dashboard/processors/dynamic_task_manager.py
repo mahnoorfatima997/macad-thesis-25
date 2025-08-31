@@ -268,11 +268,17 @@ class DynamicTaskManager:
 
         for task_type, conditions, min_completion in phase_tasks:
             max_completion = conditions.get("phase_completion_max", 100.0)
+            required_phase = conditions.get("phase_requirement", "")
 
-            # CRITICAL FIX: Check if threshold was crossed OR if we're in the trigger window
+            # CRITICAL FIX: Only check tasks that belong to the current phase
+            if required_phase != current_phase:
+                continue  # Skip tasks that don't belong to this phase
+
+            # CRITICAL FIX: Check if threshold was crossed OR if we're in the trigger window OR if we jumped over the window
             threshold_crossed = (
                 last_completion < min_completion <= current_completion or  # Crossed minimum threshold
-                (min_completion <= current_completion <= max_completion)   # Currently within trigger range
+                (min_completion <= current_completion <= max_completion) or  # Currently within trigger range ADDED OR AND LINE BELOW FOR PHASE JUMP
+                (last_completion < min_completion and current_completion > max_completion)  # Jumped over the entire window
             )
 
             # Check if user has already seen this task
@@ -330,6 +336,8 @@ class DynamicTaskManager:
                     print(f"   ✅ RETROACTIVE_TRIGGER: {task_type.value} triggered and activated at {current_completion:.1f}% (missed threshold)")
 
         return triggered_tasks
+
+
 
     def _complete_previously_displayed_tasks(self):
         """DISABLED: Complete any tasks that have been displayed to the user"""
@@ -593,17 +601,33 @@ class DynamicTaskManager:
 
         if task_type.value in self.active_tasks:
             task = self.active_tasks[task_type.value]
-            task.progress_indicators["completion_reason"] = completion_reason
-            task.progress_indicators["completion_time"] = datetime.now().isoformat()
 
-            # Move to history
-            self.task_history.append(task)
-            del self.active_tasks[task_type.value]
+            # CRITICAL FIX: Handle both ActiveTask objects and dict objects gracefully
+            try:
+                if hasattr(task, 'progress_indicators'):
+                    # Proper ActiveTask object
+                    task.progress_indicators["completion_reason"] = completion_reason
+                    task.progress_indicators["completion_time"] = datetime.now().isoformat()
+                    # Move to history
+                    self.task_history.append(task)
+                else:
+                    # Dict object (from tests or edge cases) - just remove from active
+                    print(f"🚨 TASK_CLEANUP: Removing dict-based task {task_type.value} from active tasks")
 
-            print(f"🚨 TASK_COMPLETED_SUCCESS: {task_type.value} - {completion_reason}")
-            print(f"🚨 TASK_COMPLETED_SUCCESS: History count: {len(self.task_history)}")
-            print(f"🚨 TASK_COMPLETED_SUCCESS: Active tasks now: {list(self.active_tasks.keys())}")
-            return True
+                # Remove from active tasks
+                del self.active_tasks[task_type.value]
+
+                print(f"🚨 TASK_COMPLETED_SUCCESS: {task_type.value} - {completion_reason}")
+                print(f"🚨 TASK_COMPLETED_SUCCESS: History count: {len(self.task_history)}")
+                print(f"🚨 TASK_COMPLETED_SUCCESS: Active tasks now: {list(self.active_tasks.keys())}")
+                return True
+
+            except Exception as e:
+                print(f"🚨 TASK_COMPLETION_ERROR: Failed to complete {task_type.value}: {e}")
+                # Still remove from active tasks to prevent accumulation
+                del self.active_tasks[task_type.value]
+                print(f"🚨 TASK_CLEANUP: Removed problematic task {task_type.value} from active tasks")
+                return True
         else:
             print(f"🚨 COMPLETE_TASK_FAILED: Task {task_type.value} not found in active tasks")
             print(f"🚨 COMPLETE_TASK_FAILED: Available active tasks: {list(self.active_tasks.keys())}")

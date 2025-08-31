@@ -110,10 +110,24 @@ class ModeProcessor:
         # Render task UI only in Test Mode
         try:
             active_tasks = self.task_manager.get_active_tasks()
+            print(f"🔍 RENDER_ACTIVE_TASKS: Found {len(active_tasks)} active tasks: {[t.task_type.value for t in active_tasks]}")
+
             if active_tasks:
                 st.markdown("### 🎯 Active Tasks")
                 for task in active_tasks:
-                    with st.expander(f"Task: {task.task_type.value.replace('_', ' ').title()}", expanded=False):
+                    print(f"🔍 RENDERING_TASK: {task.task_type.value} for {task.test_group}")
+
+                    # CRITICAL FIX: Render the actual task UI component, not just expander
+                    from dashboard.ui.chat_components import _render_single_task_component
+                    task_entry = {
+                        'task': task,
+                        'task_id': f"{task.task_type.value}_{id(task)}",
+                        'guidance_type': 'socratic'
+                    }
+                    _render_single_task_component(task_entry)
+
+                    # Also show basic info in expander for debugging
+                    with st.expander(f"Task Info: {task.task_type.value.replace('_', ' ').title()}", expanded=False):
                         st.write(f"**Test Group**: {task.test_group}")
                         st.write(f"**Phase**: {task.current_phase}")
                         # Fix format error - triggered_at_completion might be string or float
@@ -139,6 +153,10 @@ class ModeProcessor:
             dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
             test_mode_active = (dashboard_mode == "Test Mode")
             print(f"🔍 PROCESS_INPUT_DEBUG: dashboard_mode='{dashboard_mode}', test_mode_active={test_mode_active}")
+
+            # FIXED: Remove challenge clearing that was breaking game interactivity
+            # Games need to persist their state across message processing
+            print("🎮 PROCESSING: New message - games will handle their own state")
 
             # Initialize or disable task system based on mode
             print(f"🔍 PROCESS_INPUT_DEBUG: About to initialize task system")
@@ -1155,15 +1173,15 @@ class ModeProcessor:
             # Create system prompt based on phase
             system_prompt = self._create_generic_ai_system_prompt(phase)
 
-            # Get response from OpenAI
+            # PERFORMANCE: Use cheaper model for generic responses
             response = client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="gpt-4o-mini",  # Much cheaper than gpt-4-turbo-preview
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_input}
                 ],
                 temperature=0.7,
-                max_tokens=500
+                max_tokens=400  # Reduced token limit
             )
 
             return response.choices[0].message.content
@@ -1570,13 +1588,30 @@ class ModeProcessor:
                 if activated_task:
                     print(f"🎯 TASK_ACTIVATED: {activated_task.task_type.value} for {test_group}")
 
-                    # Store task for UI rendering (like gamification does)
-                    st.session_state['active_task'] = {
+                    # CRITICAL FIX: Add task to display queue for UI rendering
+                    if 'task_display_queue' not in st.session_state:
+                        st.session_state['task_display_queue'] = []
+
+                    # Link task to current message (it should appear after the current message)
+                    current_message_index = len(st.session_state.messages) - 1
+
+                    task_display_entry = {
                         'task': activated_task,
                         'user_input': user_input,
                         'guidance_type': self._get_guidance_type_for_test_group(test_group),
-                        'should_render': True
+                        'should_render': True,
+                        'task_id': f"{activated_task.task_type.value}_{current_message_index}_{activated_task.start_time.strftime('%H%M%S%f')}",
+                        'message_index': current_message_index,
+                        'created_at': datetime.now().isoformat(),
+                        'displayed': False
                     }
+
+                    # Add to display queue
+                    st.session_state['task_display_queue'].append(task_display_entry)
+                    print(f"🎯 TASK_UI_QUEUE: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+
+                    # BACKWARD COMPATIBILITY: Also set active_task for existing code
+                    st.session_state['active_task'] = task_display_entry
                 else:
                     print(f"🎯 TASK_ACTIVATION_FAILED: Could not activate {triggered_task.value}")
             else:
@@ -1628,6 +1663,10 @@ class ModeProcessor:
                 print(f"🔄 PHASE_TRANSITION: Task manager still not initialized - skipping")
                 return
 
+            # CRITICAL FIX: Complete previous phase tasks BEFORE transitioning
+            print(f"🔄 PHASE_TRANSITION: Completing {from_phase} tasks before transition to {to_phase}")
+            self._complete_previous_phase_tasks(from_phase)
+
             # Get conversation history for task triggering
             conversation_history = st.session_state.get('messages', [])
 
@@ -1659,13 +1698,39 @@ class ModeProcessor:
                 if activated_task:
                     print(f"🔄 PHASE_TRANSITION_ACTIVATED: {activated_task.task_type.value} for {test_group}")
 
-                    # Store task for UI rendering
-                    st.session_state['active_task'] = {
+                    # CRITICAL FIX: Add task to display queue for UI rendering during phase transitions
+                    if 'task_display_queue' not in st.session_state:
+                        st.session_state['task_display_queue'] = []
+
+                    # Link task to current message (phase transition message)
+                    current_message_index = len(st.session_state.messages) - 1
+
+                    task_display_entry = {
                         'task': activated_task,
                         'user_input': user_input,
-                        'guidance_type': self._get_guidance_type_for_test_group(test_group.name),  # Convert enum to string
-                        'should_render': True
+                        'guidance_type': self._get_guidance_type_for_test_group(test_group.name),
+                        'should_render': True,
+                        'task_id': f"{activated_task.task_type.value}_{current_message_index}_{activated_task.start_time.strftime('%H%M%S%f')}",
+                        'message_index': current_message_index,
+                        'created_at': datetime.now().isoformat(),
+                        'displayed': False
                     }
+
+                    # Add to display queue
+                    st.session_state['task_display_queue'].append(task_display_entry)
+                    print(f"🔄 PHASE_TRANSITION_UI: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+
+                    # BACKWARD COMPATIBILITY: Also set active_task
+                    st.session_state['active_task'] = task_display_entry
+
+                    # CRITICAL FIX: Render task UI immediately during phase transition
+                    # This ensures students see the task interface before the agent's response
+                    try:
+                        from dashboard.ui.chat_components import render_active_tasks_ui
+                        print(f"🔄 PHASE_TRANSITION_UI: Rendering task UI immediately for {activated_task.task_type.value}")
+                        render_active_tasks_ui()
+                    except Exception as ui_error:
+                        print(f"⚠️ Phase transition UI rendering failed: {ui_error}")
                 else:
                     print(f"🔄 PHASE_TRANSITION_ACTIVATION_FAILED: Could not activate {task_to_activate.value}")
             else:
