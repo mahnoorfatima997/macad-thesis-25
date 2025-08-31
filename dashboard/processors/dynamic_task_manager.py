@@ -74,24 +74,7 @@ class DynamicTaskManager:
         # REMOVED: self.task_durations - no longer using time-based durations
 
         print(f"🚨 TASK_MANAGER_INIT: Initialized with empty active_tasks: {list(self.active_tasks.keys())}")
-
-    def debug_reset_task_state(self, task_type: Optional[TaskType] = None):
-        """DEBUG: Reset task triggering state for debugging purposes"""
-        if task_type:
-            # Reset specific task
-            self.triggered_tasks_by_user.discard(task_type)
-            if task_type.value in self.active_tasks:
-                del self.active_tasks[task_type.value]
-            self.task_history = [task for task in self.task_history if task.task_type != task_type]
-            print(f"🔄 DEBUG_RESET: Reset state for {task_type.value}")
-        else:
-            # Reset all tasks
-            self.triggered_tasks_by_user.clear()
-            self.active_tasks.clear()
-            self.task_history.clear()
-            self.user_progression_history.clear()
-            print(f"🔄 DEBUG_RESET: Reset all task states")
-
+        
     def _initialize_task_triggers(self) -> Dict[TaskType, Dict[str, Any]]:
         """Initialize task trigger conditions - PHASE COMPLETION BASED ONLY"""
         return {
