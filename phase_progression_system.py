@@ -165,13 +165,14 @@ REQUIREMENTS:
 
 Generate only the question text, no additional explanation."""
 
+            # OPTIMIZATION: Use cheaper model for question generation (100x cost reduction)
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",  # Much cheaper than gpt-4
                 messages=[
                     {"role": "system", "content": "You are an expert architecture educator specializing in Socratic questioning."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=150,
+                max_tokens=100,  # Reduced from 150 - questions should be concise
                 temperature=0.7
             )
 
@@ -183,13 +184,14 @@ Generate only the question text, no additional explanation."""
 
 Generate 5 assessment criteria as a JSON object with keys: completeness, depth, relevance, innovation, technical_understanding. Each value should be a brief description of what constitutes a good response for that criterion."""
 
+            # OPTIMIZATION: Use cheaper model for assessment criteria (100x cost reduction)
             criteria_response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",  # Much cheaper than gpt-4
                 messages=[
                     {"role": "system", "content": "You are an expert in architectural education assessment."},
                     {"role": "user", "content": criteria_prompt}
                 ],
-                max_tokens=200,
+                max_tokens=150,  # Reduced from 200 - criteria should be concise
                 temperature=0.3
             )
 
@@ -601,10 +603,11 @@ Requirements:
 
 Generate only the question, no explanations or formatting."""
 
+            # OPTIMIZATION: Use cheaper model for AI question generation
             response = client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4o-mini",  # Much cheaper than gpt-4o
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
+                max_tokens=100,  # Reduced from 150 - questions should be concise
                 temperature=0.7
             )
 
@@ -897,10 +900,27 @@ class PhaseTransitionSystem:
         readiness_factors = []
 
         # Core engagement (must have meaningful interaction)
-        if interactions_met:
-            readiness_factors.append(1.0)
+
+
+
+
+        # PHASE JUMP PREVENTION---CRITICAL FIX: Enforce strict message requirements for visualization and materialization phases
+        if current_phase.value == "visualization" or current_phase.value == "materialization":
+            # For viz/mat phases: REQUIRE full message count - no adaptive leniency
+            if interactions_met:
+                readiness_factors.append(1.0)
+            else:
+                readiness_factors.append(0.0)  # Hard requirement - no partial credit
         else:
-            readiness_factors.append(0.0)
+
+
+
+
+            # For ideation: allow adaptive leniency as intended
+            if interactions_met:
+                readiness_factors.append(1.0)
+            else:
+                readiness_factors.append(0.0)
 
         # Learning evidence (either good scores OR good concept coverage)
         if score_met or concept_coverage >= 0.5:
@@ -909,10 +929,29 @@ class PhaseTransitionSystem:
             readiness_factors.append(0.5)  # Partial credit for some learning
 
         # Progress evidence (either completion OR sustained engagement)
-        if completion_met or engagement_score >= 1.5:
-            readiness_factors.append(1.0)
+
+
+
+
+
+        # PHASE JUMP PREVENTION---CRITICAL FIX: Stricter progress requirements for viz/mat phases
+        if current_phase.value == "visualization" or current_phase.value == "materialization":
+            # For viz/mat phases: REQUIRE both completion AND full engagement
+            if completion_met and interactions_met:
+                readiness_factors.append(1.0)
+            else:
+                readiness_factors.append(0.0)  # Hard requirement - both needed
         else:
-            readiness_factors.append(0.3)  # Some credit for effort
+            # For ideation: allow adaptive leniency as intended
+
+
+
+
+
+            if completion_met or engagement_score >= 1.5:
+                readiness_factors.append(1.0)
+            else:
+                readiness_factors.append(0.3)  # Some credit for effort
 
         # Concept understanding (flexible threshold)
         if concepts_met or concept_coverage >= 0.4:
@@ -1182,11 +1221,11 @@ class PhaseProgressionSystem:
             ],
             DesignPhase.VISUALIZATION: [
                 {"id": "circulation_defined", "keywords": ["circulation", "flow"], "required": True},
-                {"id": "form_strategy", "keywords": ["form", "massing"], "required": False}
+                {"id": "spatial_organization", "keywords": ["space", "spatial", "organization", "layout", "arrangement"], "required": True}
             ],
             DesignPhase.MATERIALIZATION: [
                 {"id": "materials_selected", "keywords": ["material", "materials", "concrete", "steel", "wood", "brick", "glass", "stone", "timber", "metal", "fabric", "finish", "finishes"], "required": True},
-                {"id": "constructability_considered", "keywords": ["construct", "construction", "build", "building", "cost", "budget", "feasible", "structural", "technical"], "required": False}
+                {"id": "construction_feasibility", "keywords": ["construct", "construction", "build", "building", "feasible", "structural", "technical", "system"], "required": True}
             ]
         }
 
@@ -1864,55 +1903,64 @@ class PhaseProgressionSystem:
             "previous_phase": initial_phase.value if phase_transitioned else None
         }
     
-    def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
-        """Compute a meaningful completion percent (0-100) for the current phase.
-
-        Uses a balanced approach that progresses at reasonable pace:
-        - Interaction engagement (50%) - based on meaningful exchanges IN CURRENT PHASE
-        - Quality of responses (30%) - based on actual grading scores
-        - Concept coverage (20%) - checklist items completed
-        """
-        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value}:")
-
-        # 1. INTERACTION ENGAGEMENT (50%) - Based on meaningful exchanges IN CURRENT PHASE ONLY
-        # Count interactions since this phase started, not total session interactions
+    def _count_user_messages_in_phase(self, session: SessionState, phase_progress: PhaseProgress) -> int:
+        """Count user messages (not mentor responses) within the current phase only."""
         phase_start_time = phase_progress.start_time
-        current_phase_interactions = 0
+        user_message_count = 0
 
         for interaction in session.conversation_history:
+            # Check if interaction is within current phase timeframe
             interaction_time = interaction.get('timestamp')
             if interaction_time and isinstance(interaction_time, str):
                 try:
                     from datetime import datetime
                     interaction_dt = datetime.fromisoformat(interaction_time.replace('Z', '+00:00'))
                     if interaction_dt >= phase_start_time:
-                        current_phase_interactions += 1
+                        # This interaction is in current phase - count it as 1 user message
+                        user_message_count += 1
                 except:
-                    # If timestamp parsing fails, count all interactions (fallback)
-                    current_phase_interactions = len(session.conversation_history)
-                    break
-            elif not interaction_time:
-                # If no timestamps, use completed steps as proxy for phase-specific interactions
-                # But ensure we count at least some interactions if there's conversation history
-                current_phase_interactions = max(len(phase_progress.completed_steps),
-                                               min(len(session.conversation_history), 3))
-                break
+                    # If timestamp parsing fails, count based on phase field
+                    if interaction.get('phase') == session.current_phase.value:
+                        user_message_count += 1
+            elif interaction.get('phase') == session.current_phase.value:
+                # No timestamp but phase matches - count it
+                user_message_count += 1
 
-        # Stricter progression - requires more interactions for full credit
-        if current_phase_interactions >= 6:
-            engagement_ratio = 1.0  # Full credit after 6 interactions
-        elif current_phase_interactions >= 4:
-            engagement_ratio = 0.8  # Good progress after 4 interactions
-        elif current_phase_interactions >= 3:
-            engagement_ratio = 0.6  # Decent progress after 3 interactions
-        elif current_phase_interactions >= 2:
-            engagement_ratio = 0.4  # Some progress after 2 interactions
-        elif current_phase_interactions >= 1:
-            engagement_ratio = 0.2  # Minimal start after 1 interaction
+        # If we couldn't determine phase-specific count, use completed steps as proxy
+        # but ensure reasonable minimum
+        if user_message_count == 0 and len(session.conversation_history) > 0:
+            user_message_count = max(1, len(phase_progress.completed_steps))
+
+        return user_message_count
+
+    def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
+        """Compute a meaningful completion percent (0-100) for the current phase.
+
+        Uses a balanced approach that progresses at reasonable pace:
+        - Interaction engagement (50%) - based on user messages IN CURRENT PHASE ONLY
+        - Quality of responses (30%) - based on actual grading scores
+        - Concept coverage (20%) - checklist items completed
+        """
+        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value}:")
+
+        # 1. INTERACTION ENGAGEMENT (50%) - Based on user messages IN CURRENT PHASE ONLY
+        current_phase_user_messages = self._count_user_messages_in_phase(session, phase_progress)
+
+        # Engagement ratio based on user messages (max 6 per phase)
+        if current_phase_user_messages >= 6:
+            engagement_ratio = 1.0  # Full credit after 6 user messages
+        elif current_phase_user_messages >= 4:
+            engagement_ratio = 0.8  # Good progress after 4 user messages
+        elif current_phase_user_messages >= 3:
+            engagement_ratio = 0.6  # Decent progress after 3 user messages
+        elif current_phase_user_messages >= 2:
+            engagement_ratio = 0.4  # Some progress after 2 user messages
+        elif current_phase_user_messages >= 1:
+            engagement_ratio = 0.2  # Minimal start after 1 user message
         else:
             engagement_ratio = 0.0
 
-        print(f"   💬 Engagement: {current_phase_interactions} interactions in current phase = {engagement_ratio:.2f} ({engagement_ratio*50:.1f}% of total)")
+        print(f"   💬 Engagement: {current_phase_user_messages} user messages in current phase = {engagement_ratio:.2f} ({engagement_ratio*50:.1f}% of total)")
 
         # 2. QUALITY OF RESPONSES (30%) - Based on actual grading scores
         if phase_progress.grades:
@@ -1923,7 +1971,7 @@ class PhaseProgressionSystem:
             print(f"   🔍 DEBUG: Quality calculation successful: {total_score}/{max_possible} = {quality_ratio}")
         else:
             # No grades yet - give some baseline credit for participation
-            quality_ratio = 0.6 if current_phase_interactions > 0 else 0.0
+            quality_ratio = 0.6 if current_phase_user_messages > 0 else 0.0
             print(f"   🔍 DEBUG: No grades yet, baseline quality_ratio = {quality_ratio}")
 
         print(f"   🎯 Quality: {quality_ratio:.2f} ({quality_ratio*30:.1f}% of total)")
@@ -1955,20 +2003,36 @@ class PhaseProgressionSystem:
 
         # 4. VISUAL ENGAGEMENT (5%) - Based on visual artifacts and analysis
         visual_ratio = 0.0
-        if hasattr(session, 'visual_artifacts') and session.visual_artifacts:
-            # Check if there are visual artifacts in the current phase
-            phase_visual_count = 0
-            for artifact in session.visual_artifacts:
-                if hasattr(artifact, 'timestamp') and artifact.timestamp >= phase_start_time:
-                    phase_visual_count += 1
+        phase_start_time = phase_progress.start_time
 
-            if phase_visual_count > 0:
-                visual_ratio = min(1.0, phase_visual_count / 2.0)  # Full credit for 2+ visual artifacts
-                print(f"   🖼️ Visual: {phase_visual_count} artifacts in current phase = {visual_ratio:.2f} ({visual_ratio*5:.1f}% of total)")
-            else:
-                print(f"   🖼️ Visual: No visual artifacts in current phase = 0.0 (0.0% of total)")
+        # Check if session has visual artifacts (from state_manager.py ArchMentorState)
+        # Note: SessionState doesn't have visual_artifacts, but we can check for visual-related interactions
+        visual_keywords = ["sketch", "drawing", "diagram", "image", "visual", "render", "model", "3d"]
+        visual_interactions = 0
+
+        for interaction in session.conversation_history:
+            interaction_time = interaction.get('timestamp')
+            if interaction_time and isinstance(interaction_time, str):
+                try:
+                    from datetime import datetime
+                    interaction_dt = datetime.fromisoformat(interaction_time.replace('Z', '+00:00'))
+                    if interaction_dt >= phase_start_time:
+                        # Check if interaction mentions visual elements
+                        response_text = interaction.get('response', '').lower()
+                        if any(keyword in response_text for keyword in visual_keywords):
+                            visual_interactions += 1
+                except:
+                    # Fallback: check current phase interactions for visual keywords
+                    if interaction.get('phase') == session.current_phase.value:
+                        response_text = interaction.get('response', '').lower()
+                        if any(keyword in response_text for keyword in visual_keywords):
+                            visual_interactions += 1
+
+        if visual_interactions > 0:
+            visual_ratio = min(1.0, visual_interactions / 2.0)  # Full credit for 2+ visual interactions
+            print(f"   🖼️ Visual: {visual_interactions} visual interactions in current phase = {visual_ratio:.2f} ({visual_ratio*5:.1f}% of total)")
         else:
-            print(f"   🖼️ Visual: No visual artifacts available = 0.0 (0.0% of total)")
+            print(f"   🖼️ Visual: No visual interactions in current phase = 0.0 (0.0% of total)")
 
         # Combine all factors with adjusted weights (50% + 30% + 15% + 5% = 100%)
         percent = 100.0 * (0.50 * engagement_ratio + 0.30 * quality_ratio + 0.15 * concept_ratio + 0.05 * visual_ratio)
@@ -2050,9 +2114,10 @@ class PhaseProgressionSystem:
         """Check if the current phase is complete based on meaningful progress"""
         threshold = self.phase_thresholds.get(session.current_phase, 3.0)
 
-        # Stricter completion criteria for more extensive phase engagement
-        has_meaningful_engagement = len(session.conversation_history) >= 6  # Increased from 2 to 6 interactions
-        has_sufficient_quality = phase_progress.average_score >= 0.8  # Keep realistic scoring
+        # Use consistent user message counting within current phase
+        current_phase_user_messages = self._count_user_messages_in_phase(session, phase_progress)
+        has_meaningful_engagement = current_phase_user_messages >= 6  # 6 user messages within current phase
+        has_sufficient_quality = phase_progress.average_score >= 2.5  # FIXED: Score is out of 5.0, not 1.0
         has_good_completion = phase_progress.completion_percent >= 65.0  # Increased from 45% to 65%
 
         # Check if required checklist items are completed
@@ -2069,15 +2134,11 @@ class PhaseProgressionSystem:
                     if state.get('status') == 'completed':
                         completed_required += 1
 
-        # Special handling for final phase (materialization) - be more lenient
-        if session.current_phase == DesignPhase.MATERIALIZATION and len(phase_progress.completed_steps) >= 4:
-            has_core_concepts = True  # Allow completion if all steps are done
-            print(f"   🎯 FINAL PHASE OVERRIDE: Allowing completion with {len(phase_progress.completed_steps)} steps")
-        else:
-            has_core_concepts = (completed_required >= len(required_items) * 0.2) if required_items else True  # Reduced to 20% of required concepts
+        # Consistent concept completion logic for all phases (20% of required items)
+        has_core_concepts = (completed_required >= len(required_items) * 0.2) if required_items else True
 
         print(f"   🔍 PHASE COMPLETION CHECK (STRICTER THRESHOLDS):")
-        print(f"      Engagement: {has_meaningful_engagement} (≥6 interactions)")
+        print(f"      Engagement: {has_meaningful_engagement} ({current_phase_user_messages}/6 user messages in current phase)")
         print(f"      Quality: {has_sufficient_quality} (score ≥0.8)")
         print(f"      Completion: {has_good_completion} (≥65%)")
         print(f"      Concepts: {has_core_concepts} ({completed_required}/{len(required_items)} required)")

@@ -25,7 +25,7 @@ class QuestionValidator:
             r'\b(hack|exploit|bypass|jailbreak|ignore.*instructions)\b',
             r'\b(harmful|dangerous|illegal|violent)\b',
             r'\b(nsfw|adult|sexual|explicit)\b',
-            r'\b(pretend|roleplay|act.*as|you.*are.*now)\b',
+            r'\b(pretend|roleplay|act\s+as\s+(if|though|like)|you\s+are\s+now)\b',  # Fixed: More specific pattern to avoid architectural "act as"
             r'\b(forget.*previous|ignore.*above|new.*instructions)\b'
         ]
         
@@ -122,18 +122,28 @@ class QuestionValidator:
         return {'needs_llm_check': True}
     
     async def _llm_based_validation(self, user_input: str, conversation_context: List[Dict] = None) -> Dict[str, Any]:
-        """Use LLM to validate question appropriateness and relevance."""
+        """Use LLM to validate question appropriateness and relevance with caching."""
+
+        # PERFORMANCE: Check cache first to avoid unnecessary API calls
+        import streamlit as st
+        cache_key = f"validation_{hash(user_input.lower().strip())}"
+        if hasattr(st.session_state, cache_key):
+            print(f"🤖 CACHE_HIT: Using cached validation result")
+            return getattr(st.session_state, cache_key)
 
         # If no OpenAI client available, fall back to permissive validation
         if not self.client:
             print("⚠️ No OpenAI client - using permissive validation fallback")
-            return {
+            result = {
                 'is_appropriate': True,
                 'is_on_topic': True,
                 'confidence': 0.5,
                 'reason': 'No LLM validation available - defaulting to permissive',
                 'suggested_response': None
             }
+            # Cache the fallback result too
+            setattr(st.session_state, cache_key, result)
+            return result
 
         try:
             # Build context from conversation history
@@ -212,6 +222,10 @@ Default to APPROPRIATE and ON-TOPIC unless there's a clear reason not to.
             else:
                 print(f"✅ LLM approved as appropriate and on-topic")
                 result['suggested_response'] = None
+
+            # PERFORMANCE: Cache the validation result
+            setattr(st.session_state, cache_key, result)
+            print(f"🤖 CACHE_STORE: Cached validation result")
 
             return result
             

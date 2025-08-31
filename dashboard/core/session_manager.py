@@ -69,11 +69,15 @@ def initialize_session_state():
     
     if 'uploaded_image_path' not in st.session_state:
         st.session_state.uploaded_image_path = None
-    
+
+    # Image reference tracking for "looking at your image" limiting
+    if 'image_reference_count' not in st.session_state:
+        st.session_state.image_reference_count = {}
+
     # Socratic dialogue control flags
     if 'awaiting_socratic_response' not in st.session_state:
         st.session_state.awaiting_socratic_response = False
-    
+
     if 'current_question_id' not in st.session_state:
         st.session_state.current_question_id = None
 

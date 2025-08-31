@@ -90,7 +90,7 @@ class TaskGuidanceSystem:
             TaskType.VISUAL_ANALYSIS_2D: {
                 "task_assignment": """**◉ TASK 2.1: 2D Design Development & Analysis**
 
-**Your Assignment**: Transform your community center concept into visual representations. Create spatial diagrams, section studies, or perspective sketches.
+**Your Assignment**: Create and upload hand sketches or CAD drawings of your community center concept for AI analysis and critique.
 
 **Consider**: 
 • Circulation patterns and spatial relationships
@@ -128,10 +128,10 @@ class TaskGuidanceSystem:
             TaskType.SPATIAL_ANALYSIS_3D: {
                 "task_assignment": """**◉ TASK 3.1: 3D Spatial Analysis & Material Systems**
 
-**Your Assignment**: Develop detailed spatial model and material systems for your community center.
+**Your Assignment**: Develop a spatial model and material systems for your community center.
 
 **Consider**: 
-• 3D model development and spatial relationships
+• Spatial relationships in 3D
 • Material selection for adaptive reuse
 • Structural integration with existing systems
 • Construction methodology with community involvement
@@ -185,19 +185,19 @@ class TaskGuidanceSystem:
             TaskType.KNOWLEDGE_TRANSFER: {
                 "task_assignment": """**◉ TASK 4.2: Knowledge Transfer Challenge**
 
-**Your Assignment**: Articulate your design knowledge and insights for transfer to others.
+**Your Assignment**: Apply the principles and methodologies you've developed to a new scenario: Adaptive reuse of a former shopping mall into a mixed-use community hub.
 
 **Consider**: 
-• Key principles learned about adaptive reuse
-• Community engagement strategies discovered
+• Synthesis of architectural, social, and technical knowledge  
+• Questioning and analytical approaches
 • Design methodology insights
-• Transferable knowledge for future projects
+• Work without AI assistance
 
 **Duration**: 15 minutes""",
                 "socratic_questions": [
-                    "What would you want another designer to know before starting a similar community center project?",
+                    "What would you want another designer to know before starting a another project?",
                     "Which of your design insights are specific to this project, and which are transferable?",
-                    "How would you teach someone else your approach to community-centered adaptive reuse?"
+                    "How did you approach this problem after the use of socratic questioning and reflection?"
                 ]
             }
         }
@@ -228,13 +228,13 @@ class TaskGuidanceSystem:
             TaskType.VISUAL_ANALYSIS_2D: {
                 "task_assignment": """**◉ TASK 2.1: Design Development with Multimodal Linkography**
 
-**Your Assignment**: Transform your concept into visual representations through sketches and diagrams. Focus on spatial arrangements and visualization techniques.
+**Your Assignment**: Transform your concept into visual representations through sketches and diagrams. Upload the output to the platform for feedback. Focus on spatial arrangements and visualization techniques.
 
 **Consider**:
-• Visual representation strategies for community spaces
-• Architectural drawing conventions and communication methods
-• Relationship between spatial program and visual expression
-• Community-centered design visualization approaches
+• Spatial relationships between program elements
+• Circulation patterns
+• Environmental systems integration
+• Community-centered design principles in architecture
 
 **Duration**: 20 minutes""",
                 "direct_information": [
@@ -248,7 +248,7 @@ class TaskGuidanceSystem:
             TaskType.SPATIAL_ANALYSIS_3D: {
                 "task_assignment": """**◉ TASK 3.1: Technical Implementation with Construction Logic**
 
-**Your Assignment**: Develop technical details and construction strategies for your community center. Focus on material selection, structural systems, and implementation methodology.
+**Your Assignment**: Develop your community center design into implementable solutions.
 
 **Consider**:
 • Material selection for adaptive reuse
@@ -312,7 +312,13 @@ class TaskGuidanceSystem:
             TaskType.ARCHITECTURAL_CONCEPT: {
                 "task_assignment": """**◉ TASK 1.1: Self-Directed Architectural Concept Development with Natural Move Tracking**
 
-**Your Assignment**: You are tasked with designing a community center for a diverse urban neighborhood of 15,000 residents. The site is a former industrial warehouse (150m x 80m x 12m height). Consider: community needs, cultural sensitivity, sustainability, and adaptive reuse principles.
+**Your Assignment**: You are tasked with designing a community center for a diverse urban neighborhood of 15,000 residents. The site is a former industrial warehouse (150m x 80m x 12m height). 
+Work through this design challenge at your own pace. Document your thinking process, decisions, and reasoning as you develop your concept. Use the text input, sketching tools, and upload features as needed.
+**Consider**:
+• Circulation patterns and spatial relationships
+• Environmental systems and site integration
+• Visual communication of your design ideas
+• Independent development of design solutions
 
 **System Interface**: Please work through this design challenge at your own pace. Document your thinking process, decisions, and reasoning as you develop your concept. Use the text input, sketching tools, and upload features as needed.
 
@@ -323,7 +329,7 @@ class TaskGuidanceSystem:
             TaskType.VISUAL_ANALYSIS_2D: {
                 "task_assignment": """**◉ TASK 2.1: Self-Directed Design Development with Natural Multimodal Linkography**
 
-**Your Assignment**: Transform your concept into visual representations through independent work. Create spatial diagrams, section studies, or perspective sketches. Work at your own pace using the available tools.
+**Your Assignment**: Transform your community center concept into visual representations. Create spatial diagrams, section studies, or perspective sketches.
 
 **Consider**:
 • Circulation patterns and spatial relationships
@@ -341,7 +347,7 @@ class TaskGuidanceSystem:
 **Your Assignment**: Develop technical details and construction strategies for your community center through independent work. Focus on material selection, structural systems, and implementation methodology.
 
 **Consider**:
-• 3D relationships and material selection for adaptive reuse
+• 3D relationships and material selection
 • Structural integration with existing warehouse
 • Construction methodology and phasing
 • Self-directed technical problem solving

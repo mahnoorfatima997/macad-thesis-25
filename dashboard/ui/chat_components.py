@@ -7,6 +7,7 @@ import re
 import sys
 import os
 from html import escape
+from datetime import datetime
 from typing import Dict, Any, List
 
 # Add parent directory to path
@@ -153,6 +154,9 @@ def render_chat_interface():
         # Render all messages in the chat
         for i, message in enumerate(st.session_state.messages):
             render_single_message(message)
+
+            # CRITICAL FIX: Render tasks that should appear after this specific message
+            _render_tasks_for_message(i)
         
         st.markdown("""
             </div>
@@ -368,14 +372,25 @@ def render_single_message(message: Dict[str, Any]):
 
         # ENHANCED: Check if this is a gamified challenge
         gamification_info = message.get("gamification", {})
-        is_gamified = gamification_info.get("is_gamified", False)
-        display_type = gamification_info.get("display_type", "")
 
-        # PERFORMANCE: Disable debug prints
+        # CRITICAL FIX: Check nested challenge_data structure for gamification
+        challenge_data = gamification_info.get("challenge_data", {})
+        is_gamified = (
+            gamification_info.get("is_gamified", False) or
+            challenge_data.get("gamification_applied", False)
+        )
+        display_type = (
+            gamification_info.get("display_type", "") or
+            challenge_data.get("display_type", "")
+        )
+
+        # DEBUG: Enable one critical debug print to diagnose gamification issue
+        if 'gamification' in message or gamification_info:
+            print(f"🎮 DEBUG: Gamification data found - is_gamified: {is_gamified}, display_type: '{display_type}'")
+            print(f"🎮 DEBUG: Full gamification info: {gamification_info}")
+            print(f"🎮 DEBUG: Challenge data gamification_applied: {challenge_data.get('gamification_applied', False)}")
         # print(f"🎮 DEBUG: Message gamification check:")
         # print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
-        # print(f"🎮 DEBUG: Is gamified: {is_gamified}")
-        # print(f"🎮 DEBUG: Display type: {display_type}")
         # print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")
 
         if is_gamified and display_type == "enhanced_visual":
@@ -408,8 +423,7 @@ def render_single_message(message: Dict[str, Any]):
                 print(f"🎨 DEBUG: Found generated_image in message, calling render function")
                 _render_generated_image_in_chat(message["generated_image"])
 
-            # Check for active task to render (like gamification)
-            _render_task_if_active()
+            # REMOVED: Centralized task rendering - tasks now render per message chronologically
             # else:
             #     print(f"🎨 DEBUG: No generated_image found in message keys: {list(message.keys())}")
 
@@ -574,9 +588,9 @@ def _render_generated_image_in_chat(generated_image: dict):
         style = generated_image.get('style', 'visualization')
 
         st.markdown(f"""
-        <div style="margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
-            <div style="font-weight: bold; color: #007bff; margin-bottom: 8px;">
-                🎨 AI-Generated {phase.title()} Visualization
+        <div style="margin: 10px 0; padding: 10px; background-color: #ffffff; border-radius: 8px; border-left: 4px solid #cf436f;">
+            <div style="font-weight: bold; color: #cf436f; margin-bottom: 8px;">
+                ◉ AI-Generated {phase.title()} Image!
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -651,26 +665,27 @@ def _render_generated_image_in_chat(generated_image: dict):
 
         col1, col2, col3 = st.columns(3)
 
-        # Use unique keys based on image URL to avoid conflicts
-        image_key = str(hash(generated_image['url']))[-8:]
+        # Use unique keys based on image URL, phase, and timestamp to avoid conflicts
+        import time
+        image_key = str(hash(generated_image['url'] + str(generated_image.get('phase', '')) + str(time.time())))[-8:]
 
         with col1:
-            if st.button("✅ Yes", key=f"feedback_yes_{image_key}", help="This captures my ideas well"):
+            if st.button("✔ Yes", key=f"feedback_yes_{image_key}", help="This captures my ideas well"):
                 st.success("Great! This confirms we're aligned on your design direction.")
                 _store_image_feedback(generated_image, 'positive')
 
         with col2:
-            if st.button("🤔 Partially", key=f"feedback_partial_{image_key}", help="Close, but needs adjustment"):
+            if st.button("◐ Partially", key=f"feedback_partial_{image_key}", help="Close, but needs adjustment"):
                 st.info("Thanks for the feedback! Let's continue refining your design ideas.")
                 _store_image_feedback(generated_image, 'partial')
 
         with col3:
-            if st.button("❌ No", key=f"feedback_no_{image_key}", help="This doesn't match my vision"):
+            if st.button("✘ No", key=f"feedback_no_{image_key}", help="This doesn't match my vision"):
                 st.warning("No problem! Let's continue exploring your design ideas.")
                 _store_image_feedback(generated_image, 'negative')
 
         # Show generation details in an expander
-        with st.expander("🔍 View Generation Details"):
+        with st.expander(" View Generation Details"):
             st.markdown(f"**Phase:** {generated_image.get('phase', 'Unknown')}")
             st.markdown(f"**Style:** {generated_image.get('style', 'Unknown')}")
             st.markdown(f"**Prompt:** {generated_image.get('prompt', 'No prompt available')}")
@@ -1079,63 +1094,156 @@ def _clean_agent_response(agent_response: str) -> str:
     return clean_content.strip()
 
 
-def _render_task_if_active():
-    """Render active task UI component if present (like gamification)"""
+def _render_tasks_for_message(message_index: int):
+    """Render tasks that should appear after this specific message - ONLY ACTIVE TASKS"""
     try:
-        # Check if there's an active task to render
-        active_task_data = st.session_state.get('active_task', None)
+        task_display_queue = st.session_state.get('task_display_queue', [])
 
-        if active_task_data and active_task_data.get('should_render', False):
-            print(f"🎯 TASK_UI: Rendering active task component")
+        if not task_display_queue:
+            return
 
-            # Import task UI renderer
-            from dashboard.ui.task_ui_renderer import TaskUIRenderer
+        # CRITICAL FIX: Get currently active tasks to filter against
+        mode_processor = st.session_state.get('mode_processor')
+        if not mode_processor or not mode_processor.task_manager:
+            return
 
-            # Extract task data
-            task = active_task_data['task']
-            guidance_type = active_task_data['guidance_type']
-            user_input = active_task_data.get('user_input', '')
+        active_tasks = mode_processor.task_manager.get_active_tasks()
+        active_task_types = {task.task_type.value for task in active_tasks}
 
-            # Get actual task content from guidance system
-            from dashboard.processors.task_guidance_system import TaskGuidanceSystem
-            guidance_system = TaskGuidanceSystem()
+        print(f"🔍 MESSAGE_TASK_FILTER: Active task types: {active_task_types}")
 
-            # Get the real task assignment based on test group
-            if task.test_group == "MENTOR":
-                task_data = guidance_system.mentor_tasks.get(task.task_type, {})
-            elif task.test_group == "GENERIC_AI":
-                task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
-            elif task.test_group == "CONTROL":
-                task_data = guidance_system.control_tasks.get(task.task_type, {})
-            else:
-                task_data = {}
+        # Find tasks linked to this message
+        for task_entry in task_display_queue:
+            linked_message = task_entry.get('message_index', -1)
+            should_render = task_entry.get('should_render', False)
+            already_displayed = task_entry.get('displayed', False)
+            task = task_entry['task']
 
-            # Get the actual task assignment content
-            task_content = task_data.get("task_assignment", f"🎯 TASK {task.task_type.value.replace('_', ' ').title()}: Complete the design challenge")
+            # CRITICAL FIX: Render task UI components for persistence and phase transitions
+            is_currently_active = task.task_type.value in active_task_types
 
-            # Add specific guidance content based on type
-            if guidance_type == "socratic" and task_data.get("socratic_questions"):
-                questions = task_data["socratic_questions"]
-                if questions:
-                    task_content += f"\n\n**Guided Exploration Question:**\n{questions[0]}"
-            elif guidance_type == "direct" and task_data.get("direct_information"):
-                info_list = task_data["direct_information"]
-                if info_list:
-                    info_text = "\n".join([f"• {info}" for info in info_list[:2]])  # Show first 2 items
-                    task_content += f"\n\n**Helpful Information:**\n{info_text}"
-            elif guidance_type == "minimal" and task_data.get("minimal_prompt"):
-                task_content += f"\n\n**Guidance:** {task_data['minimal_prompt']}"
+            # Render task if it's linked to this message (regardless of active status for persistence)
+            if linked_message == message_index and should_render:
+                task_id = task_entry['task_id']
 
-            # Render the task UI component with real content
-            renderer = TaskUIRenderer()
-            renderer.render_task_component(task, task_content, guidance_type)
+                if is_currently_active:
+                    print(f"🔍 MESSAGE_TASK_RENDER: Rendering active task {task.task_type.value} for message {message_index}")
+                else:
+                    print(f"🔍 MESSAGE_TASK_RENDER: Rendering completed task {task.task_type.value} for message {message_index} (persistent display)")
 
-            # Mark as rendered to avoid duplicate rendering
-            st.session_state['active_task']['should_render'] = False
+                # Create unique container for this message-task combination
+                container_key = f"msg_{message_index}_task_{task_id}"
 
-            print(f"🎯 TASK_UI: Task component rendered successfully")
+                # CRITICAL FIX: Use container without key parameter (Streamlit compatibility)
+                with st.container():
+                    _render_single_task_component(task_entry)
+
+                # Mark as displayed (but keep in queue for persistent display)
+                if not already_displayed:
+                    task_entry['displayed'] = True
+                    task_entry['display_time'] = datetime.now().isoformat()
+                    print(f"🎯 MESSAGE_TASK: {task.task_type.value} first render after message {message_index}")
+                # Task stays in queue for persistent display
 
     except Exception as e:
-        print(f"🎯 TASK_UI ERROR: Failed to render task component: {e}")
+        print(f"⚠️ Error rendering tasks for message {message_index}: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def _render_task_if_active():
+    """DEPRECATED: Legacy function - tasks now render per message"""
+    # This function is no longer used - tasks render chronologically per message
+    pass
+
+
+def _render_single_task_component(task_entry):
+    """Render a single task component with unique container"""
+    try:
+        task = task_entry['task']
+        task_id = task_entry['task_id']
+        guidance_type = task_entry.get('guidance_type', 'socratic')
+
+        # CRITICAL FIX: Get guidance system from session state to avoid re-initialization
+        import streamlit as st
+        guidance_system = st.session_state.get('guidance_system')
+        if not guidance_system:
+            from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+            guidance_system = TaskGuidanceSystem()
+            st.session_state['guidance_system'] = guidance_system
+
+        # CRITICAL FIX: Get test group from session state if task doesn't have it
+        test_group = getattr(task, 'test_group', None)
+        if not test_group:
+            import streamlit as st
+            session_test_group = st.session_state.get('test_group')
+            if hasattr(session_test_group, 'value'):
+                test_group = session_test_group.value
+            else:
+                test_group = str(session_test_group) if session_test_group else "MENTOR"
+            print(f"🔧 TASK_DATA_FIX: Using session test group: {test_group}")
+
+        # Get the real task assignment based on test group
+        if test_group == "MENTOR":
+            task_data = guidance_system.mentor_tasks.get(task.task_type, {})
+        elif test_group == "GENERIC_AI":
+            task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
+        elif test_group == "CONTROL":
+            task_data = guidance_system.control_tasks.get(task.task_type, {})
+        else:
+            task_data = {}
+
+        if not task_data:
+            print(f"⚠️ No task data found for {task.task_type.value} in {test_group} mode")
+            import streamlit as st
+            print(f"🔍 TASK_DEBUG: task.test_group={getattr(task, 'test_group', 'NOT_SET')}, session_test_group={st.session_state.get('test_group', 'NOT_SET')}")
+            return
+
+        # Get the actual task assignment content
+        task_content = task_data.get("task_assignment", f"🎯 TASK {task.task_type.value.replace('_', ' ').title()}: Complete the design challenge")
+
+        # Add specific guidance content based on type
+        if guidance_type == "socratic" and task_data.get("socratic_questions"):
+            questions = task_data["socratic_questions"]
+            if questions:
+                task_content += f"\n\n**Guided Exploration Question:**\n{questions[0]}"
+        elif guidance_type == "direct" and task_data.get("direct_information"):
+            info_list = task_data["direct_information"]
+            if info_list:
+                info_text = "\n".join([f"• {info}" for info in info_list[:2]])  # Show first 2 items
+                task_content += f"\n\n**Helpful Information:**\n{info_text}"
+        elif guidance_type == "minimal" and task_data.get("minimal_prompt"):
+            task_content += f"\n\n**Guidance:** {task_data['minimal_prompt']}"
+
+        # CRITICAL FIX: Create unique container for this specific task instance
+        container_key = f"task_container_{task_id}"
+        print(f"🚨 CONTAINER_DEBUG: Creating container with key: {container_key}")
+        print(f"🚨 CONTAINER_DEBUG: Task type: {task.task_type.value}")
+        print(f"🚨 CONTAINER_DEBUG: Task content preview: {task_content[:100]}...")
+
+        try:
+            # CRITICAL FIX: Import streamlit at function level to ensure proper scope
+            import streamlit as st
+
+            with st.container(key=container_key):
+                print(f"🚨 INSIDE_CONTAINER: Rendering {task.task_type.value} in container {container_key}")
+
+                # Import and render task UI
+                from dashboard.ui.task_ui_renderer import TaskUIRenderer
+                renderer = TaskUIRenderer()
+                renderer.render_task_component(task, task_content, guidance_type)
+
+                print(f"🚨 CONTAINER_SUCCESS: Task {task_id} rendered in container {container_key}")
+
+        except Exception as container_error:
+            print(f"🚨 CONTAINER_ERROR: Failed to create container {container_key}: {container_error}")
+            # Fallback: render without container
+            from dashboard.ui.task_ui_renderer import TaskUIRenderer
+            renderer = TaskUIRenderer()
+            renderer.render_task_component(task, task_content, guidance_type)
+            print(f"🚨 FALLBACK_RENDER: Task {task_id} rendered without container")
+
+    except Exception as e:
+        print(f"⚠️ Error rendering single task component: {e}")
         import traceback
         traceback.print_exc()

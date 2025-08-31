@@ -67,13 +67,17 @@ def get_cached_orchestrator():
         sys.path.insert(0, thesis_agents_path)
 
     try:
-        from orchestration.langgraph_orchestrator import LangGraphOrchestrator
-        return LangGraphOrchestrator(domain="architecture")
+        from orchestration.orchestrator import LangGraphOrchestrator
+        orchestrator = LangGraphOrchestrator(domain="architecture")
+        print(f"✅ DASHBOARD: LangGraphOrchestrator initialized successfully")
+        return orchestrator
     except ImportError as e:
+        print(f"❌ DASHBOARD: LangGraphOrchestrator import failed: {e}")
         st.warning(f"LangGraphOrchestrator not available: {e}")
         st.info("Running in fallback mode without multi-agent orchestration.")
         return None
     except Exception as e:
+        print(f"❌ DASHBOARD: LangGraphOrchestrator initialization failed: {e}")
         st.warning(f"Failed to initialize LangGraphOrchestrator: {e}")
         st.info("Running in fallback mode without multi-agent orchestration.")
         return None
@@ -149,16 +153,35 @@ class UnifiedArchitecturalDashboard:
             st.session_state.test_dashboard = None
         self.test_dashboard = st.session_state.test_dashboard
         
-        # Mode processor
-        self.mode_processor = ModeProcessor(
-            orchestrator=self.orchestrator,
-            data_collector=self.data_collector,
-            test_dashboard=self.test_dashboard,
-            image_database=self.image_database
-        )
+        # Mode processor - CRITICAL FIX: Persist mode processor to maintain task manager state
+        if 'mode_processor' not in st.session_state or st.session_state.mode_processor is None:
+            print(f"🔍 DASHBOARD_DEBUG: Creating new mode processor instance")
+            self.mode_processor = ModeProcessor(
+                orchestrator=self.orchestrator,
+                data_collector=self.data_collector,
+                test_dashboard=self.test_dashboard,
+                image_database=self.image_database
+            )
+            # Store mode processor in session state for persistence
+            st.session_state.mode_processor = self.mode_processor
+        else:
+            print(f"🔍 DASHBOARD_DEBUG: Using existing mode processor from session state")
+            self.mode_processor = st.session_state.mode_processor
 
-        # Store mode processor in session state for sidebar access
-        st.session_state.mode_processor = self.mode_processor
+            # CRITICAL FIX: Ensure task manager consistency across all components
+            if hasattr(self.mode_processor, 'task_manager') and self.mode_processor.task_manager:
+                session_task_manager = st.session_state.get('task_manager_instance')
+                if session_task_manager and self.mode_processor.task_manager != session_task_manager:
+                    print(f"🚨 DASHBOARD_SYNC: Syncing mode processor to session task manager")
+                    print(f"🚨 DASHBOARD_SYNC: Mode processor: {id(self.mode_processor.task_manager)}")
+                    print(f"🚨 DASHBOARD_SYNC: Session state: {id(session_task_manager)}")
+                    self.mode_processor.task_manager = session_task_manager
+
+            # Update references in case they changed
+            self.mode_processor.orchestrator = self.orchestrator
+            self.mode_processor.data_collector = self.data_collector
+            self.mode_processor.test_dashboard = self.test_dashboard
+            self.mode_processor.image_database = self.image_database
     
     def run(self):
         """Main run method for the dashboard."""
@@ -231,10 +254,173 @@ class UnifiedArchitecturalDashboard:
             else:
                 self._handle_start_analysis(project_description, uploaded_file, skill_level, mentor_type)
         
+        # REAL APP TASK UI TEST - TEMPORARILY DISABLED
+        if False and st.session_state.get("show_task_ui_test", False):
+            print("🔧 TASK_UI_TEST: Test interface is being rendered")
+            st.markdown("# 🔧 REAL APP TASK UI TEST")
+            st.markdown("Testing all 8 tasks UI rendering in actual Streamlit application context")
+
+            try:
+                # Import and run the test directly here to avoid import issues
+                from dashboard.processors.dynamic_task_manager import TaskType, DynamicTaskManager
+                from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+                from dashboard.ui.chat_components import _render_single_task_component
+                from thesis_tests.data_models import TestGroup
+                from datetime import datetime
+
+                st.success("✅ Successfully imported real application components")
+
+                # Initialize guidance system (same as the real app)
+                if 'guidance_system' not in st.session_state:
+                    st.session_state['guidance_system'] = TaskGuidanceSystem()
+
+                guidance_system = st.session_state['guidance_system']
+                st.success("✅ Guidance system initialized from session state")
+
+                # Initialize task manager (same as real app)
+                if 'task_manager' not in st.session_state:
+                    st.session_state['task_manager'] = DynamicTaskManager()
+
+                task_manager = st.session_state['task_manager']
+                st.success("✅ Task manager initialized from session state")
+
+                # Test REAL phase transition scenarios with actual thresholds
+                phase_scenarios = [
+                    # Ideation phase tasks
+                    {"phase": "ideation", "completion": 5.0, "expected_tasks": ["architectural_concept"]},
+                    {"phase": "ideation", "completion": 35.0, "expected_tasks": ["spatial_program"]},
+
+                    # Visualization phase tasks
+                    {"phase": "visualization", "completion": 5.0, "expected_tasks": ["visual_analysis_2d"]},
+                    {"phase": "visualization", "completion": 45.0, "expected_tasks": ["environmental_contextual"]},
+
+                    # Materialization phase tasks
+                    {"phase": "materialization", "completion": 5.0, "expected_tasks": ["spatial_analysis_3d"]},
+                    {"phase": "materialization", "completion": 45.0, "expected_tasks": ["realization_implementation"]},
+                    {"phase": "materialization", "completion": 55.0, "expected_tasks": ["design_evolution"]},
+                    {"phase": "materialization", "completion": 65.0, "expected_tasks": ["knowledge_transfer"]},
+                ]
+
+                st.markdown(f"## Testing Real Phase Transition Scenarios")
+
+                results = []
+                for i, scenario in enumerate(phase_scenarios):
+                    phase = scenario["phase"]
+                    completion = scenario["completion"]
+                    expected_tasks = scenario["expected_tasks"]
+
+                    st.markdown(f"### Scenario {i+1}: {phase.title()} Phase at {completion}% completion")
+
+                    try:
+                        # Simulate real phase progression (same as actual app)
+                        st.session_state['test_current_phase'] = phase.title()
+
+                        # Create mock conversation history
+                        mock_conversation = [
+                            {"role": "user", "content": f"I'm working on {phase} phase"},
+                            {"role": "assistant", "content": f"Great! Let's explore {phase} concepts."}
+                        ]
+
+                        # Test threshold crossing detection (real system)
+                        triggered_tasks = task_manager._detect_threshold_crossings(
+                            current_phase=phase,
+                            last_completion=completion - 10.0,  # Previous completion
+                            current_completion=completion,      # Current completion
+                            user_input=f"Phase {phase} at {completion}%",
+                            conversation_history=mock_conversation,
+                            test_group="MENTOR",
+                            image_uploaded=False,
+                            image_analysis=None
+                        )
+
+                        st.write(f"🎯 Triggered tasks: {[t.value for t in triggered_tasks]}")
+                        st.write(f"🎯 Expected tasks: {expected_tasks}")
+
+                        # Check if expected tasks were triggered
+                        triggered_task_names = [t.value for t in triggered_tasks]
+                        scenario_success = all(task in triggered_task_names for task in expected_tasks)
+
+                        if scenario_success:
+                            st.success(f"✅ Correct tasks triggered for {phase} at {completion}%")
+
+                            # Test ACTUAL UI RENDERING for triggered tasks
+                            for task_type in triggered_tasks:
+                                if task_type.value in expected_tasks:
+                                    # Get active task from task manager
+                                    active_tasks = task_manager.get_active_tasks()
+                                    active_task = next((t for t in active_tasks if t.task_type == task_type), None)
+
+                                    if active_task:
+                                        st.write(f"   🎨 Testing VISIBLE UI for {task_type.value}")
+
+                                        # Test task data lookup (the actual issue from terminal)
+                                        task_data = guidance_system.mentor_tasks.get(task_type, {})
+                                        if task_data:
+                                            st.success(f"   ✅ Task data found for {task_type.value}")
+
+                                            # NOW TEST ACTUAL UI RENDERING (what user sees)
+                                            try:
+                                                st.write(f"   🖼️ Rendering actual UI component...")
+
+                                                # Create task entry (same as real app)
+                                                task_entry = {
+                                                    'task': active_task,
+                                                    'task_id': f"test_{task_type.value}_{i}",
+                                                    'guidance_type': 'socratic',
+                                                    'should_render': True,
+                                                    'message_index': i,
+                                                    'displayed': False
+                                                }
+
+                                                # Render the ACTUAL UI component (same function as real app)
+                                                with st.container():
+                                                    st.markdown(f"**🎯 TASK UI COMPONENT FOR {task_type.value.upper()}:**")
+                                                    _render_single_task_component(task_entry)
+
+                                                st.success(f"   ✅ UI component VISIBLE for {task_type.value}")
+
+                                            except Exception as ui_error:
+                                                st.error(f"   ❌ UI rendering FAILED for {task_type.value}: {ui_error}")
+                                                scenario_success = False
+                                        else:
+                                            st.error(f"   ❌ No task data found for {task_type.value}")
+                                            scenario_success = False
+
+                            results.append({'scenario': f"{phase} {completion}%", 'success': scenario_success})
+                        else:
+                            st.error(f"❌ Wrong tasks triggered for {phase} at {completion}%")
+                            results.append({'scenario': f"{phase} {completion}%", 'success': False})
+
+                    except Exception as scenario_error:
+                        st.error(f"❌ Scenario failed: {scenario_error}")
+                        results.append({'scenario': f"{phase} {completion}%", 'success': False})
+
+                # Summary
+                successful = sum(1 for r in results if r['success'])
+                st.markdown("---")
+                st.markdown(f"## 📊 RESULTS: {successful}/{len(all_tasks)} tasks successful")
+
+                if successful == len(all_tasks):
+                    st.success("🎉 ALL 8 TASKS WORKING! Task UI system is fully functional!")
+                    st.balloons()
+                elif successful >= 6:
+                    st.warning(f"⚠️ Most tasks working ({successful}/{len(all_tasks)})")
+                else:
+                    st.error(f"❌ Major issues: Only {successful}/{len(all_tasks)} tasks working")
+
+            except Exception as e:
+                st.error(f"❌ Test failed: {e}")
+                st.exception(e)
+
+            if st.button("❌ Close Test"):
+                st.session_state['show_task_ui_test'] = False
+                st.rerun()
+            return
+
         # Chat interface (after analysis)
         if st.session_state.analysis_complete:
             self._render_chat_interface()
-            
+
             # Phase progression insights
             if len(st.session_state.messages) > 0:
                 self._render_phase_insights()
@@ -461,6 +647,8 @@ class UnifiedArchitecturalDashboard:
             if st.session_state.get("show_pre_test", False):
                 self._render_pretest_block()
 
+
+
             # Display chat messages in modern interface
             render_chat_interface()
 
@@ -587,17 +775,35 @@ class UnifiedArchitecturalDashboard:
 
             # Check if this image was already processed to avoid redundant analysis
             if not self._is_image_already_processed(image_path):
-                # Extract comprehensive image analysis and bundle with text
-                enhanced_user_input = self._bundle_image_with_text(user_input, image_path, latest_image['filename'])
+                # Check if we should bundle image analysis based on reference counter
+                if self._should_bundle_image_analysis(image_path):
+                    # Extract comprehensive image analysis and bundle with text
+                    enhanced_user_input = self._bundle_image_with_text(user_input, image_path, latest_image['filename'])
+                else:
+                    print(f"🔄 DASHBOARD: Image reference limit reached, not bundling analysis")
+                    enhanced_user_input = user_input
                 # Mark image as processed
                 self._mark_image_as_processed(image_path, latest_image['filename'])
             else:
-                print(f"⚡ DASHBOARD: Image already processed, using existing analysis")
-                # Get existing analysis from session state
-                enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
+                print(f"⚡ DASHBOARD: Image already processed, checking if should bundle")
+                # Check if we should bundle existing analysis
+                if self._should_bundle_image_analysis(image_path):
+                    # Get existing analysis from session state
+                    enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
+                else:
+                    print(f"🔄 DASHBOARD: Image reference limit reached, not bundling existing analysis")
+                    enhanced_user_input = user_input
 
             # Clear pending images after use
             st.session_state.pending_images = []
+
+        # Debug: Check what enhanced_user_input contains
+        print(f"🔍 DASHBOARD: Enhanced user input length: {len(enhanced_user_input)} chars")
+        print(f"🔍 DASHBOARD: Enhanced user input preview: {enhanced_user_input[:300]}...")
+        has_enhanced = "[ENHANCED IMAGE ANALYSIS:" in enhanced_user_input
+        has_uploaded = "[UPLOADED IMAGE ANALYSIS:" in enhanced_user_input
+        print(f"🔍 DASHBOARD: Has ENHANCED marker: {has_enhanced}")
+        print(f"🔍 DASHBOARD: Has UPLOADED marker: {has_uploaded}")
 
         # Add user message to chat history (display only the original user input, not the bundled analysis)
         user_message = {
@@ -638,7 +844,8 @@ class UnifiedArchitecturalDashboard:
             print(f"🎯 DASHBOARD: Updated phase completion stored: {updated_phase_completion:.1f}%")
 
         # CRITICAL FIX: Check for task triggers with updated completion
-        if phase_result and updated_phase_completion > 0:
+        # IMPORTANT: Include 0% completion to catch phase transition tasks (like Task 2.1)
+        if phase_result and updated_phase_completion >= 0:
             task_manager = get_cached_task_manager()
             current_phase = phase_result.get('current_phase', 'ideation')
 
@@ -697,10 +904,11 @@ class UnifiedArchitecturalDashboard:
                 display_name = task_display_names.get(task_name, task_name.replace('_', ' ').title())
                 description = task_descriptions.get(task_name, f'Task {task_name} has been triggered.')
 
-                st.success(f"🎯 **New Task Available**: {display_name}")
-                st.info(f"📋 {description}")
+                # REMOVED: Task display messages - tasks now render as UI components
+                # st.success(f"🎯 **New Task Available**: {display_name}")
+                # st.info(f"📋 {description}")
 
-                print(f"✅ DASHBOARD: Task {task_name} displayed in UI")
+                print(f"✅ DASHBOARD: Task {task_name} triggered (UI component will render separately)")
             else:
                 print(f"🎯 DASHBOARD: No tasks triggered at {updated_phase_completion:.1f}%")
 
@@ -774,6 +982,10 @@ class UnifiedArchitecturalDashboard:
                     'filename': uploaded_file.name,
                     'upload_time': datetime.now().isoformat()
                 })
+
+                # Update image upload tracking for reference limiting
+                st.session_state.last_image_upload_message_count = len(st.session_state.messages)
+                st.session_state.last_uploaded_image_path = image_path
 
                 print(f"📷 Image stored for later processing: {uploaded_file.name}")
                 return image_path
@@ -900,6 +1112,30 @@ class UnifiedArchitecturalDashboard:
             if phase_result.get('phase_transition'):
                 st.success(f"🎉 **Phase Transition**: {phase_result.get('transition_message', 'Moving to next phase!')}")
 
+                # CRITICAL FIX: Handle task triggering during phase transitions
+                previous_phase = phase_result.get('previous_phase', 'unknown')
+                current_phase = phase_result.get('current_phase', 'unknown')
+
+                print(f"🔄 PHASE_TRANSITION_DETECTED: {previous_phase} → {current_phase}")
+
+                # Trigger phase transition task handling
+                if hasattr(self.mode_processor, '_handle_phase_transition'):
+                    test_group = st.session_state.get('test_group', 'MENTOR')
+                    # Convert string to enum if needed
+                    if isinstance(test_group, str):
+                        from processors.mode_processors import TestGroup
+                        test_group = TestGroup.MENTOR if test_group == 'MENTOR' else TestGroup.GENERIC_AI
+
+                    self.mode_processor._handle_phase_transition(
+                        from_phase=previous_phase.lower(),
+                        to_phase=current_phase.lower(),
+                        test_group=test_group,
+                        user_input=f"Phase transition from {previous_phase} to {current_phase}"
+                    )
+                    print(f"🔄 PHASE_TRANSITION_HANDLED: Task triggering completed")
+                else:
+                    print(f"⚠️ PHASE_TRANSITION_WARNING: _handle_phase_transition method not available")
+
                 # Save generated image if available (display will be handled in chat)
                 generated_image = phase_result.get('generated_image')
                 if generated_image:
@@ -987,6 +1223,10 @@ class UnifiedArchitecturalDashboard:
                         print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
                     else:
                         print(f"❌ DEBUG: No generated_image found in phase_result")
+
+                    # CRITICAL FIX: Clear the phase result to prevent reuse in subsequent messages
+                    st.session_state.last_phase_result = {}
+                    print(f"🎨 DEBUG: Cleared last_phase_result to prevent duplicate image display")
 
                 # Add Socratic question if needed (only for MENTOR mode)
                 combined_response = self._add_socratic_question_if_needed(response_content, st.session_state.current_mode)
@@ -1436,78 +1676,7 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             print(f"❌ Error uploading image to Dropbox: {e}")
 
-    def _display_generated_phase_image(self, generated_image: dict):
-        """Display the generated phase image and ask for user feedback"""
 
-        if not generated_image or not generated_image.get('url'):
-            return
-
-        st.markdown("---")
-        st.markdown("### 🎨 **Generated Design Visualization**")
-
-        # Display the image
-        try:
-            st.image(
-                generated_image['url'],
-                caption=f"AI-generated {generated_image.get('phase', 'design')} visualization",
-                use_container_width=True
-            )
-
-            # Show the prompt used
-            with st.expander("🔍 View Generation Details"):
-                st.markdown(f"**Phase:** {generated_image.get('phase', 'Unknown')}")
-                st.markdown(f"**Style:** {generated_image.get('style', 'Unknown')}")
-                st.markdown(f"**Prompt:** {generated_image.get('prompt', 'No prompt available')}")
-
-            # Ask for user feedback
-            st.markdown("**Does this visualization match your design thinking?**")
-
-            col1, col2, col3 = st.columns(3)
-
-            # Use unique keys based on image URL and timestamp to avoid conflicts
-            image_key = str(hash(generated_image.get('url', '') + str(generated_image.get('phase', ''))))[-8:]
-
-            with col1:
-                if st.button("✅ Yes, this captures my ideas", key=f"feedback_yes_{image_key}"):
-                    st.success("Great! This confirms we're aligned on your design direction.")
-                    # Store positive feedback
-                    if 'image_feedback' not in st.session_state:
-                        st.session_state.image_feedback = []
-                    st.session_state.image_feedback.append({
-                        'phase': generated_image.get('phase'),
-                        'feedback': 'positive',
-                        'timestamp': str(datetime.now())
-                    })
-
-            with col2:
-                if st.button("🤔 Partially, but needs adjustment", key=f"feedback_partial_{image_key}"):
-                    st.info("Thanks for the feedback! Let's continue refining your design ideas.")
-                    # Store partial feedback
-                    if 'image_feedback' not in st.session_state:
-                        st.session_state.image_feedback = []
-                    st.session_state.image_feedback.append({
-                        'phase': generated_image.get('phase'),
-                        'feedback': 'partial',
-                        'timestamp': str(datetime.now())
-                    })
-
-            with col3:
-                if st.button("❌ No, this doesn't match", key=f"feedback_no_{image_key}"):
-                    st.warning("No problem! Let's continue exploring your design ideas to better understand your vision.")
-                    # Store negative feedback
-                    if 'image_feedback' not in st.session_state:
-                        st.session_state.image_feedback = []
-                    st.session_state.image_feedback.append({
-                        'phase': generated_image.get('phase'),
-                        'feedback': 'negative',
-                        'timestamp': str(datetime.now())
-                    })
-
-            st.markdown("---")
-
-        except Exception as e:
-            st.error(f"Error displaying generated image: {e}")
-            print(f"❌ Error displaying generated image: {e}")
 
     def _is_image_already_processed(self, image_path: str) -> bool:
         """Check if an image has already been processed in this session."""
@@ -1520,6 +1689,40 @@ class UnifiedArchitecturalDashboard:
             st.session_state.processed_images = set()
         st.session_state.processed_images.add(image_path)
         print(f"📝 DASHBOARD: Marked image as processed: {filename}")
+
+    def _should_bundle_image_analysis(self, image_path: str) -> bool:
+        """Check if we should bundle image analysis based on message count since last image upload."""
+        try:
+            # Initialize tracking if not exists
+            if 'last_image_upload_message_count' not in st.session_state:
+                st.session_state.last_image_upload_message_count = 0
+                st.session_state.last_uploaded_image_path = None
+
+            # Check if this is a new image
+            if st.session_state.last_uploaded_image_path != image_path:
+                # New image uploaded, reset counter
+                st.session_state.last_image_upload_message_count = 0
+                st.session_state.last_uploaded_image_path = image_path
+                print(f"📷 DASHBOARD: New image detected, resetting counter")
+
+            # Count messages since last image upload
+            current_message_count = len(st.session_state.messages)
+            messages_since_upload = current_message_count - st.session_state.last_image_upload_message_count
+
+            print(f"🔍 DASHBOARD: Messages since image upload: {messages_since_upload}")
+
+            # Only bundle for the first 2 messages after upload
+            if messages_since_upload < 4:  # 4 because each exchange is 2 messages (user + assistant)
+                print(f"✅ DASHBOARD: Bundling image analysis (messages since upload: {messages_since_upload}/4)")
+                return True
+            else:
+                print(f"🔄 DASHBOARD: Image reference limit reached, not bundling (messages since upload: {messages_since_upload}/4)")
+                return False
+
+        except Exception as e:
+            print(f"❌ DASHBOARD: Error checking image reference counter: {e}")
+            # Default to not bundling on error to be safe
+            return False
 
     def _get_existing_image_analysis(self, user_input: str, image_path: str) -> str:
         """Get existing enhanced image analysis from session state."""
@@ -1548,6 +1751,30 @@ class UnifiedArchitecturalDashboard:
         # Final fallback if no analysis found
         building_type = getattr(st.session_state, 'project_type', 'architectural project')
         return f"{user_input}\n\n[IMAGE REFERENCE: I can see you're referencing a previously uploaded image for your {building_type}. Let's continue our discussion based on what we've already analyzed.]"
+
+    def _get_conversation_summary(self) -> str:
+        """Get a summary of the current conversation for context."""
+        try:
+            messages = getattr(st.session_state, 'messages', [])
+            if not messages:
+                return "New conversation starting"
+
+            # Get the last few messages for context
+            recent_messages = messages[-3:] if len(messages) > 3 else messages
+
+            # Extract user messages for context
+            user_messages = [msg.get('content', '') for msg in recent_messages if msg.get('role') == 'user']
+
+            if user_messages:
+                # Join the recent user messages to provide context
+                summary = " | ".join(user_messages)
+                return summary[:500]  # Limit length
+            else:
+                return "Conversation in progress"
+
+        except Exception as e:
+            print(f"⚠️ Error getting conversation summary: {e}")
+            return "Conversation context unavailable"
 
     # Test action handlers removed - now handled in sidebar_components.py
 

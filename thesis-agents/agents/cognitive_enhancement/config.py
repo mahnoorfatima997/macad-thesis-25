@@ -33,18 +33,18 @@ COGNITIVE_THRESHOLDS = {
     }
 }
 
-# Challenge templates for different types of cognitive interventions
+# Advanced Challenge templates for sophisticated cognitive interventions
 CHALLENGE_TEMPLATES = {
     "constraint_challenges": {
         "space": [
-            "What if your available space was reduced by 30%? How would this change your priorities?",
-            "Consider you only had half the square footage. What would be most essential to keep?",
-            "If you had to design in a narrow, linear space, how would your approach change?"
+            "If your site area was reduced by 50% but program requirements remained constant, how would you fundamentally reconceptualize spatial organization rather than simply compress existing layouts?",
+            "Consider designing within a 3m x 3m x 3m cube while maintaining all programmatic functions. What hierarchies of space would emerge, and how might this constraint reveal new spatial possibilities?",
+            "If your project could only occupy interstitial spaces - gaps between existing buildings, leftover urban voids - how would this constraint transform your understanding of architectural intervention?"
         ],
         "budget": [
-            "With a significantly reduced budget, what would you prioritize and why?",
-            "If you could only afford three key design elements, which would you choose?",
-            "How would you achieve your design goals with basic materials?"
+            "With only 30% of typical construction budget, how would you shift from material richness to spatial intelligence, and what new design methodologies would this constraint demand?",
+            "If you could only use materials available within 50km of your site, how would this constraint reshape both your design process and the building's relationship to place?",
+            "Consider that your project must generate revenue to sustain itself. How would this economic constraint transform your architectural approach and spatial programming?"
         ],
         "time": [
             "If this project had to be completed in half the time, what would change?",

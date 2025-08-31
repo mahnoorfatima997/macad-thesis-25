@@ -220,7 +220,7 @@ def render_test_mode_primary():
             initialize_test_session()
 
     # DEBUG: Task System Status
-    debug_task_system_status()
+    #debug_task_system_status()
 
     return selected_test_group
 
@@ -421,9 +421,17 @@ def render_complete_sidebar(data_collector=None) -> str:
                 # Get mode processor from session state if available
                 mode_processor = st.session_state.get('mode_processor')
                 if mode_processor and hasattr(mode_processor, 'render_active_tasks_ui'):
+                    print(f"🔍 SIDEBAR_DEBUG: About to render task UI from sidebar")
+                    # Ensure task system is initialized before rendering
+                    mode_processor._ensure_task_system_initialized()
+                    print(f"🔍 SIDEBAR_DEBUG: Task system initialized: {mode_processor.task_manager is not None}")
                     mode_processor.render_active_tasks_ui()
+                else:
+                    print(f"🔍 SIDEBAR_DEBUG: Mode processor not available or missing render method")
             except Exception as e:
                 print(f"⚠️ Error rendering task UI: {e}")
+                import traceback
+                traceback.print_exc()
 
     return "Main"  # Single-flow: no page selector
 
@@ -530,6 +538,14 @@ def debug_task_system_status():
             st.session_state.phase_session_id = f"debug_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         st.success("✅ MENTOR group and Test Mode force-enabled!")
         st.rerun()
+
+    # REAL APP TASK UI TEST BUTTON - TEMPORARILY DISABLED
+    # st.markdown("---")
+    # st.markdown("### 🧪 Real App Testing")
+    # if st.button("🔧 Test All 8 Tasks UI", key="test_all_8_tasks_ui", help="Test task UI rendering in real Streamlit app context"):
+    #     print("🔧 Test All 8 Tasks UI button clicked - setting session state and rerunning")
+    #     st.session_state['show_task_ui_test'] = True
+    #     st.rerun()
 
 
 # REMOVED: Manual phase control functions

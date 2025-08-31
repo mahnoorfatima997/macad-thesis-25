@@ -9,3 +9,18 @@ maxUploadSize = 200
 
 [browser]
 gatherUsageStats = false
+
+[client]
+caching = true
+displayEnabled = true
+
+[runner]
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+
+[logger]
+level = "error"
+
+[deprecation]
+showPyplotGlobalUse = false

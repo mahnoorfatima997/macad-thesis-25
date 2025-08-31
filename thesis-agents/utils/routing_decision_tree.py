@@ -1284,35 +1284,38 @@ class AdvancedRoutingDecisionTree:
             print(f"🎮 ROUTING_SKIP: Design exploration detected - no gamification triggers")
             return []  # Return empty list to prevent gamification
 
-        # 1. ROLE-PLAY TRIGGERS - Same patterns as challenge_generator.py
+        # CRITICAL FIX: Use priority-based single trigger selection instead of multiple triggers
+        # Check triggers in priority order and return ONLY the first match
+
+        # PRIORITY 1: ROLE-PLAY TRIGGERS (highest priority - most specific)
+        # FIXED: Make role-play patterns more specific to avoid false matches
         role_play_patterns = [
-            'how would a visitor feel', 'how would', 'what would', 'from the perspective of',
-            'how do users feel', 'what would an elderly person', 'what would a child',
-            'how a', 'feel in this', 'feel when they', 'feel in the', 'experience in',
-            'member feel', 'user feel', 'visitor feel', 'person feel',
-            'from a', 'as a', 'like a', 'perspective', "'s perspective",
-            'teenager\'s perspective', 'child\'s perspective', 'user\'s perspective'
+            'how would a visitor feel', 'how would a user feel', 'how would an elderly person',
+            'how would a child', 'how would users feel', 'how would people feel',
+            'what would a visitor', 'what would a user', 'what would an elderly person',
+            'what would a child', 'what would users', 'what would people',
+            'from the perspective of', 'from a visitor\'s perspective', 'from a user\'s perspective',
+            'how a visitor', 'how a user', 'how an elderly person', 'how a child',
+            'feel in this', 'feel when they', 'feel in the', 'experience in',
+            'visitor feel', 'user feel', 'person feel', 'people feel',
+            'as a visitor', 'as a user', 'like a visitor', 'like a user',
+            'teenager\'s perspective', 'child\'s perspective', 'user\'s perspective', 'visitor\'s perspective'
         ]
         if any(pattern in message_lower for pattern in role_play_patterns):
-            triggers.append("perspective_shift_challenge")
+            print(f"🎮 SINGLE TRIGGER: perspective_shift_challenge (role-play)")
+            return ["perspective_shift_challenge"]  # Return immediately with single trigger
 
-        # 2. CURIOSITY AMPLIFICATION
-        curiosity_patterns = ['i wonder what would happen', 'what if', 'i wonder']
-        if any(pattern in message_lower for pattern in curiosity_patterns):
-            triggers.append("curiosity_amplification")
-
-        # 3. PERSPECTIVE SHIFT REQUESTS
-        perspective_shift_patterns = [
-            'help me see this from a different angle', 'different angle', 'see this differently',
-            'think about this differently', 'different perspective', 'another way to think',
-            'alternative viewpoint', 'fresh perspective',
-            'different angle', 'differently', 'another way', 'alternative',
-            'fresh perspective', 'new perspective', 'see this', 'think about this'
+        # PRIORITY 2: CURIOSITY AMPLIFICATION (specific curiosity language)
+        curiosity_patterns = [
+            'i wonder what would happen', 'i wonder what', 'i wonder if',
+            'what if i', 'what if we', 'what would happen if',
+            'i wonder', 'wonder what', 'wonder if'
         ]
-        if any(pattern in message_lower for pattern in perspective_shift_patterns):
-            triggers.append("perspective_shift_challenge")
+        if any(pattern in message_lower for pattern in curiosity_patterns):
+            print(f"🎮 SINGLE TRIGGER: curiosity_amplification")
+            return ["curiosity_amplification"]  # Return immediately with single trigger
 
-        # 4. CREATIVE CONSTRAINTS - Updated patterns
+        # PRIORITY 3: CREATIVE CONSTRAINTS (before general perspective shift)
         constraint_patterns = [
             'i\'m stuck on', 'stuck on', 'having trouble', 'not sure how',
             'i need fresh ideas', 'need fresh ideas', 'fresh ideas', 'new ideas',
@@ -1320,63 +1323,60 @@ class AdvancedRoutingDecisionTree:
             'stuck', 'help me think', 'new approach', 'different approach'
         ]
         if any(pattern in message_lower for pattern in constraint_patterns):
-            triggers.append("creative_constraint_challenge")
+            print(f"🎮 SINGLE TRIGGER: creative_constraint_challenge")
+            return ["creative_constraint_challenge"]  # Return immediately with single trigger
 
-        # 5. REALITY CHECK / OVERCONFIDENCE
+        # PRIORITY 4: PERSPECTIVE SHIFT REQUESTS (more general)
+        perspective_shift_patterns = [
+            'help me see this from a different angle', 'different angle', 'see this differently',
+            'think about this differently', 'different perspective', 'another way to think',
+            'alternative viewpoint', 'fresh perspective',
+            'differently', 'another way', 'alternative',
+            'fresh perspective', 'new perspective'
+        ]
+        if any(pattern in message_lower for pattern in perspective_shift_patterns):
+            print(f"🎮 SINGLE TRIGGER: perspective_shift_challenge (general)")
+            return ["perspective_shift_challenge"]  # Return immediately with single trigger
+
+        # PRIORITY 5: REALITY CHECK / OVERCONFIDENCE
         overconfidence_patterns = [
             'this seems pretty easy', 'this is easy', 'i already know exactly',
             'i already know', 'that\'s obvious', 'simple', 'basic'
         ]
         if any(pattern in message_lower for pattern in overconfidence_patterns):
-            triggers.append("reality_check_challenge")
+            print(f"🎮 SINGLE TRIGGER: reality_check_challenge")
+            return ["reality_check_challenge"]  # Return immediately with single trigger
 
-        # 6. LOW ENGAGEMENT - FIXED: Added "that makes sense" and "okay"
+        # PRIORITY 6: LOW ENGAGEMENT
         low_engagement_responses = ['ok', 'okay', 'yes', 'sure', 'fine', 'alright', 'cool', 'maybe', 'that makes sense', 'makes sense']
         if message_lower in low_engagement_responses:
-            triggers.append("low_engagement_challenge")
+            print(f"🎮 SINGLE TRIGGER: low_engagement_challenge")
+            return ["low_engagement_challenge"]  # Return immediately with single trigger
 
-        # 7. COGNITIVE OFFLOADING
+        # PRIORITY 7: COGNITIVE OFFLOADING (lowest priority)
         offloading_patterns = [
             'just tell me what to do', 'can you design this', 'tell me what to do',
             'what should i do', 'give me the answer', 'what\'s the standard solution'
         ]
         if any(pattern in message_lower for pattern in offloading_patterns):
-            triggers.append("creative_constraint_challenge")  # Route to constraint challenge
+            print(f"🎮 SINGLE TRIGGER: creative_constraint_challenge (offloading)")
+            return ["creative_constraint_challenge"]  # Return immediately with single trigger
 
-        # NEW INTERACTIVE TRIGGERS - MUCH MORE SPECIFIC AND CONTEXTUAL
-        # Detect storytelling opportunities (only with specific storytelling language)
+        # PRIORITY 8: STORYTELLING OPPORTUNITIES (specific storytelling language)
         story_indicators = ["imagine if", "picture this", "envision a scenario", "what if we", "let's say"]
         if any(indicator in message_lower for indicator in story_indicators):
-            triggers.append("narrative_engagement")
+            print(f"🎮 SINGLE TRIGGER: narrative_engagement")
+            return ["narrative_engagement"]  # Return immediately with single trigger
 
-        # Detect comparison/contrast opportunities (only explicit comparisons)
+        # PRIORITY 9: COMPARISON/CONTRAST OPPORTUNITIES (explicit comparisons)
         comparison_indicators = ["versus", "compared to", "different from", "better than", "worse than", "which is better"]
         if any(indicator in message_lower for indicator in comparison_indicators):
-            triggers.append("comparison_challenge")
+            print(f"🎮 SINGLE TRIGGER: comparison_challenge")
+            return ["comparison_challenge"]  # Return immediately with single trigger
 
-        # Detect role-playing opportunities (MUCH MORE SPECIFIC - only when explicitly asking about user experience)
-        role_play_phrases = [
-            "how would a", "what would a", "from the perspective of", "if i were a",
-            "as a user", "as a visitor", "user experience", "user journey",
-            "how do users feel", "what do people think when", "user's point of view"
-        ]
-        if any(phrase in message_lower for phrase in role_play_phrases):
-            triggers.append("perspective_shift_challenge")
-
-        # IMPORTANT: Don't trigger gamification for general design statements
-        # Check if this is a thoughtful design statement (should NOT be gamified)
-        design_statement_indicators = [
-            "i am thinking", "i would like to", "my approach is", "the purpose is",
-            "i want to design", "i plan to", "my intention is", "the goal is"
-        ]
-        is_design_statement = any(indicator in message_lower for indicator in design_statement_indicators)
-
-        # If it's a design statement, remove inappropriate triggers
-        if is_design_statement:
-            # Remove triggers that don't make sense for design statements
-            triggers = [t for t in triggers if t not in ["perspective_shift_challenge", "creative_constraint_challenge"]]
-
-        return triggers
+        # If no triggers matched, return empty list
+        print(f"🎮 NO TRIGGERS: No gamification patterns detected in message")
+        return []  # No triggers found
 
     def _apply_gamification_routing(self, triggers: List[str], classification: Dict[str, Any], context: RoutingContext) -> RouteType | None:
         """Apply gamification-enhanced routing based on detected triggers."""

@@ -345,12 +345,30 @@ class PhaseAssessmentManager:
             ready_for_next=ready_for_next
         )
     
-    async def _ai_grade_response(self, question: SocraticQuestion, user_response: str, 
+    async def _ai_grade_response(self, question: SocraticQuestion, user_response: str,
                                context: Dict[str, Any]) -> Dict[str, float]:
         """
-        Use AI to grade the user's response against the assessment criteria.
+        Use AI to grade the user's response against the assessment criteria with smart optimization.
         """
-        
+
+        # PERFORMANCE: Skip AI grading for very short responses
+        if len(user_response.strip()) < 15:
+            print(f"📊 QUICK_GRADE: Response too short ({len(user_response)} chars) - using basic scoring")
+            return {
+                "completeness": 1.0,
+                "depth": 1.0,
+                "relevance": 2.0,
+                "innovation": 1.0,
+                "technical_understanding": 1.0
+            }
+
+        # PERFORMANCE: Check cache for similar responses
+        import streamlit as st
+        cache_key = f"grade_{hash(user_response.lower().strip())}_{question.phase.value}"
+        if hasattr(st.session_state, cache_key):
+            print(f"📊 CACHE_HIT: Using cached grade for similar response")
+            return getattr(st.session_state, cache_key)
+
         prompt = f"""
         Grade this architecture student's response to a Socratic question on a scale of 0-5 for each criterion.
         
@@ -382,6 +400,11 @@ class PhaseAssessmentManager:
             import json
             scores_text = response.choices[0].message.content.strip()
             scores = json.loads(scores_text)
+
+            # PERFORMANCE: Cache the grading result
+            setattr(st.session_state, cache_key, scores)
+            print(f"📊 CACHE_STORE: Cached grading result")
+
             return scores
             
         except Exception as e:
