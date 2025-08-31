@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Any
 
-from ..types import WorkflowState
+from orchestration.types import WorkflowState
 
 
 def make_router_node(route_decision_fn, state_validator, state_monitor, logger) -> Callable[[WorkflowState], Any]:

@@ -1,6 +1,6 @@
 from typing import Callable
 
-from ..types import WorkflowState
+from orchestration.types import WorkflowState
 
 
 def make_domain_expert_node(domain_expert, state_validator, state_monitor, logger) -> Callable[[WorkflowState], WorkflowState]:

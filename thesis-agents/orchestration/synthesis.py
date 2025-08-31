@@ -1,7 +1,7 @@
 from typing import Dict, Any, Tuple
 import re
 
-from .types import WorkflowState
+from orchestration.types import WorkflowState
 
 
 def build_synthesizer(orchestrator_like) -> Tuple:

@@ -67,13 +67,17 @@ def get_cached_orchestrator():
         sys.path.insert(0, thesis_agents_path)
 
     try:
-        from orchestration.langgraph_orchestrator import LangGraphOrchestrator
-        return LangGraphOrchestrator(domain="architecture")
+        from orchestration.orchestrator import LangGraphOrchestrator
+        orchestrator = LangGraphOrchestrator(domain="architecture")
+        print(f"✅ DASHBOARD: LangGraphOrchestrator initialized successfully")
+        return orchestrator
     except ImportError as e:
+        print(f"❌ DASHBOARD: LangGraphOrchestrator import failed: {e}")
         st.warning(f"LangGraphOrchestrator not available: {e}")
         st.info("Running in fallback mode without multi-agent orchestration.")
         return None
     except Exception as e:
+        print(f"❌ DASHBOARD: LangGraphOrchestrator initialization failed: {e}")
         st.warning(f"Failed to initialize LangGraphOrchestrator: {e}")
         st.info("Running in fallback mode without multi-agent orchestration.")
         return None
@@ -606,17 +610,35 @@ class UnifiedArchitecturalDashboard:
 
             # Check if this image was already processed to avoid redundant analysis
             if not self._is_image_already_processed(image_path):
-                # Extract comprehensive image analysis and bundle with text
-                enhanced_user_input = self._bundle_image_with_text(user_input, image_path, latest_image['filename'])
+                # Check if we should bundle image analysis based on reference counter
+                if self._should_bundle_image_analysis(image_path):
+                    # Extract comprehensive image analysis and bundle with text
+                    enhanced_user_input = self._bundle_image_with_text(user_input, image_path, latest_image['filename'])
+                else:
+                    print(f"🔄 DASHBOARD: Image reference limit reached, not bundling analysis")
+                    enhanced_user_input = user_input
                 # Mark image as processed
                 self._mark_image_as_processed(image_path, latest_image['filename'])
             else:
-                print(f"⚡ DASHBOARD: Image already processed, using existing analysis")
-                # Get existing analysis from session state
-                enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
+                print(f"⚡ DASHBOARD: Image already processed, checking if should bundle")
+                # Check if we should bundle existing analysis
+                if self._should_bundle_image_analysis(image_path):
+                    # Get existing analysis from session state
+                    enhanced_user_input = self._get_existing_image_analysis(user_input, image_path)
+                else:
+                    print(f"🔄 DASHBOARD: Image reference limit reached, not bundling existing analysis")
+                    enhanced_user_input = user_input
 
             # Clear pending images after use
             st.session_state.pending_images = []
+
+        # Debug: Check what enhanced_user_input contains
+        print(f"🔍 DASHBOARD: Enhanced user input length: {len(enhanced_user_input)} chars")
+        print(f"🔍 DASHBOARD: Enhanced user input preview: {enhanced_user_input[:300]}...")
+        has_enhanced = "[ENHANCED IMAGE ANALYSIS:" in enhanced_user_input
+        has_uploaded = "[UPLOADED IMAGE ANALYSIS:" in enhanced_user_input
+        print(f"🔍 DASHBOARD: Has ENHANCED marker: {has_enhanced}")
+        print(f"🔍 DASHBOARD: Has UPLOADED marker: {has_uploaded}")
 
         # Add user message to chat history (display only the original user input, not the bundled analysis)
         user_message = {
@@ -795,6 +817,10 @@ class UnifiedArchitecturalDashboard:
                     'filename': uploaded_file.name,
                     'upload_time': datetime.now().isoformat()
                 })
+
+                # Update image upload tracking for reference limiting
+                st.session_state.last_image_upload_message_count = len(st.session_state.messages)
+                st.session_state.last_uploaded_image_path = image_path
 
                 print(f"📷 Image stored for later processing: {uploaded_file.name}")
                 return image_path
@@ -1032,6 +1058,10 @@ class UnifiedArchitecturalDashboard:
                         print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
                     else:
                         print(f"❌ DEBUG: No generated_image found in phase_result")
+
+                    # CRITICAL FIX: Clear the phase result to prevent reuse in subsequent messages
+                    st.session_state.last_phase_result = {}
+                    print(f"🎨 DEBUG: Cleared last_phase_result to prevent duplicate image display")
 
                 # Add Socratic question if needed (only for MENTOR mode)
                 combined_response = self._add_socratic_question_if_needed(response_content, st.session_state.current_mode)
@@ -1481,78 +1511,7 @@ class UnifiedArchitecturalDashboard:
         except Exception as e:
             print(f"❌ Error uploading image to Dropbox: {e}")
 
-    def _display_generated_phase_image(self, generated_image: dict):
-        """Display the generated phase image and ask for user feedback"""
 
-        if not generated_image or not generated_image.get('url'):
-            return
-
-        st.markdown("---")
-        st.markdown("### 🎨 **Generated Design Visualization**")
-
-        # Display the image
-        try:
-            st.image(
-                generated_image['url'],
-                caption=f"AI-generated {generated_image.get('phase', 'design')} visualization",
-                use_container_width=True
-            )
-
-            # Show the prompt used
-            with st.expander("🔍 View Generation Details"):
-                st.markdown(f"**Phase:** {generated_image.get('phase', 'Unknown')}")
-                st.markdown(f"**Style:** {generated_image.get('style', 'Unknown')}")
-                st.markdown(f"**Prompt:** {generated_image.get('prompt', 'No prompt available')}")
-
-            # Ask for user feedback
-            st.markdown("**Does this visualization match your design thinking?**")
-
-            col1, col2, col3 = st.columns(3)
-
-            # Use unique keys based on image URL and timestamp to avoid conflicts
-            image_key = str(hash(generated_image.get('url', '') + str(generated_image.get('phase', ''))))[-8:]
-
-            with col1:
-                if st.button("✅ Yes, this captures my ideas", key=f"feedback_yes_{image_key}"):
-                    st.success("Great! This confirms we're aligned on your design direction.")
-                    # Store positive feedback
-                    if 'image_feedback' not in st.session_state:
-                        st.session_state.image_feedback = []
-                    st.session_state.image_feedback.append({
-                        'phase': generated_image.get('phase'),
-                        'feedback': 'positive',
-                        'timestamp': str(datetime.now())
-                    })
-
-            with col2:
-                if st.button("🤔 Partially, but needs adjustment", key=f"feedback_partial_{image_key}"):
-                    st.info("Thanks for the feedback! Let's continue refining your design ideas.")
-                    # Store partial feedback
-                    if 'image_feedback' not in st.session_state:
-                        st.session_state.image_feedback = []
-                    st.session_state.image_feedback.append({
-                        'phase': generated_image.get('phase'),
-                        'feedback': 'partial',
-                        'timestamp': str(datetime.now())
-                    })
-
-            with col3:
-                if st.button("❌ No, this doesn't match", key=f"feedback_no_{image_key}"):
-                    st.warning("No problem! Let's continue exploring your design ideas to better understand your vision.")
-                    # Store negative feedback
-                    if 'image_feedback' not in st.session_state:
-                        st.session_state.image_feedback = []
-                    st.session_state.image_feedback.append({
-                        'phase': generated_image.get('phase'),
-                        'feedback': 'negative',
-                        'timestamp': str(datetime.now())
-                    })
-
-            st.markdown("---")
-
-        except Exception as e:
-            st.error(f"Error displaying generated image: {e}")
-            print(f"❌ Error displaying generated image: {e}")
 
     def _is_image_already_processed(self, image_path: str) -> bool:
         """Check if an image has already been processed in this session."""
@@ -1565,6 +1524,40 @@ class UnifiedArchitecturalDashboard:
             st.session_state.processed_images = set()
         st.session_state.processed_images.add(image_path)
         print(f"📝 DASHBOARD: Marked image as processed: {filename}")
+
+    def _should_bundle_image_analysis(self, image_path: str) -> bool:
+        """Check if we should bundle image analysis based on message count since last image upload."""
+        try:
+            # Initialize tracking if not exists
+            if 'last_image_upload_message_count' not in st.session_state:
+                st.session_state.last_image_upload_message_count = 0
+                st.session_state.last_uploaded_image_path = None
+
+            # Check if this is a new image
+            if st.session_state.last_uploaded_image_path != image_path:
+                # New image uploaded, reset counter
+                st.session_state.last_image_upload_message_count = 0
+                st.session_state.last_uploaded_image_path = image_path
+                print(f"📷 DASHBOARD: New image detected, resetting counter")
+
+            # Count messages since last image upload
+            current_message_count = len(st.session_state.messages)
+            messages_since_upload = current_message_count - st.session_state.last_image_upload_message_count
+
+            print(f"🔍 DASHBOARD: Messages since image upload: {messages_since_upload}")
+
+            # Only bundle for the first 2 messages after upload
+            if messages_since_upload < 4:  # 4 because each exchange is 2 messages (user + assistant)
+                print(f"✅ DASHBOARD: Bundling image analysis (messages since upload: {messages_since_upload}/4)")
+                return True
+            else:
+                print(f"🔄 DASHBOARD: Image reference limit reached, not bundling (messages since upload: {messages_since_upload}/4)")
+                return False
+
+        except Exception as e:
+            print(f"❌ DASHBOARD: Error checking image reference counter: {e}")
+            # Default to not bundling on error to be safe
+            return False
 
     def _get_existing_image_analysis(self, user_input: str, image_path: str) -> str:
         """Get existing enhanced image analysis from session state."""
@@ -1593,6 +1586,30 @@ class UnifiedArchitecturalDashboard:
         # Final fallback if no analysis found
         building_type = getattr(st.session_state, 'project_type', 'architectural project')
         return f"{user_input}\n\n[IMAGE REFERENCE: I can see you're referencing a previously uploaded image for your {building_type}. Let's continue our discussion based on what we've already analyzed.]"
+
+    def _get_conversation_summary(self) -> str:
+        """Get a summary of the current conversation for context."""
+        try:
+            messages = getattr(st.session_state, 'messages', [])
+            if not messages:
+                return "New conversation starting"
+
+            # Get the last few messages for context
+            recent_messages = messages[-3:] if len(messages) > 3 else messages
+
+            # Extract user messages for context
+            user_messages = [msg.get('content', '') for msg in recent_messages if msg.get('role') == 'user']
+
+            if user_messages:
+                # Join the recent user messages to provide context
+                summary = " | ".join(user_messages)
+                return summary[:500]  # Limit length
+            else:
+                return "Conversation in progress"
+
+        except Exception as e:
+            print(f"⚠️ Error getting conversation summary: {e}")
+            return "Conversation context unavailable"
 
     # Test action handlers removed - now handled in sidebar_components.py
 

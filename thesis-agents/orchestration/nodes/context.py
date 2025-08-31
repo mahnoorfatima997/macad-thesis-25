@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Any
 
-from ..types import WorkflowState
+from orchestration.types import WorkflowState
 
 
 def make_context_node(context_agent, progression_manager, first_response_generator, state_validator, state_monitor, logger) -> Callable[[WorkflowState], Any]:

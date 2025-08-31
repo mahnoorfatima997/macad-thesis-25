@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Optional
 
 from langgraph.graph import StateGraph
 
-from .types import WorkflowState
-from .graph_builder import build_workflow
-from .nodes import (
+from orchestration.types import WorkflowState
+from orchestration.graph_builder import build_workflow
+from orchestration.nodes import (
     make_context_node,
     make_router_node,
     make_analysis_node,
@@ -16,7 +16,7 @@ from .nodes import (
     make_cognitive_enhancement_node,
     make_synthesizer_node,
 )
-from .synthesis import build_synthesizer
+from orchestration.synthesis import build_synthesizer
 
 
 class LangGraphOrchestrator:
@@ -228,7 +228,9 @@ class LangGraphOrchestrator:
         # Progressive conversation paths use precomputed response
         if routing_path in ["progressive_opening", "topic_transition"] and state.get("final_response"):
             metadata = self._build_metadata("progressive_opening", agent_results, routing_decision, classification)
-            return state.get("final_response", ""), metadata
+            # Check for image-specific discussion enhancement
+            enhanced_response = self._enhance_response_with_image_discussion(state.get("final_response", ""), user_input)
+            return enhanced_response, metadata
 
         final_response, response_type = self._synthesize_by_routing_path(
             routing_path, agent_results, user_input, classification, state
@@ -259,17 +261,20 @@ class LangGraphOrchestrator:
         agent_type = agent_type_map.get(response_type, "default")
         final_response = self.ensure_quality(final_response, agent_type)
 
+        # Check for image-specific discussion enhancement
+        enhanced_response = self._enhance_response_with_image_discussion(final_response, user_input)
+
         # ENHANCEMENT: Build metadata with quality flags and student state
         metadata = self._build_metadata(response_type, agent_results, routing_decision, classification, state)
 
         # Add quality flags to metadata
         try:
             from .synthesis import calculate_quality_flags
-            metadata["quality"] = calculate_quality_flags(final_response)
+            metadata["quality"] = calculate_quality_flags(enhanced_response)
         except Exception as e:
             self.logger.warning(f"Quality flags calculation failed: {e}")
 
-        return final_response, metadata
+        return enhanced_response, metadata
 
     def _get_agent_results(self, state: WorkflowState) -> Dict[str, Any]:
         # Ensure all agent results are dictionaries, not AgentResponse objects
@@ -1111,6 +1116,16 @@ class LangGraphOrchestrator:
         print(f"   Phase info available: {hasattr(student_state, 'phase_info') and student_state.phase_info is not None}")
         if hasattr(student_state, 'phase_info') and student_state.phase_info:
             print(f"   Current phase from state: {student_state.phase_info.get('current_phase', 'unknown')}")
+
+        # Debug: Check the latest user message for image analysis
+        if user_messages:
+            latest_user_input = user_messages[-1].get("content", "")
+            print(f"🔍 ORCHESTRATOR: Latest user input length: {len(latest_user_input)} chars")
+            print(f"🔍 ORCHESTRATOR: Latest user input preview: {latest_user_input[:200]}...")
+            has_enhanced = "[ENHANCED IMAGE ANALYSIS:" in latest_user_input
+            has_uploaded = "[UPLOADED IMAGE ANALYSIS:" in latest_user_input
+            print(f"🔍 ORCHESTRATOR: Has ENHANCED marker in input: {has_enhanced}")
+            print(f"🔍 ORCHESTRATOR: Has UPLOADED marker in input: {has_uploaded}")
         print(f"   Last user message: {user_messages[-1] if user_messages else 'No messages'}...")
         current_user_input = user_messages[-1]["content"] if user_messages else ""
 
@@ -1180,8 +1195,20 @@ class LangGraphOrchestrator:
         response_metadata = final_state.get("response_metadata", {})
         gamification_metadata = response_metadata.get("gamification", {})
 
+        final_response = final_state.get("final_response", "")
+
+        # Debug the final response
+        print(f"🔍 ORCHESTRATOR: Final response length: {len(final_response)}")
+        print(f"🔍 ORCHESTRATOR: Final response preview: {final_response[:200]}...")
+
+        # Check if image discussion is in final response
+        if "Looking at your image, I can see" in final_response:
+            print(f"✅ ORCHESTRATOR: Image discussion found in final response!")
+        else:
+            print(f"❌ ORCHESTRATOR: No image discussion found in final response")
+
         return {
-            "response": final_state.get("final_response", ""),
+            "response": final_response,
             "metadata": response_metadata,
             "routing_path": final_state.get("routing_decision", {}).get("path", "unknown"),
             "classification": final_state.get("student_classification", {}),
@@ -1478,5 +1505,214 @@ class LangGraphOrchestrator:
         if sources:
             self.logger.info(f"Sources: {sources[:3]}")
         self.logger.info("=" * 80 + "\n")
+
+    def _enhance_response_with_image_discussion(self, response: str, user_input: str) -> str:
+        """Enhance response with specific image discussion if image analysis is present."""
+        try:
+            self.logger.info(f"🔍 IMAGE ENHANCEMENT: Checking for image analysis in user input...")
+            self.logger.info(f"📝 User input length: {len(user_input)} chars")
+            self.logger.info(f"📝 User input preview: {user_input[:200]}...")
+
+            # Debug: Check for both markers explicitly
+            has_enhanced = "[ENHANCED IMAGE ANALYSIS:" in user_input
+            has_uploaded = "[UPLOADED IMAGE ANALYSIS:" in user_input
+            self.logger.info(f"🔍 IMAGE ENHANCEMENT: Has ENHANCED marker: {has_enhanced}")
+            self.logger.info(f"🔍 IMAGE ENHANCEMENT: Has UPLOADED marker: {has_uploaded}")
+
+            # Check if user input contains image analysis
+            if not has_enhanced and not has_uploaded:
+                self.logger.info("❌ No image analysis markers found in user input")
+                return response
+
+            # Check if we should automatically reference the image
+            if not self._should_auto_reference_image(user_input):
+                self.logger.info("🔄 IMAGE ENHANCEMENT: Skipping auto-reference - limit reached or user context doesn't warrant it")
+                return response
+
+            self.logger.info("✅ Image analysis markers found, extracting...")
+
+            # Extract image analysis from user input
+            image_analysis = ""
+            if "[ENHANCED IMAGE ANALYSIS:" in user_input:
+                start_marker = "[ENHANCED IMAGE ANALYSIS:"
+                end_marker = "]"
+                start_idx = user_input.find(start_marker)
+                if start_idx != -1:
+                    start_idx += len(start_marker)
+                    end_idx = user_input.rfind(end_marker)
+                    if end_idx > start_idx:
+                        image_analysis = user_input[start_idx:end_idx].strip()
+                        self.logger.info(f"📷 Extracted ENHANCED image analysis: {len(image_analysis)} chars")
+            elif "[UPLOADED IMAGE ANALYSIS:" in user_input:
+                start_marker = "[UPLOADED IMAGE ANALYSIS:"
+                end_marker = "]"
+                start_idx = user_input.find(start_marker)
+                if start_idx != -1:
+                    start_idx += len(start_marker)
+                    end_idx = user_input.rfind(end_marker)
+                    if end_idx > start_idx:
+                        image_analysis = user_input[start_idx:end_idx].strip()
+                        self.logger.info(f"📷 Extracted UPLOADED image analysis: {len(image_analysis)} chars")
+
+            if not image_analysis:
+                self.logger.warning("⚠️ Image analysis extraction failed - empty result")
+                return response
+
+            self.logger.info(f"🎯 Image analysis preview: {image_analysis[:300]}...")
+
+            # Generate image-specific discussion using OpenAI
+            from openai import OpenAI
+            import os
+
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            image_discussion_prompt = f"""
+            You are analyzing an architectural image. Based on the detailed analysis below, identify the most specific and notable visual features that a mentor would comment on.
+
+            Image Analysis: {image_analysis[:1000]}
+
+            Create a brief, specific observation about what you can see in this image. Focus on:
+            - Specific materials (concrete panels, steel, wood, glass, etc.)
+            - Lighting conditions (natural light, artificial lighting, shadows, etc.)
+            - Spatial qualities (height, openness, circulation, etc.)
+            - Architectural elements (columns, beams, openings, surfaces, etc.)
+
+            Write as if you're a mentor who is actually looking at the image and can see these specific details. Be concrete and specific, not generic.
+
+            Format: "the [specific material/element] and [specific lighting/spatial quality]"
+            Example: "the exposed concrete panels and dramatic vertical lighting strips"
+            Example: "the steel frame structure and large glazed openings"
+
+            Return only the specific observation, no additional text.
+            """
+
+            self.logger.info("🤖 Generating image-specific comment...")
+
+            image_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": image_discussion_prompt}],
+                max_tokens=150,
+                temperature=0.7
+            )
+
+            image_comment = image_response.choices[0].message.content.strip()
+            self.logger.info(f"💬 Generated image comment: {image_comment}")
+
+            # Integrate the image comment naturally into the response
+            if image_comment:
+                # Add the image-specific comment at the beginning of the response
+                enhanced_response = f"Looking at your image, I can see {image_comment.lower()} {response}"
+                self.logger.info(f"✅ Enhanced response with image discussion")
+                return enhanced_response
+            else:
+                self.logger.warning("⚠️ Empty image comment generated")
+
+        except Exception as e:
+            self.logger.warning(f"Image discussion enhancement failed: {e}")
+
+        return response
+
+    def _should_auto_reference_image(self, user_input: str) -> bool:
+        """Check if we should automatically reference the image in the response."""
+        try:
+            # Initialize image reference tracking in session state if not exists
+            # This ensures the counter persists across orchestrator instances
+            try:
+                import streamlit as st
+                if 'image_reference_count' not in st.session_state:
+                    st.session_state.image_reference_count = {}
+                image_reference_count = st.session_state.image_reference_count
+            except ImportError:
+                # Fallback to instance variable if streamlit not available (for testing)
+                if not hasattr(self, '_image_reference_count'):
+                    self._image_reference_count = {}
+                image_reference_count = self._image_reference_count
+
+            # Extract image analysis to get a unique identifier
+            image_analysis = ""
+            if "[ENHANCED IMAGE ANALYSIS:" in user_input:
+                start = user_input.find("[ENHANCED IMAGE ANALYSIS:")
+                # Look for the end of the image analysis section (usually ends with "]")
+                # But also handle cases where it might end differently
+                remaining_text = user_input[start:]
+                if "]" in remaining_text:
+                    end_pos = remaining_text.find("]") + 1
+                    image_analysis = remaining_text[:end_pos]
+                else:
+                    # If no closing bracket, take the whole remaining text
+                    image_analysis = remaining_text
+            elif "[UPLOADED IMAGE ANALYSIS:" in user_input:
+                start = user_input.find("[UPLOADED IMAGE ANALYSIS:")
+                remaining_text = user_input[start:]
+                if "]" in remaining_text:
+                    end_pos = remaining_text.find("]") + 1
+                    image_analysis = remaining_text[:end_pos]
+                else:
+                    image_analysis = remaining_text
+
+            if not image_analysis:
+                self.logger.info(f"🖼️ IMAGE REFERENCE: No image analysis found in user input")
+                return False
+
+            self.logger.info(f"🖼️ IMAGE REFERENCE: Extracted image analysis: {image_analysis[:100]}...")
+
+            # Create a simple hash for tracking - use a consistent identifier
+            # Extract image path from session state if available for consistent hashing
+            import hashlib
+            image_identifier = image_analysis[:200]  # Use first 200 chars of analysis as identifier
+            image_hash = hashlib.md5(image_identifier.encode()).hexdigest()[:8]
+
+            # Check if user is explicitly asking about the image
+            # Only check the user message part, not the image analysis part
+            # Use more specific phrases that clearly indicate user is asking about the image
+            explicit_image_phrases = [
+                'in the image', 'in this image', 'from the image', 'about the image',
+                'in the picture', 'in this picture', 'from the picture', 'about the picture',
+                'in the drawing', 'in this drawing', 'from the drawing', 'about the drawing',
+                'what do you see', 'what can you see', 'tell me about the',
+                'describe the image', 'describe the picture', 'describe the drawing',
+                'analyze the image', 'analyze the picture', 'analyze the drawing'
+            ]
+
+            # Extract just the user message (before the image analysis)
+            if "[ENHANCED IMAGE ANALYSIS:" in user_input:
+                user_message_only = user_input.split("[ENHANCED IMAGE ANALYSIS:")[0].strip()
+            elif "[UPLOADED IMAGE ANALYSIS:" in user_input:
+                user_message_only = user_input.split("[UPLOADED IMAGE ANALYSIS:")[0].strip()
+            else:
+                user_message_only = user_input
+
+            user_text = user_message_only.lower()
+            user_explicitly_asks_about_image = any(phrase in user_text for phrase in explicit_image_phrases)
+            self.logger.info(f"🖼️ IMAGE REFERENCE: User message only: '{user_message_only}' - explicitly asks about image: {user_explicitly_asks_about_image}")
+
+            # If user explicitly asks about the image, always reference it (bypasses counter)
+            if user_explicitly_asks_about_image:
+                self.logger.info(f"🖼️ IMAGE REFERENCE: User explicitly asked about image, allowing reference (bypasses counter)")
+                return True
+
+            # Track how many times we've referenced this specific image
+            current_count = image_reference_count.get(image_hash, 0)
+            self.logger.info(f"🖼️ IMAGE REFERENCE: Current auto-reference count for image {image_hash}: {current_count}/2")
+
+            # Only auto-reference for the first 2 responses after upload
+            if current_count < 2:
+                image_reference_count[image_hash] = current_count + 1
+                # Update session state if using streamlit
+                try:
+                    import streamlit as st
+                    st.session_state.image_reference_count = image_reference_count
+                except ImportError:
+                    pass
+                self.logger.info(f"🖼️ IMAGE REFERENCE: Auto-referencing image (count: {current_count + 1}/2)")
+                return True
+            else:
+                self.logger.info(f"🖼️ IMAGE REFERENCE: Auto-reference limit reached for this image (count: {current_count}/2)")
+                return False
+
+        except Exception as e:
+            self.logger.error(f"Error checking image reference policy: {e}")
+            # Default to allowing reference on error
+            return True
 
 

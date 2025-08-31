@@ -1,6 +1,6 @@
 from typing import Callable
 
-from ..types import WorkflowState
+from orchestration.types import WorkflowState
 
 
 def make_cognitive_enhancement_node(cognitive_agent, state_validator, state_monitor, logger) -> Callable[[WorkflowState], WorkflowState]:
