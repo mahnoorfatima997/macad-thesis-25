@@ -654,8 +654,9 @@ def _render_generated_image_in_chat(generated_image: dict):
 
         col1, col2, col3 = st.columns(3)
 
-        # Use unique keys based on image URL to avoid conflicts
-        image_key = str(hash(generated_image['url']))[-8:]
+        # Use unique keys based on image URL, phase, and timestamp to avoid conflicts
+        import time
+        image_key = str(hash(generated_image['url'] + str(generated_image.get('phase', '')) + str(time.time())))[-8:]
 
         with col1:
             if st.button("✅ Yes", key=f"feedback_yes_{image_key}", help="This captures my ideas well"):

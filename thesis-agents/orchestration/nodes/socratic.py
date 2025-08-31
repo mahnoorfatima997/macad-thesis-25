@@ -1,6 +1,6 @@
 from typing import Callable
 
-from ..types import WorkflowState
+from orchestration.types import WorkflowState
 
 
 def make_socratic_node(socratic_agent, state_validator, state_monitor, logger) -> Callable[[WorkflowState], WorkflowState]:

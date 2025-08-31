@@ -1,6 +1,6 @@
 from typing import Callable
 
-from ..types import WorkflowState
+from orchestration.types import WorkflowState
 
 
 def make_analysis_node(analysis_agent, state_validator, state_monitor, logger, progression_manager) -> Callable[[WorkflowState], WorkflowState]:

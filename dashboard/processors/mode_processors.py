@@ -32,6 +32,16 @@ class ModeProcessor:
         self.test_dashboard = test_dashboard
         self.image_database = image_database
 
+        # If orchestrator is None, try to create one directly
+        if self.orchestrator is None:
+            try:
+                from orchestration.orchestrator import LangGraphOrchestrator
+                self.orchestrator = LangGraphOrchestrator(domain="architecture")
+                print(f"✅ MODE_PROCESSOR: Created orchestrator directly")
+            except Exception as e:
+                print(f"❌ MODE_PROCESSOR: Failed to create orchestrator: {e}")
+                self.orchestrator = None
+
         # Initialize dynamic task system ONLY for Test Mode
         # These will be None in Flexible Mode to prevent any task-related functionality
         self.task_manager = None
@@ -856,6 +866,14 @@ class ModeProcessor:
         if st.session_state.messages and st.session_state.messages[-1].get("enhanced_content"):
             enhanced_content = st.session_state.messages[-1]["enhanced_content"]
             print(f"🔍 MODE_PROCESSOR: Using enhanced content with image analysis")
+            print(f"🔍 MODE_PROCESSOR: Enhanced content preview: {enhanced_content[:300]}...")
+            # Check for image analysis markers
+            if "[ENHANCED IMAGE ANALYSIS:" in enhanced_content or "[UPLOADED IMAGE ANALYSIS:" in enhanced_content:
+                print(f"✅ MODE_PROCESSOR: Image analysis markers found in enhanced content")
+            else:
+                print(f"❌ MODE_PROCESSOR: No image analysis markers found in enhanced content")
+        else:
+            print(f"🔍 MODE_PROCESSOR: No enhanced content found, using original user input")
 
         # Add user message to state using enhanced content for system processing
         user_message = {
@@ -878,7 +896,13 @@ class ModeProcessor:
             response_metadata = result.get("metadata", {})
 
             print(f"📝 MODE_PROCESSOR: Response length: {len(response) if response else 0}")
-            print(f"📝 MODE_PROCESSOR: Response preview: {response[:100] if response else 'No response'}...")
+            print(f"📝 MODE_PROCESSOR: Response preview: {response[:200] if response else 'No response'}...")
+
+            # Check if response contains image discussion
+            if response and "Looking at your image, I can see" in response:
+                print(f"✅ MODE_PROCESSOR: Image discussion found in response!")
+            else:
+                print(f"❌ MODE_PROCESSOR: No image discussion found in response")
 
         except Exception as e:
             print(f"❌ MODE_PROCESSOR: Orchestrator error: {e}")
@@ -1443,35 +1467,9 @@ class ModeProcessor:
 
                 print(f"🎯 PHASE_TRACKING: Created phase session for {test_group}: {session_id}")
 
-            # Process the user input to update phase progression
-            if hasattr(st.session_state, 'phase_session_id') and st.session_state.phase_session_id:
-                from phase_progression_system import PhaseProgressionSystem
-                phase_system = PhaseProgressionSystem()
-
-                # Process the user message to update phase progression
-                result = phase_system.process_user_message(st.session_state.phase_session_id, user_input)
-
-                if result:
-                    current_phase = result.get('current_phase', 'ideation')
-                    completion_percent = 0.0
-
-                    # Get completion percentage from phase progress
-                    phase_progress = result.get('phase_progress', {})
-                    if 'completion_percent' in phase_progress:
-                        completion_percent = phase_progress['completion_percent']
-
-                    print(f"🎯 PHASE_TRACKING: {test_group} - Phase: {current_phase}, Completion: {completion_percent:.1f}%")
-
-                    # Update session state for consistency
-                    phase_mapping = {
-                        'ideation': 'Ideation',
-                        'visualization': 'Visualization',
-                        'materialization': 'Materialization'
-                    }
-                    st.session_state.test_current_phase = phase_mapping.get(current_phase, 'Ideation')
-
-                    # CRITICAL FIX: Check for task triggers based on phase completion
-                    self._check_and_trigger_tasks(user_input, current_phase, test_group, completion_percent)
+            # REMOVED: Duplicate phase processing - this is now handled in unified_dashboard.py
+            # to prevent duplicate image generation and phase transitions
+            print(f"🎯 PHASE_TRACKING: Phase processing handled by dashboard to prevent duplicates")
 
         except Exception as e:
             print(f"⚠️ Phase progression tracking failed for {test_group}: {e}")
