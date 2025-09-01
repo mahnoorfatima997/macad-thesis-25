@@ -1213,43 +1213,42 @@ class UnifiedArchitecturalDashboard:
                     st.session_state.last_phase_result = {}
                     print(f"🎨 DUPLICATE_PREVENTION: Cleared last_phase_result immediately")
 
+                # FIXED: Handle generated image FIRST, regardless of phase transition
+                generated_image = phase_result.get('generated_image')
+                if generated_image:
+                    print(f"🎨 DEBUG: Generated image found in phase result: {list(generated_image.keys())}")
+                    print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
+
+                    # Check if we're running on Streamlit Cloud
+                    is_cloud = (
+                        os.environ.get('STREAMLIT_SHARING_MODE') or
+                        'streamlit.app' in os.environ.get('HOSTNAME', '') or
+                        os.environ.get('STREAMLIT_SERVER_PORT') or
+                        'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
+                    )
+                    print(f"🎨 DEBUG: Running on cloud: {is_cloud}")
+
+                    if not is_cloud:
+                        # Only try to save locally if not on cloud
+                        saved_path = self._save_generated_image(generated_image)
+                        if saved_path:
+                            generated_image['local_path'] = saved_path
+                            print(f"🎨 DEBUG: Added local_path to generated_image: {saved_path}")
+                    else:
+                        print(f"🎨 DEBUG: Skipping local save on cloud deployment")
+
+                    # Store image data for inclusion in chat message
+                    generated_image_data = generated_image
+                    print(f"✅ Generated image will be included in chat message")
+                    print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
+                else:
+                    print(f"❌ DEBUG: No generated_image found in phase_result")
+
                 # Only process transition if it should be processed (not a duplicate)
                 if should_process_transition and phase_result.get('phase_transition'):
                     transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
                     response_content += transition_msg
                     print(f"✅ PROCESSING_TRANSITION: Added phase transition message to response")
-
-                    # Handle generated image if available
-                    generated_image = phase_result.get('generated_image')
-                    print(f"🎨 PROCESSING_TRANSITION: Generated image from phase result: {bool(generated_image)}")
-                    if generated_image:
-                        print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys())}")
-                        print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
-
-                        # Check if we're running on Streamlit Cloud
-                        is_cloud = (
-                            os.environ.get('STREAMLIT_SHARING_MODE') or
-                            'streamlit.app' in os.environ.get('HOSTNAME', '') or
-                            os.environ.get('STREAMLIT_SERVER_PORT') or
-                            'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
-                        )
-                        print(f"🎨 DEBUG: Running on cloud: {is_cloud}")
-
-                        if not is_cloud:
-                            # Only try to save locally if not on cloud
-                            saved_path = self._save_generated_image(generated_image)
-                            if saved_path:
-                                generated_image['local_path'] = saved_path
-                                print(f"🎨 DEBUG: Added local_path to generated_image: {saved_path}")
-                        else:
-                            print(f"🎨 DEBUG: Skipping local save on cloud deployment")
-
-                        # Store image data for inclusion in chat message
-                        generated_image_data = generated_image
-                        print(f"✅ Generated image will be included in chat message")
-                        print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
-                    else:
-                        print(f"❌ DEBUG: No generated_image found in phase_result")
 
                 # Add Socratic question if needed (only for MENTOR mode)
                 combined_response = self._add_socratic_question_if_needed(response_content, st.session_state.current_mode)
