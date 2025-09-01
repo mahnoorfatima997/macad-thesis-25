@@ -420,8 +420,13 @@ def render_single_message(message: Dict[str, Any]):
             # Display generated image if present in assistant message
             print(f"🎨 DEBUG: Checking for generated_image in message: {bool(message.get('generated_image'))}")
             if message.get("generated_image"):
-                print(f"🎨 DEBUG: Found generated_image in message, calling render function")
+                print(f"🎨 DEBUG: Generated image found, rendering in chat")
+                print(f"🎨 DEBUG: Image data keys: {list(message['generated_image'].keys())}")
+
+                # Always render the image - let Streamlit handle caching/display optimization
+                # The previous "display once" logic was causing images to disappear
                 _render_generated_image_in_chat(message["generated_image"])
+                print(f"🎨 DEBUG: Image rendered successfully")
 
             # REMOVED: Centralized task rendering - tasks now render per message chronologically
             # else:
@@ -572,25 +577,34 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
 def _render_generated_image_in_chat(generated_image: dict):
     """Render a generated image within the chat interface."""
     try:
-        print(f"🎨 DEBUG: Attempting to render generated image")
-        print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys()) if generated_image else 'None'}")
+        print(f"🎨 RENDER: Starting image render process")
+        print(f"🎨 RENDER: Image data keys: {list(generated_image.keys()) if generated_image else 'None'}")
 
         if not generated_image:
-            print(f"❌ DEBUG: No generated_image data provided")
+            print(f"❌ RENDER: No generated_image data provided")
             return
 
-        if not generated_image.get('url') and not generated_image.get('local_path'):
-            print(f"❌ DEBUG: No URL or local_path found in generated_image")
+        # Check for image sources
+        has_url = bool(generated_image.get('url'))
+        has_local_path = bool(generated_image.get('local_path'))
+        print(f"🎨 RENDER: Has URL: {has_url}, Has local path: {has_local_path}")
+
+        if not has_url and not has_local_path:
+            print(f"❌ RENDER: No URL or local_path found in generated_image")
             return
 
         # Display the image with a nice caption
         phase = generated_image.get('phase', 'design')
         style = generated_image.get('style', 'visualization')
+        print(f"🎨 RENDER: Phase: {phase}, Style: {style}")
 
         st.markdown(f"""
         <div style="margin: 10px 0; padding: 10px; background-color: #ffffff; border-radius: 8px; border-left: 4px solid #cf436f;">
             <div style="font-weight: bold; color: #cf436f; margin-bottom: 8px;">
-                ◉ AI-Generated {phase.title()} Image!
+                🎨 AI-Generated {phase.title()} Phase Image
+            </div>
+            <div style="font-size: 0.9em; color: #666;">
+                Style: {style.replace('_', ' ').title()}
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -616,49 +630,52 @@ def _render_generated_image_in_chat(generated_image: dict):
             image_source = generated_image.get('local_path') or generated_image.get('url')
             source_type = "local file" if generated_image.get('local_path') else "URL"
 
-        print(f"🎨 DEBUG: Cloud deployment: {is_cloud}")
-        print(f"🎨 DEBUG: Image source: {image_source}")
-        print(f"🎨 DEBUG: Source type: {source_type}")
+        print(f"🎨 RENDER: Cloud deployment: {is_cloud}")
+        print(f"🎨 RENDER: Selected image source: {image_source}")
+        print(f"🎨 RENDER: Source type: {source_type}")
 
-        # Validate URL accessibility if using URL source
-        if image_source and image_source.startswith('http'):
-            try:
-                import requests
-                response = requests.head(image_source, timeout=5)
-                print(f"🎨 DEBUG: URL accessibility check: {response.status_code}")
-                if response.status_code != 200:
-                    print(f"⚠️ WARNING: Image URL may not be accessible: {response.status_code}")
-            except Exception as e:
-                print(f"⚠️ WARNING: Could not verify URL accessibility: {e}")
-
+        # Display the image with robust error handling
         if image_source:
             try:
+                print(f"🎨 RENDER: Attempting to display image from {source_type}")
                 st.image(
                     image_source,
-                    caption=f"AI-generated {phase} visualization ({style})",
+                    caption=f"Generated for {phase.title()} phase - {style.replace('_', ' ').title()}",
                     use_container_width=True
                 )
-                print(f"✅ Displayed generated image from: {source_type}")
+                print(f"✅ RENDER_SUCCESS: Image displayed successfully from {source_type}")
+
+                # Add a small success indicator
+                st.markdown(f"""
+                <div style="text-align: center; color: #28a745; font-size: 0.8em; margin-top: 5px;">
+                    ✓ Image loaded successfully
+                </div>
+                """, unsafe_allow_html=True)
+
             except Exception as e:
-                print(f"❌ Error displaying image from {source_type}: {e}")
-                # Fallback: try the other source if available
+                print(f"❌ RENDER_ERROR: Failed to display from {source_type}: {e}")
+
+                # Try fallback source
                 fallback_source = generated_image.get('url') if source_type.startswith('local') else generated_image.get('local_path')
-                if fallback_source:
+                if fallback_source and fallback_source != image_source:
                     try:
+                        print(f"🎨 RENDER_FALLBACK: Trying fallback source")
                         st.image(
                             fallback_source,
-                            caption=f"AI-generated {phase} visualization ({style})",
+                            caption=f"Generated for {phase.title()} phase - {style.replace('_', ' ').title()}",
                             use_container_width=True
                         )
-                        print(f"✅ Displayed generated image from fallback source")
+                        print(f"✅ RENDER_FALLBACK_SUCCESS: Image displayed from fallback")
                     except Exception as e2:
-                        st.error("❌ Generated image could not be displayed - both sources failed")
-                        print(f"❌ Both image sources failed: {e}, {e2}")
+                        print(f"❌ RENDER_FALLBACK_ERROR: Both sources failed: {e}, {e2}")
+                        st.error("⚠️ Image generation completed but display failed. Please refresh the page.")
                 else:
-                    st.error("❌ Generated image could not be displayed - primary source failed and no fallback available")
+                    print(f"❌ RENDER_NO_FALLBACK: No fallback source available")
+                    st.error("⚠️ Image generation completed but display failed. Please refresh the page.")
         else:
-            st.error("❌ Generated image could not be displayed - no valid source found")
-            print(f"❌ No valid image source found in generated_image: {list(generated_image.keys())}")
+            print(f"❌ RENDER_NO_SOURCE: No valid image source found")
+            st.error("⚠️ Image data incomplete - no valid source found")
+            print(f"🎨 RENDER_DEBUG: Available keys: {list(generated_image.keys())}")
 
         # Add feedback buttons in a compact layout
         st.markdown("**Does this visualization match your design thinking?**")

@@ -822,25 +822,25 @@ class PhaseTransitionSystem:
     """Manages transitions between design phases"""
 
     def __init__(self):
-        # STRICTER THRESHOLDS FOR MORE EXTENSIVE PHASE ENGAGEMENT
+        # BALANCED THRESHOLDS FOR EXTENDED BUT ACHIEVABLE PHASE ENGAGEMENT
         self.transition_thresholds = {
             DesignPhase.IDEATION: {
-                "min_interactions": 6,  # Increased from 2 to 6 for more extensive engagement
+                "min_interactions": 6,  # Balanced: 6 interactions for meaningful engagement
                 "min_avg_score": 0.8,   # Keep realistic scoring
-                "min_completion": 60.0, # Increased from 40.0 to 60.0 for more thorough completion
-                "required_concepts": ["concept", "program", "site", "community"]
+                "min_completion": 65.0, # Achievable completion threshold
+                "required_concepts": ["concept", "program", "site", "community", "context", "user", "function"]
             },
             DesignPhase.VISUALIZATION: {
-                "min_interactions": 6,  # Increased from 3 to 6 for more extensive engagement
-                "min_avg_score": 1.0,   # Keep realistic scoring
-                "min_completion": 65.0, # Increased from 45.0 to 65.0 for more thorough completion
-                "required_concepts": ["space", "form", "circulation", "experience"]
+                "min_interactions": 6,  # Balanced: 6 interactions to match ideation depth
+                "min_avg_score": 0.8,   # Aligned with ideation for consistency
+                "min_completion": 65.0, # Achievable completion threshold
+                "required_concepts": ["space", "form", "circulation", "experience", "organization", "layout", "scale", "proportion", "light", "spatial"]
             },
             DesignPhase.MATERIALIZATION: {
-                "min_interactions": 6,  # Increased from 3 to 6 for more extensive engagement
-                "min_avg_score": 1.2,   # Keep realistic scoring
-                "min_completion": 70.0, # Increased from 50.0 to 70.0 for more thorough completion
-                "required_concepts": ["material", "construction", "detail", "feasibility"]
+                "min_interactions": 6,  # Balanced: 6 interactions to match other phases
+                "min_avg_score": 0.8,   # Aligned with other phases for consistency
+                "min_completion": 65.0, # Achievable completion threshold
+                "required_concepts": ["material", "construction", "detail", "feasibility", "structure", "systems", "cost", "sustainability", "technical", "building"]
             }
         }
 
@@ -1200,11 +1200,11 @@ class PhaseProgressionSystem:
             self.prompt_generator = None
             self.image_generation_enabled = False
 
-        # Phase configuration
+        # Phase configuration - BALANCED WEIGHTS FOR EQUAL EMPHASIS
         self.phase_weights = {
-            DesignPhase.IDEATION: 0.25,
-            DesignPhase.VISUALIZATION: 0.35,
-            DesignPhase.MATERIALIZATION: 0.40
+            DesignPhase.IDEATION: 0.33,        # Increased from 0.25 to 0.33 for balanced emphasis
+            DesignPhase.VISUALIZATION: 0.33,   # Decreased from 0.35 to 0.33 for balanced emphasis
+            DesignPhase.MATERIALIZATION: 0.34  # Decreased from 0.40 to 0.34 for balanced emphasis
         }
 
         self.phase_thresholds = {
@@ -1213,34 +1213,50 @@ class PhaseProgressionSystem:
             DesignPhase.MATERIALIZATION: 3.2  # Reduced from 4.0
         }
 
-        # Phase checklist items for completion tracking
+        # Phase checklist items for completion tracking - EXPANDED FOR BALANCED ENGAGEMENT
         self.phase_checklist_items: Dict[DesignPhase, List[Dict[str, Any]]] = {
             DesignPhase.IDEATION: [
                 {"id": "site_context_understood", "keywords": ["site", "context"], "required": True},
-                {"id": "program_defined", "keywords": ["program", "requirements"], "required": True}
+                {"id": "program_defined", "keywords": ["program", "requirements"], "required": True},
+                {"id": "user_needs_analyzed", "keywords": ["user", "community", "needs", "activities"], "required": True},
+                {"id": "design_concept_developed", "keywords": ["concept", "idea", "vision", "approach"], "required": True}
             ],
             DesignPhase.VISUALIZATION: [
-                {"id": "circulation_defined", "keywords": ["circulation", "flow"], "required": True},
-                {"id": "spatial_organization", "keywords": ["space", "spatial", "organization", "layout", "arrangement"], "required": True}
+                {"id": "circulation_defined", "keywords": ["circulation", "flow", "movement", "path"], "required": True},
+                {"id": "spatial_organization", "keywords": ["space", "spatial", "organization", "layout", "arrangement"], "required": True},
+                {"id": "form_development", "keywords": ["form", "shape", "geometry", "massing", "volume"], "required": True},
+                {"id": "scale_proportion", "keywords": ["scale", "proportion", "size", "dimension", "relationship"], "required": True},
+                {"id": "lighting_strategy", "keywords": ["light", "lighting", "natural", "artificial", "daylight"], "required": True},
+                {"id": "spatial_experience", "keywords": ["experience", "atmosphere", "feeling", "quality", "character"], "required": True}
             ],
             DesignPhase.MATERIALIZATION: [
                 {"id": "materials_selected", "keywords": ["material", "materials", "concrete", "steel", "wood", "brick", "glass", "stone", "timber", "metal", "fabric", "finish", "finishes"], "required": True},
-                {"id": "construction_feasibility", "keywords": ["construct", "construction", "build", "building", "feasible", "structural", "technical", "system"], "required": True}
+                {"id": "construction_feasibility", "keywords": ["construct", "construction", "build", "building", "feasible", "structural", "technical", "system"], "required": True},
+                {"id": "structural_system", "keywords": ["structure", "structural", "load", "support", "foundation", "frame"], "required": True},
+                {"id": "building_systems", "keywords": ["systems", "mechanical", "electrical", "plumbing", "hvac", "infrastructure"], "required": True},
+                {"id": "sustainability_considerations", "keywords": ["sustainable", "sustainability", "energy", "environment", "green", "efficient"], "required": True},
+                {"id": "cost_feasibility", "keywords": ["cost", "budget", "economic", "affordable", "value", "investment"], "required": True}
             ]
         }
 
     def _has_generated_image_for_phase(self, session_id: str, phase: DesignPhase) -> bool:
         """Check if an image has already been generated for this session and phase"""
         if session_id not in self.generated_images_tracker:
+            print(f"🎨 IMAGE_CHECK: No tracker for session {session_id}")
             return False
-        return phase.value in self.generated_images_tracker[session_id]
+        has_image = phase.value in self.generated_images_tracker[session_id]
+        print(f"🎨 IMAGE_CHECK: Session {session_id}, Phase {phase.value}, Has image: {has_image}")
+        if has_image:
+            print(f"🎨 IMAGE_CHECK: Existing image data: {list(self.generated_images_tracker[session_id][phase.value].keys())}")
+        return has_image
 
     def _mark_image_generated(self, session_id: str, phase: DesignPhase, image_data: dict):
         """Mark that an image has been generated for this session and phase"""
         if session_id not in self.generated_images_tracker:
             self.generated_images_tracker[session_id] = {}
         self.generated_images_tracker[session_id][phase.value] = image_data
-        print(f"🎨 Marked image as generated for {session_id} - {phase.value}")
+        print(f"🎨 IMAGE_MARKED: Session {session_id}, Phase {phase.value} - Image generation marked")
+        print(f"🎨 IMAGE_TRACKER: Current phases with images: {list(self.generated_images_tracker.get(session_id, {}).keys())}")
 
         # Debug: Check question bank initialization
         print(f"\n🏦 PHASE_SYSTEM: Dynamic question bank initialized")
@@ -1458,48 +1474,60 @@ class PhaseProgressionSystem:
             f"Welcome to the {next_phase.value} phase! Let's continue developing your design thinking."
         )
 
-        # Generate phase-specific image (only if not already generated)
+        # CRITICAL FIX: Generate image for the COMPLETED phase, not the next phase
         generated_image = None
-        if (self.image_generation_enabled and self.image_generator and self.prompt_generator and
-            not self._has_generated_image_for_phase(session.session_id, next_phase)):
-            try:
-                print(f"🎨 Generating {next_phase.value} phase image...")
+        print(f"🎨 IMAGE_GENERATION_CHECK: Enabled={self.image_generation_enabled}, Generator={self.image_generator is not None}, Prompt_Gen={self.prompt_generator is not None}")
 
-                # Generate image prompt from conversation history
-                conversation_history = session.conversation_history if hasattr(session, 'conversation_history') else []
-                project_type = getattr(session, 'project_type', 'community center')
+        if (self.image_generation_enabled and self.image_generator and self.prompt_generator):
+            # Generate image for the COMPLETED phase (current_phase), not the next_phase
+            if self._has_generated_image_for_phase(session.session_id, current_phase):
+                print(f"🎨 DUPLICATE_PREVENTION: Image already generated for completed {current_phase.value} phase, skipping")
+                # Retrieve existing image data for the response
+                existing_image = self.generated_images_tracker[session.session_id][current_phase.value]
+                generated_image = existing_image
+                print(f"🎨 REUSING_IMAGE: Using existing image for completed {current_phase.value} phase")
+            else:
+                try:
+                    print(f"🎨 GENERATING_NEW: Creating image for COMPLETED {current_phase.value} phase...")
 
-                design_description = self.prompt_generator.generate_image_prompt_from_conversation(
-                    conversation_history,
-                    next_phase.value.lower(),
-                    project_type
-                )
+                    # Generate image prompt from conversation history
+                    conversation_history = session.conversation_history if hasattr(session, 'conversation_history') else []
+                    project_type = getattr(session, 'project_type', 'community center')
 
-                # Generate the image
-                image_result = self.image_generator.generate_phase_image(
-                    design_description,
-                    next_phase.value.lower(),
-                    f"{project_type} design project",
-                    session.session_id
-                )
+                    design_description = self.prompt_generator.generate_image_prompt_from_conversation(
+                        conversation_history,
+                        current_phase.value.lower(),  # Use CURRENT phase, not next phase
+                        project_type
+                    )
 
-                if image_result.get("success"):
-                    generated_image = {
-                        "url": image_result["image_url"],
-                        "prompt": image_result["prompt"],
-                        "style": image_result["style"],
-                        "phase": next_phase.value
-                    }
-                    # Mark this image as generated to prevent duplicates
-                    self._mark_image_generated(session.session_id, next_phase, generated_image)
-                    print(f"✅ Generated {next_phase.value} phase image successfully")
-                else:
-                    print(f"❌ Image generation failed: {image_result.get('error', 'Unknown error')}")
+                    # Generate the image for the COMPLETED phase
+                    image_result = self.image_generator.generate_phase_image(
+                        design_description,
+                        current_phase.value.lower(),  # Use CURRENT phase, not next phase
+                        f"{project_type} design project",
+                        session.session_id
+                    )
 
-            except Exception as e:
-                print(f"❌ Error during image generation: {e}")
-        elif self._has_generated_image_for_phase(session.session_id, next_phase):
-            print(f"🎨 Image already generated for {next_phase.value} phase, skipping duplicate generation")
+                    if image_result.get("success"):
+                        generated_image = {
+                            "url": image_result["image_url"],
+                            "prompt": image_result["prompt"],
+                            "style": image_result["style"],
+                            "phase": current_phase.value,  # Use CURRENT phase, not next phase
+                            "local_path": image_result.get("local_path")
+                        }
+                        # Mark this image as generated to prevent duplicates
+                        self._mark_image_generated(session.session_id, current_phase, generated_image)
+                        print(f"✅ GENERATION_SUCCESS: {current_phase.value} phase completion image created and marked")
+                    else:
+                        print(f"❌ GENERATION_FAILED: {image_result.get('error', 'Unknown error')}")
+
+                except Exception as e:
+                    print(f"❌ GENERATION_ERROR: {e}")
+                    import traceback
+                    traceback.print_exc()
+        else:
+            print(f"🎨 IMAGE_GENERATION_DISABLED: Skipping image generation (missing components)")
 
         transition_result = {
             "success": True,
@@ -1628,19 +1656,23 @@ class PhaseProgressionSystem:
         # Check if phase changed during get_next_question (indicates transition occurred)
         updated_session = self.sessions.get(session_id)
         if updated_session and updated_session.current_phase.value != original_phase:
-            print(f"🔄 Phase transition detected: {original_phase} → {updated_session.current_phase.value}")
+            print(f"🔄 TRANSITION_DETECTED: {original_phase} → {updated_session.current_phase.value}")
             # Capture the transition result from the last transition
-            if hasattr(self, '_last_transition_result'):
+            if hasattr(self, '_last_transition_result') and self._last_transition_result:
                 phase_transition_result = self._last_transition_result
-                print(f"✅ Captured transition result with generated image: {bool(phase_transition_result.get('generated_image'))}")
+                print(f"✅ TRANSITION_CAPTURED: Transition result with generated image: {bool(phase_transition_result.get('generated_image'))}")
+                # CRITICAL: Clear immediately after capture to prevent reuse
+                self._last_transition_result = None
+                print(f"🔄 TRANSITION_CLEARED: Cleared _last_transition_result to prevent duplicate processing")
 
         # Also check for final phase completion (when phase doesn't change but completes)
         elif hasattr(self, '_last_transition_result') and self._last_transition_result:
-            print(f"🎉 Final phase completion detected")
+            print(f"🎉 COMPLETION_DETECTED: Final phase completion detected")
             phase_transition_result = self._last_transition_result
-            print(f"✅ Captured final phase result with generated image: {bool(phase_transition_result.get('generated_image'))}")
-            # Clear the result after capturing it
+            print(f"✅ COMPLETION_CAPTURED: Final phase result with generated image: {bool(phase_transition_result.get('generated_image'))}")
+            # CRITICAL: Clear the result after capturing it
             self._last_transition_result = None
+            print(f"🔄 COMPLETION_CLEARED: Cleared _last_transition_result to prevent duplicate processing")
 
         result = {
             "session_id": session_id,
@@ -1936,33 +1968,23 @@ class PhaseProgressionSystem:
     def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
         """Compute a meaningful completion percent (0-100) for the current phase.
 
-        Uses a balanced approach that progresses at reasonable pace:
-        - Interaction engagement (50%) - based on user messages IN CURRENT PHASE ONLY
-        - Quality of responses (30%) - based on actual grading scores
-        - Concept coverage (20%) - checklist items completed
+        QUESTION-FOCUSED approach that prioritizes question count:
+        - Question count (70%) - based on user messages IN CURRENT PHASE ONLY (target: 8 questions)
+        - Quality of responses (20%) - based on actual grading scores
+        - Concept coverage (10%) - checklist items completed
         """
-        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value}:")
+        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value} (QUESTION-FOCUSED):")
 
-        # 1. INTERACTION ENGAGEMENT (50%) - Based on user messages IN CURRENT PHASE ONLY
+        # 1. QUESTION COUNT (70%) - Based on user messages IN CURRENT PHASE ONLY
         current_phase_user_messages = self._count_user_messages_in_phase(session, phase_progress)
 
-        # Engagement ratio based on user messages (max 6 per phase)
-        if current_phase_user_messages >= 6:
-            engagement_ratio = 1.0  # Full credit after 6 user messages
-        elif current_phase_user_messages >= 4:
-            engagement_ratio = 0.8  # Good progress after 4 user messages
-        elif current_phase_user_messages >= 3:
-            engagement_ratio = 0.6  # Decent progress after 3 user messages
-        elif current_phase_user_messages >= 2:
-            engagement_ratio = 0.4  # Some progress after 2 user messages
-        elif current_phase_user_messages >= 1:
-            engagement_ratio = 0.2  # Minimal start after 1 user message
-        else:
-            engagement_ratio = 0.0
+        # QUESTION-FOCUSED: Engagement ratio based on 8-question target per phase
+        target_questions = 8
+        question_ratio = min(1.0, current_phase_user_messages / target_questions)
 
-        print(f"   💬 Engagement: {current_phase_user_messages} user messages in current phase = {engagement_ratio:.2f} ({engagement_ratio*50:.1f}% of total)")
+        print(f"   💬 Questions: {current_phase_user_messages}/{target_questions} questions in current phase = {question_ratio:.2f} ({question_ratio*70:.1f}% of total)")
 
-        # 2. QUALITY OF RESPONSES (30%) - Based on actual grading scores
+        # 2. QUALITY OF RESPONSES (20%) - Based on actual grading scores
         if phase_progress.grades:
             print(f"   🔍 DEBUG: Computing quality from {len(phase_progress.grades)} grades")
             total_score = sum(grade.overall_score for grade in phase_progress.grades.values())
@@ -1974,9 +1996,9 @@ class PhaseProgressionSystem:
             quality_ratio = 0.6 if current_phase_user_messages > 0 else 0.0
             print(f"   🔍 DEBUG: No grades yet, baseline quality_ratio = {quality_ratio}")
 
-        print(f"   🎯 Quality: {quality_ratio:.2f} ({quality_ratio*30:.1f}% of total)")
+        print(f"   🎯 Quality: {quality_ratio:.2f} ({quality_ratio*20:.1f}% of total)")
 
-        # 3. CONCEPT COVERAGE (20%) - Checklist items completed
+        # 3. CONCEPT COVERAGE (10%) - Checklist items completed
         items = self.phase_checklist_items.get(session.current_phase, [])
         required_items = [i for i in items if i.get('required')]
         total_required = len(required_items)
@@ -1999,7 +2021,7 @@ class PhaseProgressionSystem:
             concept_ratio = max(base_concept_ratio, 0.2)
         else:
             concept_ratio = 0.5  # Give some baseline credit when no required items
-        print(f"   ✅ Concepts: {completed_required}/{total_required} = {concept_ratio:.2f} ({concept_ratio*15:.1f}% of total)")
+        print(f"   ✅ Concepts: {completed_required}/{total_required} = {concept_ratio:.2f} ({concept_ratio*10:.1f}% of total)")
 
         # 4. VISUAL ENGAGEMENT (5%) - Based on visual artifacts and analysis
         visual_ratio = 0.0
@@ -2034,10 +2056,10 @@ class PhaseProgressionSystem:
         else:
             print(f"   🖼️ Visual: No visual interactions in current phase = 0.0 (0.0% of total)")
 
-        # Combine all factors with adjusted weights (50% + 30% + 15% + 5% = 100%)
-        percent = 100.0 * (0.50 * engagement_ratio + 0.30 * quality_ratio + 0.15 * concept_ratio + 0.05 * visual_ratio)
-        print(f"   🧮 CALCULATION: (50% × {engagement_ratio:.2f}) + (30% × {quality_ratio:.2f}) + (15% × {concept_ratio:.2f}) + (5% × {visual_ratio:.2f})")
-        print(f"   🧮 CALCULATION: {0.50 * engagement_ratio:.2f} + {0.30 * quality_ratio:.2f} + {0.15 * concept_ratio:.2f} + {0.05 * visual_ratio:.2f} = {percent/100:.2f}")
+        # QUESTION-FOCUSED: Combine all factors with question-heavy weights (70% + 20% + 10% = 100%)
+        percent = 100.0 * (0.70 * question_ratio + 0.20 * quality_ratio + 0.10 * concept_ratio)
+        print(f"   🧮 QUESTION-FOCUSED CALCULATION: (70% × {question_ratio:.2f}) + (20% × {quality_ratio:.2f}) + (10% × {concept_ratio:.2f})")
+        print(f"   🧮 CALCULATION: {0.70 * question_ratio:.2f} + {0.20 * quality_ratio:.2f} + {0.10 * concept_ratio:.2f} = {percent/100:.2f}")
 
         # CRITICAL FIX: Remove forced completion jump - let natural progression work
         # This was causing abnormal jumps from 52% to 85% and breaking task trigger windows
@@ -2114,11 +2136,18 @@ class PhaseProgressionSystem:
         """Check if the current phase is complete based on meaningful progress"""
         threshold = self.phase_thresholds.get(session.current_phase, 3.0)
 
-        # Use consistent user message counting within current phase
+        # Use consistent user message counting within current phase - INCREASED THRESHOLDS FOR LONGER PHASES
         current_phase_user_messages = self._count_user_messages_in_phase(session, phase_progress)
-        has_meaningful_engagement = current_phase_user_messages >= 6  # 6 user messages within current phase
-        has_sufficient_quality = phase_progress.average_score >= 2.5  # FIXED: Score is out of 5.0, not 1.0
-        has_good_completion = phase_progress.completion_percent >= 65.0  # Increased from 45% to 65%
+
+        # QUESTION-FOCUSED: Each phase should ask ~8 questions before completion
+        target_questions_per_phase = 8
+        min_messages = target_questions_per_phase  # Same for all phases: 8 questions each
+
+        print(f"   🎯 QUESTION_FOCUS: Target {target_questions_per_phase} questions per phase")
+
+        has_meaningful_engagement = current_phase_user_messages >= min_messages
+        has_sufficient_quality = phase_progress.average_score >= 2.5  # Increased quality requirement
+        has_good_completion = phase_progress.completion_percent >= 75.0  # Increased completion requirement
 
         # Check if required checklist items are completed
         items = self.phase_checklist_items.get(session.current_phase, [])
@@ -2137,14 +2166,19 @@ class PhaseProgressionSystem:
         # Consistent concept completion logic for all phases (20% of required items)
         has_core_concepts = (completed_required >= len(required_items) * 0.2) if required_items else True
 
-        print(f"   🔍 PHASE COMPLETION CHECK (STRICTER THRESHOLDS):")
-        print(f"      Engagement: {has_meaningful_engagement} ({current_phase_user_messages}/6 user messages in current phase)")
-        print(f"      Quality: {has_sufficient_quality} (score ≥0.8)")
-        print(f"      Completion: {has_good_completion} (≥65%)")
+        print(f"   🔍 PHASE COMPLETION CHECK (EXTENDED THRESHOLDS FOR LONGER PHASES):")
+        print(f"      Engagement: {has_meaningful_engagement} ({current_phase_user_messages}/{min_messages} user messages in {session.current_phase.value} phase)")
+        print(f"      Quality: {has_sufficient_quality} (score ≥2.5)")
+        print(f"      Completion: {has_good_completion} (≥75%)")
         print(f"      Concepts: {has_core_concepts} ({completed_required}/{len(required_items)} required)")
 
         if has_meaningful_engagement and has_sufficient_quality and has_good_completion and has_core_concepts:
             phase_progress.is_complete = True
+
+            # ENHANCED: Generate image for the COMPLETED phase before transitioning
+            print(f"🎨 PHASE_COMPLETION: Generating image for completed {session.current_phase.value} phase")
+            self._generate_phase_completion_image(session, session.current_phase)
+
             # CRITICAL FIX: Don't force 100% - preserve natural progression for task triggering
             # Only set to 100% if already very high (>90%) to avoid breaking task trigger windows
             if phase_progress.completion_percent < 90.0:
@@ -2152,7 +2186,7 @@ class PhaseProgressionSystem:
                 print(f"   🎉 PHASE MARKED COMPLETE! Completion adjusted to {phase_progress.completion_percent:.1f}% (preserving task trigger windows)")
             else:
                 phase_progress.completion_percent = 100.0
-                print(f"   🎉 PHASE MARKED COMPLETE! 🎨 IMAGE GENERATION WILL BE TRIGGERED!")
+                print(f"   🎉 PHASE MARKED COMPLETE! 🎨 IMAGE GENERATION COMPLETED!")
                 print(f"   📈 COMPLETION SET TO 100%")
             self._advance_to_next_phase(session)
     
@@ -2178,12 +2212,12 @@ class PhaseProgressionSystem:
         except ValueError:
             logger.error(f"Invalid phase: {session.current_phase}")
 
-    def _generate_final_phase_image(self, session: SessionState):
-        """Generate image for the completed final phase"""
+    def _generate_phase_completion_image(self, session: SessionState, completed_phase: DesignPhase):
+        """Generate image for any completed phase"""
         if (self.image_generation_enabled and self.image_generator and self.prompt_generator and
-            not self._has_generated_image_for_phase(session.session_id, session.current_phase)):
+            not self._has_generated_image_for_phase(session.session_id, completed_phase)):
             try:
-                print(f"🎨 Generating final {session.current_phase.value} phase image...")
+                print(f"🎨 COMPLETION_IMAGE: Generating {completed_phase.value} phase completion image...")
 
                 # Generate image prompt from conversation history
                 conversation_history = session.conversation_history if hasattr(session, 'conversation_history') else []
@@ -2191,14 +2225,14 @@ class PhaseProgressionSystem:
 
                 design_description = self.prompt_generator.generate_image_prompt_from_conversation(
                     conversation_history,
-                    session.current_phase.value.lower(),
+                    completed_phase.value.lower(),
                     project_type
                 )
 
                 # Generate the image
                 image_result = self.image_generator.generate_phase_image(
                     design_description,
-                    session.current_phase.value.lower(),
+                    completed_phase.value.lower(),
                     f"{project_type} design project",
                     session.session_id
                 )
@@ -2208,27 +2242,39 @@ class PhaseProgressionSystem:
                         "url": image_result["image_url"],
                         "prompt": image_result["prompt"],
                         "style": image_result["style"],
-                        "phase": session.current_phase.value
+                        "phase": completed_phase.value,
+                        "local_path": image_result.get("local_path")
                     }
                     # Mark this image as generated to prevent duplicates
-                    self._mark_image_generated(session.session_id, session.current_phase, generated_image)
-                    print(f"✅ Generated final {session.current_phase.value} phase image successfully")
+                    self._mark_image_generated(session.session_id, completed_phase, generated_image)
+                    print(f"✅ COMPLETION_IMAGE: Generated {completed_phase.value} phase image successfully")
 
                     # Store the image result for the dashboard to pick up
                     self._last_transition_result = {
                         "success": True,
-                        "previous_phase": session.current_phase.value,
-                        "new_phase": "complete",
-                        "message": f"🎉 Congratulations! You've completed the {session.current_phase.value} phase.",
-                        "generated_image": generated_image
+                        "previous_phase": completed_phase.value,
+                        "new_phase": completed_phase.value,  # Same phase for completion
+                        "message": f"🎉 {completed_phase.value.title()} phase completed!",
+                        "generated_image": generated_image,
+                        "phase_completion": True  # Flag to indicate this is a completion image
                     }
+                    print(f"🎨 COMPLETION_IMAGE: Stored result for dashboard pickup")
                 else:
-                    print(f"❌ Final image generation failed: {image_result.get('error', 'Unknown error')}")
+                    print(f"❌ COMPLETION_IMAGE: Generation failed: {image_result.get('error', 'Unknown error')}")
 
             except Exception as e:
-                print(f"❌ Error during final image generation: {e}")
-        elif self._has_generated_image_for_phase(session.session_id, session.current_phase):
-            print(f"🎨 Final image already generated for {session.current_phase.value} phase, skipping duplicate generation")
+                print(f"❌ COMPLETION_IMAGE: Error during generation: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print(f"🎨 COMPLETION_IMAGE: Skipping - image already exists or generation disabled for {completed_phase.value}")
+
+    def _generate_final_phase_image(self, session: SessionState):
+        """Generate image for the completed final phase - DEPRECATED, use _generate_phase_completion_image instead"""
+        print(f"🎨 FINAL_PHASE: Delegating to _generate_phase_completion_image")
+        self._generate_phase_completion_image(session, session.current_phase)
+
+
     
     def _is_session_complete(self, session: SessionState) -> bool:
         """Check if the entire session is complete"""

@@ -491,18 +491,9 @@ class ModeProcessor:
                 user_input=f"Manual phase transition to {next_phase}: {reason}"
             )
 
-            # Add a system message about phase transition
-            phase_transition_message = f"**Phase Transition**: Moving from {current_phase} to {next_phase} phase. ({reason})"
-
-            if 'messages' not in st.session_state:
-                st.session_state.messages = []
-
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": phase_transition_message,
-                "timestamp": datetime.now().isoformat(),
-                "phase_transition": True
-            })
+            # REMOVED: Duplicate phase transition message - this is now handled by the dashboard
+            # when processing phase results to avoid double messages
+            print(f"🔄 MANUAL_PHASE_TRANSITION: Handled transition from {current_phase} to {next_phase} ({reason})")
 
             # Trigger rerun to update UI
             st.rerun()
@@ -545,18 +536,9 @@ class ModeProcessor:
                 user_input=f"Phase transition to {next_phase}"
             )
 
-            # Add a system message about phase transition
-            phase_transition_message = f"**Phase Transition**: Moving from {current_phase} to {next_phase} phase."
-
-            if 'messages' not in st.session_state:
-                st.session_state.messages = []
-
-            st.session_state.messages.append({
-                "role": "system",
-                "content": phase_transition_message,
-                "timestamp": datetime.now().isoformat(),
-                "phase_transition": True
-            })
+            # REMOVED: Duplicate phase transition message - this is now handled by the dashboard
+            # when processing phase results to avoid double messages
+            print(f"🔄 PHASE_TRANSITION: Handled transition from {current_phase} to {next_phase} (message will be added by dashboard)")
 
     async def _process_mentor_test_mode(self, user_input: str, test_phase: TestPhase, image_path: str = None) -> str:
         """MENTOR Test (Group A) - Enhanced multi-agent scaffolding with phase-specific interactions"""

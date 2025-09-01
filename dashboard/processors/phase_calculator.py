@@ -48,13 +48,15 @@ class PhaseCalculator:
         }
     
     def _initialize_phase_thresholds(self) -> Dict[str, int]:
-        """Initialize message count thresholds for phase transitions."""
+        """Initialize question-based thresholds for phase transitions."""
         return {
-            "min_messages_for_visualization": 8,
-            "min_messages_for_materialization": 15,
-            "ideation_keyword_threshold": 2,
-            "visualization_keyword_threshold": 3,
-            "materialization_keyword_threshold": 3
+            # QUESTION-FOCUSED: Each phase should ask ~8 questions before transitioning
+            "questions_per_phase": 8,  # Target number of questions per phase
+            "min_messages_for_visualization": 8,   # 8 questions for ideation phase
+            "min_messages_for_materialization": 16,  # 8 questions for visualization phase (8+8)
+            "ideation_keyword_threshold": 2,      # Reduced: focus more on question count
+            "visualization_keyword_threshold": 2,  # Reduced: focus more on question count
+            "materialization_keyword_threshold": 2  # Reduced: focus more on question count
         }
     
     def calculate_current_phase(self, messages: List[Dict[str, Any]], 
@@ -131,53 +133,59 @@ class PhaseCalculator:
         
         return keyword_counts
     
-    def _determine_phase_from_analysis(self, keyword_counts: Dict[DesignPhase, int], 
+    def _determine_phase_from_analysis(self, keyword_counts: Dict[DesignPhase, int],
                                      total_messages: int) -> DesignPhase:
-        """Determine the current phase based on keyword analysis and message count."""
-        
-        # Get thresholds
-        min_viz = self.phase_thresholds["min_messages_for_visualization"]
-        min_mat = self.phase_thresholds["min_messages_for_materialization"]
-        viz_threshold = self.phase_thresholds["visualization_keyword_threshold"]
-        mat_threshold = self.phase_thresholds["materialization_keyword_threshold"]
-        
+        """Determine the current phase based primarily on question count (message count)."""
+
+        # Get thresholds - QUESTION-FOCUSED APPROACH
+        min_viz = self.phase_thresholds["min_messages_for_visualization"]  # 8 questions
+        min_mat = self.phase_thresholds["min_messages_for_materialization"]  # 16 questions
+        viz_threshold = self.phase_thresholds["visualization_keyword_threshold"]  # Reduced to 2
+        mat_threshold = self.phase_thresholds["materialization_keyword_threshold"]  # Reduced to 2
+
         viz_count = keyword_counts[DesignPhase.VISUALIZATION]
         mat_count = keyword_counts[DesignPhase.MATERIALIZATION]
-        
-        # Phase determination logic (conservative approach)
-        if (total_messages >= min_mat and 
-            mat_count >= mat_threshold and
-            mat_count > viz_count):
+
+        # QUESTION-FOCUSED: Phase determination based primarily on message count
+        # Only require minimal keyword evidence (2 keywords) to confirm phase readiness
+        if (total_messages >= min_mat and mat_count >= mat_threshold):
+            print(f"🎯 PHASE_CALC: Materialization phase - {total_messages} messages ≥ {min_mat}, {mat_count} keywords ≥ {mat_threshold}")
             return DesignPhase.MATERIALIZATION
-        elif (total_messages >= min_viz and 
-              viz_count >= viz_threshold):
+        elif (total_messages >= min_viz and viz_count >= viz_threshold):
+            print(f"🎯 PHASE_CALC: Visualization phase - {total_messages} messages ≥ {min_viz}, {viz_count} keywords ≥ {viz_threshold}")
             return DesignPhase.VISUALIZATION
         else:
+            print(f"🎯 PHASE_CALC: Ideation phase - {total_messages} messages < {min_viz}")
             return DesignPhase.IDEATION
     
-    def _calculate_phase_progression(self, current_phase: DesignPhase, 
+    def _calculate_phase_progression(self, current_phase: DesignPhase,
                                    total_messages: int) -> float:
-        """Calculate how far through the current phase the user is (0.0 to 1.0)."""
-        
+        """Calculate how far through the current phase the user is (0.0 to 1.0) based on questions asked."""
+
+        questions_per_phase = self.phase_thresholds["questions_per_phase"]  # 8 questions per phase
+
         if current_phase == DesignPhase.IDEATION:
-            # Progress through ideation based on message count
-            max_ideation_messages = self.phase_thresholds["min_messages_for_visualization"]
-            return min(1.0, total_messages / max_ideation_messages)
-        
+            # Progress through ideation: 0 to 8 questions
+            progress = min(1.0, total_messages / questions_per_phase)
+            print(f"🎯 IDEATION_PROGRESS: {total_messages}/{questions_per_phase} questions = {progress:.1%}")
+            return progress
+
         elif current_phase == DesignPhase.VISUALIZATION:
-            # Progress through visualization
-            viz_start = self.phase_thresholds["min_messages_for_visualization"]
-            viz_duration = self.phase_thresholds["min_messages_for_materialization"] - viz_start
+            # Progress through visualization: questions 9-16 (8 questions in this phase)
+            viz_start = self.phase_thresholds["min_messages_for_visualization"]  # 8
             viz_progress = max(0, total_messages - viz_start)
-            return min(1.0, viz_progress / viz_duration)
-        
+            progress = min(1.0, viz_progress / questions_per_phase)
+            print(f"🎯 VISUALIZATION_PROGRESS: {viz_progress}/{questions_per_phase} questions = {progress:.1%}")
+            return progress
+
         elif current_phase == DesignPhase.MATERIALIZATION:
-            # Progress through materialization (open-ended)
-            mat_start = self.phase_thresholds["min_messages_for_materialization"]
+            # Progress through materialization: questions 17-24 (8 questions in this phase)
+            mat_start = self.phase_thresholds["min_messages_for_materialization"]  # 16
             mat_progress = max(0, total_messages - mat_start)
-            # Assume 15 messages for full materialization
-            return min(1.0, mat_progress / 15)
-        
+            progress = min(1.0, mat_progress / questions_per_phase)
+            print(f"🎯 MATERIALIZATION_PROGRESS: {mat_progress}/{questions_per_phase} questions = {progress:.1%}")
+            return progress
+
         return 0.0
     
     def _calculate_phase_confidence(self, keyword_counts: Dict[DesignPhase, int], 
@@ -215,25 +223,38 @@ class PhaseCalculator:
         
         return None
     
-    def _assess_transition_readiness(self, current_phase: DesignPhase, 
+    def _assess_transition_readiness(self, current_phase: DesignPhase,
                                    keyword_counts: Dict[DesignPhase, int],
                                    total_messages: int) -> bool:
-        """Assess if the user is ready to transition to the next phase."""
-        
+        """Assess if the user is ready to transition to the next phase based primarily on question count."""
+
+        questions_per_phase = self.phase_thresholds["questions_per_phase"]  # 8 questions
+
         if current_phase == DesignPhase.IDEATION:
-            # Ready for visualization if enough messages and some spatial thinking
-            return (total_messages >= self.phase_thresholds["min_messages_for_visualization"] and
-                    keyword_counts[DesignPhase.VISUALIZATION] >= 2)
-        
+            # Ready for visualization after ~8 questions with minimal keyword evidence
+            questions_asked = total_messages
+            has_min_keywords = keyword_counts[DesignPhase.VISUALIZATION] >= 2
+            ready = questions_asked >= questions_per_phase and has_min_keywords
+            print(f"🎯 IDEATION_TRANSITION: {questions_asked}/{questions_per_phase} questions, {keyword_counts[DesignPhase.VISUALIZATION]} viz keywords ≥ 2 = {ready}")
+            return ready
+
         elif current_phase == DesignPhase.VISUALIZATION:
-            # Ready for materialization if enough messages and technical thinking
-            return (total_messages >= self.phase_thresholds["min_messages_for_materialization"] and
-                    keyword_counts[DesignPhase.MATERIALIZATION] >= 2)
-        
+            # Ready for materialization after ~8 questions in visualization phase with minimal keyword evidence
+            viz_start = self.phase_thresholds["min_messages_for_visualization"]  # 8
+            questions_in_viz = max(0, total_messages - viz_start)
+            has_min_keywords = keyword_counts[DesignPhase.MATERIALIZATION] >= 2
+            ready = questions_in_viz >= questions_per_phase and has_min_keywords
+            print(f"🎯 VISUALIZATION_TRANSITION: {questions_in_viz}/{questions_per_phase} questions, {keyword_counts[DesignPhase.MATERIALIZATION]} mat keywords ≥ 2 = {ready}")
+            return ready
+
         elif current_phase == DesignPhase.MATERIALIZATION:
-            # Materialization is the final phase
-            return False
-        
+            # Materialization is the final phase - could complete after ~8 questions
+            mat_start = self.phase_thresholds["min_messages_for_materialization"]  # 16
+            questions_in_mat = max(0, total_messages - mat_start)
+            ready = questions_in_mat >= questions_per_phase
+            print(f"🎯 MATERIALIZATION_COMPLETION: {questions_in_mat}/{questions_per_phase} questions = {ready}")
+            return ready
+
         return False
     
     def get_phase_description(self, phase: str) -> str:

@@ -1507,109 +1507,9 @@ class LangGraphOrchestrator:
         self.logger.info("=" * 80 + "\n")
 
     def _enhance_response_with_image_discussion(self, response: str, user_input: str) -> str:
-        """Enhance response with specific image discussion if image analysis is present."""
-        try:
-            self.logger.info(f"🔍 IMAGE ENHANCEMENT: Checking for image analysis in user input...")
-            self.logger.info(f"📝 User input length: {len(user_input)} chars")
-            self.logger.info(f"📝 User input preview: {user_input[:200]}...")
-
-            # Debug: Check for both markers explicitly
-            has_enhanced = "[ENHANCED IMAGE ANALYSIS:" in user_input
-            has_uploaded = "[UPLOADED IMAGE ANALYSIS:" in user_input
-            self.logger.info(f"🔍 IMAGE ENHANCEMENT: Has ENHANCED marker: {has_enhanced}")
-            self.logger.info(f"🔍 IMAGE ENHANCEMENT: Has UPLOADED marker: {has_uploaded}")
-
-            # Check if user input contains image analysis
-            if not has_enhanced and not has_uploaded:
-                self.logger.info("❌ No image analysis markers found in user input")
-                return response
-
-            # Check if we should automatically reference the image
-            if not self._should_auto_reference_image(user_input):
-                self.logger.info("🔄 IMAGE ENHANCEMENT: Skipping auto-reference - limit reached or user context doesn't warrant it")
-                return response
-
-            self.logger.info("✅ Image analysis markers found, extracting...")
-
-            # Extract image analysis from user input
-            image_analysis = ""
-            if "[ENHANCED IMAGE ANALYSIS:" in user_input:
-                start_marker = "[ENHANCED IMAGE ANALYSIS:"
-                end_marker = "]"
-                start_idx = user_input.find(start_marker)
-                if start_idx != -1:
-                    start_idx += len(start_marker)
-                    end_idx = user_input.rfind(end_marker)
-                    if end_idx > start_idx:
-                        image_analysis = user_input[start_idx:end_idx].strip()
-                        self.logger.info(f"📷 Extracted ENHANCED image analysis: {len(image_analysis)} chars")
-            elif "[UPLOADED IMAGE ANALYSIS:" in user_input:
-                start_marker = "[UPLOADED IMAGE ANALYSIS:"
-                end_marker = "]"
-                start_idx = user_input.find(start_marker)
-                if start_idx != -1:
-                    start_idx += len(start_marker)
-                    end_idx = user_input.rfind(end_marker)
-                    if end_idx > start_idx:
-                        image_analysis = user_input[start_idx:end_idx].strip()
-                        self.logger.info(f"📷 Extracted UPLOADED image analysis: {len(image_analysis)} chars")
-
-            if not image_analysis:
-                self.logger.warning("⚠️ Image analysis extraction failed - empty result")
-                return response
-
-            self.logger.info(f"🎯 Image analysis preview: {image_analysis[:300]}...")
-
-            # Generate image-specific discussion using OpenAI
-            from openai import OpenAI
-            import os
-
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-            image_discussion_prompt = f"""
-            You are analyzing an architectural image. Based on the detailed analysis below, identify the most specific and notable visual features that a mentor would comment on.
-
-            Image Analysis: {image_analysis[:1000]}
-
-            Create a brief, specific observation about what you can see in this image. Focus on:
-            - Specific materials (concrete panels, steel, wood, glass, etc.)
-            - Lighting conditions (natural light, artificial lighting, shadows, etc.)
-            - Spatial qualities (height, openness, circulation, etc.)
-            - Architectural elements (columns, beams, openings, surfaces, etc.)
-
-            Write as if you're a mentor who is actually looking at the image and can see these specific details. Be concrete and specific, not generic.
-
-            Format: "the [specific material/element] and [specific lighting/spatial quality]"
-            Example: "the exposed concrete panels and dramatic vertical lighting strips"
-            Example: "the steel frame structure and large glazed openings"
-
-            Return only the specific observation, no additional text.
-            """
-
-            self.logger.info("🤖 Generating image-specific comment...")
-
-            image_response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": image_discussion_prompt}],
-                max_tokens=150,
-                temperature=0.7
-            )
-
-            image_comment = image_response.choices[0].message.content.strip()
-            self.logger.info(f"💬 Generated image comment: {image_comment}")
-
-            # Integrate the image comment naturally into the response
-            if image_comment:
-                # Add the image-specific comment at the beginning of the response
-                enhanced_response = f"Looking at your image, I can see {image_comment.lower()} {response}"
-                self.logger.info(f"✅ Enhanced response with image discussion")
-                return enhanced_response
-            else:
-                self.logger.warning("⚠️ Empty image comment generated")
-
-        except Exception as e:
-            self.logger.warning(f"Image discussion enhancement failed: {e}")
-
+        """DISABLED: Image enhancement completely turned off to stop 'Looking at your image' text."""
+        # NUCLEAR OPTION: Always return original response, never add image text
+        self.logger.info("🚫 IMAGE ENHANCEMENT: COMPLETELY DISABLED")
         return response
 
     def _should_auto_reference_image(self, user_input: str) -> bool:
@@ -1691,24 +1591,44 @@ class LangGraphOrchestrator:
                 self.logger.info(f"🖼️ IMAGE REFERENCE: User explicitly asked about image, allowing reference (bypasses counter)")
                 return True
 
-            # Track how many times we've referenced this specific image
-            current_count = image_reference_count.get(image_hash, 0)
-            self.logger.info(f"🖼️ IMAGE REFERENCE: Current auto-reference count for image {image_hash}: {current_count}/2")
+            # AGGRESSIVE FIX: Always return False after 2 messages to stop "Looking at your image"
+            # This is the most direct way to stop the persistent image references
+            try:
+                import streamlit as st
+                # Check if dashboard has already determined we should stop bundling
+                if hasattr(st.session_state, 'last_image_upload_message_count') and hasattr(st.session_state, 'messages'):
+                    current_message_count = len(st.session_state.messages)
+                    messages_since_upload = current_message_count - st.session_state.last_image_upload_message_count
 
-            # Only auto-reference for the first 2 responses after upload
-            if current_count < 2:
-                image_reference_count[image_hash] = current_count + 1
-                # Update session state if using streamlit
-                try:
-                    import streamlit as st
-                    st.session_state.image_reference_count = image_reference_count
-                except ImportError:
-                    pass
-                self.logger.info(f"🖼️ IMAGE REFERENCE: Auto-referencing image (count: {current_count + 1}/2)")
-                return True
-            else:
-                self.logger.info(f"🖼️ IMAGE REFERENCE: Auto-reference limit reached for this image (count: {current_count}/2)")
-                return False
+                    self.logger.info(f"🖼️ IMAGE REFERENCE: Dashboard sync - messages since upload: {messages_since_upload}")
+
+                    # STRICT LIMIT: Only allow for first 2 messages, then NEVER again
+                    if messages_since_upload >= 2:
+                        self.logger.info(f"� IMAGE REFERENCE: BLOCKED - limit reached ({messages_since_upload}/2)")
+                        return False
+                    else:
+                        self.logger.info(f"✅ IMAGE REFERENCE: ALLOWED ({messages_since_upload}/2)")
+                        return True
+                else:
+                    # Even in fallback, be strict about the limit
+                    current_count = image_reference_count.get(image_hash, 0)
+                    self.logger.info(f"🖼️ IMAGE REFERENCE: Fallback tracking: {current_count}/2")
+
+                    if current_count >= 2:
+                        self.logger.info(f"� IMAGE REFERENCE: BLOCKED - fallback limit reached ({current_count}/2)")
+                        return False
+                    else:
+                        image_reference_count[image_hash] = current_count + 1
+                        self.logger.info(f"✅ IMAGE REFERENCE: ALLOWED - fallback ({current_count + 1}/2)")
+                        return True
+            except ImportError:
+                # Even in non-streamlit, be strict
+                current_count = image_reference_count.get(image_hash, 0)
+                if current_count >= 2:
+                    return False
+                else:
+                    image_reference_count[image_hash] = current_count + 1
+                    return True
 
         except Exception as e:
             self.logger.error(f"Error checking image reference policy: {e}")

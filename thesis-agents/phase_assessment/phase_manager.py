@@ -180,9 +180,9 @@ class PhaseAssessmentManager:
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
         total_messages = len(user_messages)
 
-        # MUCH MORE CONSERVATIVE: Require substantial evidence AND minimum messages for phase advancement
-        min_messages_for_viz = 6  # At least 6 user messages before considering visualization
-        min_messages_for_mat = 10  # At least 10 user messages before considering materialization
+        # BALANCED: Require substantial evidence AND minimum messages for phase advancement
+        min_messages_for_viz = 8   # Balanced: 8 user messages before considering visualization (was 10, too strict)
+        min_messages_for_mat = 12  # Balanced: 12 user messages before considering materialization (was 16, too strict)
 
         # Also require action-oriented language, not just conceptual discussion
         has_design_actions = any(action in recent_content for action in [
@@ -196,15 +196,17 @@ class PhaseAssessmentManager:
             "the plan is", "the idea is", "i'll start by", "first i'll"
         ])
 
-        # MATERIALIZATION: Requires many messages + multiple material keywords + specific technical discussion
-        if (total_messages >= min_messages_for_mat and
-            mat_count >= 3 and
-            ("construction" in recent_content or "detail" in recent_content)):
+        # MATERIALIZATION: Requires many more messages + multiple material keywords + specific technical discussion
+        # Increased threshold to make materialization phase longer
+        if (total_messages >= min_messages_for_mat + 8 and  # Increased by 8 messages
+            mat_count >= 4 and  # Increased keyword requirement
+            ("construction" in recent_content or "detail" in recent_content or "material" in recent_content)):
             current_phase = DesignPhase.MATERIALIZATION
 
-        # VISUALIZATION: Requires several messages + multiple spatial keywords + actual design actions
-        elif (total_messages >= min_messages_for_viz and
-              viz_count >= 3 and
+        # VISUALIZATION: Requires more messages + multiple spatial keywords + actual design actions
+        # Increased threshold to make visualization phase longer
+        elif (total_messages >= min_messages_for_viz + 6 and  # Increased by 6 messages
+              viz_count >= 4 and  # Increased keyword requirement
               (has_design_actions or has_specific_proposals)):
             current_phase = DesignPhase.VISUALIZATION
 
@@ -236,12 +238,13 @@ class PhaseAssessmentManager:
             "feasibility", "structure", "system", "method"
         ])
 
-        # MUCH MORE CONSERVATIVE step progression - spend more time in each step
-        if total_messages <= 5 or not has_detailed_analysis:
+        # EXTREMELY CONSERVATIVE step progression - spend much more time in each step
+        # Increased thresholds to make phases significantly longer
+        if total_messages <= 8 or not has_detailed_analysis:
             current_step = SocraticStep.INITIAL_CONTEXT_REASONING
-        elif total_messages <= 10 or not has_specific_examples:
+        elif total_messages <= 16 or not has_specific_examples:
             current_step = SocraticStep.KNOWLEDGE_SYNTHESIS_TRIGGER
-        elif total_messages <= 15 or not has_implementation_details:
+        elif total_messages <= 24 or not has_implementation_details:
             current_step = SocraticStep.SOCRATIC_QUESTIONING
         else:
             current_step = SocraticStep.METACOGNITIVE_PROMPT

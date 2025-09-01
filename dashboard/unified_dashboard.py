@@ -1108,9 +1108,10 @@ class UnifiedArchitecturalDashboard:
             if phase_result.get('nudge'):
                 st.info(f"💡 **Phase Guidance**: {phase_result['nudge']}")
 
-            # Handle phase transitions - but don't rerun yet, let response generation complete
+            # REMOVED: Duplicate phase transition display - this is now handled in _generate_and_display_response
+            # to prevent double messages. Only handle task triggering here.
             if phase_result.get('phase_transition'):
-                st.success(f"🎉 **Phase Transition**: {phase_result.get('transition_message', 'Moving to next phase!')}")
+                print(f"🔄 PHASE_TRANSITION_TASK_HANDLING: Phase transition detected, handling tasks only")
 
                 # CRITICAL FIX: Handle task triggering during phase transitions
                 previous_phase = phase_result.get('previous_phase', 'unknown')
@@ -1187,14 +1188,40 @@ class UnifiedArchitecturalDashboard:
                 print(f"🎨 DEBUG: Phase result keys: {list(phase_result.keys()) if phase_result else 'None'}")
                 print(f"🎨 DEBUG: Phase transition: {phase_result.get('phase_transition', False)}")
 
+                # ENHANCED DUPLICATE PREVENTION: More robust checking
+                should_process_transition = False
+                transition_id = None
+
                 if phase_result.get('phase_transition'):
+                    # Create unique ID for this transition
+                    transition_id = f"{phase_result.get('previous_phase', 'unknown')}_{phase_result.get('new_phase', 'unknown')}_{len(st.session_state.messages)}"
+                    processed_transitions = st.session_state.get('processed_phase_transitions', set())
+
+                    if transition_id not in processed_transitions:
+                        print(f"🎨 DUPLICATE_PREVENTION: New transition {transition_id}, will process")
+                        should_process_transition = True
+                        # Mark as processed immediately to prevent race conditions
+                        if 'processed_phase_transitions' not in st.session_state:
+                            st.session_state.processed_phase_transitions = set()
+                        st.session_state.processed_phase_transitions.add(transition_id)
+                    else:
+                        print(f"🎨 DUPLICATE_PREVENTION: Transition {transition_id} already processed, skipping completely")
+                        should_process_transition = False
+
+                # CRITICAL: Clear phase result immediately to prevent any reprocessing
+                if st.session_state.get('last_phase_result'):
+                    st.session_state.last_phase_result = {}
+                    print(f"🎨 DUPLICATE_PREVENTION: Cleared last_phase_result immediately")
+
+                # Only process transition if it should be processed (not a duplicate)
+                if should_process_transition and phase_result.get('phase_transition'):
                     transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
                     response_content += transition_msg
-                    print(f"✅ Added phase transition message to response")
+                    print(f"✅ PROCESSING_TRANSITION: Added phase transition message to response")
 
                     # Handle generated image if available
                     generated_image = phase_result.get('generated_image')
-                    print(f"🎨 DEBUG: Generated image from phase result: {bool(generated_image)}")
+                    print(f"🎨 PROCESSING_TRANSITION: Generated image from phase result: {bool(generated_image)}")
                     if generated_image:
                         print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys())}")
                         print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
@@ -1223,10 +1250,6 @@ class UnifiedArchitecturalDashboard:
                         print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
                     else:
                         print(f"❌ DEBUG: No generated_image found in phase_result")
-
-                    # CRITICAL FIX: Clear the phase result to prevent reuse in subsequent messages
-                    st.session_state.last_phase_result = {}
-                    print(f"🎨 DEBUG: Cleared last_phase_result to prevent duplicate image display")
 
                 # Add Socratic question if needed (only for MENTOR mode)
                 combined_response = self._add_socratic_question_if_needed(response_content, st.session_state.current_mode)
@@ -1277,9 +1300,13 @@ class UnifiedArchitecturalDashboard:
                             print(f"🎨 DEBUG: Phase result has no generated_image key")
 
                 st.session_state.messages.append(assistant_message)
-                
-                # Force chat interface to update
-                st.rerun()
+
+                # CRITICAL FIX: Only rerun if we haven't already set pending_rerun
+                # This prevents double rerun when phase transitions occur
+                if not st.session_state.get('pending_rerun', False):
+                    st.rerun()
+                else:
+                    print(f"🎨 DEBUG: Skipping rerun - pending_rerun already set for phase transition")
                 
                 # Update data collector with response
                 self._update_data_collector_response(response, user_input)
@@ -1711,12 +1738,12 @@ class UnifiedArchitecturalDashboard:
 
             print(f"🔍 DASHBOARD: Messages since image upload: {messages_since_upload}")
 
-            # Only bundle for the first 2 messages after upload
-            if messages_since_upload < 4:  # 4 because each exchange is 2 messages (user + assistant)
-                print(f"✅ DASHBOARD: Bundling image analysis (messages since upload: {messages_since_upload}/4)")
+            # Only bundle for the first 2 messages after upload (changed from 4 to 2)
+            if messages_since_upload < 2:  # 2 messages max: first user message + first assistant response
+                print(f"✅ DASHBOARD: Bundling image analysis (messages since upload: {messages_since_upload}/2)")
                 return True
             else:
-                print(f"🔄 DASHBOARD: Image reference limit reached, not bundling (messages since upload: {messages_since_upload}/4)")
+                print(f"🔄 DASHBOARD: Image reference limit reached, not bundling (messages since upload: {messages_since_upload}/2)")
                 return False
 
         except Exception as e:
