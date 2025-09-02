@@ -2026,7 +2026,7 @@ class EnhancedGamificationRenderer:
             # Compact response area
             user_response = st.text_area(
                 "Your experience:",
-                placeholder=f"As {persona_name}, I feel...",
+                placeholder=f"As {persona_name}, I experience..",
                 height=100,
                 key=f"response_{persona_key}",
                 help="Describe your thoughts, feelings, and observations from this persona's perspective"
@@ -2890,8 +2890,10 @@ class EnhancedGamificationRenderer:
                 st.info("🎉 Storytelling challenge already completed! You've submitted your 3-chapter story.")
                 return
 
-            # ISSUE 2 FIX: Robust storytelling state initialization with validation
+            # ISSUE 2 FIX: Robust storytelling state initialization with validation + UNIQUE INSTANCE ID
             if 'storytelling_state' not in st.session_state:
+                import time
+                instance_id = int(time.time() * 1000) % 1000000  # Unique ID based on timestamp
                 st.session_state.storytelling_state = {
                     'chapter': 1,
                     'story_points': 0,
@@ -2900,8 +2902,10 @@ class EnhancedGamificationRenderer:
                     'show_feedback': False,
                     'feedback_message': '',
                     'feedback_points': 0,
-                    'completed': False
+                    'completed': False,
+                    'instance_id': instance_id  # UNIQUE INSTANCE ID FOR KEY GENERATION
                 }
+
 
             story_state = st.session_state.storytelling_state
 
@@ -2993,8 +2997,21 @@ class EnhancedGamificationRenderer:
                 if feedback_points > 0:
                     self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
 
-                # Add a dismiss button to clear feedback
-                if st.button("✓ Continue", key="dismiss_feedback", use_container_width=True):
+                # CRITICAL FIX: Reset feedback state after displaying so user input area appears again
+                story_state['show_feedback'] = False
+                st.session_state['storytelling_state'] = story_state
+
+                # CRITICAL FIX: Reset feedback state after displaying so user input area appears again
+                story_state['show_feedback'] = False
+                st.session_state['storytelling_state'] = story_state
+
+                # Add a dismiss button to clear feedback - UNIQUE KEY FIX
+                story_instance_id = story_state.get('instance_id', hash(str(story_state.get('story_points', 0))))
+                # CRITICAL FIX: Add timestamp to ensure unique keys across multiple storytelling triggers
+                import time
+                unique_timestamp = int(time.time() * 1000)
+                dismiss_key = f"dismiss_feedback_{story_instance_id}_{story_state.get('chapter', 1)}_{unique_timestamp}"
+                if st.button("✓ Continue", key=dismiss_key, use_container_width=True):
                     story_state['show_feedback'] = False
                     story_state['feedback_message'] = ''
                     story_state['feedback_points'] = 0
@@ -3002,21 +3019,33 @@ class EnhancedGamificationRenderer:
                     st.rerun()
 
             # Story response (only show if not showing feedback)
+            story_response = None  # Initialize to prevent undefined variable errors
             if not story_state.get('show_feedback', False):
+                # SIMPLE FIX: Generate a fresh key for each new storytelling trigger
+                # But keep it stable during the same storytelling session
+                story_instance_id = story_state.get('instance_id', 0)
+                current_points = story_state.get('story_points', 0)
+
+                # Create a key that's unique for this storytelling trigger but stable during submission
+                response_key = f"storytelling_input_{story_instance_id}_{current_points}"
+
                 story_response = st.text_area(
                     "Continue the story - what happens next?",
-                    key="storytelling_response",
+                    key=response_key,
                     height=100
                 )
 
             # Only show button if not showing feedback
             if not story_state.get('show_feedback', False):
-                if st.button(f"{theme['symbol']} Continue Story", key="continue_story", use_container_width=True):
+                # UNIQUE KEY FIX for continue story button
+                story_instance_id = story_state.get('instance_id', hash(str(story_state.get('story_points', 0))))
+                continue_key = f"continue_story_{story_instance_id}_{story_state.get('chapter', 1)}"
+                if st.button(f"{theme['symbol']} Continue Story", key=continue_key, use_container_width=True):
                     if story_response:
                         # ISSUE 2 FIX: Safe state updates with validation
                         try:
                             story_state['chapter'] = story_state.get('chapter', 1) + 1
-                            story_state['story_points'] = story_state.get('story_points', 0) + 10
+                            story_state['story_points'] = story_state.get('story_points', 0) + 35
                             if 'narrative_choices' not in story_state:
                                 story_state['narrative_choices'] = []
                             story_state['narrative_choices'].append(story_response)

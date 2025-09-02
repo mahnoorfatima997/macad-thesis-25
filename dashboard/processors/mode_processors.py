@@ -366,8 +366,14 @@ class ModeProcessor:
                         'created_at': datetime.now().isoformat()
                     }
 
-                    # Add to queue
-                    st.session_state['task_display_queue'].append(task_display_entry)
+                    # CRITICAL FIX: Check if this task is already in the display queue to prevent duplicates
+                    existing_tasks = [entry['task'].task_type.value for entry in st.session_state['task_display_queue']]
+                    if task.task_type.value not in existing_tasks:
+                        # Add to queue
+                        st.session_state['task_display_queue'].append(task_display_entry)
+                        print(f"🎯 TASK_UI_QUEUE: Added {task.task_type.value} to display queue for message {current_message_index}")
+                    else:
+                        print(f"🎯 TASK_UI_DUPLICATE: Skipped adding {task.task_type.value} - already in display queue")
 
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing UI code
@@ -1593,9 +1599,14 @@ class ModeProcessor:
                         'displayed': False
                     }
 
-                    # Add to display queue
-                    st.session_state['task_display_queue'].append(task_display_entry)
-                    print(f"🎯 TASK_UI_QUEUE: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    # CRITICAL FIX: Check if this task is already in the display queue to prevent duplicates
+                    existing_tasks = [entry['task'].task_type.value for entry in st.session_state['task_display_queue']]
+                    if activated_task.task_type.value not in existing_tasks:
+                        # Add to display queue
+                        st.session_state['task_display_queue'].append(task_display_entry)
+                        print(f"🎯 TASK_UI_QUEUE: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    else:
+                        print(f"🎯 TASK_UI_DUPLICATE: Skipped adding {activated_task.task_type.value} - already in display queue")
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing code
                     st.session_state['active_task'] = task_display_entry
@@ -1703,9 +1714,14 @@ class ModeProcessor:
                         'displayed': False
                     }
 
-                    # Add to display queue
-                    st.session_state['task_display_queue'].append(task_display_entry)
-                    print(f"🔄 PHASE_TRANSITION_UI: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    # CRITICAL FIX: Check if this task is already in the display queue to prevent duplicates
+                    existing_tasks = [entry['task'].task_type.value for entry in st.session_state['task_display_queue']]
+                    if activated_task.task_type.value not in existing_tasks:
+                        # Add to display queue
+                        st.session_state['task_display_queue'].append(task_display_entry)
+                        print(f"🔄 PHASE_TRANSITION_UI: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    else:
+                        print(f"🔄 PHASE_TRANSITION_DUPLICATE: Skipped adding {activated_task.task_type.value} - already in display queue")
 
                     # BACKWARD COMPATIBILITY: Also set active_task
                     st.session_state['active_task'] = task_display_entry

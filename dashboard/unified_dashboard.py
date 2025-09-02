@@ -849,6 +849,10 @@ class UnifiedArchitecturalDashboard:
             task_manager = get_cached_task_manager()
             current_phase = phase_result.get('current_phase', 'ideation')
 
+            # CRITICAL FIX: Update session state so mode processor uses the same phase
+            st.session_state['test_current_phase'] = current_phase.title()
+            print(f"🎯 DASHBOARD: Updated test_current_phase to {current_phase.title()}")
+
             print(f"🎯 DASHBOARD: Checking task triggers at {updated_phase_completion:.1f}% in {current_phase} phase")
 
             triggered_task = task_manager.check_task_triggers(
@@ -865,50 +869,53 @@ class UnifiedArchitecturalDashboard:
                 task_name = triggered_task.value if hasattr(triggered_task, 'value') else str(triggered_task)
                 print(f"🎯 DASHBOARD: Task triggered: {task_name}")
 
-                # Store triggered task for UI display
-                st.session_state.triggered_task = {
-                    'task_name': task_name,
-                    'task_type': triggered_task,
-                    'completion_percent': updated_phase_completion,
-                    'phase': current_phase,
-                    'triggered_at': datetime.now().isoformat()
-                }
+                # CRITICAL FIX: Activate the task to get the ActiveTask object
+                activated_task = task_manager.activate_task(
+                    task_type=triggered_task,
+                    test_group=st.session_state.get('test_group', 'MENTOR'),
+                    current_phase=current_phase,
+                    trigger_reason=f"Phase completion: {updated_phase_completion:.1f}%",
+                    phase_completion_percent=updated_phase_completion
+                )
 
-                # Display task message immediately
-                from dashboard.processors.dynamic_task_manager import TaskType
-                task_type_enum = None
-                for task_enum in TaskType:
-                    if task_enum.value == task_name:
-                        task_type_enum = task_enum
-                        break
+                if activated_task:
+                    # CRITICAL FIX: Add task to display queue for UI rendering
+                    if 'task_display_queue' not in st.session_state:
+                        st.session_state['task_display_queue'] = []
 
-                task_config = task_manager.task_triggers.get(task_type_enum, {}) if task_type_enum else {}
+                    # Link task to current message (it should appear after the current message)
+                    current_message_index = len(st.session_state.messages) - 1
 
-                # Create user-friendly task names and descriptions
-                task_display_names = {
-                    'architectural_concept': 'Architectural Concept Development',
-                    'spatial_program': 'Spatial Program Development',
-                    'visual_conceptualization': 'Visual Conceptualization',
-                    'visual_analysis_2d': '2D Visual Analysis',
-                    'environmental_contextual': 'Environmental Context Analysis'
-                }
+                    task_display_entry = {
+                        'task': activated_task,
+                        'user_input': user_input,
+                        'guidance_type': 'socratic',  # Default guidance type
+                        'should_render': True,
+                        'task_id': f"{activated_task.task_type.value}_{current_message_index}_{activated_task.start_time.strftime('%H%M%S%f')}",
+                        'message_index': current_message_index,
+                        'created_at': datetime.now().isoformat(),
+                        'displayed': False
+                    }
 
-                task_descriptions = {
-                    'architectural_concept': 'Develop and refine your core architectural concepts and design approach.',
-                    'spatial_program': 'Define and organize the spatial program and functional relationships.',
-                    'visual_conceptualization': 'Create visual representations of your design concepts.',
-                    'visual_analysis_2d': 'Analyze and develop 2D visual representations of your design.',
-                    'environmental_contextual': 'Consider environmental and contextual factors in your design.'
-                }
+                    # Add to display queue
+                    st.session_state['task_display_queue'].append(task_display_entry)
+                    print(f"🎯 DASHBOARD: Added {activated_task.task_type.value} to task_display_queue for message {current_message_index}")
 
-                display_name = task_display_names.get(task_name, task_name.replace('_', ' ').title())
-                description = task_descriptions.get(task_name, f'Task {task_name} has been triggered.')
+                    # BACKWARD COMPATIBILITY: Also set active_task for existing code
+                    st.session_state['active_task'] = task_display_entry
 
-                # REMOVED: Task display messages - tasks now render as UI components
-                # st.success(f"🎯 **New Task Available**: {display_name}")
-                # st.info(f"📋 {description}")
+                    # Store triggered task for backward compatibility
+                    st.session_state.triggered_task = {
+                        'task_name': task_name,
+                        'task_type': triggered_task,
+                        'completion_percent': updated_phase_completion,
+                        'phase': current_phase,
+                        'triggered_at': datetime.now().isoformat()
+                    }
 
-                print(f"✅ DASHBOARD: Task {task_name} triggered (UI component will render separately)")
+                    print(f"✅ DASHBOARD: Task {task_name} activated and added to UI display queue")
+                else:
+                    print(f"❌ DASHBOARD: Failed to activate task {task_name}")
             else:
                 print(f"🎯 DASHBOARD: No tasks triggered at {updated_phase_completion:.1f}%")
 
