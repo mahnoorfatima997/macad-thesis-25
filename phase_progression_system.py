@@ -1660,6 +1660,9 @@ class PhaseProgressionSystem:
         updated_session = self.sessions.get(session_id)
         if updated_session and updated_session.current_phase.value != original_phase:
             print(f"🔄 TRANSITION_DETECTED: {original_phase} → {updated_session.current_phase.value}")
+            # CRITICAL FIX: Use the NEW phase's progress after transition (should be 0%)
+            current_phase_progress = updated_session.phase_progress.get(updated_session.current_phase)
+            print(f"🔄 TRANSITION_PROGRESS: Using new phase progress with {current_phase_progress.completion_percent:.1f}% completion")
             # Capture the transition result from the last transition
             if hasattr(self, '_last_transition_result') and self._last_transition_result:
                 phase_transition_result = self._last_transition_result

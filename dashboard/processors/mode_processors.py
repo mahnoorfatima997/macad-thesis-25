@@ -374,6 +374,8 @@ class ModeProcessor:
                         print(f"🎯 TASK_UI_QUEUE: Added {task.task_type.value} to display queue for message {current_message_index}")
                     else:
                         print(f"🎯 TASK_UI_DUPLICATE: Skipped adding {task.task_type.value} - already in display queue")
+                        # CRITICAL FIX: Don't update message_index of existing tasks - they should stay where they were first placed
+                        print(f"🎯 TASK_UI_STABLE: Task {task.task_type.value} remains linked to its original message")
 
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing UI code
@@ -1607,6 +1609,8 @@ class ModeProcessor:
                         print(f"🎯 TASK_UI_QUEUE: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
                     else:
                         print(f"🎯 TASK_UI_DUPLICATE: Skipped adding {activated_task.task_type.value} - already in display queue")
+                        # CRITICAL FIX: Don't update message_index of existing tasks - they should stay where they were first placed
+                        print(f"🎯 TASK_UI_STABLE: Task {activated_task.task_type.value} remains linked to its original message")
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing code
                     st.session_state['active_task'] = task_display_entry
@@ -1722,6 +1726,8 @@ class ModeProcessor:
                         print(f"🔄 PHASE_TRANSITION_UI: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
                     else:
                         print(f"🔄 PHASE_TRANSITION_DUPLICATE: Skipped adding {activated_task.task_type.value} - already in display queue")
+                        # CRITICAL FIX: Don't update message_index of existing tasks - they should stay where they were first placed
+                        print(f"🔄 PHASE_TRANSITION_STABLE: Task {activated_task.task_type.value} remains linked to its original message")
 
                     # BACKWARD COMPATIBILITY: Also set active_task
                     st.session_state['active_task'] = task_display_entry

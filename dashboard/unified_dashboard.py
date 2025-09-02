@@ -747,6 +747,12 @@ class UnifiedArchitecturalDashboard:
         if uploaded_image:
             print(f"📷 DASHBOARD: Image uploaded: {uploaded_image.name}")
 
+        # CRITICAL FIX: Clear gamification duplicate prevention for new user input
+        # This allows games to be interactive while preventing multiple renders per page load
+        if 'rendered_challenges' in st.session_state:
+            st.session_state.rendered_challenges.clear()
+            print(f"🎮 DUPLICATE_PREVENTION: Cleared rendered challenges for new user input")
+
         # Process image if uploaded and extract comprehensive analysis
         enhanced_user_input = user_input
         image_path = None
@@ -897,9 +903,16 @@ class UnifiedArchitecturalDashboard:
                         'displayed': False
                     }
 
-                    # Add to display queue
-                    st.session_state['task_display_queue'].append(task_display_entry)
-                    print(f"🎯 DASHBOARD: Added {activated_task.task_type.value} to task_display_queue for message {current_message_index}")
+                    # CRITICAL FIX: Check if this task is already in the display queue to prevent duplicates
+                    existing_tasks = [entry['task'].task_type.value for entry in st.session_state['task_display_queue']]
+                    if activated_task.task_type.value not in existing_tasks:
+                        # Add to display queue
+                        st.session_state['task_display_queue'].append(task_display_entry)
+                        print(f"🎯 DASHBOARD: Added {activated_task.task_type.value} to task_display_queue for message {current_message_index}")
+                    else:
+                        print(f"🎯 DASHBOARD_DUPLICATE: Skipped adding {activated_task.task_type.value} - already in display queue")
+                        # CRITICAL FIX: Don't update message_index of existing tasks - they should stay where they were first placed
+                        print(f"🎯 DASHBOARD_STABLE: Task {activated_task.task_type.value} remains linked to its original message")
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing code
                     st.session_state['active_task'] = task_display_entry
@@ -1220,43 +1233,43 @@ class UnifiedArchitecturalDashboard:
                     st.session_state.last_phase_result = {}
                     print(f"🎨 DUPLICATE_PREVENTION: Cleared last_phase_result immediately")
 
-                # Only process transition if it should be processed (not a duplicate)
+                # CRITICAL FIX: Always handle generated image, even if transition message is skipped
+                generated_image = phase_result.get('generated_image')
+                print(f"🎨 PROCESSING_IMAGE: Generated image from phase result: {bool(generated_image)}")
+                if generated_image:
+                    print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys())}")
+                    print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
+
+                    # Check if we're running on Streamlit Cloud
+                    is_cloud = (
+                        os.environ.get('STREAMLIT_SHARING_MODE') or
+                        'streamlit.app' in os.environ.get('HOSTNAME', '') or
+                        os.environ.get('STREAMLIT_SERVER_PORT') or
+                        'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
+                    )
+                    print(f"🎨 DEBUG: Running on cloud: {is_cloud}")
+
+                    if not is_cloud:
+                        # Only try to save locally if not on cloud
+                        saved_path = self._save_generated_image(generated_image)
+                        if saved_path:
+                            generated_image['local_path'] = saved_path
+                            print(f"🎨 DEBUG: Added local_path to generated_image: {saved_path}")
+                    else:
+                        print(f"🎨 DEBUG: Skipping local save on cloud deployment")
+
+                    # Store image data for inclusion in chat message
+                    generated_image_data = generated_image
+                    print(f"✅ Generated image will be included in chat message")
+                    print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
+                else:
+                    print(f"❌ DEBUG: No generated_image found in phase_result")
+
+                # Only process transition MESSAGE if it should be processed (not a duplicate)
                 if should_process_transition and phase_result.get('phase_transition'):
                     transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
                     response_content += transition_msg
                     print(f"✅ PROCESSING_TRANSITION: Added phase transition message to response")
-
-                    # Handle generated image if available
-                    generated_image = phase_result.get('generated_image')
-                    print(f"🎨 PROCESSING_TRANSITION: Generated image from phase result: {bool(generated_image)}")
-                    if generated_image:
-                        print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys())}")
-                        print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
-
-                        # Check if we're running on Streamlit Cloud
-                        is_cloud = (
-                            os.environ.get('STREAMLIT_SHARING_MODE') or
-                            'streamlit.app' in os.environ.get('HOSTNAME', '') or
-                            os.environ.get('STREAMLIT_SERVER_PORT') or
-                            'streamlit' in os.environ.get('SERVER_SOFTWARE', '').lower()
-                        )
-                        print(f"🎨 DEBUG: Running on cloud: {is_cloud}")
-
-                        if not is_cloud:
-                            # Only try to save locally if not on cloud
-                            saved_path = self._save_generated_image(generated_image)
-                            if saved_path:
-                                generated_image['local_path'] = saved_path
-                                print(f"🎨 DEBUG: Added local_path to generated_image: {saved_path}")
-                        else:
-                            print(f"🎨 DEBUG: Skipping local save on cloud deployment")
-
-                        # Store image data for inclusion in chat message
-                        generated_image_data = generated_image
-                        print(f"✅ Generated image will be included in chat message")
-                        print(f"🎨 DEBUG: Final generated_image_data keys: {list(generated_image_data.keys())}")
-                    else:
-                        print(f"❌ DEBUG: No generated_image found in phase_result")
 
                 # Add Socratic question if needed (only for MENTOR mode)
                 combined_response = self._add_socratic_question_if_needed(response_content, st.session_state.current_mode)

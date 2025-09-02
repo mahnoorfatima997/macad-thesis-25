@@ -483,6 +483,14 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
                     unsafe_allow_html=True,
                 )
 
+        # CRITICAL FIX: Display generated image if present in gamified message
+        print(f"🎨 DEBUG: Checking for generated_image in gamified message: {bool(message.get('generated_image'))}")
+        if message.get("generated_image"):
+            print(f"🎨 DEBUG: Generated image found in gamified message, rendering in chat")
+            print(f"🎨 DEBUG: Image data keys: {list(message['generated_image'].keys())}")
+            _render_generated_image_in_chat(message["generated_image"])
+            print(f"🎨 DEBUG: Image rendered successfully in gamified message")
+
         # STEP 2: Then show the interactive game as an ENHANCEMENT
         gamification_info = message.get("gamification", {})
         challenge_data = gamification_info.get("challenge_data", {})
@@ -573,6 +581,11 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             """,
             unsafe_allow_html=True,
         )
+
+        # CRITICAL FIX: Also display generated image in fallback rendering
+        if message.get("generated_image"):
+            print(f"🎨 DEBUG: Generated image found in fallback rendering")
+            _render_generated_image_in_chat(message["generated_image"])
 
 def _render_generated_image_in_chat(generated_image: dict):
     """Render a generated image within the chat interface."""
@@ -1185,9 +1198,13 @@ def _render_single_task_component(task_entry):
         import streamlit as st
         guidance_system = st.session_state.get('guidance_system')
         if not guidance_system:
+            print(f"🔧 TASK_DATA_DEBUG: Creating new TaskGuidanceSystem instance")
             from dashboard.processors.task_guidance_system import TaskGuidanceSystem
             guidance_system = TaskGuidanceSystem()
             st.session_state['guidance_system'] = guidance_system
+            print(f"🔧 TASK_DATA_DEBUG: TaskGuidanceSystem created, mentor_tasks count: {len(guidance_system.mentor_tasks)}")
+        else:
+            print(f"🔧 TASK_DATA_DEBUG: Using existing TaskGuidanceSystem, mentor_tasks count: {len(guidance_system.mentor_tasks)}")
 
         # CRITICAL FIX: Get test group from session state if task doesn't have it
         test_group = getattr(task, 'test_group', None)
@@ -1200,15 +1217,35 @@ def _render_single_task_component(task_entry):
                 test_group = str(session_test_group) if session_test_group else "MENTOR"
             print(f"🔧 TASK_DATA_FIX: Using session test group: {test_group}")
 
+        # CRITICAL FIX: Normalize test_group to string (handle both string and enum)
+        if hasattr(test_group, 'value'):
+            test_group = test_group.value  # Convert enum to string
+        elif hasattr(test_group, 'name'):
+            test_group = test_group.name   # Convert enum to string (alternative)
+        else:
+            test_group = str(test_group)   # Ensure it's a string
+        print(f"🔧 TASK_DATA_FIX: Normalized test_group to: {test_group}")
+
         # Get the real task assignment based on test group
+        print(f"🔧 TASK_DATA_DEBUG: Looking up task_type={task.task_type} in test_group={test_group}")
+        print(f"🔧 TASK_DATA_DEBUG: task.task_type module: {task.task_type.__class__.__module__}")
+        print(f"🔧 TASK_DATA_DEBUG: Available mentor_tasks keys: {list(guidance_system.mentor_tasks.keys())}")
+        if guidance_system.mentor_tasks:
+            first_key = list(guidance_system.mentor_tasks.keys())[0]
+            print(f"🔧 TASK_DATA_DEBUG: First key module: {first_key.__class__.__module__}")
+
         if test_group == "MENTOR":
             task_data = guidance_system.mentor_tasks.get(task.task_type, {})
+            print(f"🔧 TASK_DATA_DEBUG: MENTOR lookup result: {bool(task_data)}")
         elif test_group == "GENERIC_AI":
             task_data = guidance_system.generic_ai_tasks.get(task.task_type, {})
+            print(f"🔧 TASK_DATA_DEBUG: GENERIC_AI lookup result: {bool(task_data)}")
         elif test_group == "CONTROL":
             task_data = guidance_system.control_tasks.get(task.task_type, {})
+            print(f"🔧 TASK_DATA_DEBUG: CONTROL lookup result: {bool(task_data)}")
         else:
             task_data = {}
+            print(f"🔧 TASK_DATA_DEBUG: Unknown test_group, using empty task_data")
 
         if not task_data:
             print(f"⚠️ No task data found for {task.task_type.value} in {test_group} mode")
