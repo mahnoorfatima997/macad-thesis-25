@@ -57,24 +57,24 @@ class ModeProcessor:
     def _ensure_task_system_initialized(self):
         """Initialize task system only when in Test Mode"""
         dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
-        print(f"🔍 TASK_INIT_DEBUG: Dashboard mode: '{dashboard_mode}', Task manager exists: {self.task_manager is not None}")
+        # print(f"🔍 TASK_INIT_DEBUG: Dashboard mode: '{dashboard_mode}', Task manager exists: {self.task_manager is not None}")
 
         if dashboard_mode == "Test Mode":
             if self.task_manager is None:
-                print(f"🔍 TASK_INIT_DEBUG: Initializing task manager for Test Mode")
+                # print(f"🔍 TASK_INIT_DEBUG: Initializing task manager for Test Mode")
 
                 # CRITICAL FIX: Check if task manager exists in session state (for persistence)
                 if 'task_manager_instance' in st.session_state:
-                    print(f"🔍 TASK_INIT_DEBUG: Restoring task manager from session state")
+                    # print(f"🔍 TASK_INIT_DEBUG: Restoring task manager from session state")
                     self.task_manager = st.session_state['task_manager_instance']
                     self.task_guidance = st.session_state.get('task_guidance_instance')
 
                     # Verify restored state
                     completed_count = len(self.task_manager.task_history)
                     active_count = len(self.task_manager.active_tasks)
-                    print(f"🔍 TASK_INIT_DEBUG: Restored state - {completed_count} completed, {active_count} active")
+                    # print(f"🔍 TASK_INIT_DEBUG: Restored state - {completed_count} completed, {active_count} active")
                 else:
-                    print(f"🔍 TASK_INIT_DEBUG: Creating new task manager instance")
+                    # print(f"🔍 TASK_INIT_DEBUG: Creating new task manager instance")
                     self.task_manager = DynamicTaskManager()
                     self.task_guidance = TaskGuidanceSystem()
 
@@ -84,7 +84,7 @@ class ModeProcessor:
 
                 print("🎯 TASK_SYSTEM: Dynamic task manager initialized for Test Mode")
             else:
-                print(f"🔍 TASK_INIT_DEBUG: Task manager already initialized")
+                # print(f"🔍 TASK_INIT_DEBUG: Task manager already initialized")
 
                 # Ensure session state is synced
                 st.session_state['task_manager_instance'] = self.task_manager
@@ -92,7 +92,7 @@ class ModeProcessor:
                     st.session_state['task_guidance_instance'] = self.task_guidance
         else:
             # Ensure task system is disabled in Flexible Mode
-            print(f"🔍 TASK_INIT_DEBUG: Not in Test Mode, disabling task system")
+            # print(f"🔍 TASK_INIT_DEBUG: Not in Test Mode, disabling task system")
             if self.task_manager is not None:
                 self.task_manager = None
                 self.task_guidance = None
@@ -106,7 +106,7 @@ class ModeProcessor:
     def render_active_tasks_ui(self):
         """Render active tasks UI - ONLY in Test Mode"""
         dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
-        print(f"🔍 RENDER_UI_DEBUG: Dashboard mode: '{dashboard_mode}', Task manager exists: {self.task_manager is not None}")
+        # print(f"🔍 RENDER_UI_DEBUG: Dashboard mode: '{dashboard_mode}', Task manager exists: {self.task_manager is not None}")
 
         if dashboard_mode != "Test Mode":
             print("🎯 TASK_UI: Disabled - running in Flexible Mode")
@@ -167,16 +167,16 @@ class ModeProcessor:
             # CRITICAL: Check dashboard mode to determine if test features should be active
             dashboard_mode = st.session_state.get('dashboard_mode', 'Test Mode')
             test_mode_active = (dashboard_mode == "Test Mode")
-            print(f"🔍 PROCESS_INPUT_DEBUG: dashboard_mode='{dashboard_mode}', test_mode_active={test_mode_active}")
+            # print(f"🔍 PROCESS_INPUT_DEBUG: dashboard_mode='{dashboard_mode}', test_mode_active={test_mode_active}")
 
             # FIXED: Remove challenge clearing that was breaking game interactivity
             # Games need to persist their state across message processing
             print("🎮 PROCESSING: New message - games will handle their own state")
 
             # Initialize or disable task system based on mode
-            print(f"🔍 PROCESS_INPUT_DEBUG: About to initialize task system")
+            # print(f"🔍 PROCESS_INPUT_DEBUG: About to initialize task system")
             self._ensure_task_system_initialized()
-            print(f"🔍 PROCESS_INPUT_DEBUG: Task system initialized. task_manager exists: {self.task_manager is not None}")
+            # print(f"🔍 PROCESS_INPUT_DEBUG: Task system initialized. task_manager exists: {self.task_manager is not None}")
 
             # Only get test-specific variables if in Test Mode
             test_group_raw = None
@@ -304,14 +304,14 @@ class ModeProcessor:
         print(f"🎯 TASK_TRIGGER: Using updated phase completion: {phase_completion_percent:.1f}%")
 
         # CRITICAL FIX: Check for displayed tasks that need completion
-        print(f"🔍 PROCESS_INPUT_DEBUG: About to call _check_and_complete_displayed_tasks")
-        print(f"🔍 PROCESS_INPUT_DEBUG: Current session state active_task: {st.session_state.get('active_task') is not None}")
+        # print(f"🔍 PROCESS_INPUT_DEBUG: About to call _check_and_complete_displayed_tasks")
+        # print(f"🔍 PROCESS_INPUT_DEBUG: Current session state active_task: {st.session_state.get('active_task') is not None}")
         if st.session_state.get('active_task'):
-            print(f"🔍 PROCESS_INPUT_DEBUG: Active task keys: {list(st.session_state['active_task'].keys())}")
-            print(f"🔍 PROCESS_INPUT_DEBUG: Task displayed flag: {st.session_state['active_task'].get('displayed', False)}")
+            pass  # print(f"🔍 PROCESS_INPUT_DEBUG: Active task keys: {list(st.session_state['active_task'].keys())}")
+            # print(f"🔍 PROCESS_INPUT_DEBUG: Task displayed flag: {st.session_state['active_task'].get('displayed', False)}")
 
         self._check_and_complete_displayed_tasks()
-        print(f"🔍 PROCESS_INPUT_DEBUG: Finished _check_and_complete_displayed_tasks")
+        # print(f"🔍 PROCESS_INPUT_DEBUG: Finished _check_and_complete_displayed_tasks")
 
         # TASK SYSTEM: Only process tasks if in Test Mode and task system is initialized
         triggered_task = None
@@ -349,7 +349,7 @@ class ModeProcessor:
 
                 # CRITICAL FIX: Add task to display queue instead of overwriting active_task
                 if task:
-                    print(f"🔍 SESSION_STATE_DEBUG: Adding task to display queue for UI rendering")
+                    # print(f"🔍 SESSION_STATE_DEBUG: Adding task to display queue for UI rendering")
 
                     # Initialize task display queue if it doesn't exist
                     if 'task_display_queue' not in st.session_state:
@@ -371,20 +371,28 @@ class ModeProcessor:
                         'created_at': datetime.now().isoformat()
                     }
 
-                    # Add to queue
-                    st.session_state['task_display_queue'].append(task_display_entry)
+                    # CRITICAL FIX: Check if this task is already in the display queue to prevent duplicates
+                    existing_tasks = [entry['task'].task_type.value for entry in st.session_state['task_display_queue']]
+                    if task.task_type.value not in existing_tasks:
+                        # Add to queue
+                        st.session_state['task_display_queue'].append(task_display_entry)
+                        print(f"🎯 TASK_UI_QUEUE: Added {task.task_type.value} to display queue for message {current_message_index}")
+                    else:
+                        print(f"🎯 TASK_UI_DUPLICATE: Skipped adding {task.task_type.value} - already in display queue")
+                        # CRITICAL FIX: Don't update message_index of existing tasks - they should stay where they were first placed
+                        print(f"🎯 TASK_UI_STABLE: Task {task.task_type.value} remains linked to its original message")
 
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing UI code
                     st.session_state['active_task'] = task_display_entry
                 else:
-                    print(f"🔍 SESSION_STATE_DEBUG: Task activation failed - not storing in session state")
+                    pass  # print(f"🔍 SESSION_STATE_DEBUG: Task activation failed - not storing in session state")
 
                 # Check if task was stored in session state
                 active_task_data = st.session_state.get('active_task')
-                print(f"🔍 SESSION_STATE_DEBUG: Active task in session state: {active_task_data is not None}")
+                # print(f"🔍 SESSION_STATE_DEBUG: Active task in session state: {active_task_data is not None}")
                 if active_task_data:
-                    print(f"🔍 SESSION_STATE_DEBUG: Session state keys: {list(active_task_data.keys())}")
+                    pass  # print(f"🔍 SESSION_STATE_DEBUG: Session state keys: {list(active_task_data.keys())}")
             else:
                 print(f"🎯 TASK_NO_TRIGGER: No tasks triggered at {phase_completion_percent:.1f}% completion")
         elif self.task_manager is None:
@@ -396,23 +404,39 @@ class ModeProcessor:
         if test_group is not None:
             self._check_phase_transition(user_input, test_group)
 
-        # Route to appropriate test condition
-        if test_group == TestGroup.MENTOR:
+        # CRITICAL FIX: Convert test_group to string value for consistent comparison
+        # This handles cases where different TestGroup enum instances are used
+        test_group_value = None
+        if test_group:
+            if hasattr(test_group, 'value'):
+                test_group_value = test_group.value  # Extract enum value
+            else:
+                test_group_value = str(test_group)  # Convert to string
+
+        print(f"🔍 DEBUG: test_group={test_group}")
+        print(f"🔍 DEBUG: session_state.test_group={st.session_state.get('test_group')}")
+        print(f"🔍 DEBUG: session_state.test_group_selection={st.session_state.get('test_group_selection')}")
+        print(f"🔍 DEBUG: session_state.current_mode={st.session_state.get('current_mode')}")
+        print(f"🔍 DEBUG: session_state.mentor_type={st.session_state.get('mentor_type')}")
+
+        # Route to appropriate test condition using string comparison
+        if test_group_value == "MENTOR":
             # MENTOR Test (Group A) - Multi-agent scaffolding with phase-specific enhancements
             response = await self._process_mentor_test_mode(user_input, test_phase, image_path)
 
-        elif test_group == TestGroup.GENERIC_AI:
+        elif test_group_value == "GENERIC_AI":
             # Generic AI Test (Group B) - Direct assistance without scaffolding
             response = await self._process_generic_ai_test_mode(user_input, test_phase, image_path)
 
-        elif test_group == TestGroup.CONTROL:
+        elif test_group_value == "CONTROL":
             # Control Group Test (Group C) - No AI assistance, self-directed
             response = await self._process_control_test_mode(user_input, test_phase, image_path)
 
         else:
             # CRITICAL FIX: Handle invalid test group gracefully instead of breaking the app
             print(f"⚠️ INVALID TEST GROUP: {test_group} (type: {type(test_group)})")
-            print(f"⚠️ Expected one of: {[TestGroup.MENTOR, TestGroup.GENERIC_AI, TestGroup.CONTROL]}")
+            print(f"⚠️ Expected one of: ['MENTOR', 'GENERIC_AI', 'CONTROL']")
+            print(f"⚠️ Got test_group_value: {test_group_value}")
 
             # Try to recover by defaulting to MENTOR mode
             print(f"🔧 RECOVERY: Defaulting to MENTOR test group")
@@ -1605,9 +1629,16 @@ class ModeProcessor:
                         'displayed': False
                     }
 
-                    # Add to display queue
-                    st.session_state['task_display_queue'].append(task_display_entry)
-                    print(f"🎯 TASK_UI_QUEUE: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    # CRITICAL FIX: Check if this task is already in the display queue to prevent duplicates
+                    existing_tasks = [entry['task'].task_type.value for entry in st.session_state['task_display_queue']]
+                    if activated_task.task_type.value not in existing_tasks:
+                        # Add to display queue
+                        st.session_state['task_display_queue'].append(task_display_entry)
+                        print(f"🎯 TASK_UI_QUEUE: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    else:
+                        print(f"🎯 TASK_UI_DUPLICATE: Skipped adding {activated_task.task_type.value} - already in display queue")
+                        # CRITICAL FIX: Don't update message_index of existing tasks - they should stay where they were first placed
+                        print(f"🎯 TASK_UI_STABLE: Task {activated_task.task_type.value} remains linked to its original message")
 
                     # BACKWARD COMPATIBILITY: Also set active_task for existing code
                     st.session_state['active_task'] = task_display_entry
@@ -1715,9 +1746,16 @@ class ModeProcessor:
                         'displayed': False
                     }
 
-                    # Add to display queue
-                    st.session_state['task_display_queue'].append(task_display_entry)
-                    print(f"🔄 PHASE_TRANSITION_UI: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    # CRITICAL FIX: Check if this task is already in the display queue to prevent duplicates
+                    existing_tasks = [entry['task'].task_type.value for entry in st.session_state['task_display_queue']]
+                    if activated_task.task_type.value not in existing_tasks:
+                        # Add to display queue
+                        st.session_state['task_display_queue'].append(task_display_entry)
+                        print(f"🔄 PHASE_TRANSITION_UI: Added {activated_task.task_type.value} to display queue for message {current_message_index}")
+                    else:
+                        print(f"🔄 PHASE_TRANSITION_DUPLICATE: Skipped adding {activated_task.task_type.value} - already in display queue")
+                        # CRITICAL FIX: Don't update message_index of existing tasks - they should stay where they were first placed
+                        print(f"🔄 PHASE_TRANSITION_STABLE: Task {activated_task.task_type.value} remains linked to its original message")
 
                     # BACKWARD COMPATIBILITY: Also set active_task
                     st.session_state['active_task'] = task_display_entry

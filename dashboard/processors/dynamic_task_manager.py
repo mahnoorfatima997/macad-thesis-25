@@ -71,9 +71,51 @@ class DynamicTaskManager:
         # CRITICAL FIX: Track user's phase completion progression to detect threshold crossings
         self.user_progression_history: Dict[str, float] = {}  # phase -> last_completion_percent
         self.triggered_tasks_by_user: Set[TaskType] = set()  # Tasks user has actually seen
+
+        # CRITICAL FIX: Reset problematic tasks that got marked as completed prematurely
+        self._reset_problematic_tasks()
         # REMOVED: self.task_durations - no longer using time-based durations
 
         print(f"🚨 TASK_MANAGER_INIT: Initialized with empty active_tasks: {list(self.active_tasks.keys())}")
+
+    def _reset_problematic_tasks(self):
+        """Reset tasks that got marked as completed prematurely"""
+        problematic_tasks = [
+            TaskType.ENVIRONMENTAL_CONTEXTUAL,  # Task 2.2
+            TaskType.REALIZATION_IMPLEMENTATION,  # Task 3.2
+            TaskType.DESIGN_EVOLUTION,  # Task 4.1
+            TaskType.KNOWLEDGE_TRANSFER  # Task 4.2
+        ]
+
+        for task_type in problematic_tasks:
+            # Remove from triggered tasks so they can trigger again
+            self.triggered_tasks_by_user.discard(task_type)
+
+            # Remove from task history if present
+            self.task_history = [task for task in self.task_history if task.task_type != task_type]
+
+            print(f"🔄 RESET_TASK: {task_type.value} reset - can trigger again")
+
+    def _force_reset_stuck_tasks(self):
+        """Force reset tasks that are stuck in completed state but should be able to trigger"""
+        problematic_tasks = [
+            TaskType.ENVIRONMENTAL_CONTEXTUAL,  # Task 2.2
+            TaskType.REALIZATION_IMPLEMENTATION,  # Task 3.2
+            TaskType.DESIGN_EVOLUTION,  # Task 4.1
+            TaskType.KNOWLEDGE_TRANSFER  # Task 4.2
+        ]
+
+        for task_type in problematic_tasks:
+            # Check if task is stuck (marked as seen/completed but should be able to trigger)
+            is_triggered = task_type in self.triggered_tasks_by_user
+            is_in_history = any(t.task_type == task_type for t in self.task_history)
+            is_active = task_type.value in self.active_tasks
+
+            if (is_triggered or is_in_history) and not is_active:
+                # Task is marked as seen/completed but not active - force reset
+                self.triggered_tasks_by_user.discard(task_type)
+                self.task_history = [task for task in self.task_history if task.task_type != task_type]
+                print(f"🚨 FORCE_RESET: {task_type.value} was stuck - reset to allow triggering")
         
     def _initialize_task_triggers(self) -> Dict[TaskType, Dict[str, Any]]:
         """Initialize task trigger conditions - PHASE COMPLETION BASED ONLY"""
@@ -89,7 +131,7 @@ class DynamicTaskManager:
             # Test 1.2: Spatial Program Development - MID IDEATION (20-80% completion)
             TaskType.SPATIAL_PROGRAM: {
                 "phase_requirement": "ideation",
-                "requires_previous": [TaskType.ARCHITECTURAL_CONCEPT],
+                # TEMPORARILY REMOVED: "requires_previous": [TaskType.ARCHITECTURAL_CONCEPT],
                 "trigger_once": True,
                 "phase_completion_min": 30.0,  # Trigger when ideation is 30% complete
                 "phase_completion_max": 70.0   # EXTENDED WINDOW - allow retroactive triggering up to 80%
@@ -102,14 +144,14 @@ class DynamicTaskManager:
                 "phase_requirement": "visualization",
                 "trigger_once": True,  # Can trigger multiple times NOT
                 "phase_completion_min": 0.0,   # Trigger immediately when visualization starts
-                "phase_completion_max": 25.0   # Trigger in first half of visualization
+                "phase_completion_max": 15.0   # Trigger in first half of visualization
             },
 
             # Test 2.2: Environmental & Contextual Integration - MID VISUALIZATION
             TaskType.ENVIRONMENTAL_CONTEXTUAL: {
                 "phase_requirement": "visualization",
                 "trigger_once": True,
-                "phase_completion_min": 30.0,  # Trigger when visualization is 30% complete
+                "phase_completion_min": 33.0,  # Trigger when visualization is 30% complete
                 "phase_completion_max": 70.0   # Don't trigger if visualization is already 70% complete
             },
 
@@ -118,15 +160,15 @@ class DynamicTaskManager:
                 "phase_requirement": "materialization",
                 "trigger_once": True,
                 "phase_completion_min": 0.0,   # Trigger at start of materialization
-                "phase_completion_max": 30.0   # Don't trigger if materialization is already 40% complete
+                "phase_completion_max": 15.0   # Don't trigger if materialization is already 40% complete
             },
 
             # Test 3.2: Realization & Implementation Strategy - MID MATERIALIZATION
             TaskType.REALIZATION_IMPLEMENTATION: {
                 "phase_requirement": "materialization",
-                "requires_previous": [TaskType.SPATIAL_ANALYSIS_3D],
+                # TEMPORARILY REMOVED: "requires_previous": [TaskType.SPATIAL_ANALYSIS_3D],
                 "trigger_once": True,
-                "phase_completion_min": 31.0,  # Trigger when materialization is 40% complete
+                "phase_completion_min": 25.0,# Trigger when materialization is 40% complete
                 "phase_completion_max": 40.0   # Don't trigger if materialization is already 80% complete
             },
 
@@ -135,7 +177,7 @@ class DynamicTaskManager:
                 "phase_requirement": "materialization",  # Only in materialization phase
                 "trigger_once": True,
                 "phase_completion_min": 41.0,  # Trigger when materialization is 50% complete
-                "phase_completion_max": 50.0   # Don't trigger if materialization is already 60% complete
+                "phase_completion_max": 47.0   # Don't trigger if materialization is already 60% complete
             },
 
             # Test 4.2: Knowledge Transfer Challenge - VERY LATE MATERIALIZATION PHASE
@@ -143,8 +185,8 @@ class DynamicTaskManager:
                 "phase_requirement": "materialization",  # Only in materialization phase
                 "requires_previous": [TaskType.DESIGN_EVOLUTION],
                 "trigger_once": True,
-                "phase_completion_min": 51.0,  # Trigger when materialization is 60% complete
-                "phase_completion_max": 60.0  # Can trigger up to completion
+                "phase_completion_min": 48.0,  # Trigger when materialization is 60% complete
+                "phase_completion_max": 90.0  # Can trigger up to completion
             }
         }
     
@@ -159,6 +201,9 @@ class DynamicTaskManager:
 
         # Clean up expired tasks first
         self._cleanup_expired_tasks()
+
+        # CRITICAL FIX: Force reset stuck tasks every time we check
+        self._force_reset_stuck_tasks()
 
         # CRITICAL FIX: Update progression history and detect threshold crossings
         last_completion = self.user_progression_history.get(current_phase, 0.0)
@@ -275,11 +320,11 @@ class DynamicTaskManager:
                 continue  # Skip tasks that don't belong to this phase
 
             # CRITICAL FIX: Check if threshold was crossed OR if we're in the trigger window OR if we jumped over the window
-            threshold_crossed = (
-                last_completion < min_completion <= current_completion or  # Crossed minimum threshold
-                (min_completion <= current_completion <= max_completion) or  # Currently within trigger range ADDED OR AND LINE BELOW FOR PHASE JUMP
-                (last_completion < min_completion and current_completion > max_completion)  # Jumped over the entire window
-            )
+            condition1 = last_completion < min_completion <= current_completion  # Crossed minimum threshold
+            condition2 = (min_completion <= current_completion <= max_completion)  # Currently within trigger range
+            condition3 = (last_completion < min_completion and current_completion > max_completion)  # Jumped over the entire window
+
+            threshold_crossed = condition1 or condition2 or condition3
 
             # Check if user has already seen this task
             already_triggered = task_type in self.triggered_tasks_by_user
@@ -291,13 +336,35 @@ class DynamicTaskManager:
                   f"Crossed: {threshold_crossed} | Seen: {already_triggered} | "
                   f"Completed: {already_completed} | Active: {already_active}")
 
+            # DETAILED DEBUG: Show threshold crossing calculation for failing tasks
+            if task_type.value in ['environmental_contextual', 'realization_implementation']:
+                print(f"      🔍 THRESHOLD_DEBUG for {task_type.value}:")
+                print(f"         Last: {last_completion:.1f}%, Current: {current_completion:.1f}%")
+                print(f"         Range: {min_completion:.1f}%-{max_completion:.1f}%")
+                print(f"         Condition1 ({last_completion:.1f} < {min_completion:.1f} <= {current_completion:.1f}): {condition1}")
+                print(f"         Condition2 ({min_completion:.1f} <= {current_completion:.1f} <= {max_completion:.1f}): {condition2}")
+                print(f"         Condition3 ({last_completion:.1f} < {min_completion:.1f} and {current_completion:.1f} > {max_completion:.1f}): {condition3}")
+                print(f"         FINAL: threshold_crossed = {threshold_crossed}")
 
 
-            # CRITICAL TEST: Force complete architectural_concept if it's been active too long
-            if task_type.value == "architectural_concept" and already_active and already_triggered:
-                print(f"🚨 FORCE_COMPLETE_TEST: architectural_concept has been active and seen, forcing completion")
-                self.complete_task(task_type, "FORCE COMPLETED - was stuck in active state")
-                already_completed = True
+
+            # CRITICAL FIX: Only force complete tasks that have been displayed to users
+            # Check if task has been displayed by looking for completion attempts in UI renderer
+            if already_active and already_triggered:
+                # Only force complete if task has been active for a while (indicating it was displayed)
+                active_task = self.active_tasks.get(task_type.value)
+                if active_task and hasattr(active_task, 'start_time'):
+                    from datetime import datetime, timedelta
+                    time_active = datetime.now() - active_task.start_time
+                    # CRITICAL FIX: Much longer timeout to allow UI rendering
+                    if time_active > timedelta(minutes=3):  # Task has been active for 5+ minutes
+                        print(f"🚨 FORCE_COMPLETE: {task_type.value} has been active for {time_active.seconds}s, forcing completion")
+                        self.complete_task(task_type, "FORCE COMPLETED - was displayed and stuck in active state")
+                        already_completed = True
+                    else:
+                        print(f"🔄 KEEPING_ACTIVE: {task_type.value} recently activated ({time_active.seconds}s ago), allowing UI display")
+                else:
+                    print(f"🔄 KEEPING_ACTIVE: {task_type.value} active but no timestamp, allowing UI display")
                 already_active = False
 
             if threshold_crossed and not already_triggered and not already_completed and not already_active:
@@ -339,11 +406,26 @@ class DynamicTaskManager:
 
 
 
-    def _complete_previously_displayed_tasks(self):
-        """DISABLED: Complete any tasks that have been displayed to the user"""
-        # CRITICAL FIX: Disabled auto-completion to allow users to actually see and interact with tasks
-        # Tasks should only be completed when users actually complete them, not automatically
-        pass
+    def complete_displayed_task(self, task_type: TaskType, completion_reason: str = "Completed after UI display"):
+        """Complete a task that has been displayed to the user"""
+        print(f"🎯 COMPLETE_DISPLAYED_TASK: Completing {task_type.value} after UI display")
+        return self.complete_task(task_type, completion_reason)
+
+    def cleanup_tasks_from_previous_phases(self, current_phase: str):
+        """Clean up tasks from previous phases when transitioning"""
+        print(f"🔄 PHASE_CLEANUP: Cleaning up tasks not in {current_phase} phase")
+
+        tasks_to_complete = []
+        for task_id, task in self.active_tasks.items():
+            if hasattr(task, 'current_phase') and task.current_phase != current_phase:
+                tasks_to_complete.append((task_id, task.task_type, task.current_phase))
+                print(f"🔄 PHASE_CLEANUP: Marking {task_id} for completion (from {task.current_phase} phase)")
+
+        for task_id, task_type, old_phase in tasks_to_complete:
+            self.complete_task(task_type, f"Phase transition cleanup from {old_phase} to {current_phase}")
+
+        print(f"🔄 PHASE_CLEANUP: Completed {len(tasks_to_complete)} tasks from previous phases")
+        return len(tasks_to_complete)
 
     def _verify_task_conditions(self, task_type: TaskType, conditions: Dict[str, Any],
                                user_input: str, conversation_history: List[Dict],
@@ -551,9 +633,9 @@ class DynamicTaskManager:
         
         self.active_tasks[task_type.value] = task
 
-        print(f"🚨 ACTIVATE_TASK_DEBUG: Added {task_type.value} to active_tasks")
-        print(f"🚨 ACTIVATE_TASK_DEBUG: Active tasks after addition: {list(self.active_tasks.keys())}")
-        print(f"🚨 ACTIVATE_TASK_DEBUG: Task manager instance ID: {id(self)}")
+        # print(f"🚨 ACTIVATE_TASK_DEBUG: Added {task_type.value} to active_tasks")
+        # print(f"🚨 ACTIVATE_TASK_DEBUG: Active tasks after addition: {list(self.active_tasks.keys())}")
+        # print(f"🚨 ACTIVATE_TASK_DEBUG: Task manager instance ID: {id(self)}")
         print(f"🎯 TASK_MANAGER: Activated {task_type.value} for {test_group} (phase completion: {phase_completion_percent:.1f}%)")
 
         # Task is now active and ready for user interaction
@@ -594,10 +676,10 @@ class DynamicTaskManager:
     
     def complete_task(self, task_type: TaskType, completion_reason: str = "Natural completion"):
         """Mark a task as completed and move to history"""
-        print(f"🚨 COMPLETE_TASK_CALLED: Attempting to complete {task_type.value}")
-        print(f"🚨 COMPLETE_TASK_CALLED: Task manager instance ID: {id(self)}")
-        print(f"🚨 COMPLETE_TASK_CALLED: Active tasks: {list(self.active_tasks.keys())}")
-        print(f"🚨 COMPLETE_TASK_CALLED: Task exists in active tasks: {task_type.value in self.active_tasks}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Attempting to complete {task_type.value}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Task manager instance ID: {id(self)}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Active tasks: {list(self.active_tasks.keys())}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Task exists in active tasks: {task_type.value in self.active_tasks}")
 
         if task_type.value in self.active_tasks:
             task = self.active_tasks[task_type.value]
@@ -629,8 +711,8 @@ class DynamicTaskManager:
                 print(f"🚨 TASK_CLEANUP: Removed problematic task {task_type.value} from active tasks")
                 return True
         else:
-            print(f"🚨 COMPLETE_TASK_FAILED: Task {task_type.value} not found in active tasks")
-            print(f"🚨 COMPLETE_TASK_FAILED: Available active tasks: {list(self.active_tasks.keys())}")
+            # print(f"🚨 COMPLETE_TASK_FAILED: Task {task_type.value} not found in active tasks")
+            # print(f"🚨 COMPLETE_TASK_FAILED: Available active tasks: {list(self.active_tasks.keys())}")
             return False
 
     def _auto_complete_task(self, task_type: TaskType, completion_reason: str = "Auto-completed after trigger"):
@@ -658,18 +740,18 @@ class DynamicTaskManager:
     
     def _cleanup_expired_tasks(self):
         """Remove expired tasks and move them to history"""
-        print(f"🚨 CLEANUP_DEBUG: Starting cleanup on instance {id(self)}")
-        print(f"🚨 CLEANUP_DEBUG: Active tasks before cleanup: {list(self.active_tasks.keys())}")
+        # print(f"🚨 CLEANUP_DEBUG: Starting cleanup on instance {id(self)}")
+        # print(f"🚨 CLEANUP_DEBUG: Active tasks before cleanup: {list(self.active_tasks.keys())}")
 
         expired_tasks = []
 
         for task_id, task in self.active_tasks.items():
             is_expired = task.is_expired
-            print(f"🚨 CLEANUP_DEBUG: Task {task_id} is_expired: {is_expired}")
+            # print(f"🚨 CLEANUP_DEBUG: Task {task_id} is_expired: {is_expired}")
             if is_expired:
                 expired_tasks.append(task_id)
 
-        print(f"🚨 CLEANUP_DEBUG: Found {len(expired_tasks)} expired tasks: {expired_tasks}")
+        # print(f"🚨 CLEANUP_DEBUG: Found {len(expired_tasks)} expired tasks: {expired_tasks}")
 
         for task_id in expired_tasks:
             task = self.active_tasks[task_id]
@@ -681,13 +763,13 @@ class DynamicTaskManager:
 
             print(f"🚨 CLEANUP_EXPIRED: Removed expired task {task_id}")
 
-        print(f"🚨 CLEANUP_DEBUG: Active tasks after cleanup: {list(self.active_tasks.keys())}")
-    
+        # print(f"🚨 CLEANUP_DEBUG: Active tasks after cleanup: {list(self.active_tasks.keys())}")
+
     def get_active_tasks(self) -> List[ActiveTask]:
         """Get list of currently active tasks"""
-        print(f"🚨 GET_ACTIVE_TASKS: Instance {id(self)} has active tasks: {list(self.active_tasks.keys())}")
+        # print(f"🚨 GET_ACTIVE_TASKS: Instance {id(self)} has active tasks: {list(self.active_tasks.keys())}")
         self._cleanup_expired_tasks()
-        print(f"🚨 GET_ACTIVE_TASKS: After cleanup: {list(self.active_tasks.keys())}")
+        # print(f"🚨 GET_ACTIVE_TASKS: After cleanup: {list(self.active_tasks.keys())}")
         return list(self.active_tasks.values())
     
     def get_task_status(self) -> Dict[str, Any]:

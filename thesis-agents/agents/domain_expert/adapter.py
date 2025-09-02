@@ -676,7 +676,7 @@ class DomainExpertAgent:
 
         try:
             response = client.chat.completions.create(
-                model="gpt-4o-mini",  # PERFORMANCE: Use cheaper model
+                model="gpt-4o",  # PERFORMANCE: Use cheaper model
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=500,  # INCREASED: Fix contextual response truncation
                 temperature=0.3
@@ -1299,23 +1299,48 @@ What questions do you have about your design?"""
         This is only used for GENERAL example requests, not PROJECT example requests.
         """
         try:
-            prompt = f"""
-            As an expert architecture educator, provide helpful examples and strategies for: {topic}
+            # CRITICAL FIX: Analyze user question to provide appropriate response type
+            user_question_lower = user_input.lower()
+            is_list_request = any(word in user_question_lower for word in ['what are', 'list', 'elements', 'components', 'parts', 'typical', 'usual', 'common'])
+            is_how_request = any(word in user_question_lower for word in ['how to', 'how do', 'how can', 'approach', 'strategy'])
 
-            Context:
-            - Building type: {building_type}
-            - User question: {user_input}
-            - Project context: {project_context}
+            if is_list_request:
+                # User wants specific lists/elements - provide direct answers
+                prompt = f"""
+                As an expert architect, answer this specific question: {user_input}
 
-            Since this is a request for general examples/strategies (not specific built projects), provide:
-            1. Key approaches and strategies for {topic}
-            2. General principles and considerations
-            3. Common methods and techniques
-            4. Conceptual examples and scenarios
+                Context:
+                - Building type: {building_type}
+                - Topic: {topic}
 
-            Focus on educational value and practical guidance rather than specific project names.
-            Keep the response informative but concise (2-3 paragraphs).
-            """
+                Provide a direct, specific answer to their question. If they're asking for program elements, list them clearly. If they're asking for components, list those. Be specific and practical, not theoretical.
+
+                Format your response as:
+                1. Brief introduction (1 sentence)
+                2. Clear list or specific information they requested
+                3. Brief practical note (1 sentence)
+
+                Keep it focused and directly answer what they asked.
+                """
+            else:
+                # User wants strategies/approaches - provide educational content
+                prompt = f"""
+                As an expert architecture educator, provide helpful guidance for: {topic}
+
+                Context:
+                - Building type: {building_type}
+                - User question: {user_input}
+                - Project context: {project_context}
+
+                Provide practical guidance including:
+                1. Key approaches and strategies
+                2. Important considerations
+                3. Common methods and techniques
+                4. Practical examples
+
+                Focus on educational value and actionable guidance.
+                Keep the response informative but concise (2-3 paragraphs).
+                """
 
             response = await self.client.generate_completion([
                 self.client.create_system_message("You are an expert architecture educator providing helpful examples and strategies."),

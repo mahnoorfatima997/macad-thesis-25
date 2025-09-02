@@ -1272,7 +1272,8 @@ class PhaseProgressionSystem:
         # Initialize Ideation phase with first Socratic step
         session.phase_progress[DesignPhase.IDEATION] = PhaseProgress(
             phase=DesignPhase.IDEATION,
-            current_step=SocraticStep.INITIAL_CONTEXT_REASONING
+            current_step=SocraticStep.INITIAL_CONTEXT_REASONING,
+            completion_percent=0.0  # CRITICAL FIX: Start new phase at 0% completion
         )
         # Initialize checklist state containers
         session.checklist_state = {p.value: {} for p in DesignPhase}
@@ -1297,7 +1298,8 @@ class PhaseProgressionSystem:
             print(f"   🔧 Initializing missing phase progress for {session.current_phase.value}")
             current_phase_progress = PhaseProgress(
                 phase=session.current_phase,
-                current_step=SocraticStep.INITIAL_CONTEXT_REASONING
+                current_step=SocraticStep.INITIAL_CONTEXT_REASONING,
+                completion_percent=0.0  # CRITICAL FIX: Start new phase at 0% completion
             )
             session.phase_progress[session.current_phase] = current_phase_progress
 
@@ -1468,7 +1470,8 @@ class PhaseProgressionSystem:
         session.current_phase = next_phase
         new_phase_progress = PhaseProgress(
             phase=next_phase,
-            current_step=SocraticStep.INITIAL_CONTEXT_REASONING
+            current_step=SocraticStep.INITIAL_CONTEXT_REASONING,
+            completion_percent=0.0  # CRITICAL FIX: Start new phase at 0% completion
         )
         session.phase_progress[next_phase] = new_phase_progress
 
@@ -1676,6 +1679,9 @@ class PhaseProgressionSystem:
         updated_session = self.sessions.get(session_id)
         if updated_session and updated_session.current_phase.value != original_phase:
             print(f"🔄 TRANSITION_DETECTED: {original_phase} → {updated_session.current_phase.value}")
+            # CRITICAL FIX: Use the NEW phase's progress after transition (should be 0%)
+            current_phase_progress = updated_session.phase_progress.get(updated_session.current_phase)
+            print(f"🔄 TRANSITION_PROGRESS: Using new phase progress with {current_phase_progress.completion_percent:.1f}% completion")
             # Capture the transition result from the last transition
             if hasattr(self, '_last_transition_result') and self._last_transition_result:
                 phase_transition_result = self._last_transition_result
@@ -1693,9 +1699,18 @@ class PhaseProgressionSystem:
             self._last_transition_result = None
             print(f"🔄 COMPLETION_CLEARED: Cleared _last_transition_result to prevent duplicate processing")
 
+        # CRITICAL FIX: Use the correct phase progress after transition
+        final_session = updated_session if updated_session else session
+        final_phase_progress = final_session.phase_progress.get(final_session.current_phase)
+        if not final_phase_progress:
+            final_phase_progress = current_phase_progress  # Fallback to original
+            print(f"⚠️ FALLBACK: Using original phase progress")
+        else:
+            print(f"✅ USING_CORRECT_PROGRESS: Using {final_session.current_phase.value} progress with {final_phase_progress.completion_percent:.1f}% completion")
+
         result = {
             "session_id": session_id,
-            "current_phase": updated_session.current_phase.value if updated_session else session.current_phase.value,
+            "current_phase": final_session.current_phase.value,
             "current_step": current_question.step.value if current_question else "unknown",
             "grade": {
                 "overall_score": grade.overall_score,
@@ -1709,10 +1724,10 @@ class PhaseProgressionSystem:
                 "recommendations": grade.recommendations
             },
             "phase_progress": {
-                "completed_steps": [step.value for step in current_phase_progress.completed_steps],
-                "average_score": current_phase_progress.average_score,
-                "is_complete": current_phase_progress.is_complete,
-                "completion_percent": current_phase_progress.completion_percent  # CRITICAL FIX: Include completion percentage
+                "completed_steps": [step.value for step in final_phase_progress.completed_steps],
+                "average_score": final_phase_progress.average_score,
+                "is_complete": final_phase_progress.is_complete,
+                "completion_percent": final_phase_progress.completion_percent  # CRITICAL FIX: Use correct phase progress
             },
             "next_question": next_question.question_text if next_question else None,
             "phase_complete": current_phase_progress.is_complete,
@@ -1987,21 +2002,21 @@ class PhaseProgressionSystem:
     def _compute_phase_completion_percent(self, session: SessionState, phase_progress: PhaseProgress) -> float:
         """Compute a meaningful completion percent (0-100) for the current phase.
 
-        QUESTION-FOCUSED approach that prioritizes question count:
-        - Question count (70%) - based on user messages IN CURRENT PHASE ONLY (target: 8 questions)
-        - Quality of responses (20%) - based on actual grading scores
-        - Concept coverage (10%) - checklist items completed
+        ENHANCED QUESTION-FOCUSED approach that ensures higher completion percentages:
+        - Question count (60%) - based on user messages IN CURRENT PHASE ONLY (target: 6 questions for faster progression)
+        - Quality of responses (25%) - based on actual grading scores (increased weight)
+        - Concept coverage (15%) - checklist items completed (increased weight)
         """
-        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value} (QUESTION-FOCUSED):")
+        print(f"\n🧮 CALCULATING COMPLETION PERCENT for {session.current_phase.value} (ENHANCED QUESTION-FOCUSED):")
 
-        # 1. QUESTION COUNT (70%) - Based on user messages IN CURRENT PHASE ONLY
+        # 1. QUESTION COUNT (60%) - Based on user messages IN CURRENT PHASE ONLY - REDUCED TARGET FOR FASTER PROGRESSION
         current_phase_user_messages = self._count_user_messages_in_phase(session, phase_progress)
 
-        # QUESTION-FOCUSED: Engagement ratio based on 8-question target per phase
-        target_questions = 8
+        # ENHANCED QUESTION-FOCUSED: Engagement ratio based on REDUCED target for higher completion percentages
+        target_questions = 5  # REDUCED from 8 to 5 for faster progression to task trigger thresholds
         question_ratio = min(1.0, current_phase_user_messages / target_questions)
 
-        print(f"   💬 Questions: {current_phase_user_messages}/{target_questions} questions in current phase = {question_ratio:.2f} ({question_ratio*70:.1f}% of total)")
+        print(f"   💬 Questions: {current_phase_user_messages}/{target_questions} questions in current phase = {question_ratio:.2f} ({question_ratio*60:.1f}% of total)")
 
         # 2. QUALITY OF RESPONSES (20%) - Based on actual grading scores
         if phase_progress.grades:
@@ -2075,9 +2090,10 @@ class PhaseProgressionSystem:
             print(f"   🖼️ Visual: No visual interactions in current phase = 0.0 (0.0% of total)")
 
         # QUESTION-FOCUSED: Combine all factors with question-heavy weights (70% + 20% + 10% = 100%)
-        percent = 100.0 * (0.70 * question_ratio + 0.20 * quality_ratio + 0.10 * concept_ratio)
-        print(f"   🧮 QUESTION-FOCUSED CALCULATION: (70% × {question_ratio:.2f}) + (20% × {quality_ratio:.2f}) + (10% × {concept_ratio:.2f})")
-        print(f"   🧮 CALCULATION: {0.70 * question_ratio:.2f} + {0.20 * quality_ratio:.2f} + {0.10 * concept_ratio:.2f} = {percent/100:.2f}")
+        # ENHANCED CALCULATION: 60% questions + 25% quality + 15% concepts for better task triggering
+        percent = 100.0 * (0.60 * question_ratio + 0.25 * quality_ratio + 0.15 * concept_ratio)
+        print(f"   🧮 ENHANCED CALCULATION: (60% × {question_ratio:.2f}) + (25% × {quality_ratio:.2f}) + (15% × {concept_ratio:.2f})")
+        print(f"   🧮 CALCULATION: {0.60 * question_ratio:.2f} + {0.25 * quality_ratio:.2f} + {0.15 * concept_ratio:.2f} = {percent/100:.2f}")
 
         # CRITICAL FIX: Remove forced completion jump - let natural progression work
         # This was causing abnormal jumps from 52% to 85% and breaking task trigger windows
@@ -2220,7 +2236,8 @@ class PhaseProgressionSystem:
                 session.current_phase = next_phase
                 session.phase_progress[next_phase] = PhaseProgress(
                     phase=next_phase,
-                    current_step=SocraticStep.INITIAL_CONTEXT_REASONING
+                    current_step=SocraticStep.INITIAL_CONTEXT_REASONING,
+                    completion_percent=0.0  # CRITICAL FIX: Start new phase at 0% completion
                 )
                 logger.info(f"Advanced to phase: {next_phase.value}")
             else:

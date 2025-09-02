@@ -694,11 +694,19 @@ class FlexibleContentGenerator:
                 print("⚠️ Using contextual constraint fallback to preserve rich content")
                 return self._generate_fallback_constraints(building_type, user_message)
 
-            # Validate and fix constraint structure
+            # Validate and fix constraint structure with HTML cleaning
+            cleaned_result = {}
             for constraint_name, constraint_data in result.items():
+                # CRITICAL FIX: Clean constraint names to prevent HTML display issues like ">"
+                clean_name = constraint_name.replace('<', '').replace('>', '').replace('&', 'and').strip()
+                if not clean_name:
+                    clean_name = f"Design Constraint {len(cleaned_result) + 1}"
+
                 if not isinstance(constraint_data, dict):
-                    result[constraint_name] = {"description": str(constraint_data)}
-                    constraint_data = result[constraint_name]
+                    cleaned_result[clean_name] = {"description": str(constraint_data)}
+                    constraint_data = cleaned_result[clean_name]
+                else:
+                    cleaned_result[clean_name] = constraint_data
 
                 # Ensure required fields exist
                 if 'description' not in constraint_data:
@@ -707,6 +715,8 @@ class FlexibleContentGenerator:
                     constraint_data['impact'] = "Consider how this affects your design decisions"
                 if 'examples' not in constraint_data:
                     constraint_data['examples'] = ["Think about practical implications"]
+
+            result = cleaned_result
 
             return result
         except Exception as e:
@@ -1511,7 +1521,7 @@ class EnhancedGamificationRenderer:
             elif enhanced_type == "storytelling":
                 # FIXED: Generate contextual storytelling challenge instead of using raw user message
                 contextual_challenge = self._generate_contextual_storytelling_challenge(user_message, building_type)
-                self._render_storytelling_game(contextual_challenge, theme, building_type)
+                self._render_storytelling_game(contextual_challenge, theme, building_type, challenge_data)
             elif enhanced_type == "time_travel":
                 self._render_time_travel_game(user_message, theme, building_type)
             elif enhanced_type == "transformation":
@@ -1976,7 +1986,56 @@ class EnhancedGamificationRenderer:
 
         persona_state = st.session_state[persona_key]
 
-        # Compact persona selection
+        # CRITICAL FIX: Check if game is completed and freeze (like constraint game)
+        is_completed = persona_state.get('response_given', False)
+
+        if is_completed:
+            # Show completion status and freeze game
+            points = persona_state.get('persona_points', 0)
+            st.success(f"🎉 Role Play Challenge Completed! +{points} points")
+
+            # Show the completed persona and insights
+            if persona_state.get('persona_data'):
+                persona_data = persona_state['persona_data']
+                persona_name = persona_state['selected_persona']
+                symbol = theme.get('symbol', '●')
+
+                # Show selected persona (frozen state)
+                st.markdown(f"""
+                <div style="
+                    background: {theme['accent']};
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin: 10px 0;
+                    border-left: 4px solid {theme['primary']};
+                    opacity: 0.8;
+                ">
+                    <strong style="color: {theme['primary']};">{symbol} {persona_name} (Completed):</strong>
+                    <span style="color: #2c2328;">{persona_data.get('mission', 'Experience completed')}</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Show insights
+                insights = persona_data.get('insights', ["Great thinking!"])
+                for i, insight in enumerate(insights):
+                    st.markdown(f"""
+                    <div style="
+                        background: {theme['accent']};
+                        padding: 12px;
+                        border-radius: 8px;
+                        margin: 8px 0;
+                        border-left: 3px solid {theme['primary']};
+                    ">
+                        <strong style="color: {theme['primary']};">{symbol} Insight {i+1}:</strong>
+                        <span style="color: #2c2328; line-height: 1.5;">{insight}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            # Show completion progress
+            self._show_contextual_progress("Role Play", points, 30)
+            return  # CRITICAL FIX: Stop rendering completely when completed
+
+        # Compact persona selection (only show if not completed)
         for i, (persona_name, persona_data) in enumerate(personas.items()):
             is_selected = persona_state['selected_persona'] == persona_name
 
@@ -2026,7 +2085,7 @@ class EnhancedGamificationRenderer:
             # Compact response area
             user_response = st.text_area(
                 "Your experience:",
-                placeholder=f"As {persona_name}, I feel...",
+                placeholder=f"As {persona_name}, I experience..",
                 height=100,
                 key=f"response_{persona_key}",
                 help="Describe your thoughts, feelings, and observations from this persona's perspective"
@@ -2882,17 +2941,35 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-    def _render_storytelling_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
+    def _render_storytelling_game(self, challenge_text: str, theme: Dict, building_type: str, challenge_data: Optional[Dict] = None) -> None:
         """Render interactive storytelling challenge."""
         try:
-            # ISSUE 3 FIX: Check if storytelling is already completed
-            if st.session_state.get('storytelling_completed', False):
-                st.info("🎉 Storytelling challenge already completed! You've submitted your 3-chapter story.")
-                return
+            # CRITICAL FIX: Create unique instance ID for each storytelling trigger
+            import time
+            import hashlib
 
-            # ISSUE 2 FIX: Robust storytelling state initialization with validation
-            if 'storytelling_state' not in st.session_state:
-                st.session_state.storytelling_state = {
+            # Generate consistent instance ID based on challenge data only (no timestamp)
+            challenge_signature = str(challenge_data.get('generation_timestamp', '')) + str(challenge_text[:50])
+            instance_hash = hashlib.md5(challenge_signature.encode()).hexdigest()[:8]
+            current_instance_id = instance_hash  # Use only the hash, no additional timestamp
+
+            # CRITICAL FIX: Each storytelling trigger creates its own state with unique instance ID
+            storytelling_key = f"storytelling_instance_{current_instance_id}"
+
+            # CRITICAL FIX: Check if this instance already exists and is frozen
+            if storytelling_key in st.session_state:
+                existing_state = st.session_state[storytelling_key]
+                if existing_state.get('frozen', False):
+                    print(f"🎮 STORYTELLING_ALREADY_FROZEN: Instance {current_instance_id} is frozen, showing full frozen UI")
+
+                    # CRITICAL FIX: Show the FULL FROZEN storytelling UI component, not just completion message
+                    # Use the existing state to render the complete frozen interface
+                    story_state = existing_state
+                    # Continue with full UI rendering but in frozen state
+                    # Don't return here - let the full UI render but in frozen mode
+
+            if storytelling_key not in st.session_state:
+                st.session_state[storytelling_key] = {
                     'chapter': 1,
                     'story_points': 0,
                     'narrative_choices': [],
@@ -2900,10 +2977,48 @@ class EnhancedGamificationRenderer:
                     'show_feedback': False,
                     'feedback_message': '',
                     'feedback_points': 0,
-                    'completed': False
+                    'chapter_complete': False,  # CRITICAL FIX: Flag to control rendering
+                    'last_completed_chapter': 0,  # Track which chapter was last completed
+                    'completed': False,
+                    'instance_id': current_instance_id,  # UNIQUE INSTANCE ID FOR KEY GENERATION
+                    'frozen': False  # Track if this specific instance is frozen
                 }
+                print(f"🎮 STORYTELLING_NEW_INSTANCE: Created new storytelling instance {current_instance_id}")
 
-            story_state = st.session_state.storytelling_state
+            # Use the instance-specific state
+            story_state = st.session_state[storytelling_key]
+
+            # CRITICAL FIX: Don't automatically advance chapters - stay frozen until user triggers again
+            last_completed_chapter = story_state.get('last_completed_chapter', 0)
+            current_chapter = story_state.get('chapter', 1)
+
+            # CRITICAL FIX: Check if chapter is complete and freeze game (like constraint game)
+            is_chapter_complete = story_state.get('chapter_complete', False)
+
+            if is_chapter_complete:
+                # Show completion status and freeze game
+                current_chapter = story_state.get('last_completed_chapter', 1)
+                points = story_state.get('story_points', 0)
+                st.success(f"🎉 Chapter {current_chapter} Complete! +{points} points")
+
+                # Show completion progress bar
+                self._show_contextual_progress("Storytelling Challenge", points, 100)
+
+                # Check if this is a NEW game trigger (different generation_timestamp)
+                current_timestamp = challenge_data.get('generation_timestamp', '') if challenge_data else ''
+                last_game_timestamp = story_state.get('last_game_timestamp', '')
+                is_new_trigger = current_timestamp != last_game_timestamp and current_timestamp != ''
+
+                if is_new_trigger and last_completed_chapter < 3:  # Max 3 chapters
+                    # User triggered game again - allow next chapter
+                    story_state['chapter_complete'] = False
+                    story_state['chapter'] = last_completed_chapter + 1
+                    story_state['last_game_timestamp'] = current_timestamp
+                    print(f"🎮 STORYTELLING_NEXT: New trigger detected - starting Chapter {story_state['chapter']}")
+                else:
+                    # Same trigger or max chapters reached - stay frozen
+                    print(f"🎮 STORYTELLING_FROZEN: Chapter {last_completed_chapter} completed - game frozen")
+                    return  # CRITICAL FIX: Stop rendering completely when frozen
 
             # CRITICAL FIX: Validate and repair storytelling state if corrupted
             required_keys = ['chapter', 'story_points', 'narrative_choices', 'show_feedback', 'feedback_message', 'feedback_points']
@@ -2982,7 +3097,7 @@ class EnhancedGamificationRenderer:
             </div>
             """, unsafe_allow_html=True)
 
-            # UI FIX: Show persistent feedback messages if available
+            # UI FIX: Show persistent feedback messages if available (now rarely used)
             if story_state.get('show_feedback', False):
                 feedback_msg = story_state.get('feedback_message', '')
                 feedback_points = story_state.get('feedback_points', 0)
@@ -2993,30 +3108,111 @@ class EnhancedGamificationRenderer:
                 if feedback_points > 0:
                     self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
 
-                # Add a dismiss button to clear feedback
-                if st.button("✓ Continue", key="dismiss_feedback", use_container_width=True):
+                # CRITICAL FIX: Reset feedback state after displaying so user input area appears again
+                story_state['show_feedback'] = False
+                st.session_state[storytelling_key] = story_state
+
+                # Add a dismiss button to clear feedback - UNIQUE KEY FIX
+                story_instance_id = story_state.get('instance_id', hash(str(story_state.get('story_points', 0))))
+                # CRITICAL FIX: Add timestamp to ensure unique keys across multiple storytelling triggers
+                import time
+                unique_timestamp = int(time.time() * 1000)
+                dismiss_key = f"dismiss_feedback_{story_instance_id}_{story_state.get('chapter', 1)}_{unique_timestamp}"
+                if st.button("✓ Continue", key=dismiss_key, use_container_width=True):
                     story_state['show_feedback'] = False
                     story_state['feedback_message'] = ''
                     story_state['feedback_points'] = 0
-                    st.session_state['storytelling_state'] = story_state
+                    st.session_state[storytelling_key] = story_state
                     st.rerun()
 
-            # Story response (only show if not showing feedback)
+            # CRITICAL FIX: Stop rendering if chapter is complete
+            if story_state.get('chapter_complete', False):
+                # Chapter is complete - don't render any more input areas
+                return
+
+            # CRITICAL FIX: Check if this instance is frozen - show frozen UI instead of interactive elements
+            if story_state.get('frozen', False):
+                # Show frozen UI with user's submitted story
+                narrative_choices = story_state.get('narrative_choices', [])
+                if narrative_choices:
+                    last_story = narrative_choices[-1]
+                    st.markdown(f"""
+                    <div style="
+                        background: {theme['gradient']};
+                        border-radius: 15px;
+                        padding: 20px;
+                        margin: 15px 0;
+                        border-left: 5px solid {theme['primary']};
+                        color: white;
+                    ">
+                        <h3 style="margin: 0 0 15px 0; color: white;">◈ Your Story:</h3>
+                        <div style="
+                            background: rgba(255,255,255,0.1);
+                            border-radius: 10px;
+                            padding: 15px;
+                            margin: 10px 0;
+                            font-style: italic;
+                            line-height: 1.6;">{last_story}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+
+
+
+
+
+
+
+
+                # Show completion status
+                current_chapter = story_state.get('last_completed_chapter', 1)
+                narrative_count = len(narrative_choices)
+                st.markdown(f"""
+                <div style="
+                    background: linear-gradient(135deg, #d99c66 0%, #dcc188 50%, #e0ceb5 100%);
+                    border-radius: 15px;
+                    padding: 15px;
+                    margin: 10px 0;
+                    text-align: center;
+                ">
+                    <h4 style="color: #4f3a3e; margin-bottom: 5px;">◈ Chapter Complete</h4>
+                    <p style="color: #4f3a3e; font-size: 14px; margin: 0;">Chapter {current_chapter} submitted! Story continues... ({narrative_count}/3 chapters done)</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                return  # Don't render interactive elements for frozen state
+
+            # Story response (only show if not showing feedback AND not frozen)
+            story_response = None  # Initialize to prevent undefined variable errors
             if not story_state.get('show_feedback', False):
+                # SIMPLE FIX: Generate a fresh key for each new storytelling trigger
+                # But keep it stable during the same storytelling session
+                story_instance_id = story_state.get('instance_id', 0)
+                current_points = story_state.get('story_points', 0)
+
+                # Create a key that's unique for this storytelling trigger but stable during submission
+                current_chapter = story_state.get('chapter', 1)
+                # CRITICAL FIX: Include generation timestamp to ensure uniqueness across different game instances
+                generation_timestamp = (challenge_data or {}).get('generation_timestamp', '').replace(':', '').replace('-', '').replace('.', '')[-10:]  # Last 10 chars for uniqueness
+                response_key = f"storytelling_input_{story_instance_id}_{current_chapter}_{current_points}_{generation_timestamp}"
+
                 story_response = st.text_area(
                     "Continue the story - what happens next?",
-                    key="storytelling_response",
+                    key=response_key,
                     height=100
                 )
 
-            # Only show button if not showing feedback
+            # Only show button if not showing feedback (frozen check already handled above)
             if not story_state.get('show_feedback', False):
-                if st.button(f"{theme['symbol']} Continue Story", key="continue_story", use_container_width=True):
+                # UNIQUE KEY FIX for continue story button
+                story_instance_id = story_state.get('instance_id', hash(str(story_state.get('story_points', 0))))
+                continue_key = f"continue_story_{story_instance_id}_{story_state.get('chapter', 1)}"
+                if st.button(f"{theme['symbol']} Continue Story", key=continue_key, use_container_width=True):
                     if story_response:
                         # ISSUE 2 FIX: Safe state updates with validation
                         try:
                             story_state['chapter'] = story_state.get('chapter', 1) + 1
-                            story_state['story_points'] = story_state.get('story_points', 0) + 10
+                            story_state['story_points'] = story_state.get('story_points', 0) + 35
                             if 'narrative_choices' not in story_state:
                                 story_state['narrative_choices'] = []
                             story_state['narrative_choices'].append(story_response)
@@ -3032,6 +3228,22 @@ class EnhancedGamificationRenderer:
                                 'feedback_points': 0
                             }
 
+                        # CRITICAL FIX: Freeze this specific storytelling instance after submission
+                        story_state['chapter_complete'] = True
+                        story_state['last_completed_chapter'] = story_state.get('chapter', 1) - 1
+                        story_state['frozen'] = True
+
+                        # Add this instance to permanent completion to prevent re-rendering
+                        if 'permanently_completed_games' not in st.session_state:
+                            st.session_state.permanently_completed_games = set()
+
+                        instance_permanent_id = f"spatial_storytelling_instance_{story_state['instance_id']}"
+                        st.session_state.permanently_completed_games.add(instance_permanent_id)
+                        print(f"🎮 STORYTELLING_INSTANCE_FROZEN: Instance {story_state['instance_id']} permanently frozen")
+
+                        # Update the instance state in session
+                        st.session_state[storytelling_key] = story_state
+
                         # ISSUE 3 FIX: Complete storytelling after 3 submissions
                         if len(story_state['narrative_choices']) >= 3:
                             # Story completion after 3 submissions - show immediate feedback with balloons
@@ -3044,19 +3256,14 @@ class EnhancedGamificationRenderer:
                                 for i, choice in enumerate(story_state['narrative_choices'], 1):
                                     st.write(f"**Chapter {i}:** {choice}")
 
-                            # Mark storytelling as permanently completed
+                            # Mark storytelling as permanently completed (all 3 chapters done)
                             st.session_state['storytelling_completed'] = True
+                            print(f"🎮 STORYTELLING_ALL_CHAPTERS_COMPLETE: All 3 chapters submitted, storytelling fully complete")
 
-                            # Clear storytelling state to prevent further challenges
-                            st.session_state['storytelling_state'] = {
-                                'chapter': 1,
-                                'story_points': 0,
-                                'narrative_choices': [],
-                                'show_feedback': False,
-                                'feedback_message': '',
-                                'feedback_points': 0,
-                                'completed': True  # Mark as completed
-                            }
+                            # Clear global storytelling state to prevent further challenges
+                            # Note: Individual instances remain frozen in their own keys
+                            if 'storytelling_state' in st.session_state:
+                                del st.session_state['storytelling_state']
 
                             # Trigger message processing for follow-up
                             st.session_state.should_process_message = True
@@ -3065,17 +3272,24 @@ class EnhancedGamificationRenderer:
                                 "content": f"I completed the storytelling challenge with 3 chapters! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
                             })
                         else:
-                            # UI FIX: Set persistent feedback state instead of immediate display + rerun
-                            story_state['show_feedback'] = True
-                            story_state['feedback_message'] = "Story continues! Your narrative has been recorded."
-                            story_state['feedback_points'] = 35
+                            # CRITICAL FIX: Complete current chapter with completion bar (like other games)
+                            current_chapter = len(story_state['narrative_choices'])
+
+                            # Show completion bar instead of text notifications
+                            self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
+
+                            # CRITICAL FIX: Mark chapter as complete to stop rendering
+                            story_state['show_feedback'] = False
+                            story_state['chapter_complete'] = True  # Flag to stop rendering
+                            story_state['last_completed_chapter'] = current_chapter  # Track completed chapter
+                            # CRITICAL FIX: Don't advance chapter automatically - stay at current chapter until next trigger
+                            # story_state['chapter'] = current_chapter + 1  # REMOVED: Don't auto-advance
 
                         # Update session state
-                        st.session_state['storytelling_state'] = story_state
+                        st.session_state[storytelling_key] = story_state
 
-                        # UI FIX: Only rerun if story is not complete (to show persistent feedback)
-                        if story_state['story_points'] < 100:
-                            st.rerun()
+                        # CRITICAL FIX: Don't rerun after chapter completion - let user continue conversation
+                        # Only rerun if showing feedback (which we now don't do for chapter completion)
 
         except Exception as e:
             print(f"🎮 ERROR in storytelling game: {e}")
@@ -3348,10 +3562,119 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
             print(f"🎮 EARLY_EXIT: Gamification disabled for this challenge")
             return
 
-        # FIXED: Remove duplicate prevention that was breaking game interactivity
-        # Games need to re-render to show user interactions and state changes
-        # Individual games handle their own completion logic properly
+        # CRITICAL FIX: Smart duplicate prevention - allow interactivity but prevent multiple renders per page load
         challenge_id = f"{challenge_data.get('challenge_type', 'unknown')}_{challenge_data.get('enhancement_timestamp', 'unknown')}"
+
+        # Initialize rendered challenges tracker
+        if 'rendered_challenges' not in st.session_state:
+            st.session_state.rendered_challenges = set()
+
+        # GAMES COMPLETION FIX: Check if this game is completed and should show completed state
+        challenge_type = challenge_data.get('challenge_type', 'unknown')
+
+        # Check completion state for each game type
+        is_completed = False
+        completion_message = ""
+
+        if challenge_type == 'spatial_storytelling':
+            # CRITICAL FIX: Check completion using instance-specific state
+            # Generate the same instance ID that would be used in _render_storytelling_game
+            import hashlib
+            challenge_signature = str(challenge_data.get('generation_timestamp', '')) + str(challenge_data.get('challenge_text', '')[:50])
+            instance_hash = hashlib.md5(challenge_signature.encode()).hexdigest()[:8]
+
+            # Look for the specific storytelling instance
+            storytelling_key = f"storytelling_instance_{instance_hash}"
+
+            is_completed = False
+            if storytelling_key in st.session_state:
+                story_state = st.session_state.get(storytelling_key, {})
+                is_completed = story_state.get('chapter_complete', False) or story_state.get('frozen', False)
+                if is_completed:
+                    current_chapter = story_state.get('last_completed_chapter', 1)
+                    completion_message = f" **Chapter {current_chapter} Complete!** Story continues... ({len(story_state.get('narrative_choices', []))}/3 chapters done)"
+
+        elif challenge_type == 'perspective_challenge':
+            persona_state = st.session_state.get('persona_challenge_state', {})
+            is_completed = persona_state.get('completed', False)
+            if is_completed:
+                completion_message = f" **Perspective Challenge Complete!** {persona_state.get('completion_message', 'Great perspective analysis!')}"
+
+        elif challenge_type == 'constraints_challenge':
+            constraints_state = st.session_state.get('constraints_challenge_state', {})
+            is_completed = constraints_state.get('completed', False)
+            if is_completed:
+                completion_message = f" **Constraints Challenge Complete!** {constraints_state.get('completion_message', 'Excellent constraint analysis!')}"
+
+        elif challenge_type == 'investigation_challenge':
+            investigation_state = st.session_state.get('investigation_state', {})
+            is_completed = investigation_state.get('completed', False)
+            if is_completed:
+                completion_message = f" **Investigation Complete!** {investigation_state.get('completion_message', 'Great detective work!')}"
+
+        elif challenge_type == 'transformation_challenge':
+            transformation_state = st.session_state.get('transformation_state', {})
+            is_completed = transformation_state.get('completed', False)
+            if is_completed:
+                completion_message = f" **Transformation Challenge Complete!** {transformation_state.get('completion_message', 'Excellent transformation analysis!')}"
+
+        # If game is completed, show completion state ONE FINAL TIME then freeze forever
+        # STORYTELLING EXCLUSION: Storytelling handles its own completion display
+        if is_completed and challenge_type != 'spatial_storytelling':
+            permanent_game_id = f"{challenge_type}_{challenge_data.get('generation_timestamp', '')}"
+
+            # Check if we've already shown the completion state
+            if permanent_game_id not in st.session_state.permanently_completed_games:
+                print(f"🎮 FINAL_COMPLETION_RENDER: Showing completion state for {challenge_type} one last time")
+                with st.container():
+                    st.markdown(f"""
+                    <div style="
+                        background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+                        border: 2px solid #4CAF50;
+                        border-radius: 15px;
+                        padding: 20px;
+                        margin: 15px 0;
+                        text-align: center;
+                    ">
+                        <h3 style="color: #ffffff; margin-bottom: 10px;">Challenge Completed</h3>
+                        <p style="color: #ffffff; font-size: 16px; margin: 0;">{completion_message}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                # FREEZE FOREVER: Add to permanent completion tracker
+                st.session_state.permanently_completed_games.add(permanent_game_id)
+                print(f"🎮 PERMANENTLY_FROZEN: Game {permanent_game_id} will never re-render again")
+            else:
+                print(f"🎮 ALREADY_FROZEN: Game {permanent_game_id} completion state already shown, skipping")
+
+            return  # Don't render the interactive game again
+
+        # GAMES FREEZE FIX: Use permanent completion tracking to prevent ANY re-rendering
+        # Initialize permanent completion tracker
+        if 'permanently_completed_games' not in st.session_state:
+            st.session_state.permanently_completed_games = set()
+
+        # STORYTELLING FIX: Create unique permanent game ID for each storytelling instance
+        if challenge_type == 'spatial_storytelling':
+            # Generate the same instance hash used in _render_storytelling_game
+            import hashlib
+            challenge_signature = str(challenge_data.get('generation_timestamp', '')) + str(challenge_data.get('challenge_text', '')[:50])
+            instance_hash = hashlib.md5(challenge_signature.encode()).hexdigest()[:8]
+
+            # Use consistent permanent game ID
+            permanent_game_id = f"spatial_storytelling_instance_{instance_hash}"
+        else:
+            permanent_game_id = f"{challenge_type}_{challenge_data.get('generation_timestamp', '')}"
+
+        # Check if this specific game instance is permanently completed
+        if permanent_game_id in st.session_state.permanently_completed_games:
+            print(f"🎮 PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, not re-rendering")
+            return  # COMPLETELY STOP re-rendering this game
+
+        print(f"🎮 RENDER_PROCEEDING: Game {permanent_game_id} not permanently completed, proceeding")
+
+        # Mark as rendered to prevent duplicates
+        st.session_state.rendered_challenges.add(challenge_id)
         print(f"🎮 RENDER_ALLOWED: Rendering interactive challenge {challenge_id}")
 
         # Ensure required fields exist with safe defaults and validation

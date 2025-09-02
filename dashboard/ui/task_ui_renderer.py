@@ -95,6 +95,9 @@ class TaskUIRenderer:
 
         # Render clean task UI matching gamification style
         self._render_clean_task_ui(task, task_title, task_assignment, task_content, guidance_type, theme)
+
+        # CRITICAL FIX: Mark task as displayed and trigger completion
+        self._mark_task_as_displayed(task)
     
     def _render_clean_task_ui(self, task: ActiveTask, task_title: str, task_assignment: str,
                              task_content: str, guidance_type: str, theme: Dict[str, str]) -> None:
@@ -171,6 +174,41 @@ class TaskUIRenderer:
 
         # Add final separator to ensure clean separation
         st.markdown("---")
+
+    def _mark_task_as_displayed(self, task: ActiveTask) -> None:
+        """Mark task as displayed and complete it to allow next tasks to trigger"""
+        print(f"🎯 TASK_UI_RENDERER: Task {task.task_type.value} has been displayed to user")
+
+        # Get the task manager from session state or mode processor
+        task_manager = None
+
+        # Try to get task manager from mode processor
+        if hasattr(st.session_state, 'mode_processor') and st.session_state.mode_processor:
+            task_manager = st.session_state.mode_processor.task_manager
+
+        # Try to get from cached task manager if mode processor doesn't have it
+        if not task_manager:
+            try:
+                from dashboard.unified_dashboard import get_cached_task_manager
+                task_manager = get_cached_task_manager()
+            except:
+                pass
+
+        if task_manager:
+            print(f"🎯 TASK_UI_RENDERER: Completing {task.task_type.value} after UI display")
+            completion_success = task_manager.complete_displayed_task(
+                task.task_type,
+                "Completed after UI display - allowing next tasks to trigger"
+            )
+            print(f"🎯 TASK_UI_RENDERER: Task completion success: {completion_success}")
+
+            # Also clean up tasks from previous phases
+            task_manager.cleanup_tasks_from_previous_phases(task.current_phase)
+
+        else:
+            print(f"🎯 TASK_UI_RENDERER: No task manager available to complete {task.task_type.value}")
+            print(f"🎯 TASK_UI_RENDERER: Session state keys: {list(st.session_state.keys())}")
+            print(f"🎯 TASK_UI_RENDERER: Mode processor available: {hasattr(st.session_state, 'mode_processor')}")
     
     def _extract_clean_task_title(self, content: str) -> str:
         """Extract clean task title from content"""
