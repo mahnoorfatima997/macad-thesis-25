@@ -399,23 +399,39 @@ class ModeProcessor:
         if test_group is not None:
             self._check_phase_transition(user_input, test_group)
 
-        # Route to appropriate test condition
-        if test_group == TestGroup.MENTOR:
+        # CRITICAL FIX: Convert test_group to string value for consistent comparison
+        # This handles cases where different TestGroup enum instances are used
+        test_group_value = None
+        if test_group:
+            if hasattr(test_group, 'value'):
+                test_group_value = test_group.value  # Extract enum value
+            else:
+                test_group_value = str(test_group)  # Convert to string
+
+        print(f"🔍 DEBUG: test_group_raw={test_group_raw}")
+        print(f"🔍 DEBUG: session_state.test_group={st.session_state.get('test_group')}")
+        print(f"🔍 DEBUG: session_state.test_group_selection={st.session_state.get('test_group_selection')}")
+        print(f"🔍 DEBUG: session_state.current_mode={st.session_state.get('current_mode')}")
+        print(f"🔍 DEBUG: session_state.mentor_type={st.session_state.get('mentor_type')}")
+
+        # Route to appropriate test condition using string comparison
+        if test_group_value == "MENTOR":
             # MENTOR Test (Group A) - Multi-agent scaffolding with phase-specific enhancements
             response = await self._process_mentor_test_mode(user_input, test_phase, image_path)
 
-        elif test_group == TestGroup.GENERIC_AI:
+        elif test_group_value == "GENERIC_AI":
             # Generic AI Test (Group B) - Direct assistance without scaffolding
             response = await self._process_generic_ai_test_mode(user_input, test_phase, image_path)
 
-        elif test_group == TestGroup.CONTROL:
+        elif test_group_value == "CONTROL":
             # Control Group Test (Group C) - No AI assistance, self-directed
             response = await self._process_control_test_mode(user_input, test_phase, image_path)
 
         else:
             # CRITICAL FIX: Handle invalid test group gracefully instead of breaking the app
             print(f"⚠️ INVALID TEST GROUP: {test_group} (type: {type(test_group)})")
-            print(f"⚠️ Expected one of: {[TestGroup.MENTOR, TestGroup.GENERIC_AI, TestGroup.CONTROL]}")
+            print(f"⚠️ Expected one of: ['MENTOR', 'GENERIC_AI', 'CONTROL']")
+            print(f"⚠️ Got test_group_value: {test_group_value}")
 
             # Try to recover by defaulting to MENTOR mode
             print(f"🔧 RECOVERY: Defaulting to MENTOR test group")
