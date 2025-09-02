@@ -1064,23 +1064,7 @@ class PhaseTransitionSystem:
         total_score = length_score + reasoning_bonus + detail_bonus
         return min(5.0, max(2.0, total_score))  # Minimum score of 2.0 for any substantive response
 
-    def _calculate_relevance(self, response: str) -> float:
-        """Calculate relevance based on architectural terms - ENHANCED: More generous scoring"""
-        arch_term_matches = sum(1 for term in self.architectural_terms if term in response)
-        base_score = (arch_term_matches / len(self.architectural_terms)) * 5.0
 
-        # More generous baseline - if response shows architectural thinking, give credit
-        word_count = len(response.split())
-        if word_count > 20 and any(term in response.lower() for term in ["design", "space", "building", "architecture", "project"]):
-            base_score = max(base_score, 2.5)  # Minimum 2.5 for architectural responses
-
-        # Bonus for detailed architectural discussion
-        if word_count > 100:
-            base_score += 1.0
-        elif word_count > 50:
-            base_score += 0.5
-
-        return min(5.0, base_score)
 
     def _calculate_innovation(self, response: str) -> float:
         """Calculate innovation based on creative indicators - ENHANCED: More generous scoring"""
@@ -1360,14 +1344,33 @@ class PhaseProgressionSystem:
         transition_assessment = self.transition_system.assess_phase_readiness(session, current_phase_progress)
 
         if transition_assessment["is_ready"]:
-            # Check if there's a next phase to transition to
-            next_phase = transition_assessment.get("next_phase")
-            if next_phase:
-                print(f"   🎉 Phase transition ready! Automatically transitioning...")
-                # ENHANCED: Automatically transition instead of asking for permission
-                transition_result = self.transition_to_next_phase(session_id)
-                if "error" not in transition_result:
-                    print(f"   ✅ Transitioned to {transition_result['new_phase']} phase")
+            # CRITICAL FIX: Always attempt transition, let transition_to_next_phase handle final phase
+            print(f"   🎉 Phase transition ready! Automatically transitioning...")
+            transition_result = self.transition_to_next_phase(session_id)
+
+            if "error" not in transition_result:
+                if transition_result.get("final_phase_completed"):
+                    # Final phase completed - return completion message
+                    print(f"   🎉 FINAL PHASE COMPLETED! Test finished successfully")
+                    completion_message = transition_result["message"]
+                    celebration_question = SocraticQuestion(
+                        step=SocraticStep.CONTEXTUAL_EXPLORATION,
+                        question_text=f"{completion_message}\n\nAs you reflect on your complete design journey, what aspects of your project do you feel most proud of, and what would you explore further if you had more time?",
+                        keywords=["reflection", "completion", "design", "journey"],
+                        assessment_criteria={
+                            "completeness": "Reflects on the full design process",
+                            "depth": "Shows thoughtful analysis of the journey",
+                            "relevance": "Connects to architectural design principles",
+                            "innovation": "Demonstrates creative thinking about future exploration",
+                            "technical_understanding": "Shows understanding of design development"
+                        },
+                        phase=session.current_phase,
+                        question_id=f"final_completion_{session.current_phase.value}"
+                    )
+                    return celebration_question
+                else:
+                    # Regular phase transition
+                    print(f"   ✅ Transitioned to {transition_result.get('new_phase', 'next')} phase")
                     # Get the updated session after transition
                     updated_session = self.sessions.get(session_id)
                     if updated_session:
@@ -1382,34 +1385,15 @@ class PhaseProgressionSystem:
                             )
                             if first_question:
                                 # Modify the question text to include transition announcement
-                                welcome_message = transition_result["message"]
+                                welcome_message = transition_result.get("message", "Welcome to the next phase!")
                                 combined_text = f"{welcome_message}\n\n{first_question.question_text}"
                                 first_question.question_text = combined_text
                                 return first_question
                     # Fallback if we can't get the first question
                     print(f"   ⚠️ Could not get first question for new phase")
-                else:
-                    print(f"   ❌ Transition failed: {transition_result['error']}")
-                    # Fall through to flexible question generation
             else:
-                # Final phase completed - generate celebration question for continued exploration
-                print(f"   🎉 Final phase completed! Generating celebration question...")
-                completion_message = transition_assessment["transition_message"]
-                celebration_question = SocraticQuestion(
-                    step=SocraticStep.CONTEXTUAL_EXPLORATION,
-                    question_text=f"{completion_message}\n\nAs you reflect on your complete design journey, what aspects of your project do you feel most proud of, and what would you explore further if you had more time?",
-                    keywords=["reflection", "completion", "design", "journey"],
-                    assessment_criteria={
-                        "completeness": "Reflects comprehensively on the design process",
-                        "depth": "Shows deep understanding of design development",
-                        "relevance": "Connects to overall design goals and learning",
-                        "innovation": "Demonstrates creative insights from the process",
-                        "technical_understanding": "Shows integrated understanding across all phases"
-                    },
-                    phase=session.current_phase,
-                    question_id=f"{session.current_phase.value}_completion_celebration"
-                )
-                return celebration_question
+                print(f"   ❌ Transition failed: {transition_result['error']}")
+                # Fall through to flexible question generation
 
         # If not ready for transition, generate a flexible contextual question
         print(f"   🎨 Generating flexible contextual question...")
@@ -1437,7 +1421,7 @@ class PhaseProgressionSystem:
         return None
 
     def transition_to_next_phase(self, session_id: str) -> Dict[str, Any]:
-        """Transition the session to the next phase"""
+        """Transition the session to the next phase or handle final phase completion"""
         print(f"\n🔄 PHASE_TRANSITION: Transitioning session {session_id}")
 
         session = self.sessions.get(session_id)
@@ -1448,8 +1432,29 @@ class PhaseProgressionSystem:
         next_phase = self.transition_system._get_next_phase(current_phase)
 
         if not next_phase:
-            print(f"   ❌ No next phase available after {current_phase.value}")
-            return {"error": "No next phase available"}
+            # CRITICAL FIX: Handle final phase completion
+            print(f"🎉 FINAL PHASE COMPLETION: {current_phase.value} is the final phase")
+
+            # Mark current phase as complete
+            current_progress = session.phase_progress.get(current_phase)
+            if current_progress:
+                current_progress.is_complete = True
+                current_progress.completion_percent = 100.0
+                print(f"   📈 FINAL PHASE COMPLETION SET TO 100%")
+
+            # Generate completion image for final phase
+            self._generate_phase_completion_image(session, current_phase)
+
+            # Update session
+            session.last_updated = datetime.now()
+
+            return {
+                "success": True,
+                "final_phase_completed": True,
+                "previous_phase": current_phase.value,
+                "message": f"🎉 Congratulations! You've successfully completed all three phases of the design process - ideation, visualization, and materialization. You've demonstrated comprehensive architectural thinking from initial concept through technical implementation.",
+                "generated_image": self._last_transition_result.get("generated_image") if hasattr(self, '_last_transition_result') and self._last_transition_result else None
+            }
 
         print(f"   🎯 Transitioning from {current_phase.value} to {next_phase.value}")
 

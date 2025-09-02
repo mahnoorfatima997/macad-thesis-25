@@ -2,6 +2,7 @@
 Raw GPT processor - completely unfiltered GPT responses like ChatGPT app.
 No conditioning, no socratic elements, no phase awareness, no architectural focus.
 Provides pure, direct GPT responses for research comparison purposes.
+Uses unified phase progression system for consistent phase tracking across all modes.
 """
 
 import os
@@ -12,17 +13,23 @@ from datetime import datetime
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from processors.phase_calculator import phase_calculator
+from phase_progression_system import PhaseProgressionSystem
 
 
 class PureRawGPTProcessor:
     """
     Raw GPT processor that provides completely unfiltered responses like ChatGPT app.
     No conditioning, no socratic elements, no phase awareness - pure conversational AI.
+    Uses unified phase progression system for consistent phase tracking.
     """
 
     def __init__(self):
         self.conversation_history = {}  # Track conversations per session
+        # Initialize unified phase progression system for consistent tracking
+        self.phase_system = PhaseProgressionSystem()
+        print("🔄 RAW_GPT: Initialized with unified phase progression system")
 
     def get_minimal_context(self, messages: List[Dict[str, Any]]) -> str:
         """Create minimal context for pure GPT response - no conditioning or phase awareness."""
@@ -54,9 +61,23 @@ class PureRawGPTProcessor:
             Dict containing pure GPT response and metadata
         """
 
-        # Calculate current phase for metadata only (not used in response generation)
-        phase_info = phase_calculator.calculate_current_phase(messages, session_id)
-        current_phase = phase_info["current_phase"]
+        # Use unified phase progression system for consistent tracking
+        if session_id:
+            # Ensure session exists in phase system
+            if session_id not in self.phase_system.sessions:
+                self.phase_system.create_session(session_id)
+
+            # Get phase info from unified system
+            phase_summary = self.phase_system.get_session_summary(session_id)
+            current_phase = phase_summary.get('current_phase', 'ideation')
+            phase_info = {
+                "current_phase": current_phase,
+                "phase_completion": phase_summary.get('phase_summaries', {}).get(current_phase, {}).get('completion_percent', 0.0)
+            }
+        else:
+            # Fallback to phase calculator for metadata only
+            phase_info = phase_calculator.calculate_current_phase(messages, session_id)
+            current_phase = phase_info["current_phase"]
 
         # Get minimal conversation context only
         context = self.get_minimal_context(messages)

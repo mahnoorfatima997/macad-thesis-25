@@ -21,6 +21,7 @@ from processors.question_validator import validate_user_question
 from thesis_tests.data_models import InteractionData, TestPhase, TestGroup
 from dashboard.processors.dynamic_task_manager import DynamicTaskManager, TaskType
 from dashboard.processors.task_guidance_system import TaskGuidanceSystem
+from phase_progression_system import PhaseProgressionSystem
 
 
 class ModeProcessor:
@@ -41,6 +42,10 @@ class ModeProcessor:
             except Exception as e:
                 print(f"❌ MODE_PROCESSOR: Failed to create orchestrator: {e}")
                 self.orchestrator = None
+
+        # Initialize unified phase progression system for all modes
+        self.phase_system = PhaseProgressionSystem()
+        print("🔄 MODE_PROCESSOR: Initialized with unified phase progression system")
 
         # Initialize dynamic task system ONLY for Test Mode
         # These will be None in Flexible Mode to prevent any task-related functionality
@@ -458,87 +463,94 @@ class ModeProcessor:
             pass
 
     def advance_phase_manually(self, reason: str = "Manual advancement"):
-        """Manually advance to the next phase (for GENERIC_AI and CONTROL modes)"""
+        """Manually advance to the next phase using unified phase progression system"""
 
-        current_phase = st.session_state.get('test_current_phase', 'Ideation')
+        session_id = st.session_state.get('session_id', 'manual_session')
 
-        phase_progression = {
-            'Ideation': 'Visualization',
-            'Visualization': 'Materialization',
-            'Materialization': 'Complete'
+        # Ensure session exists in unified phase system
+        if session_id not in self.phase_system.sessions:
+            self.phase_system.create_session(session_id)
+
+        # Get current phase from unified system
+        phase_summary = self.phase_system.get_session_summary(session_id)
+        current_phase = phase_summary.get('current_phase', 'ideation')
+
+        # Map to display format for session state compatibility
+        phase_display_map = {
+            'ideation': 'Ideation',
+            'visualization': 'Visualization',
+            'materialization': 'Materialization'
         }
 
-        next_phase = phase_progression.get(current_phase, 'Complete')
+        current_phase_display = phase_display_map.get(current_phase, 'Ideation')
 
-        if next_phase != 'Complete':
-            st.session_state.test_current_phase = next_phase
-            print(f"🔄 MANUAL_PHASE: Advanced from {current_phase} to {next_phase} ({reason})")
+        # Check if we can transition using unified system
+        session = self.phase_system.sessions[session_id]
+        current_progress = session.phase_progress.get(session.current_phase)
+
+        if current_progress:
+            # Force completion of current phase for manual advancement
+            current_progress.is_complete = True
+            current_progress.completion_percent = 100.0
+
+            # Attempt transition using unified system
+            transition_result = self.phase_system.transition_to_next_phase(session_id)
+
+            if "error" not in transition_result and not transition_result.get("final_phase_completed"):
+                # Successfully transitioned to next phase
+                new_phase_summary = self.phase_system.get_session_summary(session_id)
+                new_phase = new_phase_summary.get('current_phase', current_phase)
+                new_phase_display = phase_display_map.get(new_phase, current_phase_display)
+
+                # Update session state for UI compatibility
+                st.session_state.test_current_phase = new_phase_display
+                st.session_state['phase_transition_timestamp'] = datetime.now().isoformat()
+
+                print(f"🔄 UNIFIED_MANUAL_TRANSITION: {current_phase} -> {new_phase} ({reason})")
+
+            elif transition_result.get("final_phase_completed"):
+                # Final phase completed
+                st.session_state.test_current_phase = 'Complete'
+                st.session_state['phase_transition_timestamp'] = datetime.now().isoformat()
+
+                print(f"🏁 UNIFIED_FINAL_COMPLETION: {current_phase} completed ({reason})")
 
             # Log phase transition if data collector is available
             if self.data_collector and hasattr(self.data_collector, 'log_phase_transition'):
                 self.data_collector.log_phase_transition(
-                    from_phase=current_phase.lower(),
-                    to_phase=next_phase.lower(),
-                    trigger_reason=f"manual_{reason}"
+                    from_phase=current_phase_display.lower(),
+                    to_phase=st.session_state.get('test_current_phase', 'complete').lower(),
+                    trigger_reason=f"manual_unified_{reason}"
                 )
 
             # Handle phase transition with proper task checking
             test_group = st.session_state.get('test_group', TestGroup.MENTOR)
             self._handle_phase_transition(
-                from_phase=current_phase.lower(),
-                to_phase=next_phase.lower(),
+                from_phase=current_phase_display.lower(),
+                to_phase=st.session_state.get('test_current_phase', 'complete').lower(),
                 test_group=test_group,
-                user_input=f"Manual phase transition to {next_phase}: {reason}"
+                user_input=f"Manual unified phase transition to {st.session_state.get('test_current_phase')}: {reason}"
             )
-
-            # REMOVED: Duplicate phase transition message - this is now handled by the dashboard
-            # when processing phase results to avoid double messages
-            print(f"🔄 MANUAL_PHASE_TRANSITION: Handled transition from {current_phase} to {next_phase} ({reason})")
 
             # Trigger rerun to update UI
             st.rerun()
         else:
-            print(f"🏁 MANUAL_PHASE: Already at final phase ({current_phase})")
+            print(f"🏁 UNIFIED_MANUAL: No phase progress found for {current_phase}")
 
     def _advance_phase_automatically(self):
-        """Automatically advance to the next phase"""
+        """Automatically advance to the next phase using unified phase progression system"""
 
-        current_phase = st.session_state.get('test_current_phase', 'Ideation')
+        # Note: Automatic phase advancement is now handled by the unified phase progression system
+        # This method is kept for compatibility but delegates to the unified system
+        session_id = st.session_state.get('session_id', 'auto_session')
 
-        phase_progression = {
-            'Ideation': 'Visualization',
-            'Visualization': 'Materialization',
-            'Materialization': 'Complete'
-        }
+        # Ensure session exists in unified phase system
+        if session_id not in self.phase_system.sessions:
+            self.phase_system.create_session(session_id)
 
-        next_phase = phase_progression.get(current_phase, 'Complete')
-
-        if next_phase != 'Complete':
-            st.session_state.test_current_phase = next_phase
-            print(f"🔄 AUTO_PHASE: Advanced from {current_phase} to {next_phase}")
-
-            # CRITICAL FIX: Handle phase transition with proper task cleanup and single instance
-            test_group = st.session_state.get('test_group', TestGroup.MENTOR)
-
-            # CRITICAL FIX: Ensure single task manager instance before phase transition
-            self._ensure_task_system_initialized()
-
-            # CRITICAL FIX: Complete previous phase tasks before transitioning
-            if self.task_manager:
-                print(f"🔄 PHASE_CLEANUP: Completing {current_phase.lower()} tasks before transition")
-                self._complete_previous_phase_tasks(current_phase.lower())
-
-            # Handle phase transition
-            self._handle_phase_transition(
-                from_phase=current_phase.lower(),
-                to_phase=next_phase.lower(),
-                test_group=test_group,
-                user_input=f"Phase transition to {next_phase}"
-            )
-
-            # REMOVED: Duplicate phase transition message - this is now handled by the dashboard
-            # when processing phase results to avoid double messages
-            print(f"🔄 PHASE_TRANSITION: Handled transition from {current_phase} to {next_phase} (message will be added by dashboard)")
+        # The unified phase progression system handles automatic transitions
+        # based on user interaction patterns and completion criteria
+        print(f"🔄 AUTO_PHASE: Delegating to unified phase progression system")
 
     async def _process_mentor_test_mode(self, user_input: str, test_phase: TestPhase, image_path: str = None) -> str:
         """MENTOR Test (Group A) - Enhanced multi-agent scaffolding with phase-specific interactions"""

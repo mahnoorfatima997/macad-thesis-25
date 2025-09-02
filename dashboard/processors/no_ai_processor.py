@@ -1,6 +1,7 @@
 """
 No AI processor for control group - provides hardcoded questions without AI assistance.
 Used for research comparison purposes.
+Uses unified phase progression system for consistent phase tracking across all modes.
 """
 
 import streamlit as st
@@ -11,15 +12,21 @@ from datetime import datetime
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from processors.phase_calculator import phase_calculator
+from phase_progression_system import PhaseProgressionSystem
 
 
 class NoAIProcessor:
-    """Provides hardcoded questions for each phase without any AI assistance."""
-    
+    """Provides hardcoded questions for each phase without any AI assistance.
+    Uses unified phase progression system for consistent phase tracking."""
+
     def __init__(self):
         self.phase_questions = self._initialize_phase_questions()
         self.question_counters = {}  # Track which question to ask next for each phase
+        # Initialize unified phase progression system for consistent tracking
+        self.phase_system = PhaseProgressionSystem()
+        print("🔄 NO_AI: Initialized with unified phase progression system")
     
     def _initialize_phase_questions(self) -> Dict[str, List[str]]:
         """Initialize hardcoded questions for each phase."""
@@ -92,15 +99,33 @@ class NoAIProcessor:
                                   session_id: str) -> Dict[str, Any]:
         """
         Process user input and return the next hardcoded question.
-        Uses phase calculator to determine current phase automatically.
+        Uses unified phase progression system for consistent phase tracking.
         This simulates the control group experience with no AI assistance.
         """
 
-        # Calculate current phase using standalone calculator
-        phase_info = phase_calculator.calculate_current_phase(messages, session_id)
-        current_phase = phase_info["current_phase"]
+        # Use unified phase progression system for consistent tracking
+        if session_id:
+            # Ensure session exists in phase system
+            if session_id not in self.phase_system.sessions:
+                self.phase_system.create_session(session_id)
 
-        # Get the next question for this phase
+            # Process the user message to update phase progression
+            # Note: For No AI mode, we don't use the returned question, just track progression
+            self.phase_system.process_user_message(session_id, user_input)
+
+            # Get phase info from unified system
+            phase_summary = self.phase_system.get_session_summary(session_id)
+            current_phase = phase_summary.get('current_phase', 'ideation')
+            phase_info = {
+                "current_phase": current_phase,
+                "phase_completion": phase_summary.get('phase_summaries', {}).get(current_phase, {}).get('completion_percent', 0.0)
+            }
+        else:
+            # Fallback to phase calculator
+            phase_info = phase_calculator.calculate_current_phase(messages, session_id)
+            current_phase = phase_info["current_phase"]
+
+        # Get the next hardcoded question for this phase
         next_question = self.get_next_question(current_phase, session_id)
 
         # Create a simple acknowledgment + next question response
