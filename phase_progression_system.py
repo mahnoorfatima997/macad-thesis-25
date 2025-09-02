@@ -822,22 +822,22 @@ class PhaseTransitionSystem:
     """Manages transitions between design phases"""
 
     def __init__(self):
-        # BALANCED THRESHOLDS FOR EXTENDED BUT ACHIEVABLE PHASE ENGAGEMENT
+        # QUESTION-FOCUSED THRESHOLDS: 8 QUESTIONS PER PHASE (ALIGNED WITH PHASE CALCULATOR)
         self.transition_thresholds = {
             DesignPhase.IDEATION: {
-                "min_interactions": 6,  # Balanced: 6 interactions for meaningful engagement
+                "min_interactions": 8,  # FIXED: 8 interactions to match PhaseCalculator expectations
                 "min_avg_score": 0.8,   # Keep realistic scoring
                 "min_completion": 65.0, # Achievable completion threshold
                 "required_concepts": ["concept", "program", "site", "community", "context", "user", "function"]
             },
             DesignPhase.VISUALIZATION: {
-                "min_interactions": 6,  # Balanced: 6 interactions to match ideation depth
+                "min_interactions": 8,  # FIXED: 8 interactions to match PhaseCalculator expectations
                 "min_avg_score": 0.8,   # Aligned with ideation for consistency
                 "min_completion": 65.0, # Achievable completion threshold
                 "required_concepts": ["space", "form", "circulation", "experience", "organization", "layout", "scale", "proportion", "light", "spatial"]
             },
             DesignPhase.MATERIALIZATION: {
-                "min_interactions": 6,  # Balanced: 6 interactions to match other phases
+                "min_interactions": 8,  # FIXED: 8 interactions to match PhaseCalculator expectations
                 "min_avg_score": 0.8,   # Aligned with other phases for consistency
                 "min_completion": 65.0, # Achievable completion threshold
                 "required_concepts": ["material", "construction", "detail", "feasibility", "structure", "systems", "cost", "sustainability", "technical", "building"]
@@ -853,35 +853,49 @@ class PhaseTransitionSystem:
         # Get transition criteria for current phase
         criteria = self.transition_thresholds.get(current_phase, {})
 
-        # Check interaction count
-        interaction_count = len(session.conversation_history)
+        # FIXED: Check interaction count for CURRENT PHASE ONLY
+        # Count messages that belong to the current phase using completed steps as proxy
+        current_phase_interactions = len(phase_progress.completed_steps)
         min_interactions = criteria.get("min_interactions", 3)
-        interactions_met = interaction_count >= min_interactions
-        print(f"   📊 Interactions: {interaction_count}/{min_interactions} {'✅' if interactions_met else '❌'}")
+        interactions_met = current_phase_interactions >= min_interactions
+        print(f"   📊 User Questions (CURRENT PHASE): {current_phase_interactions}/{min_interactions} {'✅' if interactions_met else '❌'} (current {current_phase.value} phase only)")
 
-        # Check average score
+        # Check average score for CURRENT PHASE ONLY
         avg_score = phase_progress.average_score
         min_score = criteria.get("min_avg_score", 2.5)
         score_met = avg_score >= min_score
-        print(f"   🎯 Avg Score: {avg_score:.2f}/{min_score} {'✅' if score_met else '❌'}")
+        print(f"   🎯 Avg Score (CURRENT PHASE): {avg_score:.2f}/{min_score} {'✅' if score_met else '❌'}")
 
-        # Check completion percentage
+        # Check completion percentage for CURRENT PHASE ONLY
         completion = phase_progress.completion_percent
         min_completion = criteria.get("min_completion", 60.0)
         completion_met = completion >= min_completion
-        print(f"   📈 Completion: {completion:.1f}%/{min_completion}% {'✅' if completion_met else '❌'}")
+        print(f"   📈 Completion (CURRENT PHASE): {completion:.1f}%/{min_completion}% {'✅' if completion_met else '❌'}")
 
-        # Check for required concepts in conversation
+        # FIXED: Check for required concepts in CURRENT PHASE conversation only
         required_concepts = criteria.get("required_concepts", [])
-        conversation_text = " ".join([h.get("response", "") for h in session.conversation_history]).lower()
+        # Get only responses from the current phase
+        current_phase_responses = [
+            h.get("response", "") for h in session.conversation_history
+            if h.get("phase") == current_phase.value
+        ]
+        # If no phase info, use recent responses as fallback
+        if not current_phase_responses and session.conversation_history:
+            # Use last N responses where N is the expected interactions for this phase
+            current_phase_responses = [
+                h.get("response", "") for h in session.conversation_history[-min_interactions:]
+            ]
+
+        conversation_text = " ".join(current_phase_responses).lower()
         concepts_found = [concept for concept in required_concepts if concept in conversation_text]
         concepts_met = len(concepts_found) >= len(required_concepts) * 0.6  # 60% of concepts
-        print(f"   💡 Concepts: {len(concepts_found)}/{len(required_concepts)} {'✅' if concepts_met else '❌'}")
+        print(f"   💡 Concepts (CURRENT PHASE): {len(concepts_found)}/{len(required_concepts)} {'✅' if concepts_met else '❌'}")
         print(f"      Found: {concepts_found}")
+        print(f"      Analyzed {len(current_phase_responses)} responses from current phase")
 
         # ENHANCED: More adaptive and rational readiness assessment
         # Weight criteria differently - engagement and concepts matter more than rigid scores
-        engagement_score = min(interaction_count / min_interactions, 2.0)  # Can exceed 1.0 for high engagement
+        engagement_score = min(current_phase_interactions / min_interactions, 2.0)  # Can exceed 1.0 for high engagement
         concept_coverage = len(concepts_found) / max(len(required_concepts), 1)
 
         # Adaptive scoring - if user is highly engaged, be more lenient on scores
@@ -1050,23 +1064,7 @@ class PhaseTransitionSystem:
         total_score = length_score + reasoning_bonus + detail_bonus
         return min(5.0, max(2.0, total_score))  # Minimum score of 2.0 for any substantive response
 
-    def _calculate_relevance(self, response: str) -> float:
-        """Calculate relevance based on architectural terms - ENHANCED: More generous scoring"""
-        arch_term_matches = sum(1 for term in self.architectural_terms if term in response)
-        base_score = (arch_term_matches / len(self.architectural_terms)) * 5.0
 
-        # More generous baseline - if response shows architectural thinking, give credit
-        word_count = len(response.split())
-        if word_count > 20 and any(term in response.lower() for term in ["design", "space", "building", "architecture", "project"]):
-            base_score = max(base_score, 2.5)  # Minimum 2.5 for architectural responses
-
-        # Bonus for detailed architectural discussion
-        if word_count > 100:
-            base_score += 1.0
-        elif word_count > 50:
-            base_score += 0.5
-
-        return min(5.0, base_score)
 
     def _calculate_innovation(self, response: str) -> float:
         """Calculate innovation based on creative indicators - ENHANCED: More generous scoring"""
@@ -1348,14 +1346,33 @@ class PhaseProgressionSystem:
         transition_assessment = self.transition_system.assess_phase_readiness(session, current_phase_progress)
 
         if transition_assessment["is_ready"]:
-            # Check if there's a next phase to transition to
-            next_phase = transition_assessment.get("next_phase")
-            if next_phase:
-                print(f"   🎉 Phase transition ready! Automatically transitioning...")
-                # ENHANCED: Automatically transition instead of asking for permission
-                transition_result = self.transition_to_next_phase(session_id)
-                if "error" not in transition_result:
-                    print(f"   ✅ Transitioned to {transition_result['new_phase']} phase")
+            # CRITICAL FIX: Always attempt transition, let transition_to_next_phase handle final phase
+            print(f"   🎉 Phase transition ready! Automatically transitioning...")
+            transition_result = self.transition_to_next_phase(session_id)
+
+            if "error" not in transition_result:
+                if transition_result.get("final_phase_completed"):
+                    # Final phase completed - return completion message
+                    print(f"   🎉 FINAL PHASE COMPLETED! Test finished successfully")
+                    completion_message = transition_result["message"]
+                    celebration_question = SocraticQuestion(
+                        step=SocraticStep.CONTEXTUAL_EXPLORATION,
+                        question_text=f"{completion_message}\n\nAs you reflect on your complete design journey, what aspects of your project do you feel most proud of, and what would you explore further if you had more time?",
+                        keywords=["reflection", "completion", "design", "journey"],
+                        assessment_criteria={
+                            "completeness": "Reflects on the full design process",
+                            "depth": "Shows thoughtful analysis of the journey",
+                            "relevance": "Connects to architectural design principles",
+                            "innovation": "Demonstrates creative thinking about future exploration",
+                            "technical_understanding": "Shows understanding of design development"
+                        },
+                        phase=session.current_phase,
+                        question_id=f"final_completion_{session.current_phase.value}"
+                    )
+                    return celebration_question
+                else:
+                    # Regular phase transition
+                    print(f"   ✅ Transitioned to {transition_result.get('new_phase', 'next')} phase")
                     # Get the updated session after transition
                     updated_session = self.sessions.get(session_id)
                     if updated_session:
@@ -1370,34 +1387,15 @@ class PhaseProgressionSystem:
                             )
                             if first_question:
                                 # Modify the question text to include transition announcement
-                                welcome_message = transition_result["message"]
+                                welcome_message = transition_result.get("message", "Welcome to the next phase!")
                                 combined_text = f"{welcome_message}\n\n{first_question.question_text}"
                                 first_question.question_text = combined_text
                                 return first_question
                     # Fallback if we can't get the first question
                     print(f"   ⚠️ Could not get first question for new phase")
-                else:
-                    print(f"   ❌ Transition failed: {transition_result['error']}")
-                    # Fall through to flexible question generation
             else:
-                # Final phase completed - generate celebration question for continued exploration
-                print(f"   🎉 Final phase completed! Generating celebration question...")
-                completion_message = transition_assessment["transition_message"]
-                celebration_question = SocraticQuestion(
-                    step=SocraticStep.CONTEXTUAL_EXPLORATION,
-                    question_text=f"{completion_message}\n\nAs you reflect on your complete design journey, what aspects of your project do you feel most proud of, and what would you explore further if you had more time?",
-                    keywords=["reflection", "completion", "design", "journey"],
-                    assessment_criteria={
-                        "completeness": "Reflects comprehensively on the design process",
-                        "depth": "Shows deep understanding of design development",
-                        "relevance": "Connects to overall design goals and learning",
-                        "innovation": "Demonstrates creative insights from the process",
-                        "technical_understanding": "Shows integrated understanding across all phases"
-                    },
-                    phase=session.current_phase,
-                    question_id=f"{session.current_phase.value}_completion_celebration"
-                )
-                return celebration_question
+                print(f"   ❌ Transition failed: {transition_result['error']}")
+                # Fall through to flexible question generation
 
         # If not ready for transition, generate a flexible contextual question
         print(f"   🎨 Generating flexible contextual question...")
@@ -1425,7 +1423,7 @@ class PhaseProgressionSystem:
         return None
 
     def transition_to_next_phase(self, session_id: str) -> Dict[str, Any]:
-        """Transition the session to the next phase"""
+        """Transition the session to the next phase or handle final phase completion"""
         print(f"\n🔄 PHASE_TRANSITION: Transitioning session {session_id}")
 
         session = self.sessions.get(session_id)
@@ -1436,8 +1434,29 @@ class PhaseProgressionSystem:
         next_phase = self.transition_system._get_next_phase(current_phase)
 
         if not next_phase:
-            print(f"   ❌ No next phase available after {current_phase.value}")
-            return {"error": "No next phase available"}
+            # CRITICAL FIX: Handle final phase completion
+            print(f"🎉 FINAL PHASE COMPLETION: {current_phase.value} is the final phase")
+
+            # Mark current phase as complete
+            current_progress = session.phase_progress.get(current_phase)
+            if current_progress:
+                current_progress.is_complete = True
+                current_progress.completion_percent = 100.0
+                print(f"   📈 FINAL PHASE COMPLETION SET TO 100%")
+
+            # Generate completion image for final phase
+            self._generate_phase_completion_image(session, current_phase)
+
+            # Update session
+            session.last_updated = datetime.now()
+
+            return {
+                "success": True,
+                "final_phase_completed": True,
+                "previous_phase": current_phase.value,
+                "message": f"🎉 Congratulations! You've successfully completed all three phases of the design process - ideation, visualization, and materialization. You've demonstrated comprehensive architectural thinking from initial concept through technical implementation.",
+                "generated_image": self._last_transition_result.get("generated_image") if hasattr(self, '_last_transition_result') and self._last_transition_result else None
+            }
 
         print(f"   🎯 Transitioning from {current_phase.value} to {next_phase.value}")
 
@@ -2007,9 +2026,9 @@ class PhaseProgressionSystem:
             quality_ratio = min(total_score / max_possible, 1.0) if max_possible > 0 else 0.0
             print(f"   🔍 DEBUG: Quality calculation successful: {total_score}/{max_possible} = {quality_ratio}")
         else:
-            # No grades yet - give some baseline credit for participation
-            quality_ratio = 0.6 if current_phase_user_messages > 0 else 0.0
-            print(f"   🔍 DEBUG: No grades yet, baseline quality_ratio = {quality_ratio}")
+            # CONSERVATIVE: No grades yet - minimal credit for early participation
+            quality_ratio = 0.1 if current_phase_user_messages > 0 else 0.0
+            print(f"   🔍 DEBUG: No grades yet, minimal baseline quality_ratio = {quality_ratio}")
 
         print(f"   🎯 Quality: {quality_ratio:.2f} ({quality_ratio*20:.1f}% of total)")
 
@@ -2029,13 +2048,12 @@ class PhaseProgressionSystem:
                 if state.get('status') == 'completed':
                     completed_required += 1
 
-        # More forgiving concept calculation - give partial credit for engagement even without keyword matches
+        # CONSERVATIVE concept calculation - only give credit for actual completed concepts
         if total_required > 0:
-            base_concept_ratio = completed_required / total_required
-            # Give some baseline credit (20%) for being in the phase and engaging
-            concept_ratio = max(base_concept_ratio, 0.2)
+            concept_ratio = completed_required / total_required
+            # NO baseline credit - must earn concept coverage through actual engagement
         else:
-            concept_ratio = 0.5  # Give some baseline credit when no required items
+            concept_ratio = 0.0  # No credit when no required items
         print(f"   ✅ Concepts: {completed_required}/{total_required} = {concept_ratio:.2f} ({concept_ratio*10:.1f}% of total)")
 
         # 4. VISUAL ENGAGEMENT (5%) - Based on visual artifacts and analysis
@@ -2155,15 +2173,15 @@ class PhaseProgressionSystem:
         # Use consistent user message counting within current phase - INCREASED THRESHOLDS FOR LONGER PHASES
         current_phase_user_messages = self._count_user_messages_in_phase(session, phase_progress)
 
-        # QUESTION-FOCUSED: Each phase should ask ~8 questions before completion
+        # QUESTION-FOCUSED: Each phase should ask ~8 questions before completion (ALIGNED WITH TRANSITION THRESHOLDS)
         target_questions_per_phase = 8
         min_messages = target_questions_per_phase  # Same for all phases: 8 questions each
 
-        print(f"   🎯 QUESTION_FOCUS: Target {target_questions_per_phase} questions per phase")
+        print(f"   🎯 QUESTION_FOCUS: Target {target_questions_per_phase} questions per phase (aligned with transition thresholds)")
 
         has_meaningful_engagement = current_phase_user_messages >= min_messages
         has_sufficient_quality = phase_progress.average_score >= 2.5  # Increased quality requirement
-        has_good_completion = phase_progress.completion_percent >= 75.0  # Increased completion requirement
+        has_good_completion = phase_progress.completion_percent >= 60.0  # REDUCED: More achievable completion requirement
 
         # Check if required checklist items are completed
         items = self.phase_checklist_items.get(session.current_phase, [])
@@ -2185,7 +2203,7 @@ class PhaseProgressionSystem:
         print(f"   🔍 PHASE COMPLETION CHECK (EXTENDED THRESHOLDS FOR LONGER PHASES):")
         print(f"      Engagement: {has_meaningful_engagement} ({current_phase_user_messages}/{min_messages} user messages in {session.current_phase.value} phase)")
         print(f"      Quality: {has_sufficient_quality} (score ≥2.5)")
-        print(f"      Completion: {has_good_completion} (≥75%)")
+        print(f"      Completion: {has_good_completion} (≥60%)")
         print(f"      Concepts: {has_core_concepts} ({completed_required}/{len(required_items)} required)")
 
         if has_meaningful_engagement and has_sufficient_quality and has_good_completion and has_core_concepts:
@@ -2223,8 +2241,17 @@ class PhaseProgressionSystem:
                 )
                 logger.info(f"Advanced to phase: {next_phase.value}")
             else:
-                # Final phase completed - generate completion image
+                # CRITICAL FIX: Final phase completed - ensure completion is set to 100%
                 print(f"🎉 FINAL PHASE COMPLETED: {session.current_phase.value}")
+
+                # Set the final phase completion to 100%
+                current_progress = session.phase_progress.get(session.current_phase)
+                if current_progress:
+                    current_progress.completion_percent = 100.0
+                    current_progress.is_complete = True
+                    print(f"   📈 FINAL PHASE COMPLETION SET TO 100%")
+
+                # Generate completion image for final phase
                 self._generate_final_phase_image(session)
         except ValueError:
             logger.error(f"Invalid phase: {session.current_phase}")

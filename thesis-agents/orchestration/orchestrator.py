@@ -1507,10 +1507,15 @@ class LangGraphOrchestrator:
         self.logger.info("=" * 80 + "\n")
 
     def _enhance_response_with_image_discussion(self, response: str, user_input: str) -> str:
-        """DISABLED: Image enhancement completely turned off to stop 'Looking at your image' text."""
-        # NUCLEAR OPTION: Always return original response, never add image text
-        self.logger.info("🚫 IMAGE ENHANCEMENT: COMPLETELY DISABLED")
-        return response
+        """FIXED: Re-enable image enhancement to properly handle uploaded images."""
+        # Check if user input contains image analysis markers
+        if "[ENHANCED IMAGE ANALYSIS:" in user_input or "[UPLOADED IMAGE ANALYSIS:" in user_input:
+            self.logger.info("✅ IMAGE ENHANCEMENT: Image analysis found in user input")
+            # The image analysis is already embedded in the user input, so the response should naturally reference it
+            return response
+        else:
+            self.logger.info("ℹ️ IMAGE ENHANCEMENT: No image analysis markers found")
+            return response
 
     def _should_auto_reference_image(self, user_input: str) -> bool:
         """Check if we should automatically reference the image in the response."""

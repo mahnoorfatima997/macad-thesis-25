@@ -1233,11 +1233,10 @@ class UnifiedArchitecturalDashboard:
                     st.session_state.last_phase_result = {}
                     print(f"🎨 DUPLICATE_PREVENTION: Cleared last_phase_result immediately")
 
-                # CRITICAL FIX: Always handle generated image, even if transition message is skipped
+                # FIXED: Handle generated image FIRST, regardless of phase transition
                 generated_image = phase_result.get('generated_image')
-                print(f"🎨 PROCESSING_IMAGE: Generated image from phase result: {bool(generated_image)}")
                 if generated_image:
-                    print(f"🎨 DEBUG: Generated image keys: {list(generated_image.keys())}")
+                    print(f"🎨 DEBUG: Generated image found in phase result: {list(generated_image.keys())}")
                     print(f"🎨 DEBUG: Image URL: {generated_image.get('url', 'No URL')}")
 
                     # Check if we're running on Streamlit Cloud
@@ -1266,6 +1265,12 @@ class UnifiedArchitecturalDashboard:
                     print(f"❌ DEBUG: No generated_image found in phase_result")
 
                 # Only process transition MESSAGE if it should be processed (not a duplicate)
+                if should_process_transition and phase_result.get('phase_transition'):
+                    transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
+                    response_content += transition_msg
+                    print(f"✅ PROCESSING_TRANSITION: Added phase transition message to response")
+
+                # Only process transition if it should be processed (not a duplicate)
                 if should_process_transition and phase_result.get('phase_transition'):
                     transition_msg = f"\n\n🎉 **Phase Transition!** {phase_result.get('transition_message', 'Moving to next phase!')}"
                     response_content += transition_msg
