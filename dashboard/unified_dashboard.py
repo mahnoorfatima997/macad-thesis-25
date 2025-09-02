@@ -747,11 +747,10 @@ class UnifiedArchitecturalDashboard:
         if uploaded_image:
             print(f"📷 DASHBOARD: Image uploaded: {uploaded_image.name}")
 
-        # CRITICAL FIX: Clear gamification duplicate prevention for new user input
-        # This allows games to be interactive while preventing multiple renders per page load
-        if 'rendered_challenges' in st.session_state:
-            st.session_state.rendered_challenges.clear()
-            print(f"🎮 DUPLICATE_PREVENTION: Cleared rendered challenges for new user input")
+        # GAMES FIX: Don't clear rendered_challenges at all - let games handle their own completion state
+        # Completed games will check their state and show completion message instead of re-rendering
+        # This prevents ALL games from disappearing when user sends new messages
+        print(f"🎮 GAMES_PRESERVATION: Not clearing rendered_challenges - games will handle completion state internally")
 
         # Process image if uploaded and extract comprehensive analysis
         enhanced_user_input = user_input

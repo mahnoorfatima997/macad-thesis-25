@@ -654,7 +654,7 @@ class LangGraphOrchestrator:
                 import openai
                 client = openai.OpenAI()
                 synthesis_response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="gpt-4o",
                     messages=[{"role": "user", "content": synthesis_prompt}],
                     max_tokens=800,
                     temperature=0.7

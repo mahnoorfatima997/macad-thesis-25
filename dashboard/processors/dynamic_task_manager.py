@@ -151,7 +151,7 @@ class DynamicTaskManager:
             TaskType.ENVIRONMENTAL_CONTEXTUAL: {
                 "phase_requirement": "visualization",
                 "trigger_once": True,
-                "phase_completion_min": 25.0,  # Trigger when visualization is 30% complete
+                "phase_completion_min": 33.0,  # Trigger when visualization is 30% complete
                 "phase_completion_max": 70.0   # Don't trigger if visualization is already 70% complete
             },
 
@@ -633,9 +633,9 @@ class DynamicTaskManager:
         
         self.active_tasks[task_type.value] = task
 
-        print(f"🚨 ACTIVATE_TASK_DEBUG: Added {task_type.value} to active_tasks")
-        print(f"🚨 ACTIVATE_TASK_DEBUG: Active tasks after addition: {list(self.active_tasks.keys())}")
-        print(f"🚨 ACTIVATE_TASK_DEBUG: Task manager instance ID: {id(self)}")
+        # print(f"🚨 ACTIVATE_TASK_DEBUG: Added {task_type.value} to active_tasks")
+        # print(f"🚨 ACTIVATE_TASK_DEBUG: Active tasks after addition: {list(self.active_tasks.keys())}")
+        # print(f"🚨 ACTIVATE_TASK_DEBUG: Task manager instance ID: {id(self)}")
         print(f"🎯 TASK_MANAGER: Activated {task_type.value} for {test_group} (phase completion: {phase_completion_percent:.1f}%)")
 
         # Task is now active and ready for user interaction
@@ -676,10 +676,10 @@ class DynamicTaskManager:
     
     def complete_task(self, task_type: TaskType, completion_reason: str = "Natural completion"):
         """Mark a task as completed and move to history"""
-        print(f"🚨 COMPLETE_TASK_CALLED: Attempting to complete {task_type.value}")
-        print(f"🚨 COMPLETE_TASK_CALLED: Task manager instance ID: {id(self)}")
-        print(f"🚨 COMPLETE_TASK_CALLED: Active tasks: {list(self.active_tasks.keys())}")
-        print(f"🚨 COMPLETE_TASK_CALLED: Task exists in active tasks: {task_type.value in self.active_tasks}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Attempting to complete {task_type.value}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Task manager instance ID: {id(self)}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Active tasks: {list(self.active_tasks.keys())}")
+        # print(f"🚨 COMPLETE_TASK_CALLED: Task exists in active tasks: {task_type.value in self.active_tasks}")
 
         if task_type.value in self.active_tasks:
             task = self.active_tasks[task_type.value]
@@ -711,8 +711,8 @@ class DynamicTaskManager:
                 print(f"🚨 TASK_CLEANUP: Removed problematic task {task_type.value} from active tasks")
                 return True
         else:
-            print(f"🚨 COMPLETE_TASK_FAILED: Task {task_type.value} not found in active tasks")
-            print(f"🚨 COMPLETE_TASK_FAILED: Available active tasks: {list(self.active_tasks.keys())}")
+            # print(f"🚨 COMPLETE_TASK_FAILED: Task {task_type.value} not found in active tasks")
+            # print(f"🚨 COMPLETE_TASK_FAILED: Available active tasks: {list(self.active_tasks.keys())}")
             return False
 
     def _auto_complete_task(self, task_type: TaskType, completion_reason: str = "Auto-completed after trigger"):
@@ -740,18 +740,18 @@ class DynamicTaskManager:
     
     def _cleanup_expired_tasks(self):
         """Remove expired tasks and move them to history"""
-        print(f"🚨 CLEANUP_DEBUG: Starting cleanup on instance {id(self)}")
-        print(f"🚨 CLEANUP_DEBUG: Active tasks before cleanup: {list(self.active_tasks.keys())}")
+        # print(f"🚨 CLEANUP_DEBUG: Starting cleanup on instance {id(self)}")
+        # print(f"🚨 CLEANUP_DEBUG: Active tasks before cleanup: {list(self.active_tasks.keys())}")
 
         expired_tasks = []
 
         for task_id, task in self.active_tasks.items():
             is_expired = task.is_expired
-            print(f"🚨 CLEANUP_DEBUG: Task {task_id} is_expired: {is_expired}")
+            # print(f"🚨 CLEANUP_DEBUG: Task {task_id} is_expired: {is_expired}")
             if is_expired:
                 expired_tasks.append(task_id)
 
-        print(f"🚨 CLEANUP_DEBUG: Found {len(expired_tasks)} expired tasks: {expired_tasks}")
+        # print(f"🚨 CLEANUP_DEBUG: Found {len(expired_tasks)} expired tasks: {expired_tasks}")
 
         for task_id in expired_tasks:
             task = self.active_tasks[task_id]
@@ -763,13 +763,13 @@ class DynamicTaskManager:
 
             print(f"🚨 CLEANUP_EXPIRED: Removed expired task {task_id}")
 
-        print(f"🚨 CLEANUP_DEBUG: Active tasks after cleanup: {list(self.active_tasks.keys())}")
-    
+        # print(f"🚨 CLEANUP_DEBUG: Active tasks after cleanup: {list(self.active_tasks.keys())}")
+
     def get_active_tasks(self) -> List[ActiveTask]:
         """Get list of currently active tasks"""
-        print(f"🚨 GET_ACTIVE_TASKS: Instance {id(self)} has active tasks: {list(self.active_tasks.keys())}")
+        # print(f"🚨 GET_ACTIVE_TASKS: Instance {id(self)} has active tasks: {list(self.active_tasks.keys())}")
         self._cleanup_expired_tasks()
-        print(f"🚨 GET_ACTIVE_TASKS: After cleanup: {list(self.active_tasks.keys())}")
+        # print(f"🚨 GET_ACTIVE_TASKS: After cleanup: {list(self.active_tasks.keys())}")
         return list(self.active_tasks.values())
     
     def get_task_status(self) -> Dict[str, Any]:
