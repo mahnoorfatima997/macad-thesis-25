@@ -3,6 +3,12 @@ Entry point for the Unified Architectural Dashboard.
 Ensures correct import paths and environment loading when launched directly.
 """
 
+# 0309-Fix for PyTorch device compatibility in cloud environments
+# This must be done before any imports that use PyTorch/SentenceTransformers
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable CUDA to prevent device conversion errors
+print("✅ Configured PyTorch for CPU-only operation (cloud compatibility)")
+
 # Fix for SQLite version issue on Streamlit Cloud
 # This must be done before any other imports that might use SQLite
 try:

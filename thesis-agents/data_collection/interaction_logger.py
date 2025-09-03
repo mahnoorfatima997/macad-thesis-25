@@ -91,6 +91,8 @@ class InteractionLogger:
 
         print(f"Enhanced data collection initialized for session: {self.session_id} (Group: {self.test_group})")
 
+        #LINKOGRAFY INTEGRATION
+
         # Initialize linkography logging
         self.linkography_logger = None
         self._initialize_linkography_logger()
@@ -98,13 +100,14 @@ class InteractionLogger:
     def _initialize_linkography_logger(self):
         """Initialize linkography logger with fallback"""
         try:
-            # Try to import and use the full linkography logger
+
+            # Initialize the full linkography logger with semantic embeddings
             from .linkography_logger_mentor import MentorLinkographyLogger
             self.linkography_logger = MentorLinkographyLogger(self.session_id)
-            print("✅ Full linkography logger initialized")
+            print("✅ Full linkography logger with semantic embeddings initialized")
         except ImportError as e:
             try:
-                # Fallback to simple linkography logger
+                # Fallback to simple linkography logger only if import fails
                 from .linkography_logger_simple_mentor import SimpleMentorLinkographyLogger
                 self.linkography_logger = SimpleMentorLinkographyLogger(self.session_id)
                 print("✅ Simple linkography logger initialized (fallback)")
@@ -291,6 +294,8 @@ class InteractionLogger:
         
         # Real-time save to CSV
         self._save_interaction_to_csv(interaction)
+
+        #LINKOGRAFY INTEGRATION
 
         # Log to linkography system
         if self.linkography_logger:
@@ -1070,8 +1075,8 @@ class InteractionLogger:
         
         # Export design moves for linkography analysis
         self._save_design_moves_to_csv()
+        #LINKOGRAFY INTEGRATION
 
-        # Export linkography data
         linkography_files = []
         if self.linkography_logger:
             try:
@@ -1093,6 +1098,8 @@ class InteractionLogger:
         print(f"   - session_summary_{self.session_id}.json")
         print(f"   - full_log_{self.session_id}.json")
 
+        #LINKOGRAFY INTEGRATION
+
         # Store linkography files for dropbox integration
         if hasattr(self, '_linkography_files'):
             self._linkography_files = linkography_files
@@ -1100,6 +1107,10 @@ class InteractionLogger:
             self._linkography_files = linkography_files
 
         return summary
+       #LINKOGRAFY INTEGRATION
+    def get_linkography_files(self) -> List[str]:
+        """Get list of linkography files for export"""
+        return getattr(self, '_linkography_files', [])
 
     def get_linkography_files(self) -> List[str]:
         """Get list of linkography files for export"""

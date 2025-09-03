@@ -30,13 +30,15 @@ class LinkographyEngine:
                  max_link_range: int = 15):
         """
         Initialize the linkography engine.
-        
+
         Args:
             model_name: Sentence transformer model for embeddings
             similarity_threshold: Minimum similarity for link creation (0-1)
             max_link_range: Maximum temporal distance for links
         """
-        self.model = SentenceTransformer(model_name)
+        # CRITICAL FIX: Force CPU usage to prevent PyTorch device conversion errors
+        # This ensures compatibility with cloud deployment environments
+        self.model = SentenceTransformer(model_name, device='cpu')
         self.similarity_threshold = similarity_threshold
         self.max_link_range = max_link_range
         self.logger = logging.getLogger(__name__)
