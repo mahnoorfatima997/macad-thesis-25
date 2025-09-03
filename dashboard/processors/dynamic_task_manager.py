@@ -151,7 +151,7 @@ class DynamicTaskManager:
             TaskType.ENVIRONMENTAL_CONTEXTUAL: {
                 "phase_requirement": "visualization",
                 "trigger_once": True,
-                "phase_completion_min": 33.0,  # Trigger when visualization is 30% complete
+                "phase_completion_min": 50.0,  # Trigger when visualization is 30% complete
                 "phase_completion_max": 70.0   # Don't trigger if visualization is already 70% complete
             },
 

@@ -451,7 +451,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
                 <div class="message-avatar agent-avatar"></div>
                 <div class="message-content agent-content">
                     <div class="message-header">
-                        <span class="agent-name">🎮 {mentor_label} - Enhanced Challenge!</span>
+                        <span class="agent-name">{mentor_label} - Enhanced Challenge!</span>
                     </div>
                 </div>
             </div>

@@ -90,8 +90,29 @@ class InteractionLogger:
         self.phase_start_times[self.current_phase] = self.session_start
 
         print(f"Enhanced data collection initialized for session: {self.session_id} (Group: {self.test_group})")
-        
-    def log_interaction(self, 
+
+        # Initialize linkography logging
+        self.linkography_logger = None
+        self._initialize_linkography_logger()
+
+    def _initialize_linkography_logger(self):
+        """Initialize linkography logger with fallback"""
+        try:
+            # Try to import and use the full linkography logger
+            from .linkography_logger_mentor import MentorLinkographyLogger
+            self.linkography_logger = MentorLinkographyLogger(self.session_id)
+            print("✅ Full linkography logger initialized")
+        except ImportError as e:
+            try:
+                # Fallback to simple linkography logger
+                from .linkography_logger_simple_mentor import SimpleMentorLinkographyLogger
+                self.linkography_logger = SimpleMentorLinkographyLogger(self.session_id)
+                print("✅ Simple linkography logger initialized (fallback)")
+            except ImportError as e2:
+                print(f"⚠️ Linkography logging not available: {e2}")
+                self.linkography_logger = None
+
+    def log_interaction(self,
                        student_input: str,
                        agent_response: str,
                        routing_path: str,
@@ -270,7 +291,19 @@ class InteractionLogger:
         
         # Real-time save to CSV
         self._save_interaction_to_csv(interaction)
-        
+
+        # Log to linkography system
+        if self.linkography_logger:
+            try:
+                self.linkography_logger.log_interaction_as_moves(
+                    user_input=student_input,
+                    ai_response=agent_response,
+                    phase=current_phase,
+                    modality="text"  # Default to text, could be enhanced based on input type
+                )
+            except Exception as e:
+                print(f"⚠️ Linkography logging failed: {e}")
+
         print(f"Logged interaction {interaction['interaction_number']}: {response_type} via {routing_path} (Phase: {current_phase}, Moves: {len(design_moves)})")
 
     def log_phase_transition(self, from_phase: str, to_phase: str, trigger_reason: str = "automatic"):
@@ -1037,14 +1070,40 @@ class InteractionLogger:
         
         # Export design moves for linkography analysis
         self._save_design_moves_to_csv()
-        
+
+        # Export linkography data
+        linkography_files = []
+        if self.linkography_logger:
+            try:
+                linkography_file = self.linkography_logger.export_linkography_data()
+                linkography_files.append(linkography_file)
+                print(f"   - {os.path.basename(linkography_file)}")
+
+                # Also get the JSONL file path
+                jsonl_file = str(self.linkography_logger.moves_log)
+                if os.path.exists(jsonl_file):
+                    linkography_files.append(jsonl_file)
+                    print(f"   - {os.path.basename(jsonl_file)}")
+            except Exception as e:
+                print(f"⚠️ Linkography export failed: {e}")
+
         print(f"Thesis data exported:")
         print(f"   - interactions_{self.session_id}.csv")
         print(f"   - design_moves_{self.session_id}.csv")
         print(f"   - session_summary_{self.session_id}.json")
         print(f"   - full_log_{self.session_id}.json")
-        
+
+        # Store linkography files for dropbox integration
+        if hasattr(self, '_linkography_files'):
+            self._linkography_files = linkography_files
+        else:
+            self._linkography_files = linkography_files
+
         return summary
+
+    def get_linkography_files(self) -> List[str]:
+        """Get list of linkography files for export"""
+        return getattr(self, '_linkography_files', [])
 
     def export_comprehensive_json(self, filename: str = None) -> str:
         """Export comprehensive session data as JSON with all rich metrics"""
