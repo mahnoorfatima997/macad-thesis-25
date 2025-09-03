@@ -1,0 +1,3595 @@
+{
+  "session_id": "unified_session_20250903_144626",
+  "session_start": "2025-09-03T14:45:50.124137",
+  "session_end": "2025-09-03T14:53:04.706283",
+  "session_duration_seconds": 434.581809,
+  "total_interactions": 14,
+  "interactions_per_minute": 1.9328926858049873,
+  "phase_analysis": {
+    "phase_distribution": {
+      "ideation": 9,
+      "unknown": 5
+    },
+    "most_common_phase": "ideation",
+    "average_phase_confidence": 0.6571428571428571,
+    "average_phase_progression": 0.4107142857142857,
+    "phase_progression_trend": "stable"
+  },
+  "design_move_analysis": {
+    "total_moves": 83,
+    "moves_per_interaction": 5.928571428571429,
+    "move_type_distribution": {
+      "general": 55,
+      "analysis": 20,
+      "synthesis": 5,
+      "reflection": 3
+    },
+    "move_modality_distribution": {
+      "text": 83
+    },
+    "most_common_move_type": "general",
+    "most_common_move_modality": "text"
+  },
+  "scientific_metrics_summary": {
+    "average_engagement_score": 0.7744047619047619,
+    "average_complexity_score": 0.5571428571428572,
+    "average_reflection_score": 0.4642857142857143,
+    "average_overall_cognitive_score": 0.705357142857143,
+    "average_scientific_confidence": 0.7673809523809526,
+    "cognitive_score_trend": "stable",
+    "engagement_trend": "high",
+    "complexity_trend": "medium",
+    "reflection_trend": "medium"
+  },
+  "cognitive_state_summary": {
+    "engagement_levels": "moderate",
+    "cognitive_loads": "optimal",
+    "metacognitive_awareness": "moderate",
+    "passivity_levels": "moderate",
+    "overconfidence_levels": "moderate",
+    "conversation_depths": "moderate",
+    "learning_progressions": "progressing"
+  },
+  "performance_metrics_summary": {
+    "cognitive_offloading_prevention_rate": 0.7142857142857143,
+    "deep_thinking_encouragement_rate": 0.7142857142857143,
+    "scaffolding_effectiveness_rate": 0.07142857142857142,
+    "engagement_maintenance_rate": 0.42857142857142855,
+    "skill_adaptation_rate": 0.0,
+    "response_complexity_scores": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "agent_selection_appropriateness_rate": 0.0,
+    "response_coherence_rate": 1.0,
+    "average_response_complexity": 1.0,
+    "overall_effectiveness_score": 0.41836734693877553
+  },
+  "agent_usage": {
+    "agent_usage": {
+      "Socratic Agent": 1,
+      "socratic_tutor": 12,
+      "domain_expert": 5,
+      "cognitive_enhancement": 12,
+      "context_agent": 5,
+      "analysis_agent": 7
+    },
+    "routing_distribution": {
+      "progressive_opening": 2,
+      "test_mentor": 5,
+      "socratic_exploration": 7
+    },
+    "multi_agent_usage_rate": 0.8571428571428571,
+    "avg_agents_per_interaction": 3.0,
+    "most_used_agent": "socratic_tutor",
+    "most_common_route": "socratic_exploration"
+  },
+  "input_analysis": {
+    "general_statement": 11,
+    "improvement_seeking": 3
+  },
+  "skill_progression": {
+    "initial_skill": "intermediate",
+    "final_skill": "intermediate",
+    "skill_changes": 1,
+    "progression_detected": false
+  },
+  "internal_grading_metrics": {
+    "average_cop_score": 62.142857142857146,
+    "average_dte_score": 60.0,
+    "average_ki_score": 40.0,
+    "average_cop_factor": 0.6214285714285713,
+    "average_dte_factor": 0.5999999999999999,
+    "average_ki_factor": 0.4000000000000001,
+    "average_milestone_progression": 32.857142857142854,
+    "average_quality_factor": 0.5404761904761906,
+    "average_engagement_factor": 0.7214285714285714,
+    "average_completed_milestones": 0.6428571428571429,
+    "average_total_milestones": 5.0,
+    "average_grade": 54.04761904761904,
+    "benchmarking_summary": {
+      "cognitive_offloading_prevention": "moderate",
+      "deep_thinking_engagement": "moderate",
+      "knowledge_integration": "weak",
+      "overall_learning_progression": "poor"
+    }
+  },
+  "interactions": [
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:46:46.293955",
+      "interaction_number": 1,
+      "student_input": "I am designing a community center in Spain by transforming and old warehouse building. I am at initial design stage.",
+      "input_length": 20,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "beginner",
+      "confidence_level": "neutral",
+      "engagement_level": "medium",
+      "agent_response": "Hello!\n\nI'm thrilled to hear about your ambitious project of transforming an old warehouse into a community center in Spain. That's a fascinating endeavor! It's an interesting opportunity to blend the old with the new, and create something functional yet aesthetically pleasing.\n\nGiven that you're at the initial design stage, it would be great to explore different aspects like space utilization, architectural style, and environmental considerations. Have you thought about how the existing structu",
+      "response_length": 74,
+      "routing_path": "progressive_opening",
+      "agents_used": [
+        "Socratic Agent"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "Socratic Agent",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.7,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 7,
+      "design_moves": [
+        {
+          "content": "I am designing a community center in Spain by transforming and old warehouse building.",
+          "timestamp": "2025-09-03T14:46:46.293632",
+          "micro_timestamp": 1756903606.293632,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.07300000000000001,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 86,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.5214285714285715
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "I am at initial design stage.",
+          "timestamp": "2025-09-03T14:46:46.393632",
+          "micro_timestamp": 1756903606.393632,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.024000000000000004,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 29,
+            "has_question": false,
+            "word_count": 6,
+            "complexity_score": 0.4
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "I'm thrilled to hear about your ambitious project of transforming an old warehouse into a community center in Spain.",
+          "timestamp": "2025-09-03T14:46:46.593632",
+          "micro_timestamp": 1756903606.593632,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.098,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 116,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.5157894736842106
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 2
+        },
+        {
+          "content": "That's a fascinating endeavor!",
+          "timestamp": "2025-09-03T14:46:46.693632",
+          "micro_timestamp": 1756903606.693632,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.027000000000000003,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 30,
+            "has_question": false,
+            "word_count": 4,
+            "complexity_score": 0.675
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "It's an interesting opportunity to blend the old with the new, and create something functional yet aesthetically pleasing.",
+          "timestamp": "2025-09-03T14:46:46.793632",
+          "micro_timestamp": 1756903606.793632,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.12299999999999998,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 122,
+            "has_question": false,
+            "word_count": 18,
+            "complexity_score": 0.6833333333333332
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 4
+        },
+        {
+          "content": "Given that you're at the initial design stage, it would be great to explore different aspects like space utilization, architectural style, and environmental considerations.",
+          "timestamp": "2025-09-03T14:46:46.893632",
+          "micro_timestamp": 1756903606.893632,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.2431,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 172,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.9208333333333334
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 5
+        },
+        {
+          "content": "Have you thought about how the existing structu",
+          "timestamp": "2025-09-03T14:46:46.993632",
+          "micro_timestamp": 1756903606.993632,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.044000000000000004,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 47,
+            "has_question": false,
+            "word_count": 8,
+            "complexity_score": 0.5
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "analysis",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "medium",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "beginner",
+        "passivity_level": "moderate",
+        "overconfidence_level": "neutral",
+        "conversation_depth": "moderate",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "interaction_type": "first_message",
+        "understanding_level": "beginner",
+        "confidence_level": "neutral",
+        "engagement_level": "medium",
+        "is_first_message": true,
+        "building_type": "unknown",
+        "user_input": "I am designing a community center in Spain by transforming and old warehouse building. I am at initial design stage.",
+        "cognitive_offloading_detected": false,
+        "cognitive_offloading_type": "none",
+        "cognitive_offloading_confidence": 0.0,
+        "is_pure_knowledge_request": false,
+        "user_intent": "first_message",
+        "context_agent_confidence": 0.0,
+        "is_technical_question": false
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": true,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": false,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:46:46.462053",
+      "interaction_number": 2,
+      "student_input": "I am designing a community center in Spain by transforming and old warehouse building. I am at initial design stage.",
+      "input_length": 20,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "unknown",
+      "confidence_level": "unknown",
+      "engagement_level": "unknown",
+      "agent_response": "Hello!\n\nI'm thrilled to hear about your ambitious project of transforming an old warehouse into a community center in Spain. That's a fascinating endeavor! It's an interesting opportunity to blend the old with the new, and create something functional yet aesthetically pleasing.\n\nGiven that you're at the initial design stage, it would be great to explore different aspects like space utilization, architectural style, and environmental considerations. Have you thought about how the existing structure of the warehouse can be leveraged in the design? What considerations are you making to make it a lively space for the community?\n\nI'm looking forward to hearing more about your ideas and assisting you on this exciting journey of architectural design! \n\nTo help us explore this together, I'd love to hear your thoughts on: \n1. What is the primary purpose of your design? \n2. Who are the main users and what do they need? \n3. What do you think is the most important function this space needs to serve? \n\n**How we'll work together:** I'm here to guide you through a progressive learning journey. We'll start by understanding your interests and then explore the design space together, building your knowledge step by step. \n**Next steps:** \u2022 Share your thoughts on the questions above \u2022 Tell me more about what interests you most \u2022 Ask about any concepts you'd like to explore further \nI'm excited to explore this architectural journey with you! What would you like to start with?",
+      "response_length": 242,
+      "routing_path": "test_mentor",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "cognitive_enhancement",
+        "context_agent"
+      ],
+      "response_type": "test_mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [
+        "test_mode",
+        "scaffolding_active",
+        "socratic_dialogue",
+        "multi_agent",
+        "high_cop",
+        "high_dte"
+      ],
+      "cognitive_flags_count": 6,
+      "confidence_score": 0.78,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "unknown",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 18,
+      "design_moves": [
+        {
+          "content": "I am designing a community center in Spain by transforming and old warehouse building.",
+          "timestamp": "2025-09-03T14:46:46.461289",
+          "micro_timestamp": 1756903606.461289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.07300000000000001,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 86,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.5214285714285715
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "I am at initial design stage.",
+          "timestamp": "2025-09-03T14:46:46.561289",
+          "micro_timestamp": 1756903606.561289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.024000000000000004,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 29,
+            "has_question": false,
+            "word_count": 6,
+            "complexity_score": 0.4
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "I'm thrilled to hear about your ambitious project of transforming an old warehouse into a community center in Spain.",
+          "timestamp": "2025-09-03T14:46:46.761289",
+          "micro_timestamp": 1756903606.761289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.098,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 116,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.5157894736842106
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.19999980926513672,
+          "next_move": 2
+        },
+        {
+          "content": "That's a fascinating endeavor!",
+          "timestamp": "2025-09-03T14:46:46.861289",
+          "micro_timestamp": 1756903606.861289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.027000000000000003,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 30,
+            "has_question": false,
+            "word_count": 4,
+            "complexity_score": 0.675
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "It's an interesting opportunity to blend the old with the new, and create something functional yet aesthetically pleasing.",
+          "timestamp": "2025-09-03T14:46:46.961289",
+          "micro_timestamp": 1756903606.961289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.12299999999999998,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 122,
+            "has_question": false,
+            "word_count": 18,
+            "complexity_score": 0.6833333333333332
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 4
+        },
+        {
+          "content": "Given that you're at the initial design stage, it would be great to explore different aspects like space utilization, architectural style, and environmental considerations.",
+          "timestamp": "2025-09-03T14:46:47.061289",
+          "micro_timestamp": 1756903607.061289,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.2431,
+          "context": {
+            "sentence_position": 4,
+            "text_length": 172,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.9208333333333334
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 5
+        },
+        {
+          "content": "Have you thought about how the existing structure of the warehouse can be leveraged in the design?",
+          "timestamp": "2025-09-03T14:46:47.161289",
+          "micro_timestamp": 1756903607.161289,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 5,
+          "cognitive_load": 0.0902,
+          "context": {
+            "sentence_position": 5,
+            "text_length": 98,
+            "has_question": true,
+            "word_count": 17,
+            "complexity_score": 0.48235294117647054
+          },
+          "previous_move": 4,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 6
+        },
+        {
+          "content": "What considerations are you making to make it a lively space for the community?",
+          "timestamp": "2025-09-03T14:46:47.261289",
+          "micro_timestamp": 1756903607.261289,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 6,
+          "cognitive_load": 0.07260000000000001,
+          "context": {
+            "sentence_position": 6,
+            "text_length": 79,
+            "has_question": true,
+            "word_count": 14,
+            "complexity_score": 0.4714285714285714
+          },
+          "previous_move": 5,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 7
+        },
+        {
+          "content": "I'm looking forward to hearing more about your ideas and assisting you on this exciting journey of architectural design!",
+          "timestamp": "2025-09-03T14:46:47.361289",
+          "micro_timestamp": 1756903607.361289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 7,
+          "cognitive_load": 0.102,
+          "context": {
+            "sentence_position": 7,
+            "text_length": 120,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.5368421052631579
+          },
+          "previous_move": 6,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 8
+        },
+        {
+          "content": "To help us explore this together, I'd love to hear your thoughts on:",
+          "timestamp": "2025-09-03T14:46:47.461289",
+          "micro_timestamp": 1756903607.461289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 8,
+          "cognitive_load": 0.095,
+          "context": {
+            "sentence_position": 8,
+            "text_length": 68,
+            "has_question": false,
+            "word_count": 13,
+            "complexity_score": 0.7307692307692308
+          },
+          "previous_move": 7,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 9
+        },
+        {
+          "content": "What is the primary purpose of your design?",
+          "timestamp": "2025-09-03T14:46:47.661289",
+          "micro_timestamp": 1756903607.661289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 9,
+          "cognitive_load": 0.036000000000000004,
+          "context": {
+            "sentence_position": 10,
+            "text_length": 43,
+            "has_question": true,
+            "word_count": 8,
+            "complexity_score": 0.45
+          },
+          "previous_move": 8,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 10
+        },
+        {
+          "content": "Who are the main users and what do they need?",
+          "timestamp": "2025-09-03T14:46:47.861289",
+          "micro_timestamp": 1756903607.861289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 10,
+          "cognitive_load": 0.036,
+          "context": {
+            "sentence_position": 12,
+            "text_length": 45,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.36
+          },
+          "previous_move": 9,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 11
+        },
+        {
+          "content": "What do you think is the most important function this space needs to serve?",
+          "timestamp": "2025-09-03T14:46:48.061289",
+          "micro_timestamp": 1756903608.061289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 11,
+          "cognitive_load": 0.062,
+          "context": {
+            "sentence_position": 14,
+            "text_length": 75,
+            "has_question": true,
+            "word_count": 14,
+            "complexity_score": 0.4428571428571429
+          },
+          "previous_move": 10,
+          "temporal_gap": 0.20000004768371582,
+          "next_move": 12
+        },
+        {
+          "content": "**How we'll work together:** I'm here to guide you through a progressive learning journey.",
+          "timestamp": "2025-09-03T14:46:48.161289",
+          "micro_timestamp": 1756903608.161289,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 12,
+          "cognitive_load": 0.1155,
+          "context": {
+            "sentence_position": 15,
+            "text_length": 90,
+            "has_question": false,
+            "word_count": 14,
+            "complexity_score": 0.75
+          },
+          "previous_move": 11,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 13
+        },
+        {
+          "content": "We'll start by understanding your interests and then explore the design space together, building your knowledge step by step.",
+          "timestamp": "2025-09-03T14:46:48.261289",
+          "micro_timestamp": 1756903608.261289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 13,
+          "cognitive_load": 0.126,
+          "context": {
+            "sentence_position": 16,
+            "text_length": 125,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.6631578947368421
+          },
+          "previous_move": 12,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 14
+        },
+        {
+          "content": "**Next steps:** \u2022 Share your thoughts on the questions above \u2022 Tell me more about what interests you most \u2022 Ask about any concepts you'd like to explore further",
+          "timestamp": "2025-09-03T14:46:48.361289",
+          "micro_timestamp": 1756903608.361289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 14,
+          "cognitive_load": 0.19,
+          "context": {
+            "sentence_position": 17,
+            "text_length": 160,
+            "has_question": false,
+            "word_count": 29,
+            "complexity_score": 0.6551724137931034
+          },
+          "previous_move": 13,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 15
+        },
+        {
+          "content": "I'm excited to explore this architectural journey with you!",
+          "timestamp": "2025-09-03T14:46:48.461289",
+          "micro_timestamp": 1756903608.461289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 15,
+          "cognitive_load": 0.051,
+          "context": {
+            "sentence_position": 18,
+            "text_length": 59,
+            "has_question": false,
+            "word_count": 9,
+            "complexity_score": 0.5666666666666667
+          },
+          "previous_move": 14,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 16
+        },
+        {
+          "content": "What would you like to start with?",
+          "timestamp": "2025-09-03T14:46:48.561289",
+          "micro_timestamp": 1756903608.561289,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 16,
+          "cognitive_load": 0.028000000000000004,
+          "context": {
+            "sentence_position": 19,
+            "text_length": 34,
+            "has_question": true,
+            "word_count": 7,
+            "complexity_score": 0.4
+          },
+          "previous_move": 15,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "analysis",
+        "analysis",
+        "analysis",
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "analysis",
+        "general",
+        "general",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "moderate",
+        "passivity_level": "moderate",
+        "overconfidence_level": "moderate",
+        "conversation_depth": "moderate",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "test_mode": true,
+        "test_group": "MENTOR",
+        "test_phase": "IDEATION"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": true,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": true,
+      "maintains_engagement": true,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:47:25.704620",
+      "interaction_number": 3,
+      "student_input": "The primary purpose is to create a flexible hub for social, cultural, and educational activities. The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas. The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+      "input_length": 62,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "progressive_opening",
+      "agents_used": [],
+      "response_type": "mentor_response",
+      "primary_agent": "none",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "The primary purpose is to create a flexible hub for social, cultural, and educational activities.",
+          "timestamp": "2025-09-03T14:47:25.703958",
+          "micro_timestamp": 1756903645.703958,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.113,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 97,
+            "has_question": false,
+            "word_count": 15,
+            "complexity_score": 0.7533333333333334
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas.",
+          "timestamp": "2025-09-03T14:47:25.803958",
+          "micro_timestamp": 1756903645.803958,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.21200000000000002,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 145,
+            "has_question": false,
+            "word_count": 22,
+            "complexity_score": 0.9636363636363637
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+          "timestamp": "2025-09-03T14:47:25.903958",
+          "micro_timestamp": 1756903645.903958,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 3,
+          "cognitive_load": 0.19400000000000003,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.776
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-09-03T14:47:26.003958",
+          "micro_timestamp": 1756903646.003958,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": false,
+      "encourages_deep_thinking": false,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": false,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:47:49.385468",
+      "interaction_number": 4,
+      "student_input": "The primary purpose is to create a flexible hub for social, cultural, and educational activities. The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas. The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+      "input_length": 62,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "agent_response": "Your focus on creating a \"flexible hub\" that caters to residents of all ages is insightful, particularly in ensuring the design supports multipurpose halls, learning spaces, sports, and informal gathering areas.\n\nBy preserving the warehouse's industrial character while making it \"open, warm, and adaptable,\" you're addressing the challenge of blending historical elements with modern functionality.\n\nAs you explore this further, consider how these spaces might dynamically transform to accommodate v",
+      "response_length": 70,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.7,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 6,
+      "design_moves": [
+        {
+          "content": "The primary purpose is to create a flexible hub for social, cultural, and educational activities.",
+          "timestamp": "2025-09-03T14:47:49.385282",
+          "micro_timestamp": 1756903669.385282,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.113,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 97,
+            "has_question": false,
+            "word_count": 15,
+            "complexity_score": 0.7533333333333334
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas.",
+          "timestamp": "2025-09-03T14:47:49.485282",
+          "micro_timestamp": 1756903669.485282,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.21200000000000002,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 145,
+            "has_question": false,
+            "word_count": 22,
+            "complexity_score": 0.9636363636363637
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+          "timestamp": "2025-09-03T14:47:49.585282",
+          "micro_timestamp": 1756903669.585282,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 3,
+          "cognitive_load": 0.19400000000000003,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.776
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Your focus on creating a \"flexible hub\" that caters to residents of all ages is insightful, particularly in ensuring the design supports multipurpose halls, learning spaces, sports, and informal gathering areas.",
+          "timestamp": "2025-09-03T14:47:49.685282",
+          "micro_timestamp": 1756903669.685282,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.305,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 211,
+            "has_question": false,
+            "word_count": 31,
+            "complexity_score": 0.9838709677419355
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "By preserving the warehouse's industrial character while making it \"open, warm, and adaptable,\" you're addressing the challenge of blending historical elements with modern functionality.",
+          "timestamp": "2025-09-03T14:47:49.785282",
+          "micro_timestamp": 1756903669.785282,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.235,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 186,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.9791666666666667
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "As you explore this further, consider how these spaces might dynamically transform to accommodate v",
+          "timestamp": "2025-09-03T14:47:49.885282",
+          "micro_timestamp": 1756903669.885282,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.11000000000000001,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 99,
+            "has_question": false,
+            "word_count": 15,
+            "complexity_score": 0.6666666666666666
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.7,
+          "interaction_frequency": 0.5,
+          "question_quality": 0.0,
+          "exploration_depth": 0.63,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.3333333333333333,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.3666666666666667,
+          "complexity_progression": 0.7560975609756098
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.25,
+          "skill_development": 0.25,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.275,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.4358333333333333,
+        "scientific_confidence": 0.5458333333333333
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "shallow",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "interaction_type": "design_exploration",
+        "understanding_level": "high",
+        "confidence_level": "confident",
+        "engagement_level": "high",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "advanced",
+        "learning_intent": "understanding",
+        "context_dependency": "medium",
+        "classification_confidence": 0.65,
+        "last_message": "The primary purpose is to create a flexible hub for social, cultural, and educational activities. The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas. The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+        "user_input": "The primary purpose is to create a flexible hub for social, cultural, and educational activities. The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas. The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+        "cognitive_offloading_detected": false,
+        "cognitive_offloading_type": "none",
+        "cognitive_offloading_confidence": 0.0,
+        "is_pure_knowledge_request": true,
+        "user_intent": "design_exploration",
+        "context_agent_confidence": 0.0,
+        "routing_path": "socratic_exploration"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "exploration",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in exploration phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": true,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:47:49.449906",
+      "interaction_number": 5,
+      "student_input": "The primary purpose is to create a flexible hub for social, cultural, and educational activities. The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas. The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+      "input_length": 62,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "unknown",
+      "confidence_level": "unknown",
+      "engagement_level": "unknown",
+      "agent_response": "Your focus on creating a \"flexible hub\" that caters to residents of all ages is insightful, particularly in ensuring the design supports multipurpose halls, learning spaces, sports, and informal gathering areas.\n\nBy preserving the warehouse's industrial character while making it \"open, warm, and adaptable,\" you're addressing the challenge of blending historical elements with modern functionality.\n\nAs you explore this further, consider how these spaces might dynamically transform to accommodate varying activities and user groups throughout the day, fostering a sense of belonging and community connection within this unique architectural context.\n\nWhat aspects of this would you like to explore further?",
+      "response_length": 100,
+      "routing_path": "test_mentor",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "cognitive_enhancement",
+        "context_agent"
+      ],
+      "response_type": "test_mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [
+        "test_mode",
+        "scaffolding_active",
+        "socratic_dialogue",
+        "multi_agent",
+        "high_cop",
+        "high_dte"
+      ],
+      "cognitive_flags_count": 6,
+      "confidence_score": 0.78,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "unknown",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 7,
+      "design_moves": [
+        {
+          "content": "The primary purpose is to create a flexible hub for social, cultural, and educational activities.",
+          "timestamp": "2025-09-03T14:47:49.449635",
+          "micro_timestamp": 1756903669.449635,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.113,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 97,
+            "has_question": false,
+            "word_count": 15,
+            "complexity_score": 0.7533333333333334
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "The main users are residents of all ages, so the design should support multipurpose halls, learning spaces, sports, and informal gathering areas.",
+          "timestamp": "2025-09-03T14:47:49.549635",
+          "micro_timestamp": 1756903669.549635,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.21200000000000002,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 145,
+            "has_question": false,
+            "word_count": 22,
+            "complexity_score": 0.9636363636363637
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "The most important function is like a connector \u2014 preserving the warehouse\u2019s industrial character while making it open, warm, and adaptable for diverse community needs.",
+          "timestamp": "2025-09-03T14:47:49.649635",
+          "micro_timestamp": 1756903669.649635,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 3,
+          "cognitive_load": 0.19400000000000003,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.776
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Your focus on creating a \"flexible hub\" that caters to residents of all ages is insightful, particularly in ensuring the design supports multipurpose halls, learning spaces, sports, and informal gathering areas.",
+          "timestamp": "2025-09-03T14:47:49.749635",
+          "micro_timestamp": 1756903669.749635,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.305,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 211,
+            "has_question": false,
+            "word_count": 31,
+            "complexity_score": 0.9838709677419355
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "By preserving the warehouse's industrial character while making it \"open, warm, and adaptable,\" you're addressing the challenge of blending historical elements with modern functionality.",
+          "timestamp": "2025-09-03T14:47:49.849635",
+          "micro_timestamp": 1756903669.849635,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.235,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 186,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.9791666666666667
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "As you explore this further, consider how these spaces might dynamically transform to accommodate varying activities and user groups throughout the day, fostering a sense of belonging and community connection within this unique architectural context.",
+          "timestamp": "2025-09-03T14:47:49.949635",
+          "micro_timestamp": 1756903669.949635,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.31460000000000005,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 250,
+            "has_question": false,
+            "word_count": 35,
+            "complexity_score": 0.8171428571428572
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 4
+        },
+        {
+          "content": "What aspects of this would you like to explore further?",
+          "timestamp": "2025-09-03T14:47:50.049635",
+          "micro_timestamp": 1756903670.049635,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 4,
+          "cognitive_load": 0.046,
+          "context": {
+            "sentence_position": 3,
+            "text_length": 55,
+            "has_question": true,
+            "word_count": 10,
+            "complexity_score": 0.45999999999999996
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "analysis",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "moderate",
+        "passivity_level": "moderate",
+        "overconfidence_level": "moderate",
+        "conversation_depth": "moderate",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "test_mode": true,
+        "test_group": "MENTOR",
+        "test_phase": "IDEATION"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": true,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:48:29.075928",
+      "interaction_number": 6,
+      "student_input": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+      "input_length": 56,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 3,
+      "design_moves": [
+        {
+          "content": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community.",
+          "timestamp": "2025-09-03T14:48:29.075742",
+          "micro_timestamp": 1756903709.075742,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.27359999999999995,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 196,
+            "has_question": false,
+            "word_count": 31,
+            "complexity_score": 0.7354838709677418
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+          "timestamp": "2025-09-03T14:48:29.175742",
+          "micro_timestamp": 1756903709.175742,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.1386,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 150,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.504
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-09-03T14:48:29.275742",
+          "micro_timestamp": 1756903709.275742,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "synthesis",
+        "analysis",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": false,
+      "encourages_deep_thinking": false,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:48:47.323676",
+      "interaction_number": 7,
+      "student_input": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+      "input_length": 56,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "agent_response": "Your focus on transforming the industrial scale of the warehouse into a welcoming space, particularly for elder community members, is crucial in ensuring the design feels accessible and inviting.\n\nConsider incorporating elements that break down the vastness, such as smaller, intimate areas and warm materials that resonate with the cultural activities and workshops you envision.\n\nHow might the inclusion of natural lighting and tactile surfaces enhance the comfort and usability of these spaces for",
+      "response_length": 74,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.7,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 5,
+      "design_moves": [
+        {
+          "content": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community.",
+          "timestamp": "2025-09-03T14:48:47.323499",
+          "micro_timestamp": 1756903727.323499,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.27359999999999995,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 196,
+            "has_question": false,
+            "word_count": 31,
+            "complexity_score": 0.7354838709677418
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+          "timestamp": "2025-09-03T14:48:47.423499",
+          "micro_timestamp": 1756903727.423499,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.1386,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 150,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.504
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Your focus on transforming the industrial scale of the warehouse into a welcoming space, particularly for elder community members, is crucial in ensuring the design feels accessible and inviting.",
+          "timestamp": "2025-09-03T14:48:47.523499",
+          "micro_timestamp": 1756903727.523499,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.22500000000000003,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 195,
+            "has_question": false,
+            "word_count": 29,
+            "complexity_score": 0.7758620689655173
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "Consider incorporating elements that break down the vastness, such as smaller, intimate areas and warm materials that resonate with the cultural activities and workshops you envision.",
+          "timestamp": "2025-09-03T14:48:47.623499",
+          "micro_timestamp": 1756903727.623499,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.252,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 183,
+            "has_question": false,
+            "word_count": 26,
+            "complexity_score": 0.8076923076923077
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "How might the inclusion of natural lighting and tactile surfaces enhance the comfort and usability of these spaces for",
+          "timestamp": "2025-09-03T14:48:47.723499",
+          "micro_timestamp": 1756903727.723499,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.11000000000000003,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 118,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.5263157894736843
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "synthesis",
+        "analysis",
+        "general",
+        "synthesis",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.7,
+          "interaction_frequency": 0.7,
+          "question_quality": 0.6666666666666666,
+          "exploration_depth": 0.63,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.4666666666666667,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.5133333333333334,
+          "complexity_progression": 0.6829268292682927
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.0,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.35,
+          "skill_development": 0.35,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.385,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.49416666666666664,
+        "scientific_confidence": 0.6475
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "low",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "stable"
+      },
+      "context_classification": {
+        "interaction_type": "design_exploration",
+        "understanding_level": "high",
+        "confidence_level": "confident",
+        "engagement_level": "high",
+        "is_response_to_question": false,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "intermediate",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "high",
+        "classification_confidence": 0.65,
+        "last_message": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+        "user_input": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+        "cognitive_offloading_detected": false,
+        "cognitive_offloading_type": "none",
+        "cognitive_offloading_confidence": 0.0,
+        "is_pure_knowledge_request": true,
+        "user_intent": "design_exploration",
+        "context_agent_confidence": 0.0,
+        "routing_path": "socratic_exploration"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "synthesis",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in synthesis phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:48:47.438297",
+      "interaction_number": 8,
+      "student_input": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community. The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+      "input_length": 56,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "unknown",
+      "confidence_level": "unknown",
+      "engagement_level": "unknown",
+      "agent_response": "Your focus on transforming the industrial scale of the warehouse into a welcoming space, particularly for elder community members, is crucial in ensuring the design feels accessible and inviting.\n\nConsider incorporating elements that break down the vastness, such as smaller, intimate areas and warm materials that resonate with the cultural activities and workshops you envision.\n\nHow might the inclusion of natural lighting and tactile surfaces enhance the comfort and usability of these spaces for daily use, especially for the elderly who might value familiarity and ease of navigation?",
+      "response_length": 88,
+      "routing_path": "test_mentor",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "cognitive_enhancement",
+        "context_agent"
+      ],
+      "response_type": "test_mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [
+        "test_mode",
+        "scaffolding_active",
+        "socratic_dialogue",
+        "multi_agent",
+        "high_cop",
+        "high_dte"
+      ],
+      "cognitive_flags_count": 6,
+      "confidence_score": 0.78,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "unknown",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 5,
+      "design_moves": [
+        {
+          "content": "my adaptive reuse approach for converting a warehouse into a community center will have spaces for cultural activities, flexible workshops, and a small market hall that are asked by the community.",
+          "timestamp": "2025-09-03T14:48:47.438135",
+          "micro_timestamp": 1756903727.438135,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.22799999999999998,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 196,
+            "has_question": false,
+            "word_count": 31,
+            "complexity_score": 0.7354838709677418
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "The challenge I\u2019m facing is how to transform the industrial scale into something that feels human and welcoming for daily use mostly for elder people.",
+          "timestamp": "2025-09-03T14:48:47.538135",
+          "micro_timestamp": 1756903727.538135,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.1386,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 150,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.504
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Your focus on transforming the industrial scale of the warehouse into a welcoming space, particularly for elder community members, is crucial in ensuring the design feels accessible and inviting.",
+          "timestamp": "2025-09-03T14:48:47.638135",
+          "micro_timestamp": 1756903727.638135,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.22500000000000003,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 195,
+            "has_question": false,
+            "word_count": 29,
+            "complexity_score": 0.7758620689655173
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "Consider incorporating elements that break down the vastness, such as smaller, intimate areas and warm materials that resonate with the cultural activities and workshops you envision.",
+          "timestamp": "2025-09-03T14:48:47.738135",
+          "micro_timestamp": 1756903727.738135,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.231,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 183,
+            "has_question": false,
+            "word_count": 26,
+            "complexity_score": 0.8076923076923077
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "How might the inclusion of natural lighting and tactile surfaces enhance the comfort and usability of these spaces for daily use, especially for the elderly who might value familiarity and ease of navigation?",
+          "timestamp": "2025-09-03T14:48:47.838135",
+          "micro_timestamp": 1756903727.838135,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.22990000000000002,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 208,
+            "has_question": true,
+            "word_count": 33,
+            "complexity_score": 0.6333333333333333
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "analysis",
+        "general",
+        "analysis",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "moderate",
+        "passivity_level": "moderate",
+        "overconfidence_level": "moderate",
+        "conversation_depth": "moderate",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "test_mode": true,
+        "test_group": "MENTOR",
+        "test_phase": "IDEATION"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:49:25.515079",
+      "interaction_number": 9,
+      "student_input": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up.",
+      "input_length": 44,
+      "input_type": "improvement_seeking",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 3,
+      "design_moves": [
+        {
+          "content": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design.",
+          "timestamp": "2025-09-03T14:49:25.514994",
+          "micro_timestamp": 1756903765.514994,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.144,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.576
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "I think I need to build my understanding of community center design for elder people from the ground up.",
+          "timestamp": "2025-09-03T14:49:25.614994",
+          "micro_timestamp": 1756903765.614994,
+          "phase": "ideation",
+          "move_type": "reflection",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.0688,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 104,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.4526315789473684
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-09-03T14:49:25.714994",
+          "micro_timestamp": 1756903765.714994,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "reflection",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": false,
+      "encourages_deep_thinking": false,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:49:44.038506",
+      "interaction_number": 10,
+      "student_input": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up.",
+      "input_length": 44,
+      "input_type": "improvement_seeking",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "uncertain",
+      "engagement_level": "high",
+      "agent_response": "It's insightful that you're considering integrating workshop zones with inner gardens to enhance biophilic design, as this approach can indeed offer natural lighting and create intimate green spaces that might be particularly beneficial for the elder demographic you're focusing on.\n\nIn thinking about how these spaces can serve as extensions of the community's cultural and social dynamics, consider how these gardens and workshops might facilitate social interaction and engagement among the elderl",
+      "response_length": 72,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.7,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design.",
+          "timestamp": "2025-09-03T14:49:44.038347",
+          "micro_timestamp": 1756903784.038347,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.144,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.576
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "I think I need to build my understanding of community center design for elder people from the ground up.",
+          "timestamp": "2025-09-03T14:49:44.138347",
+          "micro_timestamp": 1756903784.138347,
+          "phase": "ideation",
+          "move_type": "reflection",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.0688,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 104,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.4526315789473684
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "It's insightful that you're considering integrating workshop zones with inner gardens to enhance biophilic design, as this approach can indeed offer natural lighting and create intimate green spaces that might be particularly beneficial for the elder demographic you're focusing on.",
+          "timestamp": "2025-09-03T14:49:44.238347",
+          "micro_timestamp": 1756903784.238347,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.3396,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 282,
+            "has_question": false,
+            "word_count": 40,
+            "complexity_score": 0.7075
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "In thinking about how these spaces can serve as extensions of the community's cultural and social dynamics, consider how these gardens and workshops might facilitate social interaction and engagement among the elderl",
+          "timestamp": "2025-09-03T14:49:44.338347",
+          "micro_timestamp": 1756903784.338347,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.23870000000000002,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 216,
+            "has_question": false,
+            "word_count": 32,
+            "complexity_score": 0.678125
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "reflection",
+        "synthesis",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.7,
+          "interaction_frequency": 1.0,
+          "question_quality": 0.0,
+          "exploration_depth": 0.63,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.6666666666666666,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.7333333333333334,
+          "complexity_progression": 0.5365853658536586
+        },
+        "reflection_metrics": {
+          "overall_score": 0.8,
+          "self_assessment": 0.3333333333333333,
+          "process_awareness": 0.8,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.5,
+          "skill_development": 0.5,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.55,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.6716666666666666,
+        "scientific_confidence": 0.775
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "high",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "stable"
+      },
+      "context_classification": {
+        "interaction_type": "design_exploration",
+        "understanding_level": "medium",
+        "confidence_level": "uncertain",
+        "engagement_level": "high",
+        "is_response_to_question": true,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "intermediate",
+        "learning_intent": "understanding",
+        "context_dependency": "medium",
+        "classification_confidence": 0.6,
+        "last_message": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up.",
+        "user_input": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up.",
+        "cognitive_offloading_detected": false,
+        "cognitive_offloading_type": "none",
+        "cognitive_offloading_confidence": 0.0,
+        "is_pure_knowledge_request": false,
+        "user_intent": "design_exploration",
+        "context_agent_confidence": 0.0,
+        "routing_path": "socratic_exploration"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "synthesis",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in synthesis phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:49:44.116115",
+      "interaction_number": 11,
+      "student_input": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design. I think I need to build my understanding of community center design for elder people from the ground up.",
+      "input_length": 44,
+      "input_type": "improvement_seeking",
+      "student_skill_level": "intermediate",
+      "understanding_level": "unknown",
+      "confidence_level": "unknown",
+      "engagement_level": "unknown",
+      "agent_response": "It's insightful that you're considering integrating workshop zones with inner gardens to enhance biophilic design, as this approach can indeed offer natural lighting and create intimate green spaces that might be particularly beneficial for the elder demographic you're focusing on.\n\nIn thinking about how these spaces can serve as extensions of the community's cultural and social dynamics, consider how these gardens and workshops might facilitate social interaction and engagement among the elderly, potentially becoming venues for intergenerational activities or cultural exchanges.\n\nHow might these green spaces and workshop zones reflect the community's identity and encourage participation, ensuring that the center truly becomes a vibrant hub for all its users?",
+      "response_length": 109,
+      "routing_path": "test_mentor",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "cognitive_enhancement",
+        "context_agent"
+      ],
+      "response_type": "test_mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [
+        "test_mode",
+        "scaffolding_active",
+        "socratic_dialogue",
+        "multi_agent",
+        "high_cop",
+        "high_dte"
+      ],
+      "cognitive_flags_count": 6,
+      "confidence_score": 0.78,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "unknown",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 5,
+      "design_moves": [
+        {
+          "content": "workshop zones can be extensions of inner gardens inside the warehouse which will provide natural lighting and create intimate green spaces to enhance biophilic design.",
+          "timestamp": "2025-09-03T14:49:44.115927",
+          "micro_timestamp": 1756903784.115927,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.144,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 168,
+            "has_question": false,
+            "word_count": 25,
+            "complexity_score": 0.576
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "I think I need to build my understanding of community center design for elder people from the ground up.",
+          "timestamp": "2025-09-03T14:49:44.215927",
+          "micro_timestamp": 1756903784.215927,
+          "phase": "unknown",
+          "move_type": "reflection",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.0688,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 104,
+            "has_question": false,
+            "word_count": 19,
+            "complexity_score": 0.4526315789473684
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "It's insightful that you're considering integrating workshop zones with inner gardens to enhance biophilic design, as this approach can indeed offer natural lighting and create intimate green spaces that might be particularly beneficial for the elder demographic you're focusing on.",
+          "timestamp": "2025-09-03T14:49:44.315927",
+          "micro_timestamp": 1756903784.315927,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.3113000000000001,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 282,
+            "has_question": false,
+            "word_count": 40,
+            "complexity_score": 0.7075
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "In thinking about how these spaces can serve as extensions of the community's cultural and social dynamics, consider how these gardens and workshops might facilitate social interaction and engagement among the elderly, potentially becoming venues for intergenerational activities or cultural exchanges.",
+          "timestamp": "2025-09-03T14:49:44.415927",
+          "micro_timestamp": 1756903784.415927,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.3784000000000001,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 302,
+            "has_question": false,
+            "word_count": 41,
+            "complexity_score": 0.8390243902439025
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "How might these green spaces and workshop zones reflect the community's identity and encourage participation, ensuring that the center truly becomes a vibrant hub for all its users?",
+          "timestamp": "2025-09-03T14:49:44.515927",
+          "micro_timestamp": 1756903784.515927,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.20020000000000002,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 181,
+            "has_question": true,
+            "word_count": 28,
+            "complexity_score": 0.65
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "reflection",
+        "analysis",
+        "analysis",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "moderate",
+        "passivity_level": "moderate",
+        "overconfidence_level": "moderate",
+        "conversation_depth": "moderate",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "test_mode": true,
+        "test_group": "MENTOR",
+        "test_phase": "IDEATION"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:51:48.859396",
+      "interaction_number": 12,
+      "student_input": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity. Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space. In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap. ",
+      "input_length": 82,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "medium",
+      "confidence_level": "medium",
+      "engagement_level": "high",
+      "agent_response": "Processing...",
+      "response_length": 1,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.8,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.8,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 4,
+      "design_moves": [
+        {
+          "content": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity.",
+          "timestamp": "2025-09-03T14:51:48.859077",
+          "micro_timestamp": 1756903908.859077,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.33,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 250,
+            "has_question": false,
+            "word_count": 33,
+            "complexity_score": 1.0
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space.",
+          "timestamp": "2025-09-03T14:51:48.959077",
+          "micro_timestamp": 1756903908.959077,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.23900000000000002,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 186,
+            "has_question": false,
+            "word_count": 26,
+            "complexity_score": 0.9192307692307693
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap.",
+          "timestamp": "2025-09-03T14:51:49.059077",
+          "micro_timestamp": 1756903909.059077,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 3,
+          "cognitive_load": 0.18100000000000002,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 134,
+            "has_question": false,
+            "word_count": 23,
+            "complexity_score": 0.7869565217391306
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 1
+        },
+        {
+          "content": "Processing.",
+          "timestamp": "2025-09-03T14:51:49.159077",
+          "micro_timestamp": 1756903909.159077,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.01,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 11,
+            "has_question": false,
+            "word_count": 1,
+            "complexity_score": 1.0
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "unknown",
+        "cognitive_load": "unknown",
+        "metacognitive_awareness": "unknown",
+        "passivity_level": "unknown",
+        "overconfidence_level": "unknown",
+        "conversation_depth": "unknown",
+        "learning_progression": "unknown"
+      },
+      "context_classification": {
+        "understanding_level": "medium",
+        "confidence_level": "medium",
+        "engagement_level": "high"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": false,
+        "deep_thinking_encouragement": false,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": false,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": false,
+      "encourages_deep_thinking": false,
+      "provides_scaffolding": false,
+      "maintains_engagement": false,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:52:01.652592",
+      "interaction_number": 13,
+      "student_input": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity. Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space. In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap. ",
+      "input_length": 82,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "high",
+      "confidence_level": "confident",
+      "engagement_level": "high",
+      "agent_response": "Your approach to integrating the community's cultural motifs, such as local plant species and traditional crafts, truly enriches the identity of the gardens and workshops, transforming them into dynamic spaces that resonate with the community's heritage.\n\nBy prioritizing physical accessibility and inviting residents to co-create the space, you're fostering a sense of ownership and connection that extends beyond mere functionality.\n\nHow might you further explore programming that not only honors c",
+      "response_length": 71,
+      "routing_path": "socratic_exploration",
+      "agents_used": [
+        "socratic_tutor",
+        "analysis_agent",
+        "cognitive_enhancement"
+      ],
+      "response_type": "socratic agent",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [],
+      "cognitive_flags_count": 0,
+      "confidence_score": 0.6,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "ideation",
+      "phase_confidence": 0.7,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.25,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 6,
+      "design_moves": [
+        {
+          "content": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity.",
+          "timestamp": "2025-09-03T14:52:01.652329",
+          "micro_timestamp": 1756903921.652329,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.33,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 250,
+            "has_question": false,
+            "word_count": 33,
+            "complexity_score": 1.0
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space.",
+          "timestamp": "2025-09-03T14:52:01.752329",
+          "micro_timestamp": 1756903921.752329,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.23900000000000002,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 186,
+            "has_question": false,
+            "word_count": 26,
+            "complexity_score": 0.9192307692307693
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap.",
+          "timestamp": "2025-09-03T14:52:01.852329",
+          "micro_timestamp": 1756903921.852329,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 3,
+          "cognitive_load": 0.18100000000000002,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 134,
+            "has_question": false,
+            "word_count": 23,
+            "complexity_score": 0.7869565217391306
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "Your approach to integrating the community's cultural motifs, such as local plant species and traditional crafts, truly enriches the identity of the gardens and workshops, transforming them into dynamic spaces that resonate with the community's heritage.",
+          "timestamp": "2025-09-03T14:52:01.952329",
+          "micro_timestamp": 1756903921.952329,
+          "phase": "ideation",
+          "move_type": "synthesis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.3924,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 254,
+            "has_question": false,
+            "word_count": 36,
+            "complexity_score": 0.9083333333333333
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 2
+        },
+        {
+          "content": "By prioritizing physical accessibility and inviting residents to co-create the space, you're fostering a sense of ownership and connection that extends beyond mere functionality.",
+          "timestamp": "2025-09-03T14:52:02.052329",
+          "micro_timestamp": 1756903922.052329,
+          "phase": "ideation",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.179,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 178,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.7458333333333332
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 3
+        },
+        {
+          "content": "How might you further explore programming that not only honors c",
+          "timestamp": "2025-09-03T14:52:02.152329",
+          "micro_timestamp": 1756903922.152329,
+          "phase": "ideation",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.05940000000000001,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 64,
+            "has_question": false,
+            "word_count": 11,
+            "complexity_score": 0.4909090909090909
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "synthesis",
+        "general",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {
+          "overall_score": 0.7,
+          "interaction_frequency": 1.0,
+          "question_quality": 0.0,
+          "exploration_depth": 0.63,
+          "engagement_consistency": 0
+        },
+        "complexity_metrics": {
+          "overall_score": 0.8,
+          "problem_complexity": 0.5,
+          "solution_sophistication": 0.0,
+          "integration_level": 0.8800000000000001,
+          "complexity_progression": 1.0
+        },
+        "reflection_metrics": {
+          "overall_score": 0.5,
+          "self_assessment": 0.3333333333333333,
+          "process_awareness": 0.5,
+          "decision_justification": 0.0,
+          "reflection_depth": 0.0
+        },
+        "progression_metrics": {
+          "overall_score": 0.6,
+          "skill_development": 0.6,
+          "knowledge_acquisition": 0.0,
+          "competency_growth": 0.66,
+          "learning_velocity": 0.0
+        },
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.64,
+        "scientific_confidence": 0.775
+      },
+      "cognitive_state": {
+        "engagement_level": "high",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "moderate",
+        "passivity_level": "low",
+        "overconfidence_level": "low",
+        "conversation_depth": "medium",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "interaction_type": "design_exploration",
+        "understanding_level": "high",
+        "confidence_level": "confident",
+        "engagement_level": "high",
+        "is_response_to_question": true,
+        "is_technical_question": false,
+        "is_feedback_request": false,
+        "confidence_score": 0.0,
+        "question_complexity": "advanced",
+        "learning_intent": "general_inquiry",
+        "context_dependency": "high",
+        "classification_confidence": 0.65,
+        "last_message": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity. Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space. In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap. ",
+        "user_input": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity. Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space. In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap. ",
+        "cognitive_offloading_detected": false,
+        "cognitive_offloading_type": "none",
+        "cognitive_offloading_confidence": 0.0,
+        "is_pure_knowledge_request": false,
+        "user_intent": "design_exploration",
+        "context_agent_confidence": 0.0,
+        "routing_path": "socratic_exploration"
+      },
+      "agent_data": {
+        "analysis_result": {
+          "milestone_context": {
+            "milestone_type": "phase_entry",
+            "phase": "synthesis",
+            "required_actions": [],
+            "success_criteria": [],
+            "agent_guidance": {
+              "primary_role": "Analyze user input and conversation context",
+              "focus_areas": [
+                "intent classification",
+                "conversation state",
+                "routing decisions"
+              ],
+              "milestone_context": "Current milestone: phase_entry in synthesis phase",
+              "guidance": "Focus on understanding user intent and ensuring conversation aligns with phase_entry objectives"
+            }
+          }
+        },
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": true,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    },
+    {
+      "session_id": "unified_session_20250903_144626",
+      "timestamp": "2025-09-03T14:52:01.747412",
+      "interaction_number": 14,
+      "student_input": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity. Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space. In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap. ",
+      "input_length": 82,
+      "input_type": "general_statement",
+      "student_skill_level": "intermediate",
+      "understanding_level": "unknown",
+      "confidence_level": "unknown",
+      "engagement_level": "unknown",
+      "agent_response": "Your approach to integrating the community's cultural motifs, such as local plant species and traditional crafts, truly enriches the identity of the gardens and workshops, transforming them into dynamic spaces that resonate with the community's heritage.\n\nBy prioritizing physical accessibility and inviting residents to co-create the space, you're fostering a sense of ownership and connection that extends beyond mere functionality.\n\nHow might you further explore programming that not only honors cultural memory but also adapts to the evolving aspirations of the community, ensuring the center remains a living, breathing hub of activity and identity?",
+      "response_length": 94,
+      "routing_path": "test_mentor",
+      "agents_used": [
+        "socratic_tutor",
+        "domain_expert",
+        "cognitive_enhancement",
+        "context_agent"
+      ],
+      "response_type": "test_mentor_response",
+      "primary_agent": "socratic_tutor",
+      "cognitive_flags": [
+        "test_mode",
+        "scaffolding_active",
+        "socratic_dialogue",
+        "multi_agent",
+        "high_cop",
+        "high_dte"
+      ],
+      "cognitive_flags_count": 6,
+      "confidence_score": 0.78,
+      "sources_used": [],
+      "knowledge_integrated": false,
+      "sources_count": 0,
+      "response_time": 1.0,
+      "current_phase": "unknown",
+      "phase_confidence": 0.5,
+      "phase_characteristics": {},
+      "phase_progression_score": 0.5,
+      "phase_duration": 0,
+      "phase_scores": {},
+      "phase_recommendations": [],
+      "design_moves_count": 6,
+      "design_moves": [
+        {
+          "content": "Actually by embedding the community\u2019s cultural motifs\u2014local plant species, traditional crafts, or shared stories\u2014into both the gardens and workshops, these spaces evolve into more than functional zones: they become living representations of identity.",
+          "timestamp": "2025-09-03T14:52:01.747203",
+          "micro_timestamp": 1756903921.747203,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 1,
+          "cognitive_load": 0.33,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 250,
+            "has_question": false,
+            "word_count": 33,
+            "complexity_score": 1.0
+          },
+          "previous_move": null,
+          "temporal_gap": 0.0,
+          "next_move": 2
+        },
+        {
+          "content": "Participation is encouraged not only by physical accessibility (wide paths, shaded seating, tactile surfaces), but also by programming that invites residents to actively shape the space.",
+          "timestamp": "2025-09-03T14:52:01.847203",
+          "micro_timestamp": 1756903921.847203,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 2,
+          "cognitive_load": 0.23900000000000002,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 186,
+            "has_question": false,
+            "word_count": 26,
+            "complexity_score": 0.9192307692307693
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "In this way, the center is not just a facility but a collective hub where cultural memory, daily life, and future aspirations overlap.",
+          "timestamp": "2025-09-03T14:52:01.947203",
+          "micro_timestamp": 1756903921.947203,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "student",
+          "move_number": 3,
+          "cognitive_load": 0.18100000000000002,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 134,
+            "has_question": false,
+            "word_count": 23,
+            "complexity_score": 0.7869565217391306
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 1
+        },
+        {
+          "content": "Your approach to integrating the community's cultural motifs, such as local plant species and traditional crafts, truly enriches the identity of the gardens and workshops, transforming them into dynamic spaces that resonate with the community's heritage.",
+          "timestamp": "2025-09-03T14:52:02.047203",
+          "micro_timestamp": 1756903922.047203,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 1,
+          "cognitive_load": 0.327,
+          "context": {
+            "sentence_position": 0,
+            "text_length": 254,
+            "has_question": false,
+            "word_count": 36,
+            "complexity_score": 0.9083333333333333
+          },
+          "previous_move": 3,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": 2
+        },
+        {
+          "content": "By prioritizing physical accessibility and inviting residents to co-create the space, you're fostering a sense of ownership and connection that extends beyond mere functionality.",
+          "timestamp": "2025-09-03T14:52:02.147203",
+          "micro_timestamp": 1756903922.147203,
+          "phase": "unknown",
+          "move_type": "general",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 2,
+          "cognitive_load": 0.179,
+          "context": {
+            "sentence_position": 1,
+            "text_length": 178,
+            "has_question": false,
+            "word_count": 24,
+            "complexity_score": 0.7458333333333332
+          },
+          "previous_move": 1,
+          "temporal_gap": 0.09999990463256836,
+          "next_move": 3
+        },
+        {
+          "content": "How might you further explore programming that not only honors cultural memory but also adapts to the evolving aspirations of the community, ensuring the center remains a living, breathing hub of activity and identity?",
+          "timestamp": "2025-09-03T14:52:02.247203",
+          "micro_timestamp": 1756903922.247203,
+          "phase": "unknown",
+          "move_type": "analysis",
+          "modality": "text",
+          "source": "agent",
+          "move_number": 3,
+          "cognitive_load": 0.27830000000000005,
+          "context": {
+            "sentence_position": 2,
+            "text_length": 218,
+            "has_question": true,
+            "word_count": 34,
+            "complexity_score": 0.7441176470588236
+          },
+          "previous_move": 2,
+          "temporal_gap": 0.10000014305114746,
+          "next_move": null
+        }
+      ],
+      "move_types": [
+        "general",
+        "general",
+        "general",
+        "general",
+        "general",
+        "analysis"
+      ],
+      "move_modalities": [
+        "text",
+        "text",
+        "text",
+        "text",
+        "text",
+        "text"
+      ],
+      "scientific_metrics": {
+        "engagement_metrics": {},
+        "complexity_metrics": {},
+        "reflection_metrics": {},
+        "progression_metrics": {},
+        "improvement_metrics": {},
+        "phase_metrics": {},
+        "overall_cognitive_score": 0.0,
+        "scientific_confidence": 0.0
+      },
+      "cognitive_state": {
+        "engagement_level": "moderate",
+        "cognitive_load": "optimal",
+        "metacognitive_awareness": "moderate",
+        "passivity_level": "moderate",
+        "overconfidence_level": "moderate",
+        "conversation_depth": "moderate",
+        "learning_progression": "progressing"
+      },
+      "context_classification": {
+        "test_mode": true,
+        "test_group": "MENTOR",
+        "test_phase": "IDEATION"
+      },
+      "agent_data": {
+        "analysis_result": {},
+        "domain_expert_result": {},
+        "socratic_result": {},
+        "cognitive_enhancement_result": {}
+      },
+      "performance_metrics": {
+        "cognitive_offloading_prevention": true,
+        "deep_thinking_encouragement": true,
+        "scaffolding_effectiveness": false,
+        "engagement_maintenance": true,
+        "skill_adaptation": false,
+        "response_complexity": 1.0,
+        "agent_selection_appropriateness": false,
+        "response_coherence": true
+      },
+      "prevents_cognitive_offloading": true,
+      "encourages_deep_thinking": true,
+      "provides_scaffolding": false,
+      "maintains_engagement": true,
+      "adapts_to_skill_level": false,
+      "multi_agent_coordination": true,
+      "appropriate_agent_selection": false,
+      "response_coherence": true
+    }
+  ]
+}

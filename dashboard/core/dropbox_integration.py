@@ -299,10 +299,10 @@ class DropboxExporter:
             # Upload each file to Dropbox
             for filename in expected_files:
                 local_path = self.local_thesis_data_path / filename
-                
+
                 if local_path.exists():
                     results["local_files"].append(str(local_path))
-                    
+
                     # Upload to Dropbox
                     dropbox_path = f"{self.dropbox_base_path}/comprehensive/{filename}"
                     dropbox_result = self.upload_to_dropbox(str(local_path), dropbox_path)
@@ -314,7 +314,28 @@ class DropboxExporter:
                         results["errors"].append(error_msg)
                 else:
                     results["errors"].append(f"Local file not found: {filename}")
-            
+
+            # Handle linkography files
+            linkography_files = data_collector.get_linkography_files()
+            for linkography_file_path in linkography_files:
+                local_path = Path(linkography_file_path)
+
+                if local_path.exists():
+                    results["local_files"].append(str(local_path))
+
+                    # Upload to Dropbox linkography folder
+                    filename = local_path.name
+                    dropbox_path = f"{self.dropbox_base_path}/linkography/{filename}"
+                    dropbox_result = self.upload_to_dropbox(str(local_path), dropbox_path)
+
+                    if dropbox_result["success"]:
+                        results["dropbox_files"].append(dropbox_path)
+                    else:
+                        error_msg = f"Failed to upload linkography file {filename} to Dropbox: {dropbox_result.get('error', 'Unknown error')}"
+                        results["errors"].append(error_msg)
+                else:
+                    results["errors"].append(f"Linkography file not found: {linkography_file_path}")
+
             results["success"] = len(results["errors"]) == 0
             
         except Exception as e:

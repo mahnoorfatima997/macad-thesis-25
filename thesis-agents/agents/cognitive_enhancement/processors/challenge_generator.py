@@ -462,6 +462,22 @@ class ChallengeGeneratorProcessor:
                 for indicator in gamification_indicators
             )
 
+            # COMPREHENSIVE CONSECUTIVE GAME PREVENTION - Based on User Interactions
+            import streamlit as st
+
+            # Check session-based game interaction prevention (integrates with enhanced_gamification.py)
+            if hasattr(st, 'session_state'):
+                # Get current message index (number of user messages so far)
+                current_message_index = len([msg for msg in messages if msg.get('role') == 'user'])
+                last_game_message_index = getattr(st.session_state, 'last_game_message_index', -1)
+
+                # Block games if they would be in 2 consecutive user interactions
+                # Example: Game at message 1, game at message 2 = blocked (consecutive)
+                # Example: Game at message 1, game at message 3 = allowed (gap of 1 message)
+                if last_game_message_index == current_message_index - 1:
+                    print(f"🎮 CONSECUTIVE_BLOCKED: Game blocked - last game at message {last_game_message_index}, current message {current_message_index} (2 consecutive user interactions)")
+                    return False
+
             # Allow gamification if no recent games OR if strong trigger overrides
             if (recent_gamification or last_message_had_game) and not has_strong_trigger:
                 print(f"🎮 FREQUENCY CONTROL: Skipping gamification - recent game detected")
