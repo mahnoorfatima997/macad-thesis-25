@@ -2968,6 +2968,7 @@ class EnhancedGamificationRenderer:
             import time
             import hashlib
 
+
             # Generate unique instance ID for each storytelling trigger
             if challenge_data:
                 challenge_signature = str(challenge_data.get('generation_timestamp', '')) + str(challenge_text[:50])
@@ -2975,6 +2976,7 @@ class EnhancedGamificationRenderer:
                 challenge_signature = str(challenge_text[:50]) + str(int(time.time() * 1000))
             instance_hash = hashlib.md5(challenge_signature.encode()).hexdigest()[:8]
             current_instance_id = instance_hash
+
 
             # CRITICAL FIX: Each storytelling trigger creates its own state with unique instance ID
             storytelling_key = f"storytelling_instance_{current_instance_id}"
@@ -3288,6 +3290,7 @@ class EnhancedGamificationRenderer:
                                 st.session_state.permanently_completed_games = set()
                             st.session_state.permanently_completed_games.add(permanent_game_id)
                             print(f"🎮 STORYTELLING_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
+
 
                             # Mark storytelling as permanently completed (all 3 chapters done)
                             st.session_state['storytelling_completed'] = True
@@ -3644,6 +3647,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
             print(f"🎮 EARLY_EXIT: Gamification disabled for this challenge")
             return
 
+
         # COMPREHENSIVE GAME MANAGEMENT SYSTEM
         challenge_type = challenge_data.get('challenge_type', 'unknown')
         generation_timestamp = challenge_data.get('generation_timestamp', '')
@@ -3705,6 +3709,14 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
         if unique_instance_id in st.session_state.permanently_completed_games:
             print(f"🎮 PERMANENTLY_COMPLETED: Game instance {unique_instance_id} is frozen, not re-rendering")
             return
+          
+        # from main CRITICAL FIX: Smart duplicate prevention - allow interactivity but prevent multiple renders per page load
+        #challenge_id = f"{challenge_data.get('challenge_type', 'unknown')}_{challenge_data.get('enhancement_timestamp', 'unknown')}"
+
+        # Initialize rendered challenges tracker
+        #if 'rendered_challenges' not in st.session_state:
+            #st.session_state.rendered_challenges = set()
+
 
         # GAMES COMPLETION FIX: Check if this game is completed and should show completed state
         challenge_type = challenge_data.get('challenge_type', 'unknown')
@@ -3775,6 +3787,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
                     completion_message = f" **Time Travel Challenge Complete!** ✔ Time travel temporal insight recorded! Through time exploration complete. +15 points"
                     print(f"🎮 TIME_TRAVEL_SHOWING_COMPLETION: {completion_message}")
 
+
         # If game is completed, show completion state ONE FINAL TIME then freeze forever
         # STORYTELLING EXCLUSION: Storytelling handles its own completion display
         if is_completed and challenge_type != 'spatial_storytelling':
@@ -3812,6 +3825,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
                     if 'rendered_time_travel_challenges' in st.session_state and permanent_game_id in st.session_state.rendered_time_travel_challenges:
                         st.session_state.rendered_time_travel_challenges.remove(permanent_game_id)
                         print(f"🎮 TIME_TRAVEL_RENDER_CLEARED: Cleared {permanent_game_id} from rendered challenges")
+
             else:
                 print(f"🎮 ALREADY_FROZEN: Game {permanent_game_id} completion state already shown, skipping")
 
@@ -3858,6 +3872,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
                 st.session_state.rendered_time_travel_challenges = set()
             st.session_state.rendered_time_travel_challenges.add(permanent_game_id)
             print(f"🎮 TIME_TRAVEL_RENDERED: Marked {permanent_game_id} as rendered")
+
 
         # Ensure required fields exist with safe defaults and validation
         safe_challenge_data = {
