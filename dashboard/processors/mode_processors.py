@@ -609,19 +609,19 @@ class ModeProcessor:
         return direct_response
 
     async def _process_control_test_mode(self, user_input: str, test_phase: TestPhase, image_path: str = None) -> str:
-        """Control Group Test (Group C) - No AI assistance, self-directed prompts only"""
+        """Control Group Test (Group C) - No AI assistance, hardcoded questions only"""
 
-        # Use NO_AI mode as base
+        # Use NO_AI mode - it already provides the hardcoded questions we need
         base_response = await self._process_no_ai_mode(user_input, image_path)
 
-        # Ensure minimal, self-directed prompts only
-        control_response = self._ensure_control_group_style(base_response, test_phase)
+        # FIXED: Don't override the no AI processor response - it already has the right questions
+        # The no AI processor cycles through hardcoded questions and tracks progress correctly
 
         # IMPORTANT: Ensure phase progression is tracked for CONTROL mode too
         self._ensure_phase_progression_tracking(user_input, "CONTROL")
 
-        print(f"🎯 CONTROL_TEST: Phase={test_phase.value}, Self-directed prompt provided")
-        return control_response
+        print(f"🎯 CONTROL_TEST: Phase={test_phase.value}, Hardcoded question provided")
+        return base_response  # Return the actual no AI processor response, not the generic override
 
     def _get_mentor_phase_enhancement(self, test_phase: TestPhase, user_input: str, base_response: str) -> str:
         """Get phase-specific enhancements for MENTOR test based on test logic documents"""
@@ -1083,6 +1083,8 @@ class ModeProcessor:
 
     async def _process_no_ai_mode(self, user_input: str, image_path: str = None) -> str:
         """Process using No AI mode (hardcoded questions only with phase calculation)."""
+        print(f"🚨🚨🚨 _PROCESS_NO_AI_MODE CALLED! user_input='{user_input[:50]}...'")
+
         # Ensure session is initialized
         if not st.session_state.session_id:
             st.session_state.session_id = f"unified_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -1090,10 +1092,13 @@ class ModeProcessor:
         # Get conversation history for phase calculation
         messages = st.session_state.get('messages', [])
 
+        print(f"🚨🚨🚨 About to call get_no_ai_response with session_id={st.session_state.session_id}")
         # Call No AI processor with image acknowledgment
         try:
             result = await get_no_ai_response(user_input, messages, st.session_state.session_id, image_path)
+            print(f"🚨🚨🚨 get_no_ai_response returned: {result.get('response', '')[:50]}...")
         except Exception as e:
+            print(f"🚨🚨🚨 ERROR in get_no_ai_response: {e}")
             return f"I apologize, but I encountered an error: {e}"
 
         response = result.get("response", "Please continue with your design thinking.")
