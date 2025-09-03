@@ -2288,6 +2288,40 @@ class EnhancedGamificationRenderer:
 
     def _render_animated_mystery_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render compact mystery investigation game with user input."""
+        # STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
+        # This ensures the same game instance persists across button clicks
+        investigation_key = f"mystery_{building_type}_{hash(challenge_text)}"
+        permanent_game_id = f"detective_mystery_{investigation_key}"
+
+        print(f"🎮 DETECTIVE_STABLE_INSTANCE: Using stable detective instance with key {investigation_key}")
+
+        # CRITICAL FIX: Initialize permanent completion tracker
+        if 'permanently_completed_games' not in st.session_state:
+            st.session_state.permanently_completed_games = set()
+
+        # CRITICAL FIX: Check permanent completion first - if completed, show frozen completion state
+        if permanent_game_id in st.session_state.permanently_completed_games:
+            print(f"🎮 MYSTERY_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing completion state")
+
+            # Show frozen completion state with progress bar
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+                border: 2px solid #4CAF50;
+                border-radius: 15px;
+                padding: 20px;
+                margin: 15px 0;
+                text-align: center;
+            ">
+                <h3 style="color: #2E7D32; margin-bottom: 10px;">🔍 Mystery Investigation Complete</h3>
+                <p style="color: #388E3C; font-size: 16px; margin: 0;">✔ Mystery solved! Detective insight recorded. +50 points</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # CRITICAL FIX: Show permanent completion progress bar
+            self._show_contextual_progress("Mystery Investigation", 50, 50)
+            return  # COMPLETELY STOP re-rendering this game
+
         # Compact header
         st.markdown(f"""
         <div style="
@@ -2316,12 +2350,13 @@ class EnhancedGamificationRenderer:
             </h3>
         </div>
         """, unsafe_allow_html=True)
+        #0309-REMOVED
+        # # STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
+        # # This ensures the same game instance persists across button clicks
+        # investigation_key = f"mystery_{building_type}_{hash(challenge_text)}"
 
-        # STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
-        # This ensures the same game instance persists across button clicks
-        investigation_key = f"mystery_{building_type}_{hash(challenge_text)}"
+        # print(f"🎮 DETECTIVE_STABLE_INSTANCE: Using stable detective instance with key {investigation_key}")
 
-        print(f"🎮 DETECTIVE_STABLE_INSTANCE: Using stable detective instance with key {investigation_key}")
 
         if investigation_key not in st.session_state:
             st.session_state[investigation_key] = {
@@ -2444,6 +2479,48 @@ class EnhancedGamificationRenderer:
 
     def _render_interactive_constraint_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
         """Render standardized constraint puzzle game with consistent UI."""
+
+
+        # 0309 - STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
+        # This ensures the same game instance persists across button clicks
+        constraint_key = f"constraints_{building_type}_{hash(challenge_text)}"
+        permanent_game_id = f"constraint_challenge_{constraint_key}"
+
+        print(f"🎮 CONSTRAINT_STABLE_INSTANCE: Using stable constraint instance with key {constraint_key}")
+
+        # CRITICAL FIX: Initialize permanent completion tracker
+        if 'permanently_completed_games' not in st.session_state:
+            st.session_state.permanently_completed_games = set()
+
+        # CRITICAL FIX: Check permanent completion first - if completed, show frozen completion state
+        if permanent_game_id in st.session_state.permanently_completed_games:
+            print(f"🎮 CONSTRAINT_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing completion state")
+
+            # Show frozen completion state with progress bar
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+                border: 2px solid #4CAF50;
+                border-radius: 15px;
+                padding: 20px;
+                margin: 15px 0;
+                text-align: center;
+            ">
+                <h3 style="color: #2E7D32; margin-bottom: 10px;">⚡ Constraint Challenge Complete</h3>
+                <p style="color: #388E3C; font-size: 16px; margin: 0;">✔ Creative solution submitted! Constraint challenge complete. +45 points</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # CRITICAL FIX: Show permanent completion progress bar
+            self._show_contextual_progress("Constraint Challenge", 45, 45)
+            return  # COMPLETELY STOP re-rendering this game
+
+
+
+
+
+
+
         # STANDARDIZED HEADER - matches other games
         st.markdown(f"""
         <div style="
@@ -2477,12 +2554,12 @@ class EnhancedGamificationRenderer:
             </p>
         </div>
         """, unsafe_allow_html=True)
+        #0309-REMOVED
+        # # STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
+        # # This ensures the same game instance persists across button clicks
+        # constraint_key = f"constraints_{building_type}_{hash(challenge_text)}"
 
-        # STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
-        # This ensures the same game instance persists across button clicks
-        constraint_key = f"constraints_{building_type}_{hash(challenge_text)}"
-
-        print(f"🎮 CONSTRAINT_STABLE_INSTANCE: Using stable constraint instance with key {constraint_key}")
+        # print(f"🎮 CONSTRAINT_STABLE_INSTANCE: Using stable constraint instance with key {constraint_key}")
 
         if constraint_key not in st.session_state:
             st.session_state[constraint_key] = {
@@ -3027,15 +3104,19 @@ class EnhancedGamificationRenderer:
                 # Show completion progress bar
                 self._show_contextual_progress("Storytelling Challenge", points, 100)
 
-                # Check if this is a NEW game trigger (different generation_timestamp)
+                # 0309-FULLY CHANED-CRITICAL FIX: Use global chapter tracking across all storytelling instances
+                if 'global_storytelling_chapter' not in st.session_state:
+                    st.session_state.global_storytelling_chapter = 1
+
+                # Check if this is a NEW game trigger (different instance)
                 current_timestamp = challenge_data.get('generation_timestamp', '') if challenge_data else ''
                 last_game_timestamp = story_state.get('last_game_timestamp', '')
                 is_new_trigger = current_timestamp != last_game_timestamp and current_timestamp != ''
 
-                if is_new_trigger and last_completed_chapter < 3:  # Max 3 chapters
+                if is_new_trigger and st.session_state.global_storytelling_chapter <= 3:  # Max 3 chapters
                     # User triggered game again - allow next chapter
                     story_state['chapter_complete'] = False
-                    story_state['chapter'] = last_completed_chapter + 1
+                    story_state['chapter'] = st.session_state.global_storytelling_chapter
                     story_state['last_game_timestamp'] = current_timestamp
                     print(f"🎮 STORYTELLING_NEXT: New trigger detected - starting Chapter {story_state['chapter']}")
                 else:
@@ -3084,9 +3165,19 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-            # Generate dynamic story chapters based on context
-            story_chapters_dict = self.content_generator.generate_story_chapters_from_context(building_type, challenge_text)
-            story_chapters = list(story_chapters_dict.values())
+            # 0309-FULLY CHANGED-CRITICAL FIX: Use persistent story chapters to prevent regeneration
+            if 'persistent_story_chapters' not in story_state:
+                # Generate story chapters ONLY ONCE when game starts
+                print(f"🎮 STORYTELLING_PERSISTENCE: Generating new story chapters for first time")
+                story_chapters_dict = self.content_generator.generate_story_chapters_from_context(building_type, challenge_text)
+                story_chapters = list(story_chapters_dict.values())
+                # Store the chapters to prevent regeneration
+                story_state['persistent_story_chapters'] = story_chapters
+                print(f"🎮 STORYTELLING_PERSISTENCE: Stored {len(story_chapters)} chapters")
+            else:
+                # Use stored chapters to prevent regeneration
+                story_chapters = story_state['persistent_story_chapters']
+                print(f"🎮 STORYTELLING_PERSISTENCE: Using stored chapters to prevent regeneration")
 
             # ISSUE 2 FIX: Ultra-safe state access with comprehensive validation
             try:
@@ -3256,8 +3347,18 @@ class EnhancedGamificationRenderer:
 
                         # CRITICAL FIX: Freeze this specific storytelling instance after submission
                         story_state['chapter_complete'] = True
-                        story_state['last_completed_chapter'] = story_state.get('chapter', 1) - 1
+                        # 009-CHANGED: Track which chapter was last completed
+                        story_state['last_completed_chapter'] = story_state.get('chapter', 1)
                         story_state['frozen'] = True
+
+                        # 0309-CRITICAL FIX: Advance global chapter counter for next storytelling trigger
+                        if 'global_storytelling_chapter' not in st.session_state:
+                            st.session_state.global_storytelling_chapter = 1
+                        st.session_state.global_storytelling_chapter += 1
+                        print(f"🎮 STORYTELLING_GLOBAL_ADVANCE: Advanced global chapter to {st.session_state.global_storytelling_chapter}")
+
+
+
 
                         # Add this instance to permanent completion to prevent re-rendering
                         if 'permanently_completed_games' not in st.session_state:
@@ -3353,7 +3454,7 @@ class EnhancedGamificationRenderer:
         if permanent_game_id in st.session_state.permanently_completed_games:
             print(f"🎮 TIME_TRAVEL_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing completion state")
 
-            # Show frozen completion state
+            # Show frozen completion state with progress bar
             st.markdown(f"""
             <div style="
                 background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
@@ -3367,6 +3468,9 @@ class EnhancedGamificationRenderer:
                 <p style="color: #388E3C; font-size: 16px; margin: 0;">✔ Time travel temporal insight recorded! Through time exploration complete. +15 points</p>
             </div>
             """, unsafe_allow_html=True)
+
+            # 0309-CRITICAL FIX: Show permanent completion progress bar
+            self._show_contextual_progress("Time Travel Challenge", 45, 45)
             return  # COMPLETELY STOP re-rendering this game
 
         if time_key not in st.session_state:

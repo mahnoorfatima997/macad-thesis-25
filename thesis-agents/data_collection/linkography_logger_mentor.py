@@ -14,11 +14,17 @@ import uuid
 # Try to import benchmarking dependencies
 BENCHMARKING_AVAILABLE = False
 try:
+    # 0309-CRITICAL FIX: Configure PyTorch for CPU-only operation before importing LinkographyEngine
+    # This prevents the PyTorch device conversion error in cloud environments
+    os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable CUDA completely
+
+
+
     # Add project root to path for benchmarking imports
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
-    
+
     from benchmarking.linkography_engine import LinkographyEngine
     from benchmarking.linkography_types import (
         DesignMove as LinkographyMove,
