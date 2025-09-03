@@ -74,25 +74,34 @@ class NoAIProcessor:
         # Normalize phase name
         phase_key = phase.lower()
         if phase_key not in self.phase_questions:
+            print(f"🚨 NO_AI: Unknown phase '{phase_key}', available phases: {list(self.phase_questions.keys())}")
             return "Please describe your current design thinking."
-        
+
         # Initialize counter for this session and phase if needed
         counter_key = f"{session_id}_{phase_key}"
         if counter_key not in self.question_counters:
             self.question_counters[counter_key] = 0
-        
+            print(f"🔄 NO_AI: Initialized counter for {counter_key} = 0")
+
         # Get questions for this phase
         questions = self.phase_questions[phase_key]
         current_index = self.question_counters[counter_key]
-        
+
+        print(f"📊 NO_AI: Phase={phase_key}, Question {current_index + 1}/{len(questions)}")
+        print(f"🔢 NO_AI: Counter key={counter_key}, Current index={current_index}")
+
         # If we've asked all questions, cycle back or provide a generic prompt
         if current_index >= len(questions):
+            print(f"🔄 NO_AI: All {len(questions)} questions asked for {phase_key}, providing generic prompt")
             return "What other aspects of your design would you like to explore further?"
-        
+
         # Get the current question and increment counter
         question = questions[current_index]
         self.question_counters[counter_key] += 1
-        
+
+        print(f"❓ NO_AI: Asking question {current_index + 1}: {question[:50]}...")
+        print(f"🔢 NO_AI: Incremented counter to {self.question_counters[counter_key]}")
+
         return question
     
     def get_response_to_user_input(self, user_input: str, messages: List[Dict[str, Any]],
@@ -107,7 +116,7 @@ class NoAIProcessor:
         if session_id:
             # Ensure session exists in phase system
             if session_id not in self.phase_system.sessions:
-                self.phase_system.create_session(session_id)
+                self.phase_system.start_session(session_id)
 
             # Process the user message to update phase progression
             # Note: For No AI mode, we don't use the returned question, just track progression

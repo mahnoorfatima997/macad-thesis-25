@@ -493,7 +493,7 @@ class ModeProcessor:
 
         # Ensure session exists in unified phase system
         if session_id not in self.phase_system.sessions:
-            self.phase_system.create_session(session_id)
+            self.phase_system.start_session(session_id)
 
         # Get current phase from unified system
         phase_summary = self.phase_system.get_session_summary(session_id)
