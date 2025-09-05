@@ -220,6 +220,7 @@ class UnifiedArchitecturalDashboard:
         if dashboard_mode == "Test Mode":
             # Test mode: Fixed community center challenge, no templates
             mentor_type = st.session_state.get('mentor_type', 'Socratic Agent')
+            st.session_state.current_mode = mentor_type  # Ensure current_mode is set for Test Mode
             skill_level = "Intermediate"  # Fixed for research consistency
 
             # Project description input with fixed challenge (no templates)
@@ -1094,8 +1095,30 @@ class UnifiedArchitecturalDashboard:
             print(f"\n🎯 DASHBOARD: Processing user message for phase progression")
             print(f"📝 Input: {user_input[:100]}...")
 
-            # Use the new process_user_message method instead of process_response
-            phase_result = self.phase_system.process_user_message(st.session_state.phase_session_id, user_input)
+            # Check if we're in No AI mode - use simplified phase tracking
+            current_mode = st.session_state.get('current_mode', 'MENTOR')
+            print(f"🔍 DASHBOARD_MODE_CHECK: current_mode = '{current_mode}'")
+            if current_mode in ["NO_AI", "No AI", "CONTROL"]:
+                print(f"🎯 NO_AI_PHASE: Using simplified phase tracking for No AI mode")
+                # For No AI mode, get phase info from the no AI processor
+                phase_info = st.session_state.get('no_ai_phase_info', {})
+                current_phase = phase_info.get('current_phase', 'ideation')
+                phase_completion = phase_info.get('phase_completion', 0.0)
+
+                # Create a simplified phase result compatible with the dashboard
+                phase_result = {
+                    'session_id': st.session_state.phase_session_id,
+                    'current_phase': current_phase,
+                    'phase_progress': {'completion_percent': phase_completion},
+                    'phase_complete': phase_completion >= 100.0,
+                    'session_complete': False,
+                    'question_answered': False,
+                    'nudge': None
+                }
+                print(f"🎯 NO_AI_PHASE: Phase={current_phase}, Completion={phase_completion:.1f}%")
+            else:
+                # Use the complex AI-driven phase progression system for other modes
+                phase_result = self.phase_system.process_user_message(st.session_state.phase_session_id, user_input)
 
             if "error" in phase_result:
                 print(f"❌ PHASE ERROR: {phase_result['error']}")
@@ -1583,9 +1606,128 @@ class UnifiedArchitecturalDashboard:
 
     def _render_phase_insights(self):
         """Render only the phase circles."""
-        # Display phase progression with circles - no extra wrapper columns needed
-        render_phase_circles(self.phase_system, st.session_state.phase_session_id)
-    
+        # Check if we're in No AI mode and use appropriate data source
+        current_mode = st.session_state.get('current_mode', 'MENTOR')
+        test_group = st.session_state.get('test_group_selection', 'MENTOR')
+
+        if current_mode in ["NO_AI", "No AI", "CONTROL"] or test_group == "CONTROL":
+            # For No AI mode, use the phase info from the no AI processor
+            self._render_no_ai_phase_circles()
+        else:
+            # For other modes, use the complex phase system
+            render_phase_circles(self.phase_system, st.session_state.phase_session_id)
+
+    def _render_no_ai_phase_circles(self):
+        """Render phase circles for No AI mode using no AI processor data."""
+        # Get phase info from no AI processor stored in session state
+        no_ai_phase_info = st.session_state.get('no_ai_phase_info', {})
+        current_phase = no_ai_phase_info.get('current_phase', 'ideation')
+        current_completion = no_ai_phase_info.get('phase_completion', 0.0)
+
+        print(f"🎯 NO_AI_CIRCLES: current_phase={current_phase}, completion={current_completion:.1f}%")
+
+        # Calculate completion for each phase based on current phase and progress
+        if current_phase == 'ideation':
+            ideation_percent = current_completion
+            visualization_percent = 0.0
+            materialization_percent = 0.0
+        elif current_phase == 'visualization':
+            ideation_percent = 100.0  # Previous phase complete
+            visualization_percent = current_completion
+            materialization_percent = 0.0
+        elif current_phase == 'materialization':
+            ideation_percent = 100.0  # Previous phases complete
+            visualization_percent = 100.0
+            materialization_percent = current_completion
+        else:
+            # Default fallback
+            ideation_percent = 0.0
+            visualization_percent = 0.0
+            materialization_percent = 0.0
+
+        # Render the phase circles using the same UI component but with our data
+        st.markdown("---")
+        st.markdown("""
+        <div style="text-align: center; margin: 20px 0;">
+            <h4 style="color: #4A4A4A; margin-bottom: 20px;">Design Phase Progress</h4>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Create three columns for the circles
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            self._render_single_no_ai_circle(
+                phase_name="Ideation",
+                percentage=ideation_percent,
+                is_active=(current_phase == 'ideation'),
+                color='#dcc188'  # Yellow
+            )
+
+        with col2:
+            self._render_single_no_ai_circle(
+                phase_name="Visualization",
+                percentage=visualization_percent,
+                is_active=(current_phase == 'visualization'),
+                color='#cf436f'  # Pink
+            )
+
+        with col3:
+            self._render_single_no_ai_circle(
+                phase_name="Materialization",
+                percentage=materialization_percent,
+                is_active=(current_phase == 'materialization'),
+                color='#784c80'  # Purple
+            )
+
+    def _render_single_no_ai_circle(self, phase_name: str, percentage: float, is_active: bool, color: str):
+        """Render a single phase circle for no AI mode."""
+        # Ensure percentage is within bounds
+        percentage = max(0.0, min(100.0, percentage))
+
+        # Calculate the stroke-dasharray for the progress circle
+        circumference = 2 * 3.14159 * 45  # radius = 45
+        progress_length = (percentage / 100) * circumference
+        gap_length = circumference - progress_length
+
+        # Determine opacity and border style based on active state
+        opacity = "1.0" if is_active else "0.7"
+        border_width = "3" if is_active else "2"
+
+        circle_html = f"""
+        <div style="text-align: center; margin: 10px 0;">
+            <svg width="120" height="120" style="margin-bottom: 10px;">
+                <!-- Background circle -->
+                <circle cx="60" cy="60" r="45"
+                        fill="none"
+                        stroke="#e0e0e0"
+                        stroke-width="8"/>
+                <!-- Progress circle -->
+                <circle cx="60" cy="60" r="45"
+                        fill="none"
+                        stroke="{color}"
+                        stroke-width="{border_width}"
+                        stroke-linecap="round"
+                        stroke-dasharray="{progress_length} {gap_length}"
+                        stroke-dashoffset="0"
+                        transform="rotate(-90 60 60)"
+                        opacity="{opacity}"/>
+                <!-- Center text -->
+                <text x="60" y="65"
+                      text-anchor="middle"
+                      font-family="Arial, sans-serif"
+                      font-size="14"
+                      font-weight="bold"
+                      fill="{color}">
+                    {percentage:.0f}%
+                </text>
+            </svg>
+            <div style="font-weight: bold; color: {color}; font-size: 14px; margin-top: 5px;">
+                {phase_name}
+            </div>
+        </div>
+        """
+        st.markdown(circle_html, unsafe_allow_html=True)
+
     def _render_analysis_results(self):
         """Render comprehensive analysis results."""
         if not st.session_state.analysis_results:
