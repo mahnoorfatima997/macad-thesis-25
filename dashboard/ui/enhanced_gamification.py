@@ -14,6 +14,7 @@ import time
 import re
 import openai
 import os
+import html
 
 # Load environment variables from .env file
 # try:
@@ -1462,6 +1463,11 @@ class EnhancedGamificationRenderer:
         challenge_text = challenge_data.get("challenge_text", "")
         building_type = challenge_data.get("building_type", "community center")
 
+        # CRITICAL FIX: Check if this is a permanently completed game
+        is_permanently_completed = challenge_data.get("is_permanently_completed", False)
+        if is_permanently_completed:
+            print(f"🎮 FROZEN_GAME_RENDER: Rendering {challenge_type} in permanently completed frozen state")
+
         # Store challenge data in session state for context-aware rendering
         st.session_state['current_challenge_data'] = challenge_data
 
@@ -1513,24 +1519,25 @@ class EnhancedGamificationRenderer:
         else:
             print(f"🎮 ROUTING_PATH: Taking INTERACTIVE GAME path for {enhanced_type}")
             # Render CONTEXTUAL interactive games using user's actual message
+            # Pass is_permanently_completed flag to all game renderers for proper frozen state handling
             if enhanced_type == "role_play":
-                self._render_enhanced_persona_game(user_message, theme, building_type)
+                self._render_enhanced_persona_game(user_message, theme, building_type, is_permanently_completed)
             elif enhanced_type == "perspective_shift":
-                self._render_spinning_wheel_game(user_message, theme, building_type)
+                self._render_spinning_wheel_game(user_message, theme, building_type, is_permanently_completed)
             elif enhanced_type == "detective":
-                self._render_animated_mystery_game(user_message, theme, building_type)
+                self._render_animated_mystery_game(user_message, theme, building_type, is_permanently_completed)
             elif enhanced_type == "constraint":
-                self._render_interactive_constraint_game(user_message, theme, building_type)
+                self._render_interactive_constraint_game(user_message, theme, building_type, is_permanently_completed)
             elif enhanced_type == "storytelling":
                 # FIXED: Generate contextual storytelling challenge instead of using raw user message
                 contextual_challenge = self._generate_contextual_storytelling_challenge(user_message, building_type)
-                self._render_storytelling_game(contextual_challenge, theme, building_type, challenge_data)
+                self._render_storytelling_game(contextual_challenge, theme, building_type, challenge_data, is_permanently_completed)
             elif enhanced_type == "time_travel":
                 print(f"🎮 TIME_TRAVEL_GAME: Calling _render_time_travel_game with challenge_text='{challenge_text[:100]}...'")
                 # CRITICAL FIX: Pass challenge_text (AI-generated content) instead of user_message for time travel
-                self._render_time_travel_game(challenge_text, theme, building_type)
+                self._render_time_travel_game(challenge_text, theme, building_type, is_permanently_completed)
             elif enhanced_type == "transformation":
-                self._render_transformation_game(user_message, theme, building_type)
+                self._render_transformation_game(user_message, theme, building_type, is_permanently_completed)
     
     def _inject_enhanced_css(self):
         """Inject compact CSS with thesis colors only."""
@@ -1913,8 +1920,8 @@ class EnhancedGamificationRenderer:
         </style>
         """, unsafe_allow_html=True)
 
-    def _render_enhanced_persona_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
-        """Render compact persona game with error handling."""
+    def _render_enhanced_persona_game(self, challenge_text: str, theme: Dict, building_type: str, is_permanently_completed: bool = False) -> None:
+        """Render compact persona game with error handling and frozen state support."""
         try:
             # Validate inputs
             if not theme:
@@ -1924,6 +1931,15 @@ class EnhancedGamificationRenderer:
                 building_type = "community center"
             if not challenge_text:
                 challenge_text = "design challenge"
+
+            # Initialize persona state
+            persona_key = f"persona_{building_type}_{hash(challenge_text)}"
+            permanent_game_id = f"persona_challenge_{persona_key}"
+
+            # CRITICAL FIX: Check if this is a permanently completed game
+            is_game_completed = is_permanently_completed or permanent_game_id in st.session_state.get('permanently_completed_games', set())
+            if is_game_completed:
+                print(f"🎮 PERSONA_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing full UI in completed state for educational history")
 
             # Compact header
             st.markdown(f"""
@@ -1979,8 +1995,7 @@ class EnhancedGamificationRenderer:
                 }
             }
 
-        # Initialize persona state
-        persona_key = f"persona_{building_type}_{hash(challenge_text)}"
+        # Initialize persona state (persona_key already defined above)
         if persona_key not in st.session_state:
             st.session_state[persona_key] = {
                 'selected_persona': None,
@@ -1991,56 +2006,23 @@ class EnhancedGamificationRenderer:
 
         persona_state = st.session_state[persona_key]
 
-        # CRITICAL FIX: Check if game is completed and freeze (like constraint game)
-        is_completed = persona_state.get('response_given', False)
+        # Show completion status if completed
+        if is_game_completed:
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(45deg, {theme['primary']}12, {theme['secondary']}12);
+                border: 2px solid {theme['primary']};
+                border-radius: 15px;
+                padding: 20px;
+                margin: 15px 0;
+                text-align: center;
+            ">
+                <h3 style="color:  #784c80; margin: 0;"> Role Play Challenge Complete</h3>
+                <p style="color:  #784c80; font-size: 16px; margin: 0;">✔ Creative solution submitted! +30 points</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-        if is_completed:
-            # Show completion status and freeze game
-            points = persona_state.get('persona_points', 0)
-            st.success(f"🎉 Role Play Challenge Completed! +{points} points")
-
-            # Show the completed persona and insights
-            if persona_state.get('persona_data'):
-                persona_data = persona_state['persona_data']
-                persona_name = persona_state['selected_persona']
-                symbol = theme.get('symbol', '●')
-
-                # Show selected persona (frozen state)
-                st.markdown(f"""
-                <div style="
-                    background: {theme['accent']};
-                    padding: 15px;
-                    border-radius: 10px;
-                    margin: 10px 0;
-                    border-left: 4px solid {theme['primary']};
-                    opacity: 0.8;
-                ">
-                    <strong style="color: {theme['primary']};">{symbol} {persona_name} (Completed):</strong>
-                    <span style="color: #2c2328;">{persona_data.get('mission', 'Experience completed')}</span>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Show insights
-                insights = persona_data.get('insights', ["Great thinking!"])
-                for i, insight in enumerate(insights):
-                    st.markdown(f"""
-                    <div style="
-                        background: {theme['accent']};
-                        padding: 12px;
-                        border-radius: 8px;
-                        margin: 8px 0;
-                        border-left: 3px solid {theme['primary']};
-                    ">
-                        <strong style="color: {theme['primary']};">{symbol} Insight {i+1}:</strong>
-                        <span style="color: #2c2328; line-height: 1.5;">{insight}</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            # Show completion progress
-            self._show_contextual_progress("Role Play", points, 30)
-            return  # CRITICAL FIX: Stop rendering completely when completed
-
-        # Compact persona selection (only show if not completed)
+        # Compact persona selection (disabled if completed)
         for i, (persona_name, persona_data) in enumerate(personas.items()):
             is_selected = persona_state['selected_persona'] == persona_name
 
@@ -2048,16 +2030,26 @@ class EnhancedGamificationRenderer:
             symbol = theme.get('symbol', '●')
             description = persona_data.get('description', 'A user of this space')[:60]
 
-            if st.button(
-                f"{symbol} {persona_name}: {description}...",
-                key=f"select_persona_{i}_{hash(challenge_text)}",
-                type="primary" if is_selected else "secondary",
-                use_container_width=True
-            ):
-                persona_state['selected_persona'] = persona_name
-                persona_state['persona_data'] = persona_data
-                persona_state['response_given'] = False
-                st.rerun()
+            # Show persona button - disabled if completed
+            if is_game_completed:
+                st.button(
+                    f"{'✓' if is_selected else symbol} {persona_name}: {description}...",
+                    key=f"select_persona_{i}_{hash(challenge_text)}_disabled",
+                    type="primary" if is_selected else "secondary",
+                    use_container_width=True,
+                    disabled=True
+                )
+            else:
+                if st.button(
+                    f"{symbol} {persona_name}: {description}...",
+                    key=f"select_persona_{i}_{hash(challenge_text)}",
+                    type="primary" if is_selected else "secondary",
+                    use_container_width=True
+                ):
+                    persona_state['selected_persona'] = persona_name
+                    persona_state['persona_data'] = persona_data
+                    persona_state['response_given'] = False
+                    st.rerun()
 
 
         #ADDED 2008'selected_persona']...` block
@@ -2087,53 +2079,87 @@ class EnhancedGamificationRenderer:
             </div>
             """, unsafe_allow_html=True)
 
-            # Compact response area
-            user_response = st.text_area(
-                "Your experience:",
-                placeholder=f"As {persona_name}, I experience..",
-                height=100,
-                key=f"response_{persona_key}",
-                help="Describe your thoughts, feelings, and observations from this persona's perspective"
-            )
+            # Compact response area - disabled if completed
+            if is_game_completed:
+                # Show disabled response area with completion message
+                st.text_area(
+                    "Your submitted experience:",
+                    value="Experience submitted successfully - preserved in conversation above",
+                    height=100,
+                    key=f"response_{persona_key}_disabled",
+                    disabled=True,
+                    help="Your detailed experience is preserved in the conversation history"
+                )
+                st.button(f"✓ Experience Submitted", key=f"submit_{persona_key}_disabled", type="secondary", disabled=True)
+            else:
+                # Interactive response area
+                user_response = st.text_area(
+                    "Your experience:",
+                    placeholder=f"As {persona_name}, I experience..",
+                    height=100,
+                    key=f"response_{persona_key}",
+                    help="Describe your thoughts, feelings, and observations from this persona's perspective"
+                )
 
-            if st.button(f"{symbol} Submit Experience", key=f"submit_{persona_key}", type="primary"):
-                if user_response.strip():
-                    persona_state['response_given'] = True
-                    persona_state['persona_points'] += 30
+                if st.button(f"{symbol} Submit Experience", key=f"submit_{persona_key}", type="primary"):
+                    if user_response.strip():
+                        persona_state['response_given'] = True
+                        persona_state['persona_points'] += 30
 
-                    # INTEGRATE WITH MENTOR: Send game response back to conversation
-                    game_response = f"{user_response.strip()}"
-                    if 'messages' not in st.session_state:
-                        st.session_state.messages = []
-                    st.session_state.messages.append({"role": "user", "content": game_response})
-                    st.session_state.should_process_message = True
-                    st.rerun()
+                        # CRITICAL FIX: Add to permanent completion system to prevent disappearing
+                        permanent_game_id = f"persona_challenge_{persona_key}"
+                        if 'permanently_completed_games' not in st.session_state:
+                            st.session_state.permanently_completed_games = set()
+                        st.session_state.permanently_completed_games.add(permanent_game_id)
+                        print(f"🎮 PERSONA_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
 
-        # Show insights after submission
+                        # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
+                        _update_message_completion_status(permanent_game_id)
+
+                        # INTEGRATE WITH MENTOR: Send game response back to conversation
+                        game_response = f"{user_response.strip()}"
+                        if 'messages' not in st.session_state:
+                            st.session_state.messages = []
+                        st.session_state.messages.append({"role": "user", "content": game_response})
+                        st.session_state.should_process_message = True
+                        st.rerun()
+
+        # Show insights and progress after submission
         if persona_state.get('response_given', False):
-            # Compact insights display
-            insights = persona_data.get('insights', ["Great thinking!"])
-            symbol = theme.get('symbol', '●')
+            # Show insights only if persona_data is available
+            if persona_data:
+                insights = persona_data.get('insights', ["Great thinking!"])
+                symbol = theme.get('symbol', '●')
 
-            for i, insight in enumerate(insights):
-                st.markdown(f"""
-                <div style="
-                    background: {theme['accent']};
-                    padding: 12px;
-                    border-radius: 8px;
-                    margin: 8px 0;
-                    border-left: 3px solid {theme['primary']};
-                ">
-                    <strong style="color: {theme['primary']};">{symbol} Insight {i+1}:</strong>
-                    <span style="color: #2c2328; line-height: 1.5;">{insight}</span>
-                </div>
-                """, unsafe_allow_html=True)
+                for i, insight in enumerate(insights):
+                    st.markdown(f"""
+                    <div style="
+                        background: {theme['accent']};
+                        padding: 12px;
+                        border-radius: 8px;
+                        margin: 8px 0;
+                        border-left: 3px solid {theme['primary']};
+                    ">
+                        <strong style="color: {theme['primary']};">{symbol} Insight {i+1}:</strong>
+                        <span style="color: #2c2328; line-height: 1.5;">{insight}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-            # Show only contextual progress (no success message)
+            # Show contextual progress for both active and frozen games
             self._show_contextual_progress("Role Play", persona_state['persona_points'], 30)
 
-    def _render_spinning_wheel_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
-        """Render compact perspective wheel game."""
+    def _render_spinning_wheel_game(self, challenge_text: str, theme: Dict, building_type: str, is_permanently_completed: bool = False) -> None:
+        """Render compact perspective wheel game with frozen state support."""
+
+        # Initialize wheel state
+        wheel_key = f"wheel_{building_type}_{hash(challenge_text)}"
+        permanent_game_id = f"wheel_challenge_{wheel_key}"
+
+        # CRITICAL FIX: Check if this is a permanently completed game
+        is_game_completed = is_permanently_completed or permanent_game_id in st.session_state.get('permanently_completed_games', set())
+        if is_game_completed:
+            print(f"🎮 WHEEL_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing full UI in completed state for educational history")
+
         # Compact header
         st.markdown(f"""
         <div style="
@@ -2163,8 +2189,7 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-        # Initialize wheel state
-        wheel_key = f"wheel_{building_type}_{hash(challenge_text)}"
+        # Initialize wheel state (wheel_key already defined above)
         if wheel_key not in st.session_state:
             st.session_state[wheel_key] = {
                 'spun_perspective': None,
@@ -2176,8 +2201,23 @@ class EnhancedGamificationRenderer:
 
         wheel_state = st.session_state[wheel_key]
 
-        # Check if game is completed for frozen state display
-        is_completed = wheel_state.get('response_given', False)
+        # Show completion status if completed
+        if is_game_completed:
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(45deg, {theme['primary']}12, {theme['secondary']}12);
+                border: 2px solid {theme['primary']};
+                border-radius: 15px;
+                padding: 20px;
+                margin: 15px 0;
+                text-align: center;
+            ">
+                <h4 style="color:  #784c80; margin: 0;">✔ Perspective Wheel Challenge Complete! +20 points</h4>
+                <small style="color:  #784c80;">  Educational Record: This completed challenge remains visible for learning review</small>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Use the is_game_completed flag instead of local is_completed
 
         # Generate dynamic perspectives based on context
         perspective_names = self.content_generator.generate_perspectives_from_context(building_type, challenge_text)
@@ -2201,12 +2241,8 @@ class EnhancedGamificationRenderer:
         # CRITICAL FIX: Use static unique key (timestamp keys break Streamlit button handling)
         unique_key = f"spin_{wheel_key}"
 
-        # Show completion status if completed
-        if is_completed:
-            st.success(f"🎉 Perspective Wheel Challenge Completed! +{wheel_state.get('perspective_points', 0)} points")
-
-        # Spin button - frozen state if completed
-        if is_completed:
+        # Spin button - disabled if completed
+        if is_game_completed:
             st.button(
                 f"✓ Perspective Explored",
                 key=f"{unique_key}_disabled",
@@ -2272,6 +2308,16 @@ class EnhancedGamificationRenderer:
                         wheel_state['response_given'] = True
                         wheel_state['perspective_points'] += 20
 
+                        # CRITICAL FIX: Add to permanent completion system to prevent disappearing
+                        permanent_game_id = f"wheel_challenge_{wheel_key}"
+                        if 'permanently_completed_games' not in st.session_state:
+                            st.session_state.permanently_completed_games = set()
+                        st.session_state.permanently_completed_games.add(permanent_game_id)
+                        print(f"🎮 WHEEL_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
+
+                        # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
+                        _update_message_completion_status(permanent_game_id)
+
                         # INTEGRATE WITH MENTOR: Send game response back to conversation
                         game_response = f"{response.strip()}"
                         if 'messages' not in st.session_state:
@@ -2287,8 +2333,8 @@ class EnhancedGamificationRenderer:
 
 
 
-    def _render_animated_mystery_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
-        """Render compact mystery investigation game with user input."""
+    def _render_animated_mystery_game(self, challenge_text: str, theme: Dict, building_type: str, is_permanently_completed: bool = False) -> None:
+        """Render compact mystery investigation game with user input and frozen state support."""
         # STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
         # This ensures the same game instance persists across button clicks
         investigation_key = f"mystery_{building_type}_{hash(challenge_text)}"
@@ -2314,8 +2360,8 @@ class EnhancedGamificationRenderer:
                 margin: 15px 0;
                 text-align: center;
             ">
-                <h3 style="color: #2E7D32; margin-bottom: 10px;">🔍 Mystery Investigation Complete</h3>
-                <p style="color: #388E3C; font-size: 16px; margin: 0;">✔ Mystery solved! Detective insight recorded. +50 points</p>
+                <h3 style="color:  #784c80; margin-bottom: 10px;"> Mystery Investigation Complete</h3>
+                <p style="color:  #784c80; font-size: 16px; margin: 0;">✔ Mystery solved! Detective insight recorded. +50 points</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -2454,6 +2500,9 @@ class EnhancedGamificationRenderer:
                     st.session_state.permanently_completed_games.add(permanent_game_id)
                     print(f"🎮 DETECTIVE_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
 
+                    # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
+                    _update_message_completion_status(permanent_game_id)
+
                     # COMPLETION TRACKING: Record mystery game completion
                     try:
                         from dashboard.ui.gamification_components import complete_advanced_challenge
@@ -2478,8 +2527,8 @@ class EnhancedGamificationRenderer:
 
 
 
-    def _render_interactive_constraint_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
-        """Render standardized constraint puzzle game with consistent UI."""
+    def _render_interactive_constraint_game(self, challenge_text: str, theme: Dict, building_type: str, is_permanently_completed: bool = False) -> None:
+        """Render standardized constraint puzzle game with consistent UI and frozen state support."""
 
 
         # 0309 - STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
@@ -2500,15 +2549,15 @@ class EnhancedGamificationRenderer:
             # Show frozen completion state with progress bar
             st.markdown(f"""
             <div style="
-                background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
-                border: 2px solid #4CAF50;
+                background: linear-gradient(45deg, {theme['primary']}12, {theme['secondary']}12);
+                border: 2px solid {theme['primary']};
                 border-radius: 15px;
                 padding: 20px;
                 margin: 15px 0;
                 text-align: center;
             ">
-                <h3 style="color: #2E7D32; margin-bottom: 10px;">⚡ Constraint Challenge Complete</h3>
-                <p style="color: #388E3C; font-size: 16px; margin: 0;">✔ Creative solution submitted! Constraint challenge complete. +45 points</p>
+                <h3 style="color:  #784c80; margin-bottom: 10px;"> Constraint Challenge Complete</h3>
+                <p style="color:  #784c80; font-size: 16px; margin: 0;">✔ Creative solution submitted! +45 points</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -2598,7 +2647,7 @@ class EnhancedGamificationRenderer:
             padding: 15px;
             margin: 15px 0;
             border: 1px solid rgba(255,255,255,0.1);
-            {'opacity: 0.7;' if is_completed else ''}
+            {'opacity: 0.7;' if is_completed else 'opacity: 1.0;'}
         ">
             <h4 style="color: {theme['primary']}; margin: 0 0 15px 0; font-size: 1.1em;">
                 {theme['symbol']} {header_text}
@@ -2748,6 +2797,9 @@ class EnhancedGamificationRenderer:
                     st.session_state.permanently_completed_games.add(permanent_game_id)
                     print(f"🎮 CONSTRAINT_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
 
+                    # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
+                    _update_message_completion_status(permanent_game_id)
+
                     # Track completion for gamification stats
                     try:
                         from dashboard.ui.gamification_components import GamificationTracker
@@ -2869,7 +2921,7 @@ class EnhancedGamificationRenderer:
             ">
                 {title}
             </h2>
-            {f'<p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 1.1em; font-style: italic;">{subtitle}</p>' if subtitle else ''}
+            {f'<p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 1.1em; font-style: italic;">{html.escape(str(subtitle))}</p>' if subtitle else ''}
         </div>
         """, unsafe_allow_html=True)
 
@@ -3013,8 +3065,8 @@ class EnhancedGamificationRenderer:
         </div>
         """, unsafe_allow_html=True)
 
-    def _render_storytelling_game(self, challenge_text: str, theme: Dict, building_type: str, challenge_data: Optional[Dict] = None) -> None:
-        """Render interactive storytelling challenge."""
+    def _render_storytelling_game(self, challenge_text: str, theme: Dict, building_type: str, challenge_data: Optional[Dict] = None, is_permanently_completed: bool = False) -> None:
+        """Render interactive storytelling challenge with frozen state support."""
         try:
             # CRITICAL FIX: Create unique instance ID for each storytelling trigger
             import time
@@ -3367,23 +3419,25 @@ class EnhancedGamificationRenderer:
                             st.session_state.permanently_completed_games.add(permanent_game_id)
                             print(f"🎮 STORYTELLING_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
 
+                        # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
+                        _update_message_completion_status(permanent_game_id)
 
-                            # Mark storytelling as permanently completed (all 3 chapters done)
-                            st.session_state['storytelling_completed'] = True
-                            print(f"🎮 STORYTELLING_ALL_CHAPTERS_COMPLETE: All 3 chapters submitted, storytelling fully complete")
+                        # Mark storytelling as permanently completed (all 3 chapters done)
+                        st.session_state['storytelling_completed'] = True
+                        print(f"🎮 STORYTELLING_ALL_CHAPTERS_COMPLETE: All 3 chapters submitted, storytelling fully complete")
 
-                            # Clear global storytelling state to prevent further challenges
-                            # Note: Individual instances remain frozen in their own keys
-                            if 'storytelling_state' in st.session_state:
-                                del st.session_state['storytelling_state']
+                        # Clear global storytelling state to prevent further challenges
+                        # Note: Individual instances remain frozen in their own keys
+                        if 'storytelling_state' in st.session_state:
+                            del st.session_state['storytelling_state']
 
-                            # Trigger message processing for follow-up
-                            st.session_state.should_process_message = True
-                            st.session_state.messages.append({
-                                "role": "user",
-                                "content": f"I completed the storytelling challenge with 3 chapters! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
-                            })
-                        else:
+                        # Trigger message processing for follow-up
+                        st.session_state.should_process_message = True
+                        st.session_state.messages.append({
+                            "role": "user",
+                            "content": f"I completed the storytelling challenge with 3 chapters! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
+                        })
+                    else:
                             # CRITICAL FIX: Complete current chapter with completion bar (like other games)
                             current_chapter = len(story_state['narrative_choices'])
 
@@ -3397,8 +3451,8 @@ class EnhancedGamificationRenderer:
                             # CRITICAL FIX: Don't advance chapter automatically - stay at current chapter until next trigger
                             # story_state['chapter'] = current_chapter + 1  # REMOVED: Don't auto-advance
 
-                        # Update session state
-                        st.session_state[storytelling_key] = story_state
+                    # Update session state
+                    st.session_state[storytelling_key] = story_state
 
                         # CRITICAL FIX: Don't rerun after chapter completion - let user continue conversation
                         # Only rerun if showing feedback (which we now don't do for chapter completion)
@@ -3410,8 +3464,8 @@ class EnhancedGamificationRenderer:
             if 'storytelling_state' in st.session_state:
                 del st.session_state.storytelling_state
 
-    def _render_time_travel_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
-        """Render interactive time travel challenge with unique instance management."""
+    def _render_time_travel_game(self, challenge_text: str, theme: Dict, building_type: str, is_permanently_completed: bool = False) -> None:
+        """Render interactive time travel challenge with unique instance management and frozen state support."""
         # STABLE INSTANCE MANAGEMENT: Use stable key that doesn't change on re-renders
         # This ensures the same game instance persists across button clicks
         time_key = f"time_travel_{building_type}_{hash(challenge_text)}"
@@ -3429,27 +3483,40 @@ class EnhancedGamificationRenderer:
         generation_timestamp = str(abs(hash(challenge_text)))
         permanent_game_id = f"time_travel_challenge_{generation_timestamp}"
         print(f"🎮 TIME_TRAVEL_PERMANENT_CHECK: Checking permanent completion for {permanent_game_id}")
-        if permanent_game_id in st.session_state.permanently_completed_games:
-            print(f"🎮 TIME_TRAVEL_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing completion state")
 
-            # Show frozen completion state with progress bar
+        # CRITICAL FIX: Use the is_permanently_completed parameter instead of early return
+        if is_permanently_completed or permanent_game_id in st.session_state.permanently_completed_games:
+            print(f"🎮 TIME_TRAVEL_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing completion state for educational history")
+
+            # Show frozen completion state with progress bar - REMAINS VISIBLE IN CHAT HISTORY
             st.markdown(f"""
             <div style="
-                background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
-                border: 2px solid #4CAF50;
+                background: linear-gradient(45deg, {theme['primary']}12, {theme['secondary']}12);
+                border: 2px solid {theme['primary']};
                 border-radius: 15px;
                 padding: 20px;
                 margin: 15px 0;
                 text-align: center;
             ">
-                <h3 style="color: #2E7D32; margin-bottom: 10px;">🕰️ Time Travel Challenge Complete</h3>
-                <p style="color: #388E3C; font-size: 16px; margin: 0;">✔ Time travel temporal insight recorded! Through time exploration complete. +15 points</p>
+                <h3 style="color: #784c80; margin-bottom: 10px;"> Time Travel Challenge Complete</h3>
+                <p style="color: #784c80; font-size: 16px; margin: 0;">✔ Time travel temporal insight recorded! Through time exploration complete. +15 points</p>
+                <div style="margin-top: 15px; padding: 10px; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">
+                    <small style="color: #784c80;">Educational Record: This completed challenge remains visible for learning review</small>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
-            # 0309-CRITICAL FIX: Show permanent completion progress bar
+            # Show permanent completion progress bar - FROZEN STATE
             self._show_contextual_progress("Time Travel Challenge", 45, 45)
-            return  # COMPLETELY STOP re-rendering this game
+
+            # CRITICAL FIX: Don't return - show the completed game state for educational history
+            # Instead, show a summary of the completed game
+            time_state = st.session_state.get(time_key, {})
+            if time_state.get('temporal_insights'):
+                with st.expander(" Your Completed Temporal Journey", expanded=False):
+                    for i, insight in enumerate(time_state['temporal_insights'], 1):
+                        st.write(f"**{i}. {insight['era']}:** {insight['insight']}")
+            return  # Show frozen completed state only
 
         if time_key not in st.session_state:
             st.session_state[time_key] = {
@@ -3465,7 +3532,7 @@ class EnhancedGamificationRenderer:
 
         if is_completed:
             st.success("✔ **Time Travel Challenge Completed!**")
-            with st.expander("⏰ Your Temporal Journey", expanded=False):
+            with st.expander(" Your Temporal Journey", expanded=False):
                 for i, insight in enumerate(time_state['temporal_insights'], 1):
                     st.write(f"**{i}. {insight['era']}:** {insight['insight']}")
             return
@@ -3572,6 +3639,9 @@ class EnhancedGamificationRenderer:
                         st.session_state.permanently_completed_games.add(permanent_game_id)
                         print(f"🎮 TIME_TRAVEL_PERMANENTLY_FROZEN: Added {permanent_game_id} to permanent completion - will never disappear")
 
+                        # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
+                        _update_message_completion_status(permanent_game_id)
+
                         st.success("🎉 **TIME TRAVEL COMPLETE!** You've mastered temporal design thinking!")
                         st.balloons()
 
@@ -3587,8 +3657,24 @@ class EnhancedGamificationRenderer:
                         st.success("Time travel temporal insight recorded! Through time exploration continues.")
                         self._show_contextual_progress("Time Travel Challenge", time_state['time_points'], 45)
 
-    def _render_transformation_game(self, challenge_text: str, theme: Dict, building_type: str) -> None:
-        """Render interactive transformation challenge."""
+    def _render_transformation_game(self, challenge_text: str, theme: Dict, building_type: str, is_permanently_completed: bool = False) -> None:
+        """Render interactive transformation challenge with frozen state support."""
+
+        # Initialize transformation state properly
+        transform_key = f"transform_{building_type}_{hash(challenge_text)}"
+        permanent_game_id = f"transformation_challenge_{transform_key}"
+
+        # CRITICAL FIX: Check if this is a permanently completed game
+        permanently_completed_games = st.session_state.get('permanently_completed_games', set())
+        is_game_completed = is_permanently_completed or permanent_game_id in permanently_completed_games
+
+        print(f"🎮 TRANSFORMATION_DEBUG: permanent_game_id={permanent_game_id}")
+        print(f"🎮 TRANSFORMATION_DEBUG: is_permanently_completed={is_permanently_completed}")
+        print(f"🎮 TRANSFORMATION_DEBUG: permanently_completed_games={permanently_completed_games}")
+        print(f"🎮 TRANSFORMATION_DEBUG: is_game_completed={is_game_completed}")
+
+        if is_game_completed:
+            print(f"🎮 TRANSFORMATION_PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, showing full UI in completed state for educational history")
 
         # FIXED: Use proper game description instead of user message - ensure no HTML tags
         game_description = f"Design your {building_type} to adapt and transform for different uses, times, and seasons. Explore how spaces can change to serve multiple functions while maintaining their architectural integrity."
@@ -3618,9 +3704,6 @@ class EnhancedGamificationRenderer:
 
         # Generate dynamic transformations based on context
         transformations_dict = self.content_generator.generate_transformations_from_context(building_type, challenge_text)
-
-        # Initialize transformation state properly
-        transform_key = f"transform_{building_type}_{hash(challenge_text)}"
         if transform_key not in st.session_state:
             st.session_state[transform_key] = {
                 'selected_transformation': None,
@@ -3631,23 +3714,48 @@ class EnhancedGamificationRenderer:
 
         transform_state = st.session_state[transform_key]
 
-        # Show transformation options (like roleplay personas)
+        # Show completion status if completed
+        if is_game_completed:
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(45deg, {theme['primary']}12, {theme['secondary']}12);
+                border: 2px solid {theme['primary']};
+                border-radius: 15px;
+                padding: 20px;
+                margin: 15px 0;
+                text-align: center;
+            ">
+                <h3 style="color:  #784c80; margin: 0;"> Transformation Challenge Complete </h4>
+                <p style="color:  #784c80; font-size: 16px; margin: 0;">✔ Creative solution submitted! +30 points</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Show transformation options (disabled if completed)
         st.markdown("**Choose your transformation approach:**")
 
         for i, (transform_name, transform_description) in enumerate(transformations_dict.items()):
             is_selected = transform_state['selected_transformation'] == transform_name
 
-            # Show transformation button with preview (like roleplay)
-            if st.button(
-                f"{theme['symbol']} {transform_name}: {transform_description[:60]}...",
-                key=f"select_transform_{i}_{hash(challenge_text)}",
-                type="primary" if is_selected else "secondary",
-                use_container_width=True
-            ):
-                transform_state['selected_transformation'] = transform_name
-                transform_state['transformation_data'] = transform_description
-                transform_state['response_given'] = False
-                st.rerun()
+            # Show transformation button - disabled if completed
+            if is_game_completed:
+                st.button(
+                    f"{'✓' if is_selected else theme['symbol']} {transform_name}: {transform_description[:60]}...",
+                    key=f"select_transform_{i}_{hash(challenge_text)}_disabled",
+                    type="primary" if is_selected else "secondary",
+                    use_container_width=True,
+                    disabled=True
+                )
+            else:
+                if st.button(
+                    f"{theme['symbol']} {transform_name}: {transform_description[:60]}...",
+                    key=f"select_transform_{i}_{hash(challenge_text)}",
+                    type="primary" if is_selected else "secondary",
+                    use_container_width=True
+                ):
+                    transform_state['selected_transformation'] = transform_name
+                    transform_state['transformation_data'] = transform_description
+                    transform_state['response_given'] = False
+                    st.rerun()
 
         # Show selected transformation challenge (like roleplay experience)
         if transform_state['selected_transformation'] and transform_state['transformation_data']:
@@ -3668,47 +3776,153 @@ class EnhancedGamificationRenderer:
             </div>
             """, unsafe_allow_html=True)
 
-            # Response area (like roleplay)
-            transform_response = st.text_area(
-                "Your transformation approach:",
-                placeholder=f"To implement {transform_name.lower()}, I would...",
-                height=100,
-                key=f"response_{transform_key}",
-                help="Describe your design strategy, specific elements, and how they enable transformation"
-            )
+            # Response area - disabled if completed
+            if is_game_completed:
+                # Show disabled response area with user's submitted response
+                st.text_area(
+                    "Your submitted transformation approach:",
+                    value="Response submitted successfully - preserved in conversation above",
+                    height=100,
+                    key=f"response_{transform_key}_disabled",
+                    disabled=True,
+                    help="Your detailed response is preserved in the conversation history"
+                )
+                st.button(f"✓ Transformation Submitted", key=f"submit_{transform_key}_disabled", type="secondary", disabled=True)
+            else:
+                # Interactive response area
+                transform_response = st.text_area(
+                    "Your transformation approach:",
+                    placeholder=f"To implement {transform_name.lower()}, I would...",
+                    height=100,
+                    key=f"response_{transform_key}",
+                    help="Describe your design strategy, specific elements, and how they enable transformation"
+                )
 
-            if st.button(f"{theme['symbol']} Submit Transformation", key=f"submit_{transform_key}", type="primary"):
-                if transform_response.strip():
-                    transform_state['response_given'] = True
-                    transform_state['transform_points'] += 30
+                if st.button(f"{theme['symbol']} Submit Transformation", key=f"submit_{transform_key}", type="primary"):
+                    if transform_response.strip():
+                        transform_state['response_given'] = True
+                        transform_state['transform_points'] += 30
 
-                    # INTEGRATE WITH MENTOR: Send game response back to conversation (like roleplay)
-                    game_response = f"{transform_response.strip()}"
-                    if 'messages' not in st.session_state:
-                        st.session_state.messages = []
-                    st.session_state.messages.append({"role": "user", "content": game_response})
-                    st.session_state.should_process_message = True
-                    st.rerun()
+                        # CRITICAL FIX: Add to permanent completion system to prevent disappearing
+                        permanent_game_id = f"transformation_challenge_{transform_key}"
+                        if 'permanently_completed_games' not in st.session_state:
+                            st.session_state.permanently_completed_games = set()
+                        st.session_state.permanently_completed_games.add(permanent_game_id)
+                        print(f"🎮 TRANSFORMATION_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
 
-        # Show completion feedback (like roleplay)
+                        # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
+                        _update_message_completion_status(permanent_game_id)
+
+                        # INTEGRATE WITH MENTOR: Send game response back to conversation (like roleplay)
+                        game_response = f"{transform_response.strip()}"
+                        if 'messages' not in st.session_state:
+                            st.session_state.messages = []
+                        st.session_state.messages.append({"role": "user", "content": game_response})
+                        st.session_state.should_process_message = True
+                        st.rerun()
+
+        # Show completion feedback and progress bar
         if transform_state['response_given']:
-            st.markdown(f"""
-            <div style="
-                background: {theme['accent']};
-                padding: 10px;
-                border-radius: 8px;
-                margin: 10px 0;
-                border-left: 4px solid {theme['primary']};
-            ">
-                <span style="color: #2c2328; line-height: 1.5;">✔ Transformation approach submitted! Your response will be processed by the mentor.</span>
-            </div>
-            """, unsafe_allow_html=True)
+            if not is_game_completed:
+                # Show feedback only for active games (not frozen)
+                st.markdown(f"""
+                <div style="
+                    background: {theme['accent']};
+                    padding: 10px;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                    border-left: 4px solid {theme['primary']};
+                ">
+                    <span style="color: #2c2328; line-height: 1.5;">✔ Transformation approach submitted! Your response will be processed by the mentor.</span>
+                </div>
+                """, unsafe_allow_html=True)
 
-            # Show only contextual progress (no success message)
+            # Show contextual progress for both active and frozen games
             self._show_contextual_progress("Transformation Challenge", transform_state['transform_points'], 30)
 
 
 # Global functions for integration
+def _update_message_completion_status(permanent_game_id: str) -> None:
+    """Update the message's gamification data to mark it as permanently completed."""
+    try:
+        messages = st.session_state.get('messages', [])
+
+        # Find the most recent assistant message with gamification data
+        for i in range(len(messages) - 1, -1, -1):
+            message = messages[i]
+            if message.get('role') == 'assistant' and message.get('gamification'):
+                # Update the gamification data to include the completion flag
+                message['gamification']['is_permanently_completed'] = True
+                message['gamification']['permanent_game_id'] = permanent_game_id
+                print(f"🎮 MESSAGE_UPDATE: Marked message {i} as permanently completed with game {permanent_game_id}")
+                break
+    except Exception as e:
+        print(f"🎮 ERROR: Failed to update message completion status: {e}")
+
+
+def should_allow_gamification(challenge_data: Dict) -> bool:
+    """
+    Check if gamification should be allowed based on frequency control.
+    This function is called BEFORE any game UI is rendered.
+    """
+    import streamlit as st
+    import time
+
+    # Extract challenge info
+    challenge_type = challenge_data.get('challenge_type', 'unknown')
+    challenge_text = challenge_data.get('challenge_text', '')
+
+    # Generate unique instance ID (same logic as main function)
+    generation_timestamp = challenge_data.get('generation_timestamp', '2025-01-01T00:00:00')
+    unique_instance_id = f"{challenge_type}_{generation_timestamp}_{int(time.time() * 1000)}"
+
+    # Check if this is a re-render of an existing game (for interactivity)
+    is_interactive_rerender = unique_instance_id in st.session_state.get('rendered_challenges', set())
+
+    if is_interactive_rerender:
+        print(f"🎮 FREQUENCY_CHECK: Interactive re-render allowed for {unique_instance_id}")
+        return True  # Always allow interactive re-renders
+
+    # This is a NEW game trigger - apply frequency control
+    messages = st.session_state.get('messages', [])
+
+    def count_non_gamified_responses_since_last_game():
+        """Count non-gamified assistant responses since the last game."""
+        non_gamified_count = 0
+
+        assistant_messages = [msg for msg in messages if msg.get('role') == 'assistant']
+
+        # Go through messages in reverse order (newest first)
+        # Skip the most recent assistant message (current one being processed)
+        for i, msg in enumerate(reversed(messages)):
+            if msg.get('role') == 'assistant':
+                # Skip the first (most recent) assistant message - that's the current one being processed
+                if i == 0:
+                    continue
+
+                # Check for gamification metadata
+                gamification_data = msg.get('gamification', {})
+                has_game = gamification_data and gamification_data.get('is_gamified', False)
+
+                if has_game:
+                    return non_gamified_count
+                else:
+                    non_gamified_count += 1
+
+        return 999  # No previous games found
+
+    # Apply frequency control for NEW games only (completed games bypass this)
+    non_gamified_count = count_non_gamified_responses_since_last_game()
+    required_responses = 2  # Exactly 2 non-gamified responses required
+
+    if non_gamified_count < required_responses:
+        print(f"🎮 FREQUENCY_BLOCKED: New gamification blocked - only {non_gamified_count}/{required_responses} non-gamified responses since last game")
+        return False
+    else:
+        print(f"🎮 FREQUENCY_ALLOWED: Gamification allowed - {non_gamified_count}/{required_responses} non-gamified responses since last game")
+        return True
+
+
 def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
     """Main entry point for rendering enhanced gamified challenges with comprehensive game management."""
     try:
@@ -3750,23 +3964,88 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
         is_interactive_rerender = unique_instance_id in st.session_state.get('rendered_challenges', set())
 
         if not is_interactive_rerender:
-            # This is a NEW game trigger - check if previous assistant response had a game
-            if last_assistant_message:
-                # Check if the last assistant message contained gamification data
-                last_message_content = last_assistant_message.get('content', '')
-                had_previous_game = ('🎮' in last_message_content or
-                                   'gamification_data' in last_assistant_message or
-                                   any(game_marker in last_message_content for game_marker in
-                                       ['Mystery Investigation', 'Time Travel Challenge', 'Constraint Challenge',
-                                        'Transformation Challenge', 'Storytelling Challenge', 'Perspective Challenge']))
+            # CRITICAL FIX: Check if this is a permanently completed game first
+            is_permanently_completed = challenge_data.get("is_permanently_completed", False)
 
-                if had_previous_game:
-                    print(f"🎮 CONSECUTIVE_BLOCKED_CORRECT: NEW game blocked - previous assistant response contained a game")
+            if is_permanently_completed:
+                print(f"🎮 RENDER_PERMANENTLY_COMPLETED: Bypassing frequency control for permanently completed game")
+            else:
+                # This is a NEW game trigger - apply enhanced frequency control
+                # Requirement: Exactly 2 non-gamified agent responses before allowing new games
+
+                def count_non_gamified_responses_since_last_game():
+                    """Count non-gamified assistant responses since the last game."""
+                    non_gamified_count = 0
+
+                    print(f"🎮 FREQUENCY_DEBUG: Checking {len(messages)} total messages")
+                    assistant_messages = [msg for msg in messages if msg.get('role') == 'assistant']
+                    print(f"🎮 FREQUENCY_DEBUG: Found {len(assistant_messages)} assistant messages")
+
+                    # Go through messages in reverse order (newest first)
+                    # CRITICAL FIX: Skip the most recent assistant message (current one being processed)
+                    for i, msg in enumerate(reversed(messages)):
+                        if msg.get('role') == 'assistant':
+                            # Skip the first (most recent) assistant message - that's the current one being processed
+                            if i == 0:
+                                print(f"🎮 FREQUENCY_DEBUG: Skipping current assistant message (being processed)")
+                                continue
+
+                            msg_content = msg.get('content', '')
+                            msg_preview = msg_content[:100] + "..." if len(msg_content) > 100 else msg_content
+
+                            print(f"🎮 FREQUENCY_DEBUG: Assistant msg #{len(assistant_messages)-i}: {msg_preview}")
+
+                            # Check if this message contains a game - ENHANCED DETECTION
+                            has_game = False
+
+                            # FIXED: Check for gamification metadata (this is where "Enhanced Challenge!" is tracked)
+                            gamification_data = msg.get('gamification', {})
+                            if gamification_data and gamification_data.get('is_gamified', False):
+                                has_game = True
+                                print(f"🎮 FREQUENCY_DEBUG: Found gamification metadata - is_gamified: {gamification_data.get('is_gamified')}")
+
+                            # Fallback: Check for direct game markers in content (for backward compatibility)
+                            if not has_game:
+                                game_markers = [
+                                    '🎮', 'Enhanced Challenge!', '◉ Interactive Challenge',
+                                    'Mystery Investigation', 'Time Travel Challenge', 'Constraint Challenge',
+                                    'Transformation Challenge', 'Storytelling Challenge', 'Perspective Challenge',
+                                    'space_transformation', 'alternative_challenge', 'time_travel_challenge'
+                                ]
+
+                                for marker in game_markers:
+                                    if marker in msg_content:
+                                        has_game = True
+                                        print(f"🎮 FREQUENCY_DEBUG: Found game marker '{marker}' in message content")
+                                        break
+
+                            # Additional fallback: Check for gamification_data key
+                            if not has_game and 'gamification_data' in msg:
+                                has_game = True
+                                print(f"🎮 FREQUENCY_DEBUG: Found gamification_data key in message")
+
+                            if has_game:
+                                # Found the last game - stop counting
+                                print(f"🎮 FREQUENCY_CHECK: Found last game in message #{len(assistant_messages)-i}, counted {non_gamified_count} non-gamified responses since")
+                                return non_gamified_count
+                            else:
+                                # This is a non-gamified response
+                                non_gamified_count += 1
+                                print(f"🎮 FREQUENCY_CHECK: Non-gamified response #{non_gamified_count}")
+
+                    # No previous games found - allow first game
+                    print(f"🎮 FREQUENCY_CHECK: No previous games found in {len(assistant_messages)} assistant messages, allowing first game")
+                    return 999  # Large number to always allow first game
+
+                # Apply frequency control for NEW games only (completed games bypass this)
+                non_gamified_count = count_non_gamified_responses_since_last_game()
+                required_responses = 2  # Exactly 2 non-gamified responses required
+
+                if non_gamified_count < required_responses:
+                    print(f"🎮 FREQUENCY_BLOCKED: NEW game blocked - only {non_gamified_count}/{required_responses} non-gamified responses since last game")
                     return  # Block before any UI rendering
                 else:
-                    print(f"🎮 CONSECUTIVE_ALLOWED: NEW game allowed - previous assistant response had no game")
-            else:
-                print(f"🎮 FIRST_GAME: NEW game allowed - no previous assistant messages")
+                    print(f"🎮 FREQUENCY_ALLOWED: NEW game allowed - {non_gamified_count}/{required_responses} non-gamified responses since last game")
 
             print(f"🎮 NEW_GAME_PROCEEDING: Proceeding with NEW game instance {unique_instance_id}")
 
@@ -3786,8 +4065,12 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
 
         # Check if this specific instance is already permanently completed
         if unique_instance_id in st.session_state.permanently_completed_games:
-            print(f"🎮 PERMANENTLY_COMPLETED: Game instance {unique_instance_id} is frozen, not re-rendering")
-            return
+            print(f"🎮 PERMANENTLY_COMPLETED: Game instance {unique_instance_id} is frozen, rendering final completed state")
+            # CRITICAL FIX: Don't return - render the completed state for educational history
+            # Completed games should remain visible as frozen components
+            is_permanently_completed = True
+        else:
+            is_permanently_completed = False
           
         # from main CRITICAL FIX: Smart duplicate prevention - allow interactivity but prevent multiple renders per page load
         #challenge_id = f"{challenge_data.get('challenge_type', 'unknown')}_{challenge_data.get('enhancement_timestamp', 'unknown')}"
@@ -3885,7 +4168,7 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
                         margin: 15px 0;
                         text-align: center;
                     ">
-                        <h3 style="color: #ffffff; margin-bottom: 10px;">Challenge Completed</h3>
+                        <h3 style="color: #ffffff; margin-bottom: 10px;">Storytelling Challenge Complete</h3>
                         <p style="color: #ffffff; font-size: 16px; margin: 0;">{completion_message}</p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -3929,8 +4212,12 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
 
         # Check if this specific game instance is permanently completed
         if permanent_game_id in st.session_state.permanently_completed_games:
-            print(f"🎮 PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, not re-rendering")
-            return  # COMPLETELY STOP re-rendering this game
+            print(f"🎮 PERMANENTLY_COMPLETED: Game {permanent_game_id} is frozen, rendering final completed state for educational history")
+            # CRITICAL FIX: Don't return - render the completed state for educational history
+            # Completed games should remain visible as frozen components in chat history
+            is_permanently_completed = True
+        else:
+            is_permanently_completed = False
 
         # CRITICAL FIX: Allow Time Travel Challenge interactive re-rendering
         # Games need to re-render for interactivity until completed
@@ -3972,6 +4259,11 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
 
         # Initialize renderer
         renderer = EnhancedGamificationRenderer()
+
+        # Add completion state to challenge data for proper rendering
+        safe_challenge_data['is_permanently_completed'] = is_permanently_completed
+        if is_permanently_completed:
+            print(f"🎮 FROZEN_RENDER: Rendering {challenge_type} in permanently completed state for educational history")
 
         # Render the challenge with additional safety
         try:

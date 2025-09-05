@@ -373,6 +373,10 @@ def render_single_message(message: Dict[str, Any]):
         # ENHANCED: Check if this is a gamified challenge
         gamification_info = message.get("gamification", {})
 
+        # CRITICAL FIX: Handle None gamification_info (blocked games)
+        if gamification_info is None:
+            gamification_info = {}
+
         # CRITICAL FIX: Check nested challenge_data structure for gamification
         challenge_data = gamification_info.get("challenge_data", {})
         is_gamified = (
@@ -410,7 +414,7 @@ def render_single_message(message: Dict[str, Any]):
                             <span class="agent-name">{mentor_label}</span>
                         </div>
                         <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
-                        <div class="message-time">{_format_timestamp(message.get("timestamp"))}</div>
+                        <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
                     </div>
                 </div>
                 """,
@@ -436,6 +440,39 @@ def render_single_message(message: Dict[str, Any]):
 def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
     """Render a gamified challenge message with BOTH agent response AND interactive game."""
     try:
+        # CRITICAL FIX: Check if this is a permanently completed game first
+        gamification_data = message.get('gamification', {})
+        if gamification_data:
+            try:
+                from dashboard.ui.enhanced_gamification import should_allow_gamification
+
+                # CRITICAL FIX: Always render permanently completed games regardless of frequency control
+                is_permanently_completed = gamification_data.get("is_permanently_completed", False)
+
+                if is_permanently_completed:
+                    print(f"🎮 GAMIFIED_MESSAGE: Rendering permanently completed game - bypassing frequency control")
+                elif not should_allow_gamification(gamification_data):
+                    print(f"🎮 GAMIFIED_MESSAGE: New gamification blocked by frequency control - rendering as normal message")
+                    # Render as normal message instead
+                    st.markdown(
+                        f"""
+                        <div class="message agent-message">
+                            <div class="message-avatar agent-avatar"></div>
+                            <div class="message-content agent-content">
+                                <div class="message-header">
+                                    <span class="agent-name">{mentor_label}</span>
+                                </div>
+                                <div class="message-text">{safe_markdown_to_html(message["content"])}</div>
+                                <div class="message-time">{_format_timestamp(message.get("timestamp", ""))}</div>
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                    return  # Exit early - no gamified UI
+            except ImportError:
+                print(f"🎮 GAMIFIED_MESSAGE: Could not import frequency control - proceeding with gamification")
+
         # PERFORMANCE: Disable debug prints
         # print(f"🎮 DEBUG: Starting gamified message rendering")
         # print(f"🎮 DEBUG: Message keys: {list(message.keys())}")
@@ -515,7 +552,9 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
             "challenge_type": challenge_data.get("challenge_type") or gamification_info.get("challenge_type", "constraint_challenge"),  # FIXED: Don't override existing challenge_type
             "building_type": gamification_info.get("building_type", "community center"),
             "mentor_label": mentor_label,
-            "gamification_applied": True  # Ensure games are contextual, not hardcoded
+            "gamification_applied": True,  # Ensure games are contextual, not hardcoded
+            # CRITICAL FIX: Copy the permanently completed flag from message gamification data
+            "is_permanently_completed": gamification_info.get("is_permanently_completed", False)
         })
 
         # PERFORMANCE: Disable debug prints
@@ -523,12 +562,24 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
         # print(f"🎮 DEBUG: About to call enhanced gamification renderer")
 
         # STEP 4: Render contextual interactive game (more subtle)
-        st.markdown("**◉ Interactive Challenge**")
-        st.markdown("*Explore this concept through an interactive experience:*")
-
-        # Use enhanced gamification system for contextual games
+        # CRITICAL FIX: Check if this is a permanently completed game first
         try:
-            from dashboard.ui.enhanced_gamification import render_enhanced_gamified_challenge, inject_gamification_css
+            from dashboard.ui.enhanced_gamification import render_enhanced_gamified_challenge, inject_gamification_css, should_allow_gamification
+
+            # CRITICAL FIX: Always render permanently completed games regardless of frequency control
+            is_permanently_completed = challenge_data.get("is_permanently_completed", False)
+
+            if is_permanently_completed:
+                print(f"🎮 CHAT_COMPONENTS: Rendering permanently completed game - bypassing frequency control")
+            else:
+                # Check frequency control only for new games
+                if not should_allow_gamification(challenge_data):
+                    print(f"🎮 CHAT_COMPONENTS: New gamification blocked by frequency control - skipping new game UI")
+                    return  # Skip only NEW game rendering
+
+            # Only render game UI if frequency control allows it
+            st.markdown("**◉ Interactive Challenge**")
+            st.markdown("*Explore this concept through an interactive experience:*")
 
             # Inject CSS for animations
             inject_gamification_css()
@@ -914,40 +965,40 @@ def render_main_design_task():
 
     st.markdown(main_task)
 
-    # Phase-specific subtasks
-    current_phase = st.session_state.get('test_current_phase', 'Ideation')
+    # # Phase-specific subtasks
+    # current_phase = st.session_state.get('test_current_phase', 'Ideation')
 
-    if current_phase == 'Ideation':
-        subtask = """
-        **Current Phase: Ideation**
+    # if current_phase == 'Ideation':
+    #     subtask = """
+    #     **Current Phase: Ideation**
 
-        Develop your initial concept considering:
-        - What questions should we ask about this community?
-        - How can the existing industrial character be preserved and enhanced?
-        - What successful warehouse-to-community transformations can inform your approach?
-        """
-    elif current_phase == 'Visualization':
-        subtask = """
-        **Current Phase: Visualization**
+    #     Develop your initial concept considering:
+    #     - What questions should we ask about this community?
+    #     - How can the existing industrial character be preserved and enhanced?
+    #     - What successful warehouse-to-community transformations can inform your approach?
+    #     """
+    # elif current_phase == 'Visualization':
+    #     subtask = """
+    #     **Current Phase: Visualization**
 
-        Based on your concept, develop spatial visualizations:
-        - Create diagrams showing circulation patterns and adjacency requirements
-        - Sketch key spatial relationships and community interaction zones
-        - Visualize how the existing structure integrates with new program elements
-        """
-    elif current_phase == 'Materialization':
-        subtask = """
-        **Current Phase: Materialization**
+    #     Based on your concept, develop spatial visualizations:
+    #     - Create diagrams showing circulation patterns and adjacency requirements
+    #     - Sketch key spatial relationships and community interaction zones
+    #     - Visualize how the existing structure integrates with new program elements
+    #     """
+    # elif current_phase == 'Materialization':
+    #     subtask = """
+    #     **Current Phase: Materialization**
 
-        Develop technical implementation details:
-        - Specify materials and construction methods that support your design vision
-        - Detail how new systems integrate with preserved industrial elements
-        - Address structural modifications within the existing grid system
-        """
-    else:
-        subtask = "**Ready to begin design process**"
+    #     Develop technical implementation details:
+    #     - Specify materials and construction methods that support your design vision
+    #     - Detail how new systems integrate with preserved industrial elements
+    #     - Address structural modifications within the existing grid system
+    #     """
+    # else:
+    #     subtask = "**Ready to begin design process**"
 
-    st.markdown(subtask)
+    # st.markdown(subtask)
 
     return main_task
 

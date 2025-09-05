@@ -1296,13 +1296,35 @@ class UnifiedArchitecturalDashboard:
                 # else:
                 #     print(f"🎮 UI DEBUG: No gamification data found in metadata keys: {list(response_metadata.keys())}")
 
+                # CRITICAL FIX: Only add gamification metadata if games are actually allowed
+                # This prevents blocked games from counting as games for frequency control
+                final_gamification_data = None
+                if gamification_display and gamification_display.get('is_gamified', False):
+                    try:
+                        from dashboard.ui.enhanced_gamification import should_allow_gamification
+
+                        # Check if gamification should be allowed
+                        if should_allow_gamification(gamification_display):
+                            final_gamification_data = gamification_display
+                            print(f"🎮 METADATA: Adding gamification metadata - game allowed")
+                        else:
+                            # Don't add gamification metadata for blocked games
+                            final_gamification_data = None
+                            print(f"🎮 METADATA: Skipping gamification metadata - game blocked")
+                    except ImportError:
+                        # Fallback: add gamification data if can't check
+                        final_gamification_data = gamification_display
+                        print(f"🎮 METADATA: Could not check frequency control - adding gamification metadata")
+                else:
+                    final_gamification_data = gamification_display
+
                 # Add assistant message with gamification info and generated image
                 assistant_message = {
                     "role": "assistant",
                     "content": final_message,
                     "timestamp": datetime.now().isoformat(),
                     "mentor_type": st.session_state.current_mode,
-                    "gamification": gamification_display
+                    "gamification": final_gamification_data
                 }
 
                 # Include generated image data if available

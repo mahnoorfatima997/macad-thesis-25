@@ -837,7 +837,7 @@ class GamificationDisplay:
         """Render achievement popup when user completes challenges."""
         achievements = {
             "first_challenge": {
-                "title": "🎯 Challenge Accepted!",
+                "title": " Challenge Accepted!",
                 "description": "Completed your first design challenge",
                 "badge": "🏅",
                 "color": THESIS_COLORS['neutral_orange']

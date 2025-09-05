@@ -1023,52 +1023,10 @@ class LangGraphOrchestrator:
         return enhanced_text
 
     def _format_response_for_readability(self, response_text: str) -> str:
-        """Format response text for better readability with natural paragraph breaks."""
-        if not response_text or len(response_text) < 150:
-            return response_text
+        """DISABLED: Return text as-is to restore original formatting."""
+        return response_text
 
-        # Split into sentences more carefully
-        import re
-        # Split on sentence endings but preserve the punctuation
-        sentences = re.split(r'(?<=[.!?])\s+', response_text.strip())
-        if len(sentences) < 4:
-            return response_text
 
-        # Group sentences into paragraphs with natural breaks
-        paragraphs = []
-        current_paragraph = []
-
-        for i, sentence in enumerate(sentences):
-            sentence = sentence.strip()
-            if not sentence:
-                continue
-
-            current_paragraph.append(sentence)
-
-            # Create paragraph break at natural points:
-            # - After 3-4 sentences
-            # - After questions (if paragraph has at least 2 sentences)
-            # - Before topic transitions (sentences starting with certain words)
-            next_sentence = sentences[i + 1].strip() if i + 1 < len(sentences) else ""
-
-            should_break = (
-                len(current_paragraph) >= 3 or  # More frequent breaks (was 4)
-                (len(current_paragraph) >= 2 and i < len(sentences) - 1) or  # More frequent breaks (was 3)
-                (sentence.endswith('?') and len(current_paragraph) >= 1) or  # Break after any question (was 2)
-                (next_sentence and any(next_sentence.startswith(word) for word in
-                 ['Consider', 'Think', 'Reflect', 'How', 'What', 'Why', 'When', 'Where', 'By', 'This', 'Using', 'Finally', 'Additionally', 'Moreover', 'Furthermore', 'However', 'Nevertheless']))  # More transition words
-            )
-
-            if should_break and i < len(sentences) - 1:
-                paragraphs.append(' '.join(current_paragraph))
-                current_paragraph = []
-
-        # Add remaining sentences
-        if current_paragraph:
-            paragraphs.append(' '.join(current_paragraph))
-
-        # Join paragraphs with double line breaks for better spacing
-        return '\n\n'.join(paragraphs)
 
     # ------------- Metadata helpers (ported minimally) -------------
 
