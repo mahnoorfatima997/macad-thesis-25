@@ -393,7 +393,8 @@ class InputClassificationProcessor:
             "lost", "stuck", "struggling", "difficult",
             "what does this mean", "i don't get it", "i'm confused",
             "this doesn't make sense", "i'm lost", "i'm stuck",
-            "this is confusing", "i'm struggling", "this is difficult"
+            "this is confusing", "i'm struggling", "this is difficult",
+            "what do you mean", "how do you mean", "can you explain", "what are you referring to"
         ]
         if any(pattern in input_lower for pattern in confusion_patterns):
             print(f"Input classification: Detected confusion_expression pattern in: {input_text[:100]}...")
@@ -404,8 +405,12 @@ class InputClassificationProcessor:
             "improve", "better", "enhance", "optimize", "refine",
             "make it better", "how can i", "what should i change"
         ]
+        # IMPROVED: Don't classify as improvement_seeking if it's asking for clarification about enhancement
         if any(pattern in input_lower for pattern in improvement_patterns):
-            return "improvement_seeking"
+            # Check if it's actually a clarification question about improvement concepts
+            clarification_indicators = ["what do you mean", "how do you mean", "what does", "can you explain", "what are you referring to"]
+            if not any(indicator in input_lower for indicator in clarification_indicators):
+                return "improvement_seeking"
 
         # 14. Implementation request detection (ENHANCED PATTERNS)
         implementation_patterns = [

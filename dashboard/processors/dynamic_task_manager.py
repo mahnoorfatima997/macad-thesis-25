@@ -337,14 +337,14 @@ class DynamicTaskManager:
                   f"Completed: {already_completed} | Active: {already_active}")
 
             # DETAILED DEBUG: Show threshold crossing calculation for failing tasks
-            if task_type.value in ['environmental_contextual', 'realization_implementation']:
-                print(f"      🔍 THRESHOLD_DEBUG for {task_type.value}:")
-                print(f"         Last: {last_completion:.1f}%, Current: {current_completion:.1f}%")
-                print(f"         Range: {min_completion:.1f}%-{max_completion:.1f}%")
-                print(f"         Condition1 ({last_completion:.1f} < {min_completion:.1f} <= {current_completion:.1f}): {condition1}")
-                print(f"         Condition2 ({min_completion:.1f} <= {current_completion:.1f} <= {max_completion:.1f}): {condition2}")
-                print(f"         Condition3 ({last_completion:.1f} < {min_completion:.1f} and {current_completion:.1f} > {max_completion:.1f}): {condition3}")
-                print(f"         FINAL: threshold_crossed = {threshold_crossed}")
+            # if task_type.value in ['environmental_contextual', 'realization_implementation']:
+            #     print(f"      🔍 THRESHOLD_DEBUG for {task_type.value}:")
+            #     print(f"         Last: {last_completion:.1f}%, Current: {current_completion:.1f}%")
+            #     print(f"         Range: {min_completion:.1f}%-{max_completion:.1f}%")
+            #     print(f"         Condition1 ({last_completion:.1f} < {min_completion:.1f} <= {current_completion:.1f}): {condition1}")
+            #     print(f"         Condition2 ({min_completion:.1f} <= {current_completion:.1f} <= {max_completion:.1f}): {condition2}")
+            #     print(f"         Condition3 ({last_completion:.1f} < {min_completion:.1f} and {current_completion:.1f} > {max_completion:.1f}): {condition3}")
+            #     print(f"         FINAL: threshold_crossed = {threshold_crossed}")
 
 
 

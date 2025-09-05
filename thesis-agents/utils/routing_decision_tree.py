@@ -88,6 +88,7 @@ class CognitiveOffloadingType(Enum):
     """Enhanced types of cognitive offloading"""
     SOLUTION_REQUEST = "solution_request"
     DIRECT_ANSWER_REQUEST = "direct_answer_request"
+    PREMATURE_ANSWER_SEEKING = "premature_answer_seeking"  # ADDED: For early answer requests
     AVOIDANCE_PATTERN = "avoidance_pattern"
     OVERRELIANCE = "overreliance"
     QUICK_FIX_REQUEST = "quick_fix_request"
@@ -570,14 +571,14 @@ class AdvancedRoutingDecisionTree:
                 "context_agent_override": False,
                 "agents": ["socratic_tutor", "context_agent"]
             },
-            # KNOWLEDGE ROUTES - Better differentiation - FIXED: Simpler conditions
+            # KNOWLEDGE ROUTES - FIXED: Simple "what is" questions go to knowledge_only
             "knowledge_request_basic": {
                 "priority": 10,  # VERY HIGH PRIORITY to override knowledge_only fallback
-                "route": RouteType.KNOWLEDGE_WITH_CHALLENGE,
+                "route": RouteType.KNOWLEDGE_ONLY,  # FIXED: Simple knowledge requests get direct answers
                 "conditions": ["user_intent == 'knowledge_seeking'", "is_pure_knowledge_request == True"],
-                "description": "Knowledge request - knowledge with follow-up challenge",
+                "description": "Knowledge request - direct information delivery",
                 "context_agent_override": False,
-                "agents": ["domain_expert", "socratic_tutor", "context_agent"]
+                "agents": ["domain_expert", "context_agent"]
             },
 
 
@@ -1183,10 +1184,19 @@ class AdvancedRoutingDecisionTree:
             detected = True
             if interaction_type == "cognitive_offloading":
                 offloading_type = CognitiveOffloadingType.SOLUTION_REQUEST
+            elif interaction_type == "direct_answer_request":
+                # ENHANCED: Check if this is premature (early in conversation)
+                recent_messages = context_analysis.get("conversation_patterns", {}).get("recent_messages", [])
+                if len(recent_messages) < 3:
+                    offloading_type = CognitiveOffloadingType.PREMATURE_ANSWER_SEEKING
+                    indicators.append(f"premature_answer_seeking: {interaction_type} with only {len(recent_messages)} messages")
+                else:
+                    offloading_type = CognitiveOffloadingType.DIRECT_ANSWER_REQUEST
+                    indicators.append(f"interaction_type: {interaction_type}")
             else:
                 offloading_type = CognitiveOffloadingType(interaction_type)
+                indicators.append(f"interaction_type: {interaction_type}")
             confidence = 0.8
-            indicators.append(f"interaction_type: {interaction_type}")
         
         # Check for specific cognitive offloading patterns (more restrictive)
         # Only apply these if the interaction type is NOT a legitimate request type

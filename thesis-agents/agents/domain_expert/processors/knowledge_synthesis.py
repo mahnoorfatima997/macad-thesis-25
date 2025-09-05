@@ -538,22 +538,46 @@ class KnowledgeSynthesisProcessor:
             building_type = context.get('building_type', 'architectural project') if context else 'architectural project'
             project_context = context.get('project_context', '') if context else ''
 
-            # Create a contextual prompt that works for any architectural question
+            # FIXED: Create provocative prompt that generates interesting, specific content
             prompt = f"""
+            You are an innovative architectural thinker providing SPECIFIC, THOUGHT-PROVOKING insights.
+
+            STUDENT QUESTION: "{user_question}"
+            BUILDING TYPE: {building_type}
+            PROJECT CONTEXT: {project_context}
+
+            CRITICAL REQUIREMENTS:
+            1. NO generic Architecture 101 content or basic definitions
+            2. NO phrases like "consider", "various approaches", "important to note", "key considerations"
+            3. PROVIDE specific, unexpected insights that challenge conventional thinking
+            4. REFERENCE specific architects, projects, or innovative techniques with names and locations
+            5. SPARK curiosity with provocative questions or unconventional perspectives
+            6. FOCUS on what makes this topic INTERESTING and UNIQUE, not basic principles
+            7. CHALLENGE assumptions and present alternative viewpoints
+            8. USE specific examples from real projects to illustrate points
+
+            Generate content that would make an architecture student think "I never thought about it that way!" rather than "I already knew that."
+
+            CRITICAL INSTRUCTIONS:
+            - DO NOT write "Key Concepts and Principles" sections
+            - DO NOT provide general {building_type} overviews
+            - DO NOT use generic textbook language
+            - DIRECTLY address their specific question: {user_question}
+
             A student is working on a {building_type} and asked: "{user_question}"
 
             Their project context: {project_context}
             Available knowledge: {knowledge.get('summary', 'General architectural knowledge')}
 
-            Provide a specific, helpful response that:
-            1. Directly addresses their question with concrete examples
-            2. Gives practical, actionable guidance for their specific project type
-            3. Includes specific spatial organization strategies
-            4. Mentions real architectural precedents or approaches when relevant
-            5. Provides step-by-step thinking process they can follow
-            6. Avoids generic "Architecture 101" advice
+            Write a focused response (2-3 paragraphs max) that:
+            1. Directly answers what they asked about (circulation/zoning priorities, etc.)
+            2. Addresses their specific concepts (privacy vs hierarchy vs connections etc.)
+            3. Applies sophisticated architectural analysis methods when they genuinely help solve their problem
+            4. Gives specific guidance for their {building_type} circulation challenge
+            5. References their exact words and builds on their thinking
+            6. Mentions real architectural precedents or approaches when relevant and connects to their specific topic
 
-            Be specific to their {building_type} project and give them practical next steps.
+            Start by directly addressing their question, not with general statements about {building_type}s.
             """
 
             response = await self.client.generate_completion([

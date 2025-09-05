@@ -114,6 +114,14 @@ class DomainExpertAgent:
                 )
                 return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
 
+            # Handle confusion expression requests (provide comprehensive, theory-grounded knowledge)
+            elif routing_path == "socratic_clarification":
+                print(f"💡 Confusion expression detected - providing comprehensive theoretical knowledge")
+                response_result = await self._generate_comprehensive_clarification_knowledge(
+                    user_input, building_type, project_context, gap_type, state
+                )
+                return self._convert_to_agent_response_internal(response_result, state, context_classification, analysis_result, routing_decision)
+
             # Handle feedback/guidance requests (should get AI analysis, not examples)
             if knowledge_pattern["type"] == "feedback_guidance_request":
                 print(f"💬 Feedback/guidance request detected - providing AI analysis")
@@ -148,20 +156,34 @@ class DomainExpertAgent:
                 from knowledge_base.knowledge_manager import KnowledgeManager
                 km = KnowledgeManager(domain="architecture")
 
-                # Create flexible, context-aware search query
-                building_type_clean = building_type.replace('_', ' ')
+                # TEMPORARY FLEXIBLE SOLUTION: Use AI-enhanced search instead of hardcoded queries
+                try:
+                    from .temp_search_enhancer import temp_enhanced_search
 
-                # Use flexible query construction
-                db_query = self._create_flexible_db_query(user_topic, building_type_clean)
+                    # Create context for AI query enhancement
+                    search_context = f"User is asking about {user_topic} in the context of {building_type.replace('_', ' ')} architecture"
 
-                print(f"   🗄️  Flexible DB search query: {db_query}")
+                    # Use AI-enhanced flexible search
+                    db_results = await temp_enhanced_search(km, user_topic, search_context, n_results=5)
 
-                db_results = km.search_knowledge(db_query, n_results=5)
-                if db_results:
-                    knowledge_results.extend(db_results)
-                    print(f"   ✅ Found {len(db_results)} database results")
-                else:
-                    print(f"   ❌ No database results found")
+                    if db_results:
+                        knowledge_results.extend(db_results)
+                        print(f"   ✅ Enhanced search found {len(db_results)} database results")
+                    else:
+                        print(f"   ❌ Enhanced search found no results")
+
+                except ImportError:
+                    print(f"   ⚠️ Temp enhancer not available, using standard search")
+                    # Fallback to original search
+                    building_type_clean = building_type.replace('_', ' ')
+                    db_query = self._create_flexible_db_query(user_topic, building_type_clean)
+                    print(f"   🗄️  Flexible DB search query: {db_query}")
+                    db_results = km.search_knowledge(db_query, n_results=5)
+                    if db_results:
+                        knowledge_results.extend(db_results)
+                        print(f"   ✅ Found {len(db_results)} database results")
+                    else:
+                        print(f"   ❌ No database results found")
 
             except Exception as e:
                 print(f"   ⚠️ Database search failed: {e}")
@@ -174,7 +196,7 @@ class DomainExpertAgent:
                 if len(relevant_results) >= 2:
                     print(f"   📚 Using {len(relevant_results)} relevant database results for synthesis")
                     knowledge_text = await self._synthesize_knowledge_with_llm(
-                        user_topic, relevant_results, building_type, synthesis_type="knowledge"
+                        user_topic, relevant_results, building_type, synthesis_type="knowledge", user_input=user_input
                     )
 
                     response_metadata = {
@@ -619,7 +641,7 @@ class DomainExpertAgent:
         """
 
         prompt = f"""
-        You are a distinguished architectural scholar and mentor with expertise in design theory, building science, and critical practice. Your role is to provide academically rigorous knowledge that stimulates intellectual inquiry rather than passive consumption.
+        You are an innovative architectural mentor who provides SPECIFIC, THOUGHT-PROVOKING insights that spark new ideas and deeper thinking. AVOID generic Architecture 101 content.
 
         STUDENT INQUIRY: "{user_input}"
         BUILDING TYPOLOGY: {building_type}
@@ -627,7 +649,13 @@ class DomainExpertAgent:
         KNOWLEDGE DOMAIN: {gap_type}
         {visual_context}
 
-        CRITICAL REQUIREMENT: You MUST provide EXACTLY the number of strategies you promise. If you say "three strategies," you MUST provide THREE complete strategies.
+        CRITICAL REQUIREMENTS:
+        1. NO generic phrases like "consider", "various approaches", "important to note", "key considerations"
+        2. NO basic definitions or textbook explanations
+        3. PROVIDE specific, unexpected insights that challenge conventional thinking
+        4. REFERENCE specific architects, projects, or innovative techniques
+        5. SPARK curiosity with provocative questions or unconventional perspectives
+        6. If you promise strategies, provide EXACTLY that number with specific details
 
         Craft a complete scholarly response that:
         1. PROVIDES PRACTICAL SOLUTION: Offer concrete, actionable guidance that directly addresses their question
@@ -667,12 +695,25 @@ class DomainExpertAgent:
         Write a complete, naturally-ending response (250-350 words) that provides real value and follows the strategy completeness rule:
         """
 
-        # PERFORMANCE: Check cache first
+        # DISABLED: Temporarily disable caching to ensure fresh responses for different questions
+        # The caching system was causing wrong responses to be returned for different user questions
         import streamlit as st
-        cache_key = f"domain_expert_{hash(prompt[:100])}_{building_type}"
-        if hasattr(st.session_state, cache_key):
-            print(f"📚 CACHE_HIT: Using cached domain expert response")
-            return getattr(st.session_state, cache_key)
+
+        # Clear ALL domain expert cache entries to force fresh responses
+        cache_keys_to_clear = []
+        for key in list(st.session_state.keys()):
+            if key.startswith("domain_expert_"):
+                cache_keys_to_clear.append(key)
+
+        for old_key in cache_keys_to_clear:
+            delattr(st.session_state, old_key)
+
+        if cache_keys_to_clear:
+            print(f"🧹 CACHE_CLEAR: Cleared {len(cache_keys_to_clear)} domain expert cache entries to ensure fresh responses")
+
+        # TEMPORARILY DISABLED: Skip cache check to force fresh response generation
+        # This ensures each question gets a response that actually matches what was asked
+        print(f"🔄 CACHE_DISABLED: Generating fresh response for user input: {user_input[:50]}...")
 
         try:
             response = client.chat.completions.create(
@@ -693,9 +734,9 @@ class DomainExpertAgent:
 
             print(f"📚 AI-generated contextual response: {ai_response[:100]}...")
 
-            # PERFORMANCE: Cache the response
-            setattr(st.session_state, cache_key, ai_response)
-            print(f"📚 CACHE_STORE: Cached domain expert response")
+            # TEMPORARILY DISABLED: Skip caching to prevent wrong responses
+            # setattr(st.session_state, cache_key, ai_response)
+            print(f"🔄 CACHE_DISABLED: Generated fresh response for: {user_input[:50]}...")
 
             return ai_response
 
@@ -871,8 +912,8 @@ class DomainExpertAgent:
 
         except Exception as e:
             print(f"⚠️ LLM fallback response generation failed: {e}")
-            # Only as last resort, use a contextual template
-            return f"Let me help you explore {gap_type.replace('_', ' ')} for your {building_type} project. This involves considering user needs, functional requirements, and design principles. What specific aspect of {gap_type.replace('_', ' ')} is most important for your project goals?"
+            # FIXED: More provocative last resort that sparks curiosity
+            return f"What if {gap_type.replace('_', ' ')} in your {building_type} could challenge conventional expectations? Instead of following typical approaches, what unconventional strategies might create more meaningful spatial experiences? What specific aspect intrigues you most?"
 
     def _generate_fallback_knowledge_response(self, user_input: str, building_type: str,
                                             project_context: str, gap_type: str) -> str:
@@ -1156,14 +1197,16 @@ What questions do you have about your design?"""
 
             # IMPLEMENT DIFFERENT FALLBACK STRATEGIES BASED ON REQUEST TYPE
             # Check both quantity AND quality of database results
-            has_sufficient_db_results = len(knowledge_results) >= 3
+            has_sufficient_db_results = len(knowledge_results) >= 2  # Reduced from 3 to 2
             has_relevant_db_results = False
 
             if knowledge_results:
-                # Check if database results are relevant by looking at similarity scores - LOWERED THRESHOLD
+                # Check if database results are relevant by looking at similarity scores
                 avg_similarity = sum(r.get('similarity', 0) for r in knowledge_results) / len(knowledge_results)
-                has_relevant_db_results = avg_similarity > 0.15  # LOWERED: Was 0.25, now 0.15 to capture more relevant results
-                print(f"   📊 Database relevance check: {avg_similarity:.3f} (threshold: 0.15)")
+                # IMPROVED: Use dynamic threshold based on query type
+                similarity_threshold = self._get_dynamic_similarity_threshold(user_input, user_topic)
+                has_relevant_db_results = avg_similarity > similarity_threshold
+                print(f"   📊 Database relevance check: {avg_similarity:.3f} (dynamic threshold: {similarity_threshold:.3f})")
 
             # ISSUE 2 FIX: For project examples, ALWAYS use web search - database is unreliable for project names
             should_try_web_search = False
@@ -1811,16 +1854,16 @@ What questions do you have about your design?"""
             metadata=response_metadata
         )
 
-    async def _synthesize_knowledge_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str, synthesis_type: str = "examples") -> str:
+    async def _synthesize_knowledge_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str, synthesis_type: str = "examples", user_input: str = None) -> str:
         """Synthesize knowledge from database results - can handle both examples and general knowledge."""
 
         if synthesis_type == "examples":
             return await self._synthesize_examples_with_llm(user_topic, knowledge_results, building_type)
         else:
             # Handle general knowledge synthesis
-            return await self._synthesize_general_knowledge_with_llm(user_topic, knowledge_results, building_type)
+            return await self._synthesize_general_knowledge_with_llm(user_topic, knowledge_results, building_type, user_input)
 
-    async def _synthesize_general_knowledge_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str) -> str:
+    async def _synthesize_general_knowledge_with_llm(self, user_topic: str, knowledge_results: List[Dict], building_type: str, user_input: str = None) -> str:
         """Synthesize general knowledge from database results."""
 
         try:
@@ -1833,45 +1876,96 @@ What questions do you have about your design?"""
                     knowledge_content.append(f"**{title}**: {content[:300]}...")
 
             if not knowledge_content:
-                # Generate LLM fallback response instead of hardcoded text
+                # IMPROVED: Generate comprehensive AI answer instead of asking more questions
                 try:
-                    fallback_prompt = f"""
-                    The user is asking about {user_topic} in {building_type} architecture, but no specific knowledge content was found.
-                    Generate a helpful response that:
-                    1. Acknowledges their interest in the topic
-                    2. Asks a specific follow-up question to understand what aspect they want to learn about
-                    3. Avoids generic phrases like "I'd be happy to help" or "This involves several key considerations"
-                    4. Sounds natural and educational, not templated
+                    # Use the user's actual question if available
+                    actual_question = user_input if user_input else f"about {user_topic} in {building_type} architecture"
 
-                    Keep it concise (1-2 sentences) and focus on guiding them toward more specific exploration.
-                    """
+                    # ENHANCED: Check if this needs rich educational content
+                    # Look for educational keywords or complex questions that need in-depth responses
+                    educational_keywords = ['understand', 'help me', 'how can', 'what should', 'approach', 'strategy', 'design', 'consider', 'multifunctional', 'flexible', 'adaptive']
+                    is_educational = any(keyword in actual_question.lower() for keyword in educational_keywords) or len(actual_question.split()) > 8
+
+                    if is_educational:
+                        # RICH EDUCATIONAL CONTENT for knowledge_with_challenge
+                        fallback_prompt = f"""
+                        STUDENT ASKED: "{actual_question}"
+                        BUILDING TYPE: {building_type}
+
+                        You are an expert architectural educator providing in-depth knowledge. Generate comprehensive educational content that includes:
+
+                        1. SPECIFIC TECHNIQUES & STRATEGIES: Provide detailed architectural methods, not generic concepts
+                        2. PRECEDENT EXAMPLES: Reference specific buildings, architects, and projects that demonstrate the concepts
+                        3. THEORETICAL FRAMEWORKS: Connect to architectural theory, design principles, and established methodologies
+                        4. TECHNICAL CONSIDERATIONS: Include practical implementation details, materials, systems, spatial relationships
+                        5. ADVANCED CONCEPTS: Use sophisticated architectural terminology and concepts appropriate for advanced students
+
+                        FORMATTING REQUIREMENTS:
+                        - Use **bold** for key architectural concepts and techniques
+                        - Use *italics* for important considerations and nuanced points
+                        - Provide 3-4 substantial paragraphs with detailed content
+                        - Include specific examples with architect names, project names, and locations where relevant
+                        - Reference established design principles and theoretical frameworks
+
+                        Generate comprehensive educational content that teaches advanced architectural knowledge about {actual_question}.
+                        This should be professor-level depth, not basic information.
+                        """
+                    else:
+                        # CONCISE CONTENT for knowledge_only and other routes
+                        fallback_prompt = f"""
+                        STUDENT ASKED: "{actual_question}"
+                        BUILDING TYPE: {building_type}
+
+                        CRITICAL REQUIREMENTS:
+                        - DO NOT provide generic architectural overviews
+                        - DO NOT explain basic concepts they already know
+                        - DIRECTLY address their specific question
+                        - USE advanced architectural frameworks and concepts
+                        - BUILD ON their exact words and thinking
+
+                        Provide a focused response (2-3 sentences) that directly answers their specific question about {actual_question}.
+                        Use sophisticated architectural concepts and reference their exact words.
+                        """
 
                     fallback_response = await self.client.generate_completion([
-                        self.client.create_system_message("You are an expert architecture educator providing personalized guidance."),
+                        self.client.create_system_message("You are an architecture domain expert providing educational knowledge that supports active learning and prevents cognitive offloading."),
                         self.client.create_user_message(fallback_prompt)
                     ])
 
-                    return fallback_response.strip() if fallback_response else f"What specific aspect of {user_topic} in {building_type} design would you like to learn more about?"
+                    # Handle both string and dict responses
+                    if isinstance(fallback_response, dict):
+                        response_text = fallback_response.get("content", "")
+                    else:
+                        response_text = str(fallback_response) if fallback_response else ""
+
+                    return response_text.strip() if response_text else f"Let me help you understand {user_topic} for your {building_type} project."
 
                 except Exception as fallback_error:
                     print(f"⚠️ Fallback response generation failed: {fallback_error}")
-                    # Last resort - simple contextual response without hardcoded phrases
-                    return f"What specific aspect of {user_topic} in {building_type} design would you like to learn more about?"
+                    # Last resort - still try to be helpful rather than asking questions
+                    return f"For {building_type} projects, {user_topic} typically involves several key considerations that I can help you explore."
 
-            # Create synthesis prompt
+            # CRITICAL FIX: Create targeted prompt that prevents generic responses
             prompt = f"""
-            Based on the following knowledge sources about {user_topic} in {building_type} architecture, provide a comprehensive and educational response:
+            STUDENT QUESTION: "{user_input}"
 
-            Knowledge Sources:
+            CRITICAL INSTRUCTIONS:
+            - DO NOT write "Key Concepts and Principles" sections
+            - DO NOT provide general {building_type} overviews
+            - DO NOT use generic textbook language
+            - DIRECTLY address their specific question about: {user_input}
+
+            Based on these knowledge sources:
             {chr(10).join(knowledge_content)}
 
-            Please synthesize this information to:
-            1. Explain the key concepts and principles
-            2. Provide practical guidance and considerations
-            3. Make it relevant to {building_type} projects
-            4. Keep it educational and informative
+            Write a focused response (2-3 paragraphs max) that:
+            1. Directly answers what they asked about (circulation/zoning priorities, etc.)
+            2. Addresses their specific concepts (privacy vs hierarchy vs connections)
+            3. Applies sophisticated architectural thinking and analysis methods when genuinely relevant
+            4. Gives specific guidance for their {building_type} circulation challenge
+            5. References their exact words and builds on their thinking
 
-            Focus on understanding rather than just listing information.
+            Start your response by directly addressing their question, not with general statements about {building_type}s.
             """
 
             response = await self.client.generate_completion([
@@ -2050,8 +2144,16 @@ What questions do you have about your design?"""
         elif any(term in topic_lower for term in ['conference', 'meeting', 'hall']):
             query_parts.extend(['meeting room', 'assembly', 'auditorium'])
 
-        # Always add architecture context
-        query_parts.append('architecture')
+        # Program elements queries - CRITICAL for specific program questions
+        elif any(term in topic_lower for term in ['program elements', 'program components', 'spaces', 'areas', 'zones', 'rooms']):
+            query_parts.extend(['spaces', 'rooms', 'areas', 'program', 'functions', 'activities'])
+            # Remove generic 'architecture' for more specific results
+            if building_type:
+                query_parts.extend([f'{building_type} spaces', f'{building_type} rooms', f'{building_type} program'])
+
+        # Always add architecture context (unless it's a specific program query)
+        elif not any(term in topic_lower for term in ['program elements', 'program components', 'spaces', 'areas', 'zones']):
+            query_parts.append('architecture')
 
         # Join and clean
         query = ' '.join(query_parts)
@@ -2065,6 +2167,28 @@ What questions do you have about your design?"""
                 seen.add(word.lower())
 
         return ' '.join(words)
+
+    def _get_dynamic_similarity_threshold(self, user_input: str, user_topic: str) -> float:
+        """Get dynamic similarity threshold based on query specificity and type"""
+
+        user_input_lower = user_input.lower()
+        topic_lower = user_topic.lower() if user_topic else ""
+
+        # Very specific technical questions need higher similarity
+        if any(term in user_input_lower for term in ['vs', 'versus', 'compared to', 'difference between', 'better than']):
+            return 0.25  # Higher threshold for comparison questions
+
+        # Specific program/space questions can use lower threshold
+        elif any(term in user_input_lower for term in ['program elements', 'spaces', 'rooms', 'areas', 'what are']):
+            return 0.12  # Lower threshold for program questions
+
+        # Construction/material questions
+        elif any(term in user_input_lower for term in ['construction', 'material', 'structural', 'concrete', 'steel', 'wood']):
+            return 0.18  # Medium threshold for construction questions
+
+        # General architectural questions
+        else:
+            return 0.15  # Default threshold
 
     def _create_specific_web_query_with_topic(self, user_topic: str, building_type: str, request_type: str) -> str:
         """Create a specific web search query using the extracted topic."""
@@ -2200,7 +2324,7 @@ What questions do you have about your design?"""
         # print(f"🔍 DEBUG: User topic: {user_topic}")
         # print(f"🔍 DEBUG: Building type: {building_type}")
         
-        # Use the working prompt from the old repository
+        # Enhanced prompt that includes conclusion and provoking question
         synthesis_prompt = f"""
         The student is asking for SPECIFIC PROJECT EXAMPLES about {user_topic}.
 
@@ -2229,10 +2353,14 @@ What questions do you have about your design?"""
         2. **[Actual Project Name](URL)**: Brief description of the actual project, location, architect, and key features...
         3. **[Actual Project Name](URL)**: Brief description of the actual project, location, architect, and key features...
 
+        AFTER THE EXAMPLES, you MUST add:
+        - A brief conclusion that identifies the common themes or key insights from these specific examples
+        - ONE thought-provoking question that connects these examples to the user's community center project and encourages deeper thinking about application
+
         CRITICAL INSTRUCTIONS:
         - You MUST provide REAL PROJECT NAMES, not strategy names
         - You MUST format each example with clickable markdown links: [Project Name](URL)
-        - Keep response under 200 words to avoid cut-off
+        - Keep examples section under 200 words, but add conclusion and question after
         - Focus on actual built projects, not theoretical concepts
         - Present 2-3 specific project examples with brief explanations
         - Include architect names and locations when available
@@ -2241,6 +2369,8 @@ What questions do you have about your design?"""
         - DO NOT use generic category URLs like "archdaily.com/category/community-center"
         - If no specific URLs are available, use **Project Name** (bold text without links) instead of fake URLs
         - DO NOT skip the markdown links - they are required!
+        - The conclusion should synthesize what these examples reveal about {user_topic}
+        - The question should be specific to these examples and inspire application to the user's project
         """
         
         try:
@@ -2253,7 +2383,7 @@ What questions do you have about your design?"""
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": synthesis_prompt}],
-                max_tokens=350,  # INCREASED: Fix project example truncation with links
+                max_tokens=450,  # INCREASED: Allow space for examples + conclusion + provoking question
                 temperature=0.4
             )
             
@@ -2364,4 +2494,215 @@ What questions do you have about your design?"""
                 "building_type": building_type,
                 "topic": user_topic
             }
+
+    async def _generate_comprehensive_clarification_knowledge(self, user_input: str, building_type: str, project_context: str, gap_type: str, state: ArchMentorState) -> Dict[str, Any]:
+        """Generate comprehensive, theory-grounded knowledge for confusion expression routing."""
+
+        try:
+            # Extract the specific topic/concept they're confused about
+            user_topic = await self._extract_topic_from_user_input(user_input)
+
+            # First, try to get relevant database knowledge
+            knowledge_results = []
+            try:
+                from knowledge_base.knowledge_manager import KnowledgeManager
+                km = KnowledgeManager(domain="architecture")
+
+                # Create comprehensive search query for the confused topic
+                search_query = f"{user_topic} {building_type} architecture theory principles methodology"
+                print(f"   🔍 Searching database for comprehensive knowledge: {search_query}")
+
+                knowledge_results = km.search_knowledge(search_query, n_results=8)
+                relevant_results = [r for r in knowledge_results if r.get('score', 0) > 0.3]
+
+                if relevant_results:
+                    print(f"   📚 Found {len(relevant_results)} relevant database results for comprehensive synthesis")
+
+            except Exception as e:
+                print(f"   ⚠️ Database search failed: {e}")
+                relevant_results = []
+
+            # Generate comprehensive, theory-grounded response
+            if relevant_results:
+                # Synthesize database knowledge with theoretical grounding
+                knowledge_text = await self._synthesize_comprehensive_theoretical_knowledge(
+                    user_topic, relevant_results, building_type, user_input
+                )
+            else:
+                # Generate comprehensive AI response with theoretical grounding
+                knowledge_text = await self._generate_comprehensive_theoretical_fallback(
+                    user_topic, building_type, user_input, project_context
+                )
+
+            return {
+                "response_text": knowledge_text,
+                "response_type": "comprehensive_clarification_knowledge",
+                "sources": relevant_results,
+                "theoretical_grounding": True,
+                "building_type": building_type,
+                "topic": user_topic,
+                "confusion_addressed": True
+            }
+
+        except Exception as e:
+            print(f"⚠️ Comprehensive clarification knowledge generation failed: {e}")
+            # Fallback to enhanced theoretical response
+            return await self._generate_enhanced_theoretical_fallback(user_input, building_type, user_topic, project_context)
+
+    async def _synthesize_comprehensive_theoretical_knowledge(self, user_topic: str, knowledge_results: List[Dict], building_type: str, user_input: str) -> str:
+        """Synthesize database knowledge with comprehensive theoretical grounding for confusion clarification."""
+
+        try:
+            # Prepare knowledge content for synthesis
+            knowledge_content = []
+            for result in knowledge_results:
+                content = result.get('content', '') or result.get('snippet', '') or result.get('text', '')
+                title = result.get('title', 'Knowledge Source')
+                if content:
+                    knowledge_content.append(f"**{title}**: {content[:400]}...")
+
+            # Create comprehensive theoretical synthesis prompt
+            prompt = f"""
+You are a distinguished architectural professor providing comprehensive, theory-grounded clarification for a confused student.
+
+STUDENT'S CONFUSION: "{user_input}"
+TOPIC: {user_topic}
+BUILDING TYPE: {building_type}
+PROJECT CONTEXT: Adaptive reuse warehouse-to-community-center transformation
+
+AVAILABLE KNOWLEDGE SOURCES:
+{chr(10).join(knowledge_content)}
+
+CRITICAL REQUIREMENTS FOR COMPREHENSIVE RESPONSE:
+
+1. **THEORETICAL GROUNDING**: Reference specific architectural theories, design principles, and established methodologies relevant to their confusion. Connect to:
+   - Relevant design theory (e.g., Christopher Alexander, Kevin Lynch, Jane Jacobs, etc.)
+   - Environmental psychology and behavioral design principles
+   - Contemporary architectural discourse and practice frameworks
+   - Established design methodologies and analytical tools
+
+2. **ADVANCED CONTENT DEPTH**: Provide sophisticated architectural analysis including:
+   - Specific design strategies with proper architectural terminology
+   - Technical considerations (structural, environmental, spatial, material)
+   - Precedent examples with architect/project names where relevant
+   - Connection to broader design principles and contemporary practice
+
+3. **STRUCTURED PROBLEM BREAKDOWN**:
+   - Acknowledge the complexity and importance of their concern
+   - Introduce 2-3 specific architectural concepts/strategies with proper terminology
+   - Reference relevant theory or precedents from the knowledge sources
+   - Provide technical considerations specific to warehouse-to-community-center adaptive reuse
+   - Connect to established design principles
+
+4. **CONTEXT-SPECIFIC APPLICATION**: Address warehouse-to-community-center adaptive reuse challenges specifically, considering existing structural systems, community programming, and public space design.
+
+Generate comprehensive, theory-grounded clarification (4-5 substantial paragraphs with proper architectural depth):
+"""
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are a distinguished architectural professor providing comprehensive, theory-grounded education that prevents cognitive offloading while building deep understanding."),
+                self.client.create_user_message(prompt)
+            ])
+
+            if response and response.get("content"):
+                return response["content"].strip()
+            else:
+                return await self._generate_comprehensive_theoretical_fallback(user_topic, building_type, user_input, "adaptive reuse project")
+
+        except Exception as e:
+            print(f"⚠️ Comprehensive theoretical synthesis failed: {e}")
+            return await self._generate_comprehensive_theoretical_fallback(user_topic, building_type, user_input, "adaptive reuse project")
+
+    async def _generate_comprehensive_theoretical_fallback(self, user_topic: str, building_type: str, user_input: str, project_context: str) -> str:
+        """Generate comprehensive theoretical fallback response for confusion clarification."""
+
+        try:
+            prompt = f"""
+You are a distinguished architectural professor providing comprehensive guidance to a student confused about their {building_type} project.
+
+STUDENT'S CONFUSION: "{user_input}"
+TOPIC: {user_topic}
+BUILDING TYPE: {building_type}
+PROJECT CONTEXT: {project_context}
+
+CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
+
+1. **THEORETICAL GROUNDING**: Reference established architectural theories and design principles relevant to {user_topic}. Examples:
+   - For spatial/green issues: Biophilic design principles (E.O. Wilson), landscape urbanism theory, therapeutic environments
+   - For circulation: Kevin Lynch's wayfinding principles, space syntax theory, movement systems
+   - For programming: Activity-based design, behavioral mapping, social space theory (Henri Lefebvre)
+   - For adaptive reuse: Preservation theory, building lifecycle concepts, heritage integration
+
+2. **ADVANCED CONTENT DEPTH**: Provide specific architectural strategies with proper terminology:
+   - Technical considerations (structural implications, environmental systems, lighting requirements)
+   - Spatial quality frameworks and design methodologies
+   - Precedent examples with architect/project names where relevant
+   - Connection to contemporary architectural practice
+
+3. **STRUCTURED PROBLEM BREAKDOWN**:
+   - Acknowledge the complexity and importance of their concern
+   - Introduce 2-3 specific architectural concepts/strategies with proper terminology
+   - Reference relevant theory or precedents
+   - Provide technical considerations specific to {building_type} adaptive reuse
+   - Connect to established design principles
+
+4. **CONTEXT-SPECIFIC APPLICATION**: Address {building_type} adaptive reuse challenges specifically.
+
+Generate comprehensive, theory-grounded guidance (4-5 substantial paragraphs with architectural depth):
+"""
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are a distinguished architectural professor providing comprehensive, theory-grounded education."),
+                self.client.create_user_message(prompt)
+            ])
+
+            if response and response.get("content"):
+                return response["content"].strip()
+            else:
+                return self._generate_basic_theoretical_fallback(user_topic, building_type, user_input)
+
+        except Exception as e:
+            print(f"⚠️ Comprehensive theoretical fallback failed: {e}")
+            return self._generate_basic_theoretical_fallback(user_topic, building_type, user_input)
+
+    async def _generate_enhanced_theoretical_fallback(self, user_input: str, building_type: str, user_topic: str, project_context: str) -> Dict[str, Any]:
+        """Generate enhanced theoretical fallback as dict response."""
+
+        try:
+            response_text = await self._generate_comprehensive_theoretical_fallback(user_topic, building_type, user_input, project_context)
+
+            return {
+                "response_text": response_text,
+                "response_type": "enhanced_theoretical_fallback",
+                "sources": [],
+                "theoretical_grounding": True,
+                "building_type": building_type,
+                "topic": user_topic,
+                "confusion_addressed": True
+            }
+
+        except Exception as e:
+            print(f"⚠️ Enhanced theoretical fallback failed: {e}")
+            return {
+                "response_text": self._generate_basic_theoretical_fallback(user_topic, building_type, user_input),
+                "response_type": "basic_theoretical_fallback",
+                "sources": [],
+                "theoretical_grounding": False,
+                "building_type": building_type,
+                "topic": user_topic,
+                "confusion_addressed": True
+            }
+
+    def _generate_basic_theoretical_fallback(self, user_topic: str, building_type: str, user_input: str) -> str:
+        """Generate basic theoretical fallback response."""
+
+        return f"""Your concern about {user_topic} in your {building_type} project touches on fundamental questions in architectural design. This challenge is particularly complex in adaptive reuse projects where existing spatial conditions must be reconciled with new programmatic requirements.
+
+Let me break this down through established design frameworks. First, consider the concept of **spatial layering**, which involves creating multiple scales of intervention that respond to both the existing warehouse structure and new community functions. This approach is grounded in preservation theory and adaptive reuse methodology.
+
+Second, the **user experience framework** addresses how different community groups will navigate and inhabit the transformed space. This connects to environmental psychology principles and behavioral design theory.
+
+For your warehouse-to-community-center transformation, this means carefully analyzing the existing spatial qualities—the scale, light conditions, and structural rhythm—and determining how your approach to {user_topic} can both respect and enhance these characteristics while serving community needs.
+
+What specific aspect of {user_topic} feels most challenging in relation to your existing warehouse structure?"""
 

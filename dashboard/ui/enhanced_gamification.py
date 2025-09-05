@@ -2825,36 +2825,10 @@ class EnhancedGamificationRenderer:
         return parts
 
     def _is_cognitive_enhancement_challenge(self, challenge_text: str) -> bool:
-        """Detect if this is a rich cognitive enhancement challenge vs basic interactive game."""
-        if not challenge_text:
-            return False
-
-        # Look for cognitive enhancement patterns
-        cognitive_patterns = [
-            "🎨 SPATIAL STORYTELLING",
-            "DESIGN CHALLENGE:",
-            "*Your building",
-            "Phase Transition",
-            "materialization phase",
-            "Reflect on how",
-            "Consider the spatial",
-            "Think about how",
-            "As you evaluate",
-            "What story does"
-        ]
-
-        # Check if the text contains rich cognitive enhancement content
-        text_lower = challenge_text.lower()
-        has_cognitive_patterns = any(pattern.lower() in text_lower for pattern in cognitive_patterns)
-
-        # Check for multi-line structured content (cognitive enhancement is usually longer and structured)
-        lines = [line.strip() for line in challenge_text.split('\n') if line.strip()]
-        has_structured_content = len(lines) > 3
-
-        # Check for italicized content (cognitive enhancement uses *text* format)
-        has_italics = '*' in challenge_text and challenge_text.count('*') >= 2
-
-        return has_cognitive_patterns or (has_structured_content and has_italics)
+        """DISABLED: Always return False to ensure all challenges go through interactive game path."""
+        # CRITICAL FIX: Cognitive enhancement detection was interfering with games
+        # Always route to interactive games to prevent breaking mystery, storytelling, etc.
+        return False
 
     def _render_enhanced_challenge_header(self, challenge_parts: Dict, challenge_type: str, theme: Dict) -> None:
         """Render enhanced challenge header with rich styling."""
@@ -3294,8 +3268,8 @@ class EnhancedGamificationRenderer:
                     margin: 10px 0;
                     text-align: center;
                 ">
-                    <h4 style="color: #4f3a3e; margin-bottom: 5px;">◈ Chapter Complete</h4>
-                    <p style="color: #4f3a3e; font-size: 14px; margin: 0;">Chapter {current_chapter} submitted! Story continues... ({narrative_count}/3 chapters done)</p>
+                    <h4 style="color: #ffffff; margin-bottom: 5px;">◈ Chapter Complete</h4>
+                    <p style="color: #ffffff; font-size: 14px; margin: 0;">Story continues... ({narrative_count}/3 chapters done)</p>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -3737,7 +3711,7 @@ class EnhancedGamificationRenderer:
 def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
     """Main entry point for rendering enhanced gamified challenges with comprehensive game management."""
     try:
-        print(f"🎮 ENHANCED GAMIFICATION: Starting render with data: {list(challenge_data.keys())}")
+        #print(f"🎮 ENHANCED GAMIFICATION: Starting render with data: {list(challenge_data.keys())}")
 
         # Validate essential data
         if not challenge_data:

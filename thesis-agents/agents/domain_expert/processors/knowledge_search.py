@@ -359,13 +359,13 @@ class KnowledgeSearchProcessor:
             loop = asyncio.get_event_loop()
             return loop.run_until_complete(self._generate_flexible_knowledge(topic))
         except Exception:
-            # Fallback to simple knowledge if async fails
+            # FIXED: More provocative fallback that challenges thinking
             return [
                 {
-                    'title': f'{topic.title()} in Architecture',
-                    'snippet': f'Architectural approach to {topic} involves analyzing context, user needs, functional requirements, and design integration.',
-                    'url': f'internal://fallback/{topic.replace(" ", "-")}',
-                    'source': 'fallback'
+                    'title': f'Rethinking {topic.title()} in Contemporary Practice',
+                    'snippet': f'How might {topic} be reimagined beyond conventional applications? Consider unconventional precedents and emerging design strategies that challenge traditional assumptions.',
+                    'url': f'internal://provocative/{topic.replace(" ", "-")}',
+                    'source': 'provocative_fallback'
                 }
             ]
     
@@ -429,13 +429,13 @@ class KnowledgeSearchProcessor:
         except Exception as e:
             print(f"⚠️ AI knowledge generation failed: {e}")
 
-        # Simple fallback if AI generation fails
+        # FIXED: More interesting fallback that sparks curiosity instead of generic content
         return [
             {
-                'title': f'{topic.title()} in Architecture',
-                'snippet': f'Architectural approach to {topic} involves analyzing context, user needs, functional requirements, and design integration.',
-                'url': f'internal://fallback/{topic.replace(" ", "-")}',
-                'source': 'fallback'
+                'title': f'Innovative Approaches to {topic.title()}',
+                'snippet': f'What if {topic} could challenge conventional architectural thinking? Explore unexpected applications and provocative design strategies that push beyond traditional approaches.',
+                'url': f'internal://innovative/{topic.replace(" ", "-")}',
+                'source': 'innovative_fallback'
             }
         ]
     

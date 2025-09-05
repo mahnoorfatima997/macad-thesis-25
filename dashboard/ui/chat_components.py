@@ -387,8 +387,8 @@ def render_single_message(message: Dict[str, Any]):
         # DEBUG: Enable one critical debug print to diagnose gamification issue
         if 'gamification' in message or gamification_info:
             print(f"🎮 DEBUG: Gamification data found - is_gamified: {is_gamified}, display_type: '{display_type}'")
-            print(f"🎮 DEBUG: Full gamification info: {gamification_info}")
-            print(f"🎮 DEBUG: Challenge data gamification_applied: {challenge_data.get('gamification_applied', False)}")
+            # print(f"🎮 DEBUG: Full gamification info: {gamification_info}")
+            # print(f"🎮 DEBUG: Challenge data gamification_applied: {challenge_data.get('gamification_applied', False)}")
         # print(f"🎮 DEBUG: Message gamification check:")
         # print(f"🎮 DEBUG: Has gamification key: {'gamification' in message}")
         # print(f"🎮 DEBUG: Should render enhanced: {is_gamified and display_type == 'enhanced_visual'}")

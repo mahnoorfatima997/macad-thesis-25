@@ -27,7 +27,7 @@ def final_test():
     print(f"\n🔍 Testing Key Searches:")
     
     test_queries = [
-        "stair construction methods"
+        "courtyard design in community center"
     ]
     
     for query in test_queries:
