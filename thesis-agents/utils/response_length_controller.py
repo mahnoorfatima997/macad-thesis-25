@@ -175,9 +175,10 @@ class ResponseLengthController:
                 cleaned = cleaned.rstrip() + "."
         response_text = cleaned
 
-        # Readability polish: add gentle paragraph breaks between sentences
+        # FIXED: Don't break every sentence into separate lines - preserve natural paragraphs
         import re as _re
-        response_text = _re.sub(r'([.!?])\s+', r'\1\n\n', response_text).strip()
+        # Only add paragraph breaks at natural topic transitions, not after every sentence
+        response_text = response_text.strip()
 
         # Normalize simple list markers into bullets
         response_text = _re.sub(r'(?m)^\s*(•|\-)\s*', '- ', response_text)

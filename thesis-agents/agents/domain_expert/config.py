@@ -131,23 +131,13 @@ RESPONSE_LIMITS = {
     "max_sources": 3
 }
 
-# Fallback knowledge templates
-FALLBACK_KNOWLEDGE_TEMPLATES = {
-    "accessibility": {
-        "title": "Universal Design Principles",
-        "content": "Consider ramps, wide doorways, accessible restrooms, and clear wayfinding for all users.",
-        "examples": ["ADA-compliant entrances", "Accessible parking spaces", "Tactile guidance systems"]
-    },
-    "sustainability": {
-        "title": "Sustainable Design Strategies", 
-        "content": "Focus on energy efficiency, natural lighting, renewable materials, and environmental impact.",
-        "examples": ["Solar panels", "Green roofs", "Passive cooling systems"]
-    },
-    "circulation": {
-        "title": "Circulation Design Principles",
-        "content": "Plan efficient movement patterns, clear wayfinding, and appropriate corridor widths.",
-        "examples": ["Central circulation spine", "Ring circulation", "Linear circulation"]
-    }
+# Dynamic knowledge generation guidelines (replaces hardcoded templates)
+KNOWLEDGE_GENERATION_PRINCIPLES = {
+    "contextual_focus": "Always address the student's specific question and project context",
+    "avoid_generic": "Never use templated responses or generic architectural overviews",
+    "build_on_input": "Reference and build upon the student's exact words and concepts",
+    "sophisticated_analysis": "Apply advanced architectural thinking when it genuinely helps",
+    "practical_guidance": "Provide actionable insights specific to their design challenge"
 }
 
 # Context analysis patterns

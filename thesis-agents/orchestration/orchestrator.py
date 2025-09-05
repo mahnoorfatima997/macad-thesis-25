@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any, Dict, List, Optional
 
 from langgraph.graph import StateGraph
@@ -368,23 +369,31 @@ class LangGraphOrchestrator:
         if hasattr(socratic_result, 'to_dict'):
             socratic_result = socratic_result.to_dict()
         
-        # For pure example requests, prefer just the examples (no appended Socratic follow-up)
+        # Detect example requests for special handling
         has_example_keywords = any(k in user_input.lower() for k in ["example", "examples", "precedent", "case study", "case studies", "project", "projects"])
         is_example_intent = classification.get("interaction_type") == "example_request" or classification.get("user_intent") == "example_request"
         is_example_req = has_example_keywords and is_example_intent
 
         if is_example_req:
+            # ENHANCED: Add synthesis and thoughtful questions to example responses
             text = domain_result.get('response_text', '') if domain_result else ''
             if text:
-                return text, "knowledge_only"
+                enhanced_text = self._enhance_example_response_with_synthesis(text, user_input, classification)
+                return enhanced_text, "knowledge_only"
             else:
                 return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
-        # FIXED: For knowledge_only routes, prioritize domain expert response only
+        # ENHANCED: For knowledge_only routes, add thoughtful questions to domain expert responses
         if domain_result and domain_result.get('response_text'):
-            return domain_result.get('response_text', ''), "knowledge_only"
+            domain_text = domain_result.get('response_text', '')
+            enhanced_text = self._enhance_knowledge_response_with_questions(domain_text, user_input, classification)
+            formatted_text = self._format_response_for_readability(enhanced_text)
+            return formatted_text, "knowledge_only"
         elif socratic_result and socratic_result.get('response_text'):
-            return socratic_result.get('response_text', ''), "knowledge_only"
+            socratic_text = socratic_result.get('response_text', '')
+            enhanced_text = self._enhance_knowledge_response_with_questions(socratic_text, user_input, classification)
+            formatted_text = self._format_response_for_readability(enhanced_text)
+            return formatted_text, "knowledge_only"
         return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
     def _synthesize_socratic_exploration_response(self, agent_results: Dict[str, Any]) -> tuple[str, str]:
@@ -397,8 +406,11 @@ class LangGraphOrchestrator:
         if socratic_result and socratic_result.get("response_text"):
             response_text = socratic_result.get("response_text", "")
 
-            # CRITICAL FIX: Add Socratic question at the end if not already present
-            if not response_text.strip().endswith('?'):
+            # IMPROVED: Only add questions if the response truly lacks them
+            # Check if response already contains questions (not just ending with ?)
+            has_questions = bool(re.search(r'\?', response_text))
+
+            if not has_questions:
                 # Check if there's a separate question in the result
                 socratic_question = socratic_result.get("question_text", "")
                 if not socratic_question:
@@ -410,8 +422,9 @@ class LangGraphOrchestrator:
                 if socratic_question and not socratic_question in response_text:
                     response_text = f"{response_text}\n\n{socratic_question}"
                 elif not socratic_question:
-                    # Generate a contextual follow-up question as fallback
-                    response_text = f"{response_text}\n\nWhat aspects of this would you like to explore further?"
+                    # Only add fallback if response is very short or clearly incomplete
+                    if len(response_text.strip()) < 100:
+                        response_text = f"{response_text}\n\nWhat aspects of this would you like to explore further?"
 
             return response_text, "socratic_exploration"
         return (
@@ -632,23 +645,35 @@ class LangGraphOrchestrator:
 
         # FIXED: Synthesize multiple perspectives into one cohesive response
         if len(responses) >= 2:
-            # Create a cohesive synthesis instead of just concatenating
+            # CRITICAL FIX: Create intelligent, contextual synthesis instead of mechanical combination
             synthesis_prompt = f"""
-            Synthesize these two expert perspectives into one cohesive, comprehensive response that addresses the user's question: "{user_input}"
+            You are an expert architectural mentor responding to this student's specific design challenge:
 
-            Domain Expert Response: {responses[0]}
+            STUDENT'S QUESTION: "{user_input}"
 
-            Socratic Tutor Response: {responses[1]}
+            AVAILABLE EXPERT KNOWLEDGE: {responses[0]}
+            AVAILABLE SOCRATIC INSIGHTS: {responses[1]}
 
-            Create a unified response that:
-            1. Directly addresses the user's specific question
-            2. Integrates the best insights from both perspectives
-            3. Maintains a natural, conversational flow
-            4. Avoids repetition or fragmentation
-            5. Provides actionable guidance
+            CRITICAL REQUIREMENTS:
+            - DO NOT mechanically combine the two responses
+            - DO NOT insert technical terms unless they genuinely solve their specific problem
+            - CREATE ONE intelligent response that feels like a thoughtful expert mentor
+            - DIRECTLY address their specific design challenge about warehouse transformation
+            - USE the knowledge and insights to provide contextual, creative guidance
+            - CRITICAL: Take the socratic questions and integrate them seamlessly within the domain content - don't just append them at the end
+            - Use the questions to transition between concepts, deepen understanding, and encourage reflection
+            - Make it feel like one expert speaking who naturally asks thought-provoking questions while providing guidance
+            - AVOID generic architectural education language
 
-            Write as a single, cohesive response (not separate sections):
+            FORMATTING REQUIREMENTS:
+            - Use **bold text** for key concepts and important design principles
+            - Use *italics* for emphasis on specific considerations or nuanced points
+            - Structure in 2-3 clear paragraphs with natural breaks
+            - Integrate questions naturally within the flow, not as a separate section
+
+            Write a well-formatted response that demonstrates deep understanding of their specific project and provides creative, contextual guidance that builds on their exact words and concepts.
             """
+
 
             try:
                 import openai
@@ -660,7 +685,9 @@ class LangGraphOrchestrator:
                     temperature=0.7
                 )
                 synthesized_text = synthesis_response.choices[0].message.content.strip()
-                return synthesized_text, "multi_agent_comprehensive"
+                # Apply simple paragraph formatting without changing content balance
+                formatted_text = self._format_response_for_readability(synthesized_text)
+                return formatted_text, "multi_agent_comprehensive"
             except Exception as e:
                 print(f"⚠️ Synthesis failed, using fallback: {e}")
                 # Fallback to better concatenation
@@ -694,7 +721,7 @@ class LangGraphOrchestrator:
         return similarity > 0.7
 
     def _synthesize_socratic_clarification_response(self, agent_results: Dict[str, Any], user_input: str, classification: Dict[str, Any]) -> tuple[str, str]:
-        """Synthesize Socratic clarification response"""
+        """Synthesize comprehensive Socratic clarification response with theoretical grounding"""
         socratic_result = agent_results.get("socratic", {})
         domain_result = agent_results.get("domain", {})
 
@@ -704,12 +731,61 @@ class LangGraphOrchestrator:
         if hasattr(domain_result, 'to_dict'):
             domain_result = domain_result.to_dict()
 
-        if socratic_result and socratic_result.get("response_text"):
-            return socratic_result.get("response_text", ""), "socratic_clarification"
-        elif domain_result and domain_result.get("response_text"):
-            return domain_result.get("response_text", ""), "socratic_clarification"
+        # Extract response texts
+        socratic_text = socratic_result.get("response_text", "") if socratic_result else ""
+        domain_text = domain_result.get("response_text", "") if domain_result else ""
+
+        # ENHANCED: Synthesize both responses for comprehensive clarification
+        if socratic_text and domain_text:
+            # Both agents provided responses - create intelligent synthesis
+            try:
+                synthesis_prompt = f"""
+                You are synthesizing comprehensive clarification for a confused student.
+
+                STUDENT'S CONFUSION: "{user_input}"
+
+                SOCRATIC GUIDANCE: {socratic_text}
+                DOMAIN KNOWLEDGE: {domain_text}
+
+                Create a cohesive response that:
+                1. Maintains the theoretical grounding and architectural depth from the domain knowledge
+                2. Preserves the Socratic questioning approach and educational structure
+                3. Combines both perspectives into a seamless, comprehensive clarification
+                4. Ensures proper flow and avoids repetition
+                5. Maintains professor-level architectural education quality
+
+                Generate a unified, comprehensive clarification response:
+                """
+
+                import openai
+                client = openai.OpenAI()
+                synthesis_response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": synthesis_prompt}],
+                    max_tokens=1000,
+                    temperature=0.7
+                )
+                synthesized_text = synthesis_response.choices[0].message.content.strip() if synthesis_response.choices[0].message.content else ""
+                formatted_text = self._format_response_for_readability(synthesized_text)
+                return formatted_text, "socratic_clarification"
+            except Exception as e:
+                print(f"⚠️ Clarification synthesis failed, using fallback: {e}")
+                # Fallback to domain response (more comprehensive) with socratic ending
+                combined_text = f"{domain_text}\n\n{socratic_text.split('?')[-1] if '?' in socratic_text else 'What specific aspect would help you move forward?'}"
+                formatted_text = self._format_response_for_readability(combined_text)
+                return formatted_text, "socratic_clarification"
+
+        # Single response handling with preference for comprehensive domain knowledge
+        elif domain_text:
+            formatted_text = self._format_response_for_readability(domain_text)
+            return formatted_text, "socratic_clarification"
+        elif socratic_text:
+            formatted_text = self._format_response_for_readability(socratic_text)
+            return formatted_text, "socratic_clarification"
+
+        # Final fallback
         return (
-            "Let me help clarify this concept. What part would you like me to explain in more detail?",
+            "Let me help clarify this concept with some theoretical grounding. What specific part would you like me to explain in more detail?",
             "socratic_clarification",
         )
 
@@ -769,7 +845,54 @@ class LangGraphOrchestrator:
             domain_text = domain_result.get("response_text", "")
             socratic_text = socratic_result.get("response_text", "")
             if domain_text and socratic_text:
-                return f"{domain_text}\n\n{socratic_text}", "knowledge_with_challenge"
+                # CRITICAL FIX: Use AI synthesis to create integrated educational response
+                # This should weave questions throughout the content, not dump them at the end
+
+                try:
+                    import openai
+                    client = openai.OpenAI()
+
+                    synthesis_prompt = f"""
+                    You are an expert architectural educator providing in-depth knowledge with integrated questioning.
+
+                    DOMAIN KNOWLEDGE: {domain_text}
+                    SOCRATIC QUESTIONS: {socratic_text}
+
+                    Create an educational response that:
+                    1. INTEGRATES QUESTIONS THROUGHOUT: Weave the socratic questions naturally within the knowledge content, not at the end
+                    2. PROVIDES DEEP ARCHITECTURAL KNOWLEDGE: Include precedents, techniques, theoretical frameworks, and advanced concepts
+                    3. USES EDUCATIONAL FORMATTING: Bold key concepts, italicize important terms
+                    4. CREATES NATURAL PARAGRAPHS: Break into 3-4 well-structured paragraphs
+                    5. MAINTAINS SCHOLARLY TONE: Write like an architecture professor teaching advanced concepts
+
+                    FORMATTING REQUIREMENTS:
+                    - Use **bold** for architectural concepts and key terms
+                    - Use *italics* for emphasis and important considerations
+                    - Structure in clear paragraphs with natural breaks
+                    - Integrate questions within paragraphs, not as separate sections
+                    - Include specific techniques, precedents, or theoretical approaches where relevant
+
+                    Write a comprehensive educational response that teaches advanced architectural knowledge while challenging their thinking throughout.
+                    """
+
+                    synthesis_response = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": synthesis_prompt}],
+                        max_tokens=600,
+                        temperature=0.7
+                    )
+                    synthesized_text = synthesis_response.choices[0].message.content.strip()
+
+                    # Apply paragraph formatting to ensure proper structure
+                    formatted_text = self._format_response_for_readability(synthesized_text)
+                    return formatted_text, "knowledge_with_challenge"
+
+                except Exception as e:
+                    print(f"⚠️ Knowledge synthesis failed, using enhanced fallback: {e}")
+                    # Enhanced fallback with better integration
+                    enhanced_domain = self._enhance_educational_formatting(domain_text)
+                    formatted_domain = self._format_response_for_readability(enhanced_domain)
+                    return formatted_domain, "knowledge_with_challenge"
 
         if domain_result and domain_result.get("response_text"):
             return domain_result.get("response_text", ""), "knowledge_with_challenge"
@@ -859,6 +982,51 @@ class LangGraphOrchestrator:
         except Exception as e:
             # Ultimate fallback
             return "I apologize, but I'm experiencing technical difficulties. Please try rephrasing your question, and I'll do my best to help.", "error"
+
+    # ------------- Response Formatting Utilities -------------
+
+    def _enhance_educational_formatting(self, text: str) -> str:
+        """Add educational formatting with bold concepts and italic emphasis."""
+        if not text or len(text) < 50:
+            return text
+
+        # Key architectural concepts that should be bold
+        concepts = [
+            'spatial hierarchy', 'circulation', 'program', 'zoning', 'connectivity',
+            'accessibility', 'flexibility', 'adaptability', 'community engagement',
+            'user experience', 'spatial narrative', 'design principles', 'building typology',
+            'site context', 'materiality', 'sustainability', 'inclusivity', 'wayfinding',
+            'public space', 'private space', 'semi-private', 'threshold', 'transition',
+            'scale', 'proportion', 'rhythm', 'transparency', 'permeability'
+        ]
+
+        # Emphasis words that should be italic
+        emphasis_words = [
+            'essential', 'crucial', 'critical', 'important', 'significant', 'key',
+            'fundamental', 'vital', 'particularly', 'especially', 'notably',
+            'thoughtfully', 'carefully', 'strategically', 'intentionally'
+        ]
+
+        enhanced_text = text
+
+        # Add bold formatting to architectural concepts (case-insensitive)
+        import re
+        for concept in concepts:
+            pattern = r'\b(' + re.escape(concept) + r')\b'
+            enhanced_text = re.sub(pattern, r'**\1**', enhanced_text, flags=re.IGNORECASE)
+
+        # Add italic formatting to emphasis words (case-insensitive)
+        for word in emphasis_words:
+            pattern = r'\b(' + re.escape(word) + r')\b'
+            enhanced_text = re.sub(pattern, r'*\1*', enhanced_text, flags=re.IGNORECASE)
+
+        return enhanced_text
+
+    def _format_response_for_readability(self, response_text: str) -> str:
+        """DISABLED: Return text as-is to restore original formatting."""
+        return response_text
+
+
 
     # ------------- Metadata helpers (ported minimally) -------------
 
@@ -1426,11 +1594,14 @@ class LangGraphOrchestrator:
 
     def _detect_cognitive_offloading(self, classification: Dict[str, Any], context_analysis: Dict[str, Any]) -> Dict[str, Any]:
         indicators = {"detected": False, "type": None, "confidence": 0.0, "indicators": []}
-        if classification.get("interaction_type") == "feedback_request":
+
+        # FIXED: Expand premature answer seeking detection to include direct_answer_request
+        interaction_type = classification.get("interaction_type")
+        if interaction_type in ["feedback_request", "direct_answer_request"]:
             recent_messages = context_analysis.get("conversation_patterns", {}).get("recent_messages", [])
-            if len(recent_messages) < 3:
+            if len(recent_messages) < 6:
                 indicators.update({"detected": True, "type": "premature_answer_seeking", "confidence": 0.8})
-                indicators["indicators"].append("Asking for answers before exploration")
+                indicators["indicators"].append(f"Asking for answers before exploration (type: {interaction_type})")
         if (classification.get("confidence_level") == "overconfident" and classification.get("engagement_level") == "low"):
             indicators.update({"detected": True, "type": "superficial_confidence", "confidence": 0.7})
             indicators["indicators"].append("Overconfident but not engaged")
@@ -1639,5 +1810,108 @@ class LangGraphOrchestrator:
             self.logger.error(f"Error checking image reference policy: {e}")
             # Default to allowing reference on error
             return True
+
+    def _enhance_knowledge_response_with_questions(self, response_text: str, user_input: str, classification: Dict[str, Any]) -> str:
+        """Enhance knowledge-only responses with thoughtful questions that provoke deeper thinking."""
+
+        # Check if response already has questions
+        if '?' in response_text:
+            return response_text
+
+        try:
+            # Generate contextual follow-up question based on the content provided
+            prompt = f"""
+You are an expert architectural mentor. You just provided this knowledge to a student:
+
+KNOWLEDGE PROVIDED: "{response_text}"
+
+STUDENT'S ORIGINAL QUESTION: "{user_input}"
+
+Generate ONE thoughtful follow-up question that:
+1. Builds on the knowledge you just provided
+2. Encourages the student to think deeper about how to apply this knowledge to their specific project
+3. Connects the general knowledge to their specific design challenge
+4. Provokes critical thinking rather than asking for more information
+5. Is specific and actionable, not generic
+
+The question should help them think about HOW to use this knowledge in their design process.
+
+Generate only the question (no introduction, no explanation):
+"""
+
+            import openai
+            client = openai.OpenAI()
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=100,
+                temperature=0.7
+            )
+
+            question = response.choices[0].message.content.strip() if response.choices[0].message.content else ""
+
+            if question and not question.endswith('?'):
+                question += '?'
+
+            if question:
+                return f"{response_text}\n\n{question}"
+            else:
+                return f"{response_text}\n\nHow might you apply these concepts to your specific design challenge?"
+
+        except Exception as e:
+            print(f"⚠️ Question enhancement failed: {e}")
+            # Fallback to contextual question
+            return f"{response_text}\n\nHow might you apply these concepts to your specific design challenge?"
+
+    def _enhance_example_response_with_synthesis(self, response_text: str, user_input: str, classification: Dict[str, Any]) -> str:
+        """Enhance example responses with synthesis sections and thoughtful questions."""
+
+        try:
+            # Generate synthesis and thoughtful questions for example responses
+            prompt = f"""
+You are an expert architectural mentor. You just provided these project examples to a student:
+
+EXAMPLES PROVIDED: "{response_text}"
+
+STUDENT'S ORIGINAL REQUEST: "{user_input}"
+
+Add a synthesis section that:
+1. Identifies 2-3 key design strategies or principles that emerge from these examples
+2. Explains how these strategies could inspire or inform the student's own warehouse-to-community-center project
+3. Connects the examples to broader architectural concepts or approaches
+4. Ends with ONE thoughtful question that encourages the student to think about how these precedents could influence their specific design decisions
+
+Format:
+[Original examples text]
+
+**Key Insights from These Examples:**
+[2-3 key strategies/principles with brief explanations of how they could inspire the student's project]
+
+[One thoughtful question about application to their project]
+
+Generate the synthesis section only (starting with "**Key Insights from These Examples:**"):
+"""
+
+            import openai
+            client = openai.OpenAI()
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+                temperature=0.7
+            )
+
+            synthesis = response.choices[0].message.content.strip() if response.choices[0].message.content else ""
+
+            if synthesis:
+                return f"{response_text}\n\n{synthesis}"
+            else:
+                # Fallback synthesis
+                return f"{response_text}\n\n**Key Insights from These Examples:**\nThese projects demonstrate how adaptive reuse can preserve existing architectural character while introducing new community functions. Consider how the balance between preservation and transformation in these examples might inform your own approach to converting warehouse space for community use.\n\nWhich of these strategies for balancing old and new resonates most with your vision for the warehouse transformation?"
+
+        except Exception as e:
+            print(f"⚠️ Example synthesis enhancement failed: {e}")
+            # Fallback synthesis
+            return f"{response_text}\n\n**Key Insights from These Examples:**\nThese projects demonstrate how adaptive reuse can preserve existing architectural character while introducing new community functions. Consider how the balance between preservation and transformation in these examples might inform your own approach to converting warehouse space for community use.\n\nWhich of these strategies for balancing old and new resonates most with your vision for the warehouse transformation?"
 
 

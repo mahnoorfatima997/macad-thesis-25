@@ -497,10 +497,30 @@ def get_dashboard_css() -> str:
     }
 
     .message-text {
-        line-height: 1.5 !important;
+        line-height: 1.6 !important;
         word-wrap: break-word !important;
         white-space: pre-wrap !important;
         margin: 0 !important;
+        font-size: 15px !important;
+    }
+
+    /* Enhanced paragraph spacing for better readability */
+    .message-text p {
+        margin-bottom: 12px !important;
+        margin-top: 0 !important;
+    }
+
+    /* Bold text styling */
+    .message-text strong {
+        font-weight: 600 !important;
+        color: var(--primary-purple) !important;
+    }
+
+    /* Italic text styling */
+    .message-text em {
+        font-style: italic !important;
+        color: var(--primary-dark) !important;
+        opacity: 0.9 !important;
     }
 
     .message-time {

@@ -157,12 +157,17 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
     def _ensure_question(qtext: str, fallback: str) -> str:
         return qtext if "?" in qtext else fallback
 
-    # Technical question shaping
+    # Technical question shaping - IMPROVED: Don't add generic questions if content already has them
     if path == "technical_question" or is_technical:
         body = domain_text or text
         bullets = _to_bullets(body, max_items=5)
-        apply_q = "Where in your current scheme would this change your approach, and why?"
-        return f"{bullets}\n\n{apply_q}"
+
+        # Only add generic question if bullets don't already contain questions
+        if not re.search(r'\?', bullets):
+            apply_q = "Where in your current scheme would this change your approach, and why?"
+            return f"{bullets}\n\n{apply_q}"
+        else:
+            return bullets
 
     # Confusion expression shaping
     if path == "confusion_expression" or is_confusion:
@@ -214,9 +219,10 @@ def shape_by_route(text: str, routing_path: str, classification: Dict[str, Any],
                     # Add the question if found and not already in text
                     if socratic_question and socratic_question not in text:
                         text = f"{text}\n\n{socratic_question}"
-                    elif not socratic_question:
-                        # Generate contextual follow-up question
-                        text = f"{text}\n\nWhat aspects of this would you like to explore further?"
+                    elif not socratic_question and not re.search(r'\?', text):
+                        # Only add fallback if text truly lacks questions and is very short
+                        if len(text.strip()) < 100:
+                            text = f"{text}\n\nWhat aspects of this would you like to explore further?"
 
                 return text
 

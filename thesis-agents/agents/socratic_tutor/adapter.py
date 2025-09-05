@@ -157,6 +157,9 @@ class SocraticTutorAgent:
             if routing_path == "supportive_scaffolding":
                 print(f"   🆘 Using SUPPORTIVE SCAFFOLDING approach")
                 response_result = await self._generate_supportive_scaffolding_response(state, context_classification, analysis_result, gap_type)
+            elif routing_path == "socratic_clarification":
+                print(f"   💡 Using SOCRATIC CLARIFICATION approach")
+                response_result = await self._generate_socratic_clarification_response(state, context_classification, analysis_result, gap_type)
             elif routing_path == "knowledge_only":
                 print(f"   📚 Using KNOWLEDGE ONLY approach")
                 response_result = await self._generate_knowledge_only_response(state, context_classification, analysis_result, gap_type)
@@ -198,6 +201,9 @@ class SocraticTutorAgent:
                     response_result = await self._generate_constraint_challenge_response(state, context_classification, analysis_result, gap_type)
                 else:
                     response_result = await self._generate_cognitive_challenge_response(state, context_classification, analysis_result, gap_type)
+            elif routing_path == "multi_agent_comprehensive":
+                print(f"   🤝 Using MULTI-AGENT COMPREHENSIVE approach")
+                response_result = await self._generate_multi_agent_socratic_response(state, context_classification, analysis_result, gap_type)
             else:
                 print(f"   🔄 Using default adaptive approach for route: {routing_path}")
                 response_result = await self._generate_adaptive_socratic_response(state, context_classification, analysis_result, gap_type)
@@ -1173,11 +1179,12 @@ Generate a contextual response that builds on their input:
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
         prompt = f"""
-        You are a distinguished architectural educator employing the Socratic method to guide student learning through structured inquiry. Your approach is grounded in pedagogical theory and architectural scholarship.
+        You are an expert architectural mentor who provides advanced, contextual guidance through sophisticated questioning.
 
-        STUDENT'S EXPRESSION: "{last_message}"
-        BUILDING TYPOLOGY: {building_type}
+        STUDENT SAID: "{last_message}"
+        BUILDING TYPE: {building_type}
 
+        CRITICAL REQUIREMENTS:
         Craft a complete scholarly response that:
         1. PROVIDES SUPPORTIVE GUIDANCE: Acknowledge their thinking and offer concrete direction
         2. DECONSTRUCTS THE PROBLEM: Break down the complex architectural challenge into manageable parts
@@ -1186,14 +1193,22 @@ Generate a contextual response that builds on their input:
         5. BUILDS CONFIDENCE: Show them how their thinking connects to broader design discourse
         6. ENDS NATURALLY: Ensure the response concludes with a complete thought
 
-        RESPONSE STRUCTURE:
-        - Start by acknowledging their specific concern or question
-        - Provide 2-3 concrete approaches or frameworks they can use
-        - Explain how these connect to their building type and design goals
-        - End with a complete synthesis of the guidance
-        - THEN ask ONE specific, actionable question that builds directly on the guidance
+        FORMATTING REQUIREMENTS:
+        - Write in flowing paragraphs, NOT bullet points or lists
+        - Do NOT use dashes (-) at the beginning of sentences
+        - Write as natural, conversational prose
+        - Integrate questions naturally within the text flow
 
-        Write a complete response (200-250 words) that provides real value and ends naturally before asking your question.
+        Your response should:
+        1. Directly engage with their specific concept/question
+        2. Push their thinking to more sophisticated levels
+        3. Use their exact words and build on their thinking
+        4. Ask probing questions that challenge assumptions
+        5. Reference advanced architectural frameworks when relevant
+
+        Adapt your approach based on their specific concepts and design challenge context.
+
+        Keep it focused (150 words max) and intellectually challenging.
         """
 
         try:
@@ -1296,11 +1311,17 @@ Generate a contextual response that builds on their input:
         STUDENT'S MESSAGE: "{last_message}"
         BUILDING TYPE: {building_type}
 
-        Generate an exploratory question that:
+        Generate an exploratory response that:
         1. Opens up new avenues of thinking
         2. Encourages creative exploration
         3. Connects to broader design principles
         4. Invites them to consider alternatives
+
+        FORMATTING REQUIREMENTS:
+        - Write in flowing paragraphs, NOT bullet points or lists
+        - Do NOT use dashes (-) at the beginning of sentences
+        - Write as natural, conversational prose
+        - Integrate questions naturally within the text flow
 
         Keep it under 100 words and be inspiring.
         """
@@ -1709,6 +1730,126 @@ Generate a contextual response that builds on their input:
 
     # Route-specific response generation methods
     
+    async def _generate_socratic_clarification_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate socratic clarification response - explains concepts clearly and breaks them down."""
+
+        building_type = self._extract_building_type_from_context(state)
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        user_input = user_messages[-1] if user_messages else ""
+
+        print(f"🔍 DEBUG: Generating socratic clarification for building_type: {building_type}")
+        print(f"🔍 DEBUG: User input: {user_input[:100]}...")
+
+        try:
+            # ENHANCED: Generate comprehensive, theory-grounded clarification using advanced architectural education approach
+            prompt = f"""
+You are a distinguished architectural professor providing comprehensive guidance to a student experiencing confusion about their {building_type} project.
+
+STUDENT'S CONFUSION: "{user_input}"
+BUILDING TYPE: {building_type}
+PROJECT CONTEXT: Adaptive reuse warehouse-to-community-center transformation
+GAP TYPE: {gap_type}
+
+CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
+
+1. **THEORETICAL GROUNDING**: Reference established architectural theories, design principles, and methodologies relevant to their confusion. Examples:
+   - For spatial issues: Reference Christopher Alexander's pattern language, space syntax theory, or environmental psychology
+   - For green spaces: Biophilic design principles, landscape urbanism, therapeutic environments theory
+   - For circulation: Kevin Lynch's wayfinding principles, movement systems theory, accessibility frameworks
+   - For programming: Activity-based design, behavioral mapping, social space theory
+
+2. **ADVANCED CONTENT DEPTH**: Provide specific architectural strategies with proper terminology:
+   - Technical considerations (structural implications, environmental systems, lighting requirements)
+   - Spatial quality frameworks and design methodologies
+   - Precedent examples with architect/project names where relevant
+   - Connection to broader design principles and contemporary practice
+
+3. **STRUCTURED PROBLEM BREAKDOWN**: Follow this pattern:
+   - Acknowledge the complexity and importance of their concern
+   - Introduce 2-3 specific architectural concepts/strategies with proper terminology
+   - Reference relevant theory or precedents
+   - Provide technical considerations specific to warehouse-to-community-center adaptive reuse
+   - Connect to established design principles
+
+4. **CONTEXT-SPECIFIC APPLICATION**: Tailor advice specifically to warehouse-to-community-center adaptive reuse challenges, considering:
+   - Existing structural systems and spatial qualities
+   - Community programming requirements
+   - Adaptive reuse constraints and opportunities
+   - Public space design considerations
+
+5. **MAINTAIN SOCRATIC ENGAGEMENT**: End with thoughtful questions that push deeper architectural thinking, not generic clarification requests.
+
+EXAMPLE STRUCTURE:
+"Your concern about [specific issue] touches on fundamental questions in [relevant architectural theory/field]. This challenge is particularly complex in adaptive reuse projects where [specific consideration].
+
+Let me break this down through [2-3 specific architectural frameworks/concepts]. First, consider [specific strategy with proper terminology], which is grounded in [relevant theory/precedent]. Second, [another specific approach] addresses [technical/spatial consideration].
+
+For your warehouse-to-community-center transformation, this means [specific application to their project context, including technical considerations].
+
+[End with targeted questions that advance their architectural thinking]"
+
+Generate comprehensive, theory-grounded guidance (4-5 substantial sentences + targeted questions):
+"""
+
+            print(f"🔍 DEBUG: Attempting LLM generation for socratic clarification")
+
+            response = await self.client.generate_completion([
+                self.client.create_system_message("You are an expert architectural mentor who excels at breaking down complex concepts into clear, understandable explanations."),
+                self.client.create_user_message(prompt)
+            ], max_tokens=400, temperature=0.7)
+
+            ai_generated_response = response.get("content", "").strip()
+
+            if ai_generated_response and len(ai_generated_response) > 50:
+                print(f"✅ Generated socratic clarification response: {len(ai_generated_response)} chars")
+
+            return {
+                "response_text": ai_generated_response,
+                "response_type": "socratic_clarification",
+                "response_strategy": "clarifying_explanation",
+                "educational_intent": "Provide clear explanations and break down concepts",
+                "metadata": {
+                    "building_type": building_type,
+                    "gap_type": gap_type,
+                    "response_approach": "clarifying_guidance"
+                }
+            }
+
+        except Exception as e:
+            print(f"⚠️ Socratic clarification generation failed: {e}")
+            # Fallback to simple clarifying response
+            return self._generate_fallback_clarification(building_type, user_input, gap_type)
+
+    def _generate_fallback_clarification(self, building_type: str, user_input: str, gap_type: str) -> Dict[str, Any]:
+        """Generate fallback clarification when LLM fails."""
+        building_type = building_type if building_type != "unknown" else "architectural"
+
+        # Provide helpful clarification based on common confusion patterns
+        if "circulation" in user_input.lower() or "wayfinding" in user_input.lower():
+            return {
+                "response_text": f"Your concern about circulation and wayfinding in a {building_type} is both insightful and crucial to the user experience of the space. Let's break this down into more manageable parts. First, consider the concept of 'hierarchical circulation,' which involves designing primary, secondary, and tertiary pathways. Think of the primary circulation as a central spine, with secondary paths branching out to more specific zones. What specific part feels unclear? Which aspect would help you move forward?",
+                "response_type": "socratic_clarification",
+                "response_strategy": "clarifying_explanation",
+                "educational_intent": "Explain circulation concepts clearly",
+                "metadata": {
+                    "building_type": building_type,
+                    "gap_type": gap_type,
+                    "response_approach": "fallback_clarification"
+                }
+            }
+        else:
+            return {
+                "response_text": f"I understand this aspect of your {building_type} project can be challenging! Let me help clarify this concept. The key is to break down complex ideas into smaller, more manageable parts. Start with what you do understand, and we can build from there step by step. What specific part feels unclear? Which aspect would help you move forward?",
+                "response_type": "socratic_clarification",
+                "response_strategy": "clarifying_explanation",
+                "educational_intent": "Provide general clarifying guidance",
+                "metadata": {
+                    "building_type": building_type,
+                    "gap_type": gap_type,
+                    "response_approach": "fallback_clarification"
+                }
+            }
+
     async def _generate_supportive_scaffolding_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
         """Generate supportive scaffolding response - provides guidance and explanations instead of questions."""
         
@@ -1819,31 +1960,32 @@ Generate supportive guidance (2-3 sentences):
         try:
             # Build context for knowledge generation
             context = f"""
-You are an expert architectural mentor providing DIRECT KNOWLEDGE to answer a student's question.
+You are an expert architectural mentor providing targeted, advanced guidance.
 
-STUDENT'S QUESTION: "{user_input}"
+STUDENT ASKED: "{user_input}"
 BUILDING TYPE: {building_type}
 
-YOUR TASK: Provide a COMPREHENSIVE ANSWER that:
-1. Directly answers their question
-2. Gives specific examples relevant to {building_type}
-3. Explains the concepts clearly
-4. Provides practical information they can use
-5. Does NOT ask follow-up questions
+CRITICAL REQUIREMENTS:
+- DO NOT provide generic architectural overviews
+- DO NOT explain basic concepts they already know
+- DIRECTLY address their specific question
+- USE advanced architectural frameworks and concepts
+- BUILD ON their exact words and thinking
 
-IMPORTANT: 
-- Give a complete, helpful answer
-- Include relevant examples for {building_type}
-- Be specific and actionable
-- Don't ask questions back
+Your response should:
+1. Directly answer what they specifically asked about
+2. Apply sophisticated architectural analysis when it genuinely addresses their question
+3. Reference their exact concepts and build on them
+4. Provide actionable, specific guidance for their {building_type}
+5. Be concise but intellectually substantial (2-3 sentences max)
 
-Generate a comprehensive answer (3-4 sentences):
+Focus on their specific question, not general {building_type} information.
 """
             
             # Generate knowledge response using AI
             response = await self.client.generate_completion([
                 {"role": "user", "content": context}
-            ], max_tokens=250, temperature=0.7)
+            ], max_tokens=300, temperature=0.7)
             
             ai_generated_response = response.get("content", "").strip()
             if not ai_generated_response or len(ai_generated_response) < 50:
@@ -1925,6 +2067,78 @@ Generate a comprehensive answer (3-4 sentences):
         )
         
         return response_result
+
+    async def _generate_multi_agent_socratic_response(self, state: ArchMentorState, context_classification: Dict, analysis_result: Dict, gap_type: str) -> Dict[str, Any]:
+        """Generate socratic response specifically for multi-agent comprehensive synthesis.
+
+        This generates multiple socratic questions that can be woven throughout domain expert content.
+        """
+
+        # Extract building type and context
+        building_type = self._extract_building_type_from_context(state)
+        user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
+        user_input = user_messages[-1] if user_messages else ""
+
+        # Get domain knowledge context if available from coordination
+        coordination_context = context_classification.get("agent_coordination", {})
+        other_responses = coordination_context.get("other_responses", {})
+        domain_knowledge = other_responses.get("domain_expert", {}).get("response_text", "")
+
+        # Generate multiple socratic questions for synthesis
+        response_text = await self._generate_ai_multi_agent_socratic_questions(user_input, building_type, domain_knowledge, state)
+
+        return {
+            "response_text": response_text,
+            "response_type": "multi_agent_socratic",
+            "response_strategy": "multi_agent_comprehensive",
+            "educational_intent": "Provide multiple socratic questions for synthesis with domain knowledge",
+            "building_type": building_type,
+            "cognitive_flags": ["multi_perspective_thinking", "synthesis_questions", "deep_exploration"]
+        }
+
+    async def _generate_ai_multi_agent_socratic_questions(self, user_input: str, building_type: str, domain_knowledge: str, state: ArchMentorState) -> str:
+        """Generate multiple socratic questions for multi-agent synthesis."""
+
+        from openai import OpenAI
+        import os
+
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        # Truncate domain knowledge for context
+        domain_context = domain_knowledge[:800] if domain_knowledge else "No domain knowledge available"
+
+        prompt = f"""
+        You are a Socratic tutor working alongside a domain expert to provide comprehensive architectural guidance.
+
+        STUDENT'S MESSAGE: "{user_input}"
+        BUILDING TYPE: {building_type}
+        DOMAIN EXPERT CONTEXT: "{domain_context}"
+
+        Generate 3-4 thoughtful socratic questions that:
+        1. Build upon the domain expert's knowledge
+        2. Encourage deeper thinking about the concepts discussed
+        3. Connect different aspects of the design challenge
+        4. Push the student to consider implications and alternatives
+        5. Are specific to their {building_type} project
+
+        Generate 3-4 separate questions that can be woven into comprehensive guidance. Each question should be:
+        1. Specific to their design approach
+        2. Connected to broader architectural principles
+        3. About implications or alternatives
+        4. Encouraging synthesis or next steps
+
+        Format as natural sentences without bullet points. Keep each question concise but thought-provoking.
+        """
+
+        try:
+            response = await self.client.generate_completion([
+                {"role": "user", "content": prompt}
+            ], max_tokens=300, temperature=0.7)
+            return response.get("content", "").strip()
+        except Exception as e:
+            # Fallback to basic questions
+            self.telemetry.log_error(f"AI multi-agent socratic generation failed: {str(e)}")
+            return f"How does your {building_type} design reflect the specific needs you've identified? What design principles are guiding your decision-making process? How might you test or validate your design assumptions? What aspects of your approach would you like to explore further?"
 
     async def _generate_balanced_guidance_response(
         self, 
