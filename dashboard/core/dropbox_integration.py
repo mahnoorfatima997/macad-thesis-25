@@ -314,8 +314,9 @@ class DropboxExporter:
                         results["errors"].append(error_msg)
                 else:
                     results["errors"].append(f"Local file not found: {filename}")
+
             #LINKOGRAFY INTEGRATION
-            # Handle linkography files
+
             linkography_files = data_collector.get_linkography_files()
             for linkography_file_path in linkography_files:
                 local_path = Path(linkography_file_path)
