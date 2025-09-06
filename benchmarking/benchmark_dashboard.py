@@ -2933,6 +2933,46 @@ class BenchmarkDashboard:
         }
         return interventions.get(risk_type, 'Monitor and reassess')
     
+    def render_personality_analysis(self):
+        """Render personality analysis section"""
+        try:
+            # Import personality dashboard
+            from personality_dashboard import render_personality_analysis
+            
+            # Render the personality analysis section
+            render_personality_analysis()
+            
+        except ImportError as e:
+            st.error("Personality analysis modules not available")
+            st.markdown("""
+            ### 🚧 Personality Analysis Unavailable
+            
+            The personality analysis feature is not currently available. This might be due to:
+            
+            • Missing personality analysis dependencies
+            • Modules not installed or configured correctly
+            • Missing required libraries (transformers, torch)
+            
+            **To enable personality analysis:**
+            1. Install dependencies: `pip install transformers torch scikit-learn`
+            2. Run the benchmarking pipeline with personality analysis enabled
+            3. Ensure interaction data is available for analysis
+            
+            **Error details:** `{}`
+            """.format(str(e)))
+        except Exception as e:
+            st.error(f"Failed to render personality analysis: {str(e)}")
+            st.markdown("""
+            ### ⚠️ Personality Analysis Error
+            
+            An error occurred while loading the personality analysis section.
+            
+            Please check:
+            • That the personality analysis has been run (Step 9 in benchmarking)
+            • That personality data files exist in `benchmarking/results/personality_reports/`
+            • System logs for detailed error information
+            """)
+    
     def render_linkography_analysis(self):
         """Render Linkography analysis section"""
         st.markdown('<h2 class="sub-header">Linkography Analysis</h2>', unsafe_allow_html=True)
@@ -7503,6 +7543,7 @@ class BenchmarkDashboard:
             "Comparative Analysis",
             "Cross-Platform Analysis",
             "Anthropomorphism Analysis",
+            "Personality Analysis",
             "Linkography Analysis",
             "Integrated Conclusions",
             "Graph ML Analysis",
@@ -7533,6 +7574,8 @@ class BenchmarkDashboard:
                 self.render_cross_platform_analysis()
             elif selected_section == "Anthropomorphism Analysis":
                 self.render_anthropomorphism_analysis()
+            elif selected_section == "Personality Analysis":
+                self.render_personality_analysis()
             elif selected_section == "Linkography Analysis":
                 self.render_linkography_analysis()
             elif selected_section == "Integrated Conclusions":

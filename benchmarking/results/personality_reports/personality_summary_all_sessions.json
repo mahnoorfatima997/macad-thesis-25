@@ -1,0 +1,1643 @@
+{
+  "analysis_timestamp": "2025-09-06T16:00:47.098507",
+  "total_sessions": 62,
+  "analyzer_info": {
+    "model_name": "Minej/bert-base-personality",
+    "is_available": true,
+    "use_fallback": true,
+    "min_text_length": 500,
+    "analysis_version": "1.0.0"
+  },
+  "sessions": [
+    {
+      "session_id": "20250809_215707",
+      "traits": {
+        "openness": 0.1797947734594345,
+        "conscientiousness": 0.2002059817314148,
+        "extraversion": 0.23552922904491425,
+        "agreeableness": 0.17869699001312256,
+        "emotionality": 0.20577305555343628,
+        "honesty_humility": 0.421478807926178
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "emotionality"
+      ],
+      "reliability_score": 0.5234923362731934,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250810_211434",
+      "traits": {
+        "openness": 0.1797947734594345,
+        "conscientiousness": 0.2002059817314148,
+        "extraversion": 0.23552922904491425,
+        "agreeableness": 0.17869699001312256,
+        "emotionality": 0.20577305555343628,
+        "honesty_humility": 0.421478807926178
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "emotionality"
+      ],
+      "reliability_score": 0.5234923362731934,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250810_212521",
+      "traits": {
+        "openness": 0.18696792423725128,
+        "conscientiousness": 0.17703333497047424,
+        "extraversion": 0.22641883790493011,
+        "agreeableness": 0.20559321343898773,
+        "emotionality": 0.20398670434951782,
+        "honesty_humility": 0.43223732709884644
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "agreeableness"
+      ],
+      "reliability_score": 0.5202003717422485,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250810_215831",
+      "traits": {
+        "openness": 0.1797947734594345,
+        "conscientiousness": 0.2002059817314148,
+        "extraversion": 0.23552922904491425,
+        "agreeableness": 0.17869699001312256,
+        "emotionality": 0.20577305555343628,
+        "honesty_humility": 0.421478807926178
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "emotionality"
+      ],
+      "reliability_score": 0.5234923362731934,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250810_223120",
+      "traits": {
+        "openness": 0.20305927097797394,
+        "conscientiousness": 0.2058688849210739,
+        "extraversion": 0.21557986736297607,
+        "agreeableness": 0.15847204625606537,
+        "emotionality": 0.2170199453830719,
+        "honesty_humility": 0.3633888363838196
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "extraversion"
+      ],
+      "reliability_score": 0.5434882640838623,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250810_223942",
+      "traits": {
+        "openness": 0.2772558927536011,
+        "conscientiousness": 0.203543022274971,
+        "extraversion": 0.1571340709924698,
+        "agreeableness": 0.07771317660808563,
+        "emotionality": 0.2843538224697113,
+        "honesty_humility": 0.3810853064060211
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.537541389465332,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250810_225448",
+      "traits": {
+        "openness": 0.17853471636772156,
+        "conscientiousness": 0.20004771649837494,
+        "extraversion": 0.2228708416223526,
+        "agreeableness": 0.19268417358398438,
+        "emotionality": 0.20586247742176056,
+        "honesty_humility": 0.3770736753940582
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "emotionality"
+      ],
+      "reliability_score": 0.5389302968978882,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250810_232130",
+      "traits": {
+        "openness": 0.16975834965705872,
+        "conscientiousness": 0.16333723068237305,
+        "extraversion": 0.2061462700366974,
+        "agreeableness": 0.26998960971832275,
+        "emotionality": 0.1907685250043869,
+        "honesty_humility": 0.45799586176872253
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "agreeableness",
+        "extraversion"
+      ],
+      "reliability_score": 0.5120096206665039,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Agreeableness: Critical, stubborn, demanding, quick to anger."
+    },
+    {
+      "session_id": "20250810_233440",
+      "traits": {
+        "openness": 0.26881587505340576,
+        "conscientiousness": 0.20877255499362946,
+        "extraversion": 0.1642654538154602,
+        "agreeableness": 0.08139550685882568,
+        "emotionality": 0.2767505347728729,
+        "honesty_humility": 0.3825582265853882
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5369558930397034,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250811_000345",
+      "traits": {
+        "openness": 0.2772558927536011,
+        "conscientiousness": 0.203543022274971,
+        "extraversion": 0.1571340709924698,
+        "agreeableness": 0.07771317660808563,
+        "emotionality": 0.2843538224697113,
+        "honesty_humility": 0.3810853064060211
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.537541389465332,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_090102",
+      "traits": {
+        "openness": 0.19942054152488708,
+        "conscientiousness": 0.22708803415298462,
+        "extraversion": 0.20269741117954254,
+        "agreeableness": 0.1396719366312027,
+        "emotionality": 0.23112209141254425,
+        "honesty_humility": 0.405868798494339
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "conscientiousness"
+      ],
+      "reliability_score": 0.5287712216377258,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_091606",
+      "traits": {
+        "openness": 0.2933260202407837,
+        "conscientiousness": 0.16551822423934937,
+        "extraversion": 0.15823611617088318,
+        "agreeableness": 0.08667325228452682,
+        "emotionality": 0.29624634981155396,
+        "honesty_humility": 0.38466933369636536
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5365839600563049,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_092414",
+      "traits": {
+        "openness": 0.2822195291519165,
+        "conscientiousness": 0.1610155701637268,
+        "extraversion": 0.16489183902740479,
+        "agreeableness": 0.09381063282489777,
+        "emotionality": 0.29806235432624817,
+        "honesty_humility": 0.387524276971817
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5355824828147888,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_094843",
+      "traits": {
+        "openness": 0.2905423641204834,
+        "conscientiousness": 0.19023294746875763,
+        "extraversion": 0.1510724574327469,
+        "agreeableness": 0.07614322006702423,
+        "emotionality": 0.2920089662075043,
+        "honesty_humility": 0.3804573118686676
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5378955602645874,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_095701",
+      "traits": {
+        "openness": 0.2714860141277313,
+        "conscientiousness": 0.1815887689590454,
+        "extraversion": 0.16186583042144775,
+        "agreeableness": 0.09224312007427216,
+        "emotionality": 0.2928161919116974,
+        "honesty_humility": 0.3868972659111023
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5356869101524353,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_100424",
+      "traits": {
+        "openness": 0.2714860141277313,
+        "conscientiousness": 0.1815887689590454,
+        "extraversion": 0.16186583042144775,
+        "agreeableness": 0.09224312007427216,
+        "emotionality": 0.2928161919116974,
+        "honesty_humility": 0.3868972659111023
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5356869101524353,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_100911",
+      "traits": {
+        "openness": 0.2822195291519165,
+        "conscientiousness": 0.1610155701637268,
+        "extraversion": 0.16489183902740479,
+        "agreeableness": 0.09381063282489777,
+        "emotionality": 0.29806235432624817,
+        "honesty_humility": 0.387524276971817
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5355824828147888,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_103053",
+      "traits": {
+        "openness": 0.2199576050043106,
+        "conscientiousness": 0.16406746208667755,
+        "extraversion": 0.18450956046581268,
+        "agreeableness": 0.14839959144592285,
+        "emotionality": 0.2830657660961151,
+        "honesty_humility": 0.3093598484992981
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "low"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.562417209148407,
+      "personality_summary": "Low Honesty-Humility: Manipulative, greedy, entitled, boastful; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_110858",
+      "traits": {
+        "openness": 0.2606583535671234,
+        "conscientiousness": 0.15435603260993958,
+        "extraversion": 0.16514261066913605,
+        "agreeableness": 0.11590578407049179,
+        "emotionality": 0.30393725633621216,
+        "honesty_humility": 0.3963623344898224
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.532662570476532,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_120533",
+      "traits": {
+        "openness": 0.24492084980010986,
+        "conscientiousness": 0.16043710708618164,
+        "extraversion": 0.16657549142837524,
+        "agreeableness": 0.13122525811195374,
+        "emotionality": 0.2968413531780243,
+        "honesty_humility": 0.4524901211261749
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5134294629096985,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_123729",
+      "traits": {
+        "openness": 0.2719323933124542,
+        "conscientiousness": 0.16496244072914124,
+        "extraversion": 0.15863481163978577,
+        "agreeableness": 0.10132371634244919,
+        "emotionality": 0.303146630525589,
+        "honesty_humility": 0.3905295133590698
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5346032977104187,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_133043",
+      "traits": {
+        "openness": 0.2618999183177948,
+        "conscientiousness": 0.18018904328346252,
+        "extraversion": 0.16063320636749268,
+        "agreeableness": 0.1170978844165802,
+        "emotionality": 0.2801799178123474,
+        "honesty_humility": 0.34683915972709656
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5496015548706055,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_203743",
+      "traits": {
+        "openness": 0.19771309196949005,
+        "conscientiousness": 0.16155754029750824,
+        "extraversion": 0.1844223290681839,
+        "agreeableness": 0.22817818820476532,
+        "emotionality": 0.22812889516353607,
+        "honesty_humility": 0.4412713050842285
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "agreeableness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5177067518234253,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Agreeableness: Critical, stubborn, demanding, quick to anger."
+    },
+    {
+      "session_id": "20250812_225157",
+      "traits": {
+        "openness": 0.1605348289012909,
+        "conscientiousness": 0.194352924823761,
+        "extraversion": 0.25652867555618286,
+        "agreeableness": 0.2116481512784958,
+        "emotionality": 0.17693543434143066,
+        "honesty_humility": 0.43465930223464966
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "agreeableness"
+      ],
+      "reliability_score": 0.5190113186836243,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250812_230324",
+      "traits": {
+        "openness": 0.25075551867485046,
+        "conscientiousness": 0.1715960055589676,
+        "extraversion": 0.17313320934772491,
+        "agreeableness": 0.1214420422911644,
+        "emotionality": 0.2830731272697449,
+        "honesty_humility": 0.39857685565948486
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5317777991294861,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250812_232012",
+      "traits": {
+        "openness": 0.18890589475631714,
+        "conscientiousness": 0.19698667526245117,
+        "extraversion": 0.21956467628479004,
+        "agreeableness": 0.18177498877048492,
+        "emotionality": 0.2127677947282791,
+        "honesty_humility": 0.3727100193500519
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "emotionality"
+      ],
+      "reliability_score": 0.5404204726219177,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250813_001917",
+      "traits": {
+        "openness": 0.1605348289012909,
+        "conscientiousness": 0.194352924823761,
+        "extraversion": 0.25652867555618286,
+        "agreeableness": 0.2116481512784958,
+        "emotionality": 0.17693543434143066,
+        "honesty_humility": 0.43465930223464966
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "agreeableness"
+      ],
+      "reliability_score": 0.5190113186836243,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250813_003143",
+      "traits": {
+        "openness": 0.138376384973526,
+        "conscientiousness": 0.18031097948551178,
+        "extraversion": 0.2246459573507309,
+        "agreeableness": 0.27962565422058105,
+        "emotionality": 0.17704109847545624,
+        "honesty_humility": 0.46185028553009033
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "agreeableness",
+        "extraversion"
+      ],
+      "reliability_score": 0.5104295611381531,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Agreeableness: Critical, stubborn, demanding, quick to anger."
+    },
+    {
+      "session_id": "20250813_120328",
+      "traits": {
+        "openness": 0.2933621108531952,
+        "conscientiousness": 0.17001108825206757,
+        "extraversion": 0.15492013096809387,
+        "agreeableness": 0.09877719730138779,
+        "emotionality": 0.2829294800758362,
+        "honesty_humility": 0.33951088786125183
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5521798133850098,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250813_124208",
+      "traits": {
+        "openness": 0.24824431538581848,
+        "conscientiousness": 0.17597316205501556,
+        "extraversion": 0.1697574406862259,
+        "agreeableness": 0.12189967185258865,
+        "emotionality": 0.2841254472732544,
+        "honesty_humility": 0.3987599015235901
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5317180156707764,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_145047",
+      "traits": {
+        "openness": 0.2613987624645233,
+        "conscientiousness": 0.17719709873199463,
+        "extraversion": 0.15606017410755157,
+        "agreeableness": 0.10606539249420166,
+        "emotionality": 0.29927858710289,
+        "honesty_humility": 0.39242619276046753
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5339208245277405,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_161549",
+      "traits": {
+        "openness": 0.23147200047969818,
+        "conscientiousness": 0.16828587651252747,
+        "extraversion": 0.17596480250358582,
+        "agreeableness": 0.141163632273674,
+        "emotionality": 0.2831136882305145,
+        "honesty_humility": 0.3564654588699341
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5462948083877563,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_203509",
+      "traits": {
+        "openness": 0.1964220255613327,
+        "conscientiousness": 0.19693398475646973,
+        "extraversion": 0.198785200715065,
+        "agreeableness": 0.13809402287006378,
+        "emotionality": 0.26976478099823,
+        "honesty_humility": 0.3552376329898834
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "extraversion"
+      ],
+      "reliability_score": 0.5462658405303955,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_205129",
+      "traits": {
+        "openness": 0.3200460970401764,
+        "conscientiousness": 0.204513818025589,
+        "extraversion": 0.1257840096950531,
+        "agreeableness": 0.06193083897233009,
+        "emotionality": 0.2877252399921417,
+        "honesty_humility": 0.3747723698616028
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5399916172027588,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250813_210531",
+      "traits": {
+        "openness": 0.2678067088127136,
+        "conscientiousness": 0.16984063386917114,
+        "extraversion": 0.16073563694953918,
+        "agreeableness": 0.11399270594120026,
+        "emotionality": 0.2876242995262146,
+        "honesty_humility": 0.39559710025787354
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.532912015914917,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_211507",
+      "traits": {
+        "openness": 0.27532878518104553,
+        "conscientiousness": 0.1614682674407959,
+        "extraversion": 0.15961743891239166,
+        "agreeableness": 0.11353716999292374,
+        "emotionality": 0.2900483310222626,
+        "honesty_humility": 0.44541487097740173
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5158876776695251,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_220108",
+      "traits": {
+        "openness": 0.25956612825393677,
+        "conscientiousness": 0.16109801828861237,
+        "extraversion": 0.1660364717245102,
+        "agreeableness": 0.1240650936961174,
+        "emotionality": 0.2892342507839203,
+        "honesty_humility": 0.44962605834007263
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5144149661064148,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_222355",
+      "traits": {
+        "openness": 0.2194880247116089,
+        "conscientiousness": 0.15827031433582306,
+        "extraversion": 0.1761292666196823,
+        "agreeableness": 0.14518311619758606,
+        "emotionality": 0.30092936754226685,
+        "honesty_humility": 0.4080732762813568
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5286116003990173,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250813_224503",
+      "traits": {
+        "openness": 0.1687414050102234,
+        "conscientiousness": 0.14654065668582916,
+        "extraversion": 0.20171348750591278,
+        "agreeableness": 0.2894017696380615,
+        "emotionality": 0.19360265135765076,
+        "honesty_humility": 0.465760737657547
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "agreeableness",
+        "extraversion"
+      ],
+      "reliability_score": 0.5095930695533752,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Agreeableness: Critical, stubborn, demanding, quick to anger."
+    },
+    {
+      "session_id": "20250813_230032",
+      "traits": {
+        "openness": 0.22381965816020966,
+        "conscientiousness": 0.1774749755859375,
+        "extraversion": 0.188276007771492,
+        "agreeableness": 0.13472212851047516,
+        "emotionality": 0.2757072150707245,
+        "honesty_humility": 0.3538888692855835
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5469669699668884,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250814_204947",
+      "traits": {
+        "openness": 0.3159853219985962,
+        "conscientiousness": 0.17961478233337402,
+        "extraversion": 0.14913511276245117,
+        "agreeableness": 0.0875629186630249,
+        "emotionality": 0.2677018642425537,
+        "honesty_humility": 0.33502519130706787
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5537271499633789,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250814_220357",
+      "traits": {
+        "openness": 0.2158859521150589,
+        "conscientiousness": 0.16146771609783173,
+        "extraversion": 0.20444203913211823,
+        "agreeableness": 0.1640940010547638,
+        "emotionality": 0.25411030650138855,
+        "honesty_humility": 0.4156376123428345
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5259166359901428,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250814_221638",
+      "traits": {
+        "openness": 0.30510345101356506,
+        "conscientiousness": 0.17634917795658112,
+        "extraversion": 0.14501841366291046,
+        "agreeableness": 0.08559967577457428,
+        "emotionality": 0.28792932629585266,
+        "honesty_humility": 0.38423988223075867
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5368296504020691,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250814_223613",
+      "traits": {
+        "openness": 0.2532101571559906,
+        "conscientiousness": 0.14251339435577393,
+        "extraversion": 0.18699321150779724,
+        "agreeableness": 0.15063177049160004,
+        "emotionality": 0.2666514813899994,
+        "honesty_humility": 0.41025272011756897
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5280145406723022,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250814_225902",
+      "traits": {
+        "openness": 0.27882087230682373,
+        "conscientiousness": 0.20984850823879242,
+        "extraversion": 0.1568577140569687,
+        "agreeableness": 0.07507911324501038,
+        "emotionality": 0.2793937623500824,
+        "honesty_humility": 0.38003167510032654
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.537865936756134,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250814_234004",
+      "traits": {
+        "openness": 0.1762596070766449,
+        "conscientiousness": 0.19664868712425232,
+        "extraversion": 0.23404236137866974,
+        "agreeableness": 0.17594261467456818,
+        "emotionality": 0.21710675954818726,
+        "honesty_humility": 0.42037707567214966
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "emotionality"
+      ],
+      "reliability_score": 0.5238604545593262,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    },
+    {
+      "session_id": "20250814_235440",
+      "traits": {
+        "openness": 0.30262377858161926,
+        "conscientiousness": 0.20009085536003113,
+        "extraversion": 0.14025500416755676,
+        "agreeableness": 0.0805259495973587,
+        "emotionality": 0.2765044867992401,
+        "honesty_humility": 0.3822104036808014
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5374212861061096,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250815_001940",
+      "traits": {
+        "openness": 0.2561071217060089,
+        "conscientiousness": 0.2334745228290558,
+        "extraversion": 0.16705253720283508,
+        "agreeableness": 0.09270745515823364,
+        "emotionality": 0.25065839290618896,
+        "honesty_humility": 0.33708298206329346
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5524781346321106,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250815_004424",
+      "traits": {
+        "openness": 0.25486838817596436,
+        "conscientiousness": 0.15484298765659332,
+        "extraversion": 0.1731436848640442,
+        "agreeableness": 0.1391230672597885,
+        "emotionality": 0.2780219316482544,
+        "honesty_humility": 0.3556492328643799
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5467245578765869,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250815_005949",
+      "traits": {
+        "openness": 0.24649973213672638,
+        "conscientiousness": 0.16057689487934113,
+        "extraversion": 0.17994531989097595,
+        "agreeableness": 0.14808493852615356,
+        "emotionality": 0.26489320397377014,
+        "honesty_humility": 0.3592339754104614
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5454565286636353,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250815_011602",
+      "traits": {
+        "openness": 0.24649973213672638,
+        "conscientiousness": 0.16057689487934113,
+        "extraversion": 0.17994531989097595,
+        "agreeableness": 0.14808493852615356,
+        "emotionality": 0.26489320397377014,
+        "honesty_humility": 0.3592339754104614
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5454565286636353,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "20250815_173246",
+      "traits": {
+        "openness": 0.2886584401130676,
+        "conscientiousness": 0.19524435698986053,
+        "extraversion": 0.15453824400901794,
+        "agreeableness": 0.0883403867483139,
+        "emotionality": 0.27321863174438477,
+        "honesty_humility": 0.33533617854118347
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5534168481826782,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250815_175407",
+      "traits": {
+        "openness": 0.3066515028476715,
+        "conscientiousness": 0.2099299281835556,
+        "extraversion": 0.13852152228355408,
+        "agreeableness": 0.06965318322181702,
+        "emotionality": 0.275243878364563,
+        "honesty_humility": 0.3278612792491913
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "low"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5559734106063843,
+      "personality_summary": "Low Honesty-Humility: Manipulative, greedy, entitled, boastful; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "20250815_185625",
+      "traits": {
+        "openness": 0.24549341201782227,
+        "conscientiousness": 0.1541518121957779,
+        "extraversion": 0.17936310172080994,
+        "agreeableness": 0.1251394897699356,
+        "emotionality": 0.2958522140979767,
+        "honesty_humility": 0.3500558137893677
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5484521389007568,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "0b8cee5c-ec09-4d10-8c22-fb932d815219",
+      "traits": {
+        "openness": 0.24333879351615906,
+        "conscientiousness": 0.1981481909751892,
+        "extraversion": 0.18401865661144257,
+        "agreeableness": 0.11396265774965286,
+        "emotionality": 0.2605316936969757,
+        "honesty_humility": 0.34558507800102234
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5496825575828552,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "0bb1d410-484f-4f9d-bd16-851fa8ef9306",
+      "traits": {
+        "openness": 0.21379469335079193,
+        "conscientiousness": 0.25134438276290894,
+        "extraversion": 0.16883914172649384,
+        "agreeableness": 0.11314773559570312,
+        "emotionality": 0.25287407636642456,
+        "honesty_humility": 0.3452591001987457
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "conscientiousness"
+      ],
+      "reliability_score": 0.5495837926864624,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "2f042b32-2ff5-449b-a7be-b3d2993cd27b",
+      "traits": {
+        "openness": 0.23356783390045166,
+        "conscientiousness": 0.23812924325466156,
+        "extraversion": 0.16145513951778412,
+        "agreeableness": 0.09629938751459122,
+        "emotionality": 0.27054837346076965,
+        "honesty_humility": 0.33851975202560425
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "conscientiousness"
+      ],
+      "reliability_score": 0.5519508123397827,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "445b9186-5fdd-466d-b659-ad7ac346e64b",
+      "traits": {
+        "openness": 0.2459648847579956,
+        "conscientiousness": 0.22457385063171387,
+        "extraversion": 0.1711219847202301,
+        "agreeableness": 0.11531063914299011,
+        "emotionality": 0.24302862584590912,
+        "honesty_humility": 0.3461242616176605
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "openness",
+        "emotionality"
+      ],
+      "reliability_score": 0.5495159029960632,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+    },
+    {
+      "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
+      "traits": {
+        "openness": 0.24429146945476532,
+        "conscientiousness": 0.17059488594532013,
+        "extraversion": 0.17541074752807617,
+        "agreeableness": 0.12995006144046783,
+        "emotionality": 0.2797528803348541,
+        "honesty_humility": 0.3519800305366516
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5477915406227112,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "66c03479-fbc3-4ef8-98ee-d1a36936d997",
+      "traits": {
+        "openness": 0.23408958315849304,
+        "conscientiousness": 0.1919553279876709,
+        "extraversion": 0.18213413655757904,
+        "agreeableness": 0.13641421496868134,
+        "emotionality": 0.2554067373275757,
+        "honesty_humility": 0.35456570982933044
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "emotionality",
+        "openness"
+      ],
+      "reliability_score": 0.5467792749404907,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+    },
+    {
+      "session_id": "b4fe582e-83e0-4519-ba37-6a3518ca0287",
+      "traits": {
+        "openness": 0.20975537598133087,
+        "conscientiousness": 0.2628880739212036,
+        "extraversion": 0.20381437242031097,
+        "agreeableness": 0.11670589447021484,
+        "emotionality": 0.20683622360229492,
+        "honesty_humility": 0.3466823697090149
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "conscientiousness",
+        "openness"
+      ],
+      "reliability_score": 0.5487898588180542,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Conscientiousness: Disorganized, impulsive, careless, procrastinating."
+    },
+    {
+      "session_id": "unified_dashboard_session",
+      "traits": {
+        "openness": 0.18696792423725128,
+        "conscientiousness": 0.17703333497047424,
+        "extraversion": 0.22641883790493011,
+        "agreeableness": 0.20559321343898773,
+        "emotionality": 0.20398670434951782,
+        "honesty_humility": 0.43223732709884644
+      },
+      "levels": {
+        "openness": "low",
+        "conscientiousness": "low",
+        "extraversion": "low",
+        "agreeableness": "low",
+        "emotionality": "low",
+        "honesty_humility": "medium"
+      },
+      "dominant_traits": [
+        "honesty_humility",
+        "extraversion",
+        "agreeableness"
+      ],
+      "reliability_score": 0.5202003717422485,
+      "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+    }
+  ],
+  "aggregate_stats": {
+    "trait_means": {
+      "openness": 0.23900090157985687,
+      "conscientiousness": 0.18502560257911682,
+      "extraversion": 0.18174554407596588,
+      "agreeableness": 0.13498875498771667,
+      "emotionality": 0.25923919677734375,
+      "honesty_humility": 0.38625359535217285
+    },
+    "trait_stds": {
+      "openness": 0.044333893805742264,
+      "conscientiousness": 0.025293752551078796,
+      "extraversion": 0.02998214028775692,
+      "agreeableness": 0.05149156600236893,
+      "emotionality": 0.03746369853615761,
+      "honesty_humility": 0.03770127147436142
+    }
+  }
+}

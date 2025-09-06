@@ -1,0 +1,37 @@
+{
+  "session_id": "20250812_232012",
+  "timestamp": "2025-09-06T16:00:39.316102",
+  "traits": {
+    "openness": 0.18890589475631714,
+    "conscientiousness": 0.19698667526245117,
+    "extraversion": 0.21956467628479004,
+    "agreeableness": 0.18177498877048492,
+    "emotionality": 0.2127677947282791,
+    "honesty_humility": 0.3727100193500519
+  },
+  "levels": {
+    "openness": "low",
+    "conscientiousness": "low",
+    "extraversion": "low",
+    "agreeableness": "low",
+    "emotionality": "low",
+    "honesty_humility": "medium"
+  },
+  "confidence": {
+    "openness": 0.6221882104873657,
+    "conscientiousness": 0.6060266494750977,
+    "extraversion": 0.5608706474304199,
+    "agreeableness": 0.6364500522613525,
+    "emotionality": 0.5744644403457642,
+    "honesty_humility": 0.25457996129989624
+  },
+  "text_length": 230,
+  "analysis_method": "HEXACO-BERT",
+  "reliability_score": 0.5404204726219177,
+  "dominant_traits": [
+    "honesty_humility",
+    "extraversion",
+    "emotionality"
+  ],
+  "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low eXtraversion: Shy, quiet, reserved, prefers solitude."
+}

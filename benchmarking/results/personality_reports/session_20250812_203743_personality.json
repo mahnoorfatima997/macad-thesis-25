@@ -1,0 +1,37 @@
+{
+  "session_id": "20250812_203743",
+  "timestamp": "2025-09-06T16:00:38.724393",
+  "traits": {
+    "openness": 0.19771309196949005,
+    "conscientiousness": 0.16155754029750824,
+    "extraversion": 0.1844223290681839,
+    "agreeableness": 0.22817818820476532,
+    "emotionality": 0.22812889516353607,
+    "honesty_humility": 0.4412713050842285
+  },
+  "levels": {
+    "openness": "low",
+    "conscientiousness": "low",
+    "extraversion": "low",
+    "agreeableness": "low",
+    "emotionality": "low",
+    "honesty_humility": "medium"
+  },
+  "confidence": {
+    "openness": 0.6045738458633423,
+    "conscientiousness": 0.6768848896026611,
+    "extraversion": 0.6311553716659546,
+    "agreeableness": 0.543643593788147,
+    "emotionality": 0.5437421798706055,
+    "honesty_humility": 0.11745738983154297
+  },
+  "text_length": 2034,
+  "analysis_method": "HEXACO-BERT",
+  "reliability_score": 0.5177067518234253,
+  "dominant_traits": [
+    "honesty_humility",
+    "agreeableness",
+    "emotionality"
+  ],
+  "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Agreeableness: Critical, stubborn, demanding, quick to anger."
+}
