@@ -1571,41 +1571,34 @@ class ChallengeGeneratorProcessor:
         }
 
     async def _generate_ai_contextual_story_prompt(self, user_message: str, building_type: str) -> str:
-        """Generate flexible story prompt using AI for any architectural topic"""
+        """OPTIMIZED: Generate flexible story prompt using AI with performance improvements"""
         try:
             import openai
+            import hashlib
+
+            # PERFORMANCE: Create cache key for this request
+            cache_key = hashlib.md5(f"{user_message[:100]}{building_type}".encode()).hexdigest()
+
+            # PERFORMANCE: Check if we have a cached response
+            if hasattr(self, '_story_cache') and cache_key in self._story_cache:
+                print(f"🎮 PERFORMANCE: Using cached story prompt")
+                return self._story_cache[cache_key]
+
+            # Initialize cache if it doesn't exist
+            if not hasattr(self, '_story_cache'):
+                self._story_cache = {}
+
             client = openai.OpenAI()
 
             # Escape quotes in user message to prevent string formatting issues
             safe_user_message = user_message.replace('"', '\\"').replace("'", "\\'")
             safe_building_type = building_type.replace('"', '\\"').replace("'", "\\'")
 
-            # Extract the main architectural topic from user message
-            topic_extraction_prompt = f"""
-            Extract the main architectural topic/concept from this user message: "{safe_user_message}"
+            # PERFORMANCE: Extract topic using simple keyword matching instead of AI call
+            main_topic = self._extract_topic_keywords(user_message)
+            print(f"🎮 PERFORMANCE: Extracted topic '{main_topic}' using keyword matching")
 
-            Examples:
-            - "circulation strategies" → "circulation"
-            - "lighting design" → "lighting"
-            - "sustainable materials" → "sustainability"
-            - "acoustic performance" → "acoustics"
-            - "accessibility features" → "accessibility"
-            - "landscape integration" → "landscape"
-            - "structural systems" → "structure"
-
-            Return only the main topic (1-2 words):
-            """
-
-            topic_response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": topic_extraction_prompt}],
-                max_tokens=50,
-                temperature=0.3
-            )
-
-            main_topic = topic_response.choices[0].message.content.strip().lower()
-
-            # Generate contextual story prompt
+            # PERFORMANCE: Generate contextual story prompt with single AI call
             story_generation_prompt = f"""
             Create a creative storytelling challenge for an architecture student working on a {safe_building_type} project.
 
@@ -1632,12 +1625,58 @@ class ChallengeGeneratorProcessor:
                 temperature=0.7
             )
 
-            return story_response.choices[0].message.content.strip()
+            result = story_response.choices[0].message.content.strip()
+
+            # PERFORMANCE: Cache the result
+            self._story_cache[cache_key] = result
+
+            # PERFORMANCE: Limit cache size to prevent memory issues
+            if len(self._story_cache) > 50:
+                # Remove oldest entries
+                oldest_keys = list(self._story_cache.keys())[:10]
+                for key in oldest_keys:
+                    del self._story_cache[key]
+
+            return result
 
         except Exception as e:
             print(f"⚠️ AI story generation failed: {e}")
             # Fallback to generic prompt
-            return f"Imagine your {building_type} as a character in a story. What would it say about the people who visit and the experiences it creates? Write a short narrative from the building's perspective, focusing on how your design decisions shape daily life and community interaction."
+            fallback = f"Imagine your {building_type} as a character in a story. What would it say about the people who visit and the experiences it creates? Write a short narrative from the building's perspective, focusing on how your design decisions shape daily life and community interaction."
+
+            # Cache fallback too
+            if hasattr(self, '_story_cache'):
+                self._story_cache[cache_key] = fallback
+
+            return fallback
+
+    def _extract_topic_keywords(self, user_message: str) -> str:
+        """PERFORMANCE: Extract architectural topic using keyword matching instead of AI"""
+        message_lower = user_message.lower()
+
+        # Define topic keywords mapping
+        topic_keywords = {
+            'circulation': ['circulation', 'wayfinding', 'movement', 'flow', 'navigation', 'pathways'],
+            'lighting': ['lighting', 'illumination', 'daylight', 'artificial light', 'brightness'],
+            'sustainability': ['sustainable', 'green', 'eco', 'environmental', 'energy', 'solar'],
+            'acoustics': ['acoustic', 'sound', 'noise', 'audio', 'hearing'],
+            'accessibility': ['accessible', 'disability', 'universal design', 'barrier-free'],
+            'structure': ['structural', 'structure', 'load', 'beam', 'column', 'foundation'],
+            'materials': ['material', 'concrete', 'steel', 'wood', 'brick', 'glass'],
+            'landscape': ['landscape', 'garden', 'outdoor', 'green space', 'courtyard'],
+            'privacy': ['privacy', 'private', 'intimate', 'secluded'],
+            'community': ['community', 'social', 'gathering', 'interaction', 'public'],
+            'flexibility': ['flexible', 'adaptable', 'multi-use', 'convertible'],
+            'ventilation': ['ventilation', 'air', 'airflow', 'breathing', 'fresh air']
+        }
+
+        # Find matching topics
+        for topic, keywords in topic_keywords.items():
+            if any(keyword in message_lower for keyword in keywords):
+                return topic
+
+        # Default fallback
+        return 'design'
 
     async def _generate_ai_contextual_time_travel_prompt(self, user_message: str, building_type: str) -> str:
         """Generate flexible time travel prompt using AI for any architectural topic"""

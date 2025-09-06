@@ -1737,6 +1737,8 @@ Generate a contextual response that builds on their input:
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
         user_input = user_messages[-1] if user_messages else ""
 
+        design_brief = getattr(state, 'current_design_brief', '') or ''
+
         print(f"🔍 DEBUG: Generating socratic clarification for building_type: {building_type}")
         print(f"🔍 DEBUG: User input: {user_input[:100]}...")
 
@@ -1747,16 +1749,15 @@ You are a distinguished architectural professor providing comprehensive guidance
 
 STUDENT'S CONFUSION: "{user_input}"
 BUILDING TYPE: {building_type}
-PROJECT CONTEXT: Adaptive reuse warehouse-to-community-center transformation
+
+PROJECT CONTEXT: {design_brief}
+
 GAP TYPE: {gap_type}
 
 CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
 
-1. **THEORETICAL GROUNDING**: Reference established architectural theories, design principles, and methodologies relevant to their confusion. Examples:
-   - For spatial issues: Reference Christopher Alexander's pattern language, space syntax theory, or environmental psychology
-   - For green spaces: Biophilic design principles, landscape urbanism, therapeutic environments theory
-   - For circulation: Kevin Lynch's wayfinding principles, movement systems theory, accessibility frameworks
-   - For programming: Activity-based design, behavioral mapping, social space theory
+1. **THEORETICAL GROUNDING**: Reference established architectural theories, design principles, and methodologies that are SPECIFICALLY relevant to their confusion topic. Choose theories that directly address their question - don't use generic examples. Research and select the most appropriate theoretical framework for their specific architectural challenge.
+
 
 2. **ADVANCED CONTENT DEPTH**: Provide specific architectural strategies with proper terminology:
    - Technical considerations (structural implications, environmental systems, lighting requirements)
@@ -1771,22 +1772,36 @@ CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
    - Provide technical considerations specific to warehouse-to-community-center adaptive reuse
    - Connect to established design principles
 
-4. **CONTEXT-SPECIFIC APPLICATION**: Tailor advice specifically to warehouse-to-community-center adaptive reuse challenges, considering:
+
+4. **CONTEXT-SPECIFIC APPLICATION**: Tailor advice specifically to user's {building_type} project and user`s {user_input}, considering:
    - Existing structural systems and spatial qualities
-   - Community programming requirements
-   - Adaptive reuse constraints and opportunities
-   - Public space design considerations
+   - programming requirements
+   - constraints and opportunities
+   - Design considerations
 
 5. **MAINTAIN SOCRATIC ENGAGEMENT**: End with thoughtful questions that push deeper architectural thinking, not generic clarification requests.
+
+6. **AVOID TEMPLATE RESPONSES**: Do not repeat the same theorists (Christopher Alexander, Kevin Lynch, etc.) for different topics. Research and select the most contextually appropriate theories and precedents for THIS specific question.
 
 EXAMPLE STRUCTURE:
 "Your concern about [specific issue] touches on fundamental questions in [relevant architectural theory/field]. This challenge is particularly complex in adaptive reuse projects where [specific consideration].
 
-Let me break this down through [2-3 specific architectural frameworks/concepts]. First, consider [specific strategy with proper terminology], which is grounded in [relevant theory/precedent]. Second, [another specific approach] addresses [technical/spatial consideration].
+Let me break this down through [2-3 specific architectural frameworks/concepts]. 
 
-For your warehouse-to-community-center transformation, this means [specific application to their project context, including technical considerations].
+First, consider [specific strategy with proper terminology], which is grounded in [relevant theory/precedent]. 
+Second, [another specific approach] addresses [technical/spatial consideration].
+
+For your [relevant to user's project], this means [specific application to their project context, including technical considerations].
 
 [End with targeted questions that advance their architectural thinking]"
+
+CRITICAL FORMATTING REQUIREMENTS:
+- Write in flowing paragraphs, NOT bullet points or lists
+- Do NOT use dashes (-) at the beginning of sentences or paragraphs
+- Write as natural, conversational prose with proper paragraph structure
+- Integrate questions naturally within the text flow, not as separate bullet points
+- Use **bold** for key architectural concepts and *italics* for emphasis
+
 
 Generate comprehensive, theory-grounded guidance (4-5 substantial sentences + targeted questions):
 """
@@ -2169,7 +2184,7 @@ Focus on their specific question, not general {building_type} information.
             # Generate contextual guidance using LLM
             prompt = f"""
             You are an architectural mentor helping with a {building_type} project.
-
+            
             PROJECT CONTEXT: {design_brief}
             PROJECT DETAILS FROM CONVERSATION: {project_details}
             RECENT CONVERSATION: {conversation_context}

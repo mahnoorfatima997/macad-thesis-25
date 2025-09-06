@@ -531,72 +531,174 @@ class KnowledgeSynthesisProcessor:
             return [f"Would you like to learn more about {topic}?"]
     
     async def _generate_educational_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
-        """Generate contextual, specific educational response based on user's actual question."""
+        """Generate comprehensive, structured educational response following the 6-section format."""
         try:
             # Extract user's actual question and context
             user_question = context.get('user_question', topic) if context else topic
             building_type = context.get('building_type', 'architectural project') if context else 'architectural project'
             project_context = context.get('project_context', '') if context else ''
 
-            # FIXED: Create provocative prompt that generates interesting, specific content
+
+            # Extract knowledge sources for citations
+            knowledge_sources = knowledge.get('sources', []) if knowledge else []
+            knowledge_summary = knowledge.get('summary', 'General architectural knowledge') if knowledge else 'General architectural knowledge'
+
+            # Create comprehensive structured prompt for knowledge_only responses
             prompt = f"""
-            You are an innovative architectural thinker providing SPECIFIC, THOUGHT-PROVOKING insights.
+            You are a distinguished architectural professor providing comprehensive, structured knowledge to a student.
 
             STUDENT QUESTION: "{user_question}"
             BUILDING TYPE: {building_type}
             PROJECT CONTEXT: {project_context}
+            AVAILABLE KNOWLEDGE: {knowledge_summary}
 
-            CRITICAL REQUIREMENTS:
-            1. NO generic Architecture 101 content or basic definitions
-            2. NO phrases like "consider", "various approaches", "important to note", "key considerations"
-            3. PROVIDE specific, unexpected insights that challenge conventional thinking
-            4. REFERENCE specific architects, projects, or innovative techniques with names and locations
-            5. SPARK curiosity with provocative questions or unconventional perspectives
-            6. FOCUS on what makes this topic INTERESTING and UNIQUE, not basic principles
-            7. CHALLENGE assumptions and present alternative viewpoints
-            8. USE specific examples from real projects to illustrate points
+            Generate a comprehensive response following this EXACT structure:
 
-            Generate content that would make an architecture student think "I never thought about it that way!" rather than "I already knew that."
+            (1 paragraph):
+            - Brief contextual introduction that connects the topic to the student's specific {building_type} project
+            - Establish relevance and importance of the topic to their design challenge
+            - Set the stage for deeper exploration
 
-            CRITICAL INSTRUCTIONS:
-            - DO NOT write "Key Concepts and Principles" sections
-            - DO NOT provide general {building_type} overviews
-            - DO NOT use generic textbook language
-            - DIRECTLY address their specific question: {user_question}
+            **Key Concepts and Principles** (4-5 numbered points):
+            1. [Core theoretical concept with explanation of its relevance]
+            2. [Second key principle with architectural significance]
+            3. [Third concept with practical implications]
+            4. [Fourth principle with design considerations]
+            5. [Fifth concept if applicable, focusing on advanced understanding]
 
-            A student is working on a {building_type} and asked: "{user_question}"
+            **Practical Guidance and Considerations** (4-5 numbered points):
+            1. [Actionable advice for implementation in their project type]
+            2. [Specific design strategies and approaches]
+            3. [Technical considerations and best practices]
+            4. [Common challenges and how to address them]
+            5. [Integration with other design systems if applicable]
 
-            Their project context: {project_context}
-            Available knowledge: {knowledge.get('summary', 'General architectural knowledge')}
+            **Relevance to {building_type}** (1-2 paragraphs):
+            - Specific application of these concepts to {building_type} projects
+            - How the principles manifest differently in this building type
+            - Unique considerations and opportunities for {building_type} design
 
-            Write a focused response (2-3 paragraphs max) that:
-            1. Directly answers what they asked about (circulation/zoning priorities, etc.)
-            2. Addresses their specific concepts (privacy vs hierarchy vs connections etc.)
-            3. Applies sophisticated architectural analysis methods when they genuinely help solve their problem
-            4. Gives specific guidance for their {building_type} circulation challenge
-            5. References their exact words and builds on their thinking
-            6. Mentions real architectural precedents or approaches when relevant and connects to their specific topic
+            **Educational and Informative Insights** (1-2 paragraphs):
+            - Deeper analysis that synthesizes the concepts
+            - Historical context, theoretical frameworks, or contemporary trends
+            - Connections to broader architectural discourse and innovation
+            - Critical perspectives that challenge conventional approaches
 
-            Start by directly addressing their question, not with general statements about {building_type}s.
+            **Let`s Consider** (2-3 questions):
+            - Thought-provoking questions that encourage deeper exploration
+            - Questions that connect the knowledge to their specific design process
+            - Questions that provoke critical thinking about application to their project
+
+            CREATIVITY AND DIVERSITY REQUIREMENTS:
+            - BE CREATIVE: Draw from diverse architectural movements, cultures, and time periods
+            - AVOID REPETITIVE THEORISTS: Don't default to Christopher Alexander, Kevin Lynch, or other overused references
+            - EXPLORE VARIED PRECEDENTS: Reference contemporary projects, vernacular architecture, experimental designs, and cross-cultural examples
+            - USE UNEXPECTED CONNECTIONS: Link concepts to art, technology, psychology, sociology, or other disciplines
+            - REFERENCE DIVERSE ARCHITECTS: Include women architects, architects of color, emerging practitioners, and lesser-known innovators
+            - EXPLORE CONTEMPORARY ISSUES: Connect to current challenges like climate change, social equity, digital technology, and urban transformation
+
+            ACADEMIC EXCELLENCE REQUIREMENTS:
+            - Maintain comprehensive, academic tone with clear paragraph breaks
+            - Provide sophisticated, nuanced insights that challenge conventional thinking
+            - Each section should be substantial and informative, not superficial
+            - Questions should provoke critical thinking and deeper exploration
+            - Use proper formatting with **bold headers** for each section
+            - Demonstrate intellectual rigor while remaining accessible and engaging
+
             """
 
             response = await self.client.generate_completion([
-                self.client.create_system_message("You are an expert architecture mentor providing specific, contextual guidance. Avoid generic advice."),
+                self.client.create_system_message("You are a distinguished architectural professor providing comprehensive, structured knowledge responses. Follow the exact format specified and maintain academic rigor."),
                 self.client.create_user_message(prompt)
             ])
 
             if response and response.get("content"):
-                # Clean any markdown headers that might have been generated
-                clean_response = self._clean_markdown_headers(response["content"])
-                return clean_response
+                # Clean and format the response
+                structured_response = self._format_structured_response(response["content"], knowledge_sources)
+                return structured_response
 
-            # Fallback with more specific guidance
-            return f"For your {building_type}, consider how {topic} can be specifically applied to your project context. What are the unique spatial requirements and user needs you're addressing?"
+            # Fallback with structured format
+            return self._generate_fallback_structured_response(user_question, building_type, topic)
 
         except Exception as e:
             self.telemetry.log_error("_generate_educational_response", str(e))
-            return f"Let's explore how {topic} applies specifically to your {building_type if context and context.get('building_type') else 'project'}."
-    
+            return self._generate_fallback_structured_response(user_question if 'user_question' in locals() else topic,
+                                                             building_type if 'building_type' in locals() else 'architectural project',
+                                                             topic)
+
+    def _format_structured_response(self, response_content: str, knowledge_sources=None) -> str:
+        """Format the structured response and add citations if available."""
+        try:
+            # Clean any markdown headers that might interfere
+            formatted_response = self._clean_markdown_headers(response_content)
+
+            # Add knowledge source citations if available
+            if knowledge_sources and len(knowledge_sources) > 0:
+                citations = "\n\n**Sources:**\n"
+                for i, source in enumerate(knowledge_sources[:3], 1):  # Limit to 3 sources
+                    if isinstance(source, dict):
+                        title = source.get('title', 'Architectural Knowledge')
+                        citation = source.get('citation', '')
+                        if citation:
+                            citations += f"{i}. {title} - {citation}\n"
+                        else:
+                            citations += f"{i}. {title}\n"
+                    else:
+                        citations += f"{i}. {str(source)}\n"
+
+                formatted_response += citations
+
+            return formatted_response
+
+        except Exception as e:
+            self.telemetry.log_error("_format_structured_response", str(e))
+            return response_content
+
+    def _generate_fallback_structured_response(self, user_question: str, building_type: str, topic: str) -> str:
+        """Generate a fallback structured response when AI generation fails."""
+        try:
+            return f"""Understanding {topic} in {building_type} design is crucial for creating effective architectural solutions that respond to your specific design challenge: "{user_question}"
+
+**Key Concepts and Principles**
+
+1. **Contextual Integration** - {topic} must be understood within the broader context of {building_type} design, considering how it influences spatial organization, user experience, and functional efficiency.
+
+2. **Design Methodology** - Systematic approaches to {topic} involve analyzing user needs, site conditions, and programmatic requirements to develop appropriate design responses.
+
+3. **Performance Criteria** - Effective implementation of {topic} requires establishing clear performance metrics that align with the specific goals of your {building_type} project.
+
+4. **Spatial Relationships** - {topic} directly impacts how spaces relate to each other, influencing circulation patterns, visual connections, and functional adjacencies.
+
+**Practical Guidance and Considerations**
+
+1. **Analysis Framework** - Begin by mapping the specific requirements of {topic} within your {building_type} context, identifying key constraints and opportunities.
+
+2. **Design Strategies** - Develop multiple approaches to addressing {topic}, testing each against your project's unique parameters and user needs.
+
+3. **Integration Methods** - Consider how {topic} interfaces with other building systems and design elements to create cohesive architectural solutions.
+
+4. **Evaluation Criteria** - Establish methods for assessing the effectiveness of your {topic} implementation throughout the design process.
+
+**Relevance to {building_type}**
+
+In {building_type} projects, {topic} takes on particular significance due to the specific functional requirements and user expectations associated with this building type. The way {topic} is addressed can fundamentally influence the success of the overall design, affecting everything from operational efficiency to user satisfaction and spatial quality.
+
+**Educational and Informative Insights**
+
+The study of {topic} in architecture reveals the complex interplay between theoretical principles and practical application. Contemporary approaches to {topic} increasingly emphasize evidence-based design, where decisions are informed by research, precedent analysis, and performance data. This represents a shift from purely intuitive design approaches toward more systematic methodologies that can be evaluated and refined.
+
+**Questions for Further Exploration**
+
+How does your specific approach to {topic} differentiate your {building_type} design from conventional solutions?
+
+What unique opportunities does your site or program present for innovative implementation of {topic}?
+
+How might you measure the success of your {topic} strategy once the building is occupied?"""
+
+        except Exception as e:
+            self.telemetry.log_error("_generate_fallback_structured_response", str(e))
+            return f"Let's explore how {topic} applies specifically to your {building_type} project and the question: {user_question}"
+
     async def _generate_practical_response(self, topic: str, knowledge: Dict, context: Dict = None) -> str:
         """Generate practical-focused response."""
         response = f"In architectural practice, {topic} is commonly applied through direct implementation in design projects, "
