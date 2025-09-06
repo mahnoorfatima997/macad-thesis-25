@@ -255,17 +255,30 @@ class PersonalityDashboard:
         
         st.markdown("---")
         
-        # Overview charts and visualizations
+        # Overview charts and visualizations - 3 Column Layout
         st.markdown("### Personality Analysis Overview")
         
-        # HEXACO radar chart for average personality
-        st.markdown("#### Average Personality Profile (HEXACO)")
-        avg_profile = self._calculate_average_profile(profiles)
-        radar_chart = self.visualizer.create_hexaco_radar_chart(avg_profile)
-        st.plotly_chart(radar_chart, use_container_width=True, key="personality_overview_radar")
+        col1, col2, col3 = st.columns(3)
         
-        # Trait correlation heatmap
+        with col1:
+            st.markdown("#### Average HEXACO Profile")
+            avg_profile = self._calculate_average_profile(profiles)
+            radar_chart = self.visualizer.create_hexaco_radar_chart(avg_profile)
+            st.plotly_chart(radar_chart, use_container_width=True, key="personality_overview_radar")
+        
+        with col2:
+            st.markdown("#### Trait Distribution Across Sessions")
+            distribution_chart = self._create_trait_distribution_chart(profiles)
+            st.plotly_chart(distribution_chart, use_container_width=True, key="personality_overview_distribution")
+        
+        with col3:
+            st.markdown("#### Session Reliability Overview")
+            reliability_chart = self._create_reliability_overview_chart(profiles)
+            st.plotly_chart(reliability_chart, use_container_width=True, key="personality_overview_reliability")
+        
+        # Trait correlation heatmap (full width below)
         if len(profiles) >= 3:
+            st.markdown("---")
             st.markdown("#### Trait Correlation Heatmap")
             correlation_chart = self.visualizer.create_trait_correlation_heatmap(profiles)
             st.plotly_chart(correlation_chart, use_container_width=True, key="personality_overview_heatmap")
@@ -411,6 +424,26 @@ class PersonalityDashboard:
                 if trait in profile.traits:
                     self._display_trait_analysis(profile, trait, trait_details[trait])
         
+        # Session Analysis Charts - 3 Column Layout
+        st.markdown("### Comprehensive Session Analysis")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("#### HEXACO Radar Chart")
+            radar_chart = self._create_individual_hexaco_radar(profile)
+            st.plotly_chart(radar_chart, use_container_width=True, key=f"individual_radar_{profile.session_id}")
+        
+        with col2:
+            st.markdown("#### Trait Confidence Levels")
+            confidence_chart = self._create_confidence_bar_chart(profile)
+            st.plotly_chart(confidence_chart, use_container_width=True, key=f"confidence_{profile.session_id}")
+        
+        with col3:
+            st.markdown("#### Personality Balance")
+            balance_chart = self._create_personality_balance_chart(profile)
+            st.plotly_chart(balance_chart, use_container_width=True, key=f"balance_{profile.session_id}")
+        
         # System improvement recommendations
         st.markdown("### System Adaptation Recommendations")
         self._generate_adaptation_recommendations(profile)
@@ -496,6 +529,368 @@ class PersonalityDashboard:
                 st.markdown(f"{i}. {rec}")
         else:
             st.markdown("**Balanced personality profile** - standard system configuration recommended.")
+    
+    def _create_individual_hexaco_radar(self, profile: PersonalityProfile):
+        """Create a HEXACO radar chart for individual personality profile"""
+        import plotly.graph_objects as go
+        import numpy as np
+        
+        # HEXACO traits in order for radar chart
+        traits = ['honesty_humility', 'emotionality', 'extraversion', 'agreeableness', 'conscientiousness', 'openness']
+        trait_labels = ['Honesty-Humility', 'Emotionality', 'eXtraversion', 'Agreeableness', 'Conscientiousness', 'Openness']
+        
+        # Get scores for each trait
+        scores = []
+        for trait in traits:
+            score = profile.traits.get(trait, 0.5)
+            scores.append(score * 100)  # Convert to percentage for better visualization
+        
+        # Close the radar chart by repeating the first value
+        scores.append(scores[0])
+        trait_labels.append(trait_labels[0])
+        
+        # Create figure
+        fig = go.Figure()
+        
+        # Add the personality profile trace
+        fig.add_trace(go.Scatterpolar(
+            r=scores,
+            theta=trait_labels,
+            fill='toself',
+            fillcolor=f'rgba({int(self.colors["primary_violet"][1:3], 16)}, {int(self.colors["primary_violet"][3:5], 16)}, {int(self.colors["primary_violet"][5:7], 16)}, 0.3)',
+            line=dict(color=self.colors["primary_violet"], width=2),
+            marker=dict(color=self.colors["primary_violet"], size=8),
+            name=f'Profile {profile.session_id[:8]}...',
+            hovertemplate='<b>%{theta}</b><br>Score: %{r:.1f}%<extra></extra>'
+        ))
+        
+        # Update layout to match the example style
+        fig.update_layout(
+            polar=dict(
+                bgcolor='rgba(255, 255, 255, 0)',
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 100],
+                    showline=False,
+                    gridcolor=self.colors['neutral_light'],
+                    gridwidth=1,
+                    tickmode='linear',
+                    tick0=0,
+                    dtick=20,
+                    tickfont=dict(size=10, color=self.colors['primary_dark'])
+                ),
+                angularaxis=dict(
+                    tickfont=dict(size=12, color=self.colors['primary_dark'], family='Arial'),
+                    linecolor=self.colors['neutral_light'],
+                    gridcolor=self.colors['neutral_light']
+                )
+            ),
+            showlegend=False,
+            title=dict(
+                text=f"<b>HEXACO Personality Profile</b><br><sub>Session: {profile.session_id[:12]}...</sub>",
+                font=dict(size=16, color=self.colors['primary_dark'], family='Arial'),
+                x=0.5,
+                xanchor='center'
+            ),
+            font=dict(family='Arial'),
+            paper_bgcolor='rgba(255, 255, 255, 0)',
+            plot_bgcolor='rgba(255, 255, 255, 0)',
+            width=500,
+            height=500
+        )
+        
+        return fig
+    
+    def _create_confidence_bar_chart(self, profile: PersonalityProfile):
+        """Create a horizontal bar chart showing confidence levels for each trait"""
+        import plotly.graph_objects as go
+        
+        # Get traits and confidence scores
+        traits = ['honesty_humility', 'emotionality', 'extraversion', 'agreeableness', 'conscientiousness', 'openness']
+        trait_labels = ['Honesty-Humility', 'Emotionality', 'eXtraversion', 'Agreeableness', 'Conscientiousness', 'Openness']
+        
+        confidences = []
+        colors = []
+        for trait in traits:
+            confidence = profile.confidence.get(trait, 0.5) * 100
+            confidences.append(confidence)
+            
+            # Color code by confidence level
+            if confidence >= 70:
+                colors.append(self.colors['primary_violet'])  # High confidence
+            elif confidence >= 50:
+                colors.append(self.colors['primary_rose'])    # Medium confidence  
+            else:
+                colors.append(self.colors['neutral_orange'])  # Low confidence
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            y=trait_labels,
+            x=confidences,
+            orientation='h',
+            marker=dict(color=colors, line=dict(color=self.colors['primary_dark'], width=1)),
+            text=[f'{c:.1f}%' for c in confidences],
+            textposition='inside',
+            textfont=dict(color='white', size=10, family='Arial'),
+            hovertemplate='<b>%{y}</b><br>Confidence: %{x:.1f}%<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            title=dict(
+                text="<b>Analysis Confidence</b>",
+                font=dict(size=14, color=self.colors['primary_dark'], family='Arial'),
+                x=0.5,
+                xanchor='center'
+            ),
+            xaxis=dict(
+                title="Confidence Level (%)",
+                range=[0, 100],
+                showgrid=True,
+                gridcolor=self.colors['neutral_light'],
+                tickfont=dict(size=10, color=self.colors['primary_dark'])
+            ),
+            yaxis=dict(
+                tickfont=dict(size=10, color=self.colors['primary_dark'])
+            ),
+            showlegend=False,
+            paper_bgcolor='rgba(255, 255, 255, 0)',
+            plot_bgcolor='rgba(255, 255, 255, 0)',
+            font=dict(family='Arial'),
+            height=400,
+            margin=dict(l=20, r=20, t=60, b=40)
+        )
+        
+        return fig
+    
+    def _create_personality_balance_chart(self, profile: PersonalityProfile):
+        """Create a donut chart showing personality balance (high vs medium vs low traits)"""
+        import plotly.graph_objects as go
+        
+        # Count traits by level
+        level_counts = {'high': 0, 'medium': 0, 'low': 0}
+        for level in profile.levels.values():
+            level_counts[level] += 1
+        
+        # Create data for donut chart
+        labels = []
+        values = []
+        colors = []
+        
+        if level_counts['high'] > 0:
+            labels.append(f'High Traits ({level_counts["high"]})')
+            values.append(level_counts['high'])
+            colors.append(self.colors['primary_violet'])
+        
+        if level_counts['medium'] > 0:
+            labels.append(f'Medium Traits ({level_counts["medium"]})')
+            values.append(level_counts['medium'])
+            colors.append(self.colors['primary_rose'])
+        
+        if level_counts['low'] > 0:
+            labels.append(f'Low Traits ({level_counts["low"]})')
+            values.append(level_counts['low'])
+            colors.append(self.colors['neutral_orange'])
+        
+        # Calculate reliability score color
+        reliability = profile.reliability_score
+        if reliability >= 0.7:
+            reliability_color = self.colors['primary_violet']
+            reliability_text = "High"
+        elif reliability >= 0.5:
+            reliability_color = self.colors['primary_rose']
+            reliability_text = "Medium"
+        else:
+            reliability_color = self.colors['neutral_orange']
+            reliability_text = "Low"
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Pie(
+            labels=labels,
+            values=values,
+            hole=0.6,
+            marker=dict(colors=colors, line=dict(color=self.colors['primary_dark'], width=1)),
+            textinfo='label+percent',
+            textfont=dict(size=10, color=self.colors['primary_dark'], family='Arial'),
+            hovertemplate='<b>%{label}</b><br>Count: %{value}<br>Percentage: %{percent}<extra></extra>'
+        ))
+        
+        # Add center text showing reliability
+        fig.add_annotation(
+            text=f"<b>Reliability</b><br>{reliability_text}<br>({reliability:.2f})",
+            x=0.5, y=0.5,
+            font=dict(size=12, color=reliability_color, family='Arial'),
+            showarrow=False,
+            align='center'
+        )
+        
+        fig.update_layout(
+            title=dict(
+                text="<b>Trait Distribution</b>",
+                font=dict(size=14, color=self.colors['primary_dark'], family='Arial'),
+                x=0.5,
+                xanchor='center'
+            ),
+            showlegend=False,
+            paper_bgcolor='rgba(255, 255, 255, 0)',
+            plot_bgcolor='rgba(255, 255, 255, 0)',
+            font=dict(family='Arial'),
+            height=400,
+            margin=dict(l=20, r=20, t=60, b=40)
+        )
+        
+        return fig
+    
+    def _create_trait_distribution_chart(self, profiles: List[PersonalityProfile]):
+        """Create a stacked bar chart showing distribution of trait levels across all sessions"""
+        import plotly.graph_objects as go
+        import numpy as np
+        
+        # HEXACO traits
+        traits = ['honesty_humility', 'emotionality', 'extraversion', 'agreeableness', 'conscientiousness', 'openness']
+        trait_labels = ['Honesty-Humility', 'Emotionality', 'eXtraversion', 'Agreeableness', 'Conscientiousness', 'Openness']
+        
+        # Count levels for each trait across all sessions
+        level_counts = {trait: {'low': 0, 'medium': 0, 'high': 0} for trait in traits}
+        
+        for profile in profiles:
+            for trait in traits:
+                level = profile.levels.get(trait, 'low')
+                level_counts[trait][level] += 1
+        
+        # Create stacked bar chart
+        fig = go.Figure()
+        
+        # Add bars for each level
+        fig.add_trace(go.Bar(
+            name='High',
+            x=trait_labels,
+            y=[level_counts[trait]['high'] for trait in traits],
+            marker_color=self.colors['primary_violet'],
+            hovertemplate='<b>%{x}</b><br>High: %{y} sessions<extra></extra>'
+        ))
+        
+        fig.add_trace(go.Bar(
+            name='Medium',
+            x=trait_labels,
+            y=[level_counts[trait]['medium'] for trait in traits],
+            marker_color=self.colors['primary_rose'],
+            hovertemplate='<b>%{x}</b><br>Medium: %{y} sessions<extra></extra>'
+        ))
+        
+        fig.add_trace(go.Bar(
+            name='Low',
+            x=trait_labels,
+            y=[level_counts[trait]['low'] for trait in traits],
+            marker_color=self.colors['neutral_orange'],
+            hovertemplate='<b>%{x}</b><br>Low: %{y} sessions<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            title=dict(
+                text="<b>Trait Level Distribution</b>",
+                font=dict(size=14, color=self.colors['primary_dark'], family='Arial'),
+                x=0.5,
+                xanchor='center'
+            ),
+            xaxis=dict(
+                tickangle=-45,
+                tickfont=dict(size=10, color=self.colors['primary_dark'])
+            ),
+            yaxis=dict(
+                title="Number of Sessions",
+                tickfont=dict(size=10, color=self.colors['primary_dark'])
+            ),
+            barmode='stack',
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+                font=dict(size=10, color=self.colors['primary_dark'])
+            ),
+            paper_bgcolor='rgba(255, 255, 255, 0)',
+            plot_bgcolor='rgba(255, 255, 255, 0)',
+            font=dict(family='Arial'),
+            height=400,
+            margin=dict(l=40, r=20, t=80, b=100)
+        )
+        
+        return fig
+    
+    def _create_reliability_overview_chart(self, profiles: List[PersonalityProfile]):
+        """Create a scatter plot showing reliability scores and text lengths for all sessions"""
+        import plotly.graph_objects as go
+        
+        # Extract data for plotting
+        reliability_scores = [p.reliability_score for p in profiles]
+        text_lengths = [p.text_length for p in profiles]
+        session_labels = [f"Session {p.session_id[:8]}..." for p in profiles]
+        
+        # Color code by reliability level
+        colors = []
+        for score in reliability_scores:
+            if score >= 0.7:
+                colors.append(self.colors['primary_violet'])
+            elif score >= 0.5:
+                colors.append(self.colors['primary_rose'])
+            else:
+                colors.append(self.colors['neutral_orange'])
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Scatter(
+            x=text_lengths,
+            y=reliability_scores,
+            mode='markers',
+            marker=dict(
+                size=10,
+                color=colors,
+                line=dict(color=self.colors['primary_dark'], width=1),
+                opacity=0.8
+            ),
+            text=session_labels,
+            hovertemplate='<b>%{text}</b><br>Text Length: %{x} chars<br>Reliability: %{y:.3f}<extra></extra>',
+            showlegend=False
+        ))
+        
+        # Add reliability thresholds
+        fig.add_hline(y=0.7, line_dash="dash", line_color=self.colors['primary_violet'], 
+                      annotation_text="High Reliability", annotation_position="bottom right")
+        fig.add_hline(y=0.5, line_dash="dash", line_color=self.colors['primary_rose'],
+                      annotation_text="Medium Reliability", annotation_position="bottom right")
+        
+        fig.update_layout(
+            title=dict(
+                text="<b>Session Quality Overview</b>",
+                font=dict(size=14, color=self.colors['primary_dark'], family='Arial'),
+                x=0.5,
+                xanchor='center'
+            ),
+            xaxis=dict(
+                title="Text Length (characters)",
+                tickfont=dict(size=10, color=self.colors['primary_dark']),
+                showgrid=True,
+                gridcolor=self.colors['neutral_light']
+            ),
+            yaxis=dict(
+                title="Reliability Score",
+                range=[0, 1],
+                tickfont=dict(size=10, color=self.colors['primary_dark']),
+                showgrid=True,
+                gridcolor=self.colors['neutral_light']
+            ),
+            paper_bgcolor='rgba(255, 255, 255, 0)',
+            plot_bgcolor='rgba(255, 255, 255, 0)',
+            font=dict(family='Arial'),
+            height=400,
+            margin=dict(l=60, r=20, t=60, b=60)
+        )
+        
+        return fig
     
     def _get_trait_asset_path(self, trait: str, level: str) -> Optional[Path]:
         """
@@ -731,21 +1126,41 @@ class PersonalityDashboard:
         """Render architectural preferences, design insights, and cognitive correlations in three columns"""
         st.markdown("### Design Preferences and Cognitive Correlations Analysis")
         
-        # Create three columns for side-by-side display
+        # Create three columns for side-by-side display with animated headers
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            self._render_architectural_preferences_column(profiles)
+            # Title first
+            st.markdown("#### Architectural Design Preferences")
+            # Add animated GIF header
+            gif_path = Path("assets/Design_Preferences_and_Cognitive_Correlations_Analysis/Architectural_Design_Preferences.gif")
+            if gif_path.exists():
+                st.image(str(gif_path), use_container_width=True)
+            # Content after GIF
+            self._render_architectural_preferences_content(profiles)
         
         with col2:
-            self._render_session_design_insights_column(profiles)
+            # Title first
+            st.markdown("#### Session-Specific Design Insights")
+            # Add animated GIF header
+            gif_path = Path("assets/Design_Preferences_and_Cognitive_Correlations_Analysis/Session_Specific_Design_Insights.gif")
+            if gif_path.exists():
+                st.image(str(gif_path), use_container_width=True)
+            # Content after GIF
+            self._render_session_design_insights_content(profiles)
         
         with col3:
-            self._render_cognitive_correlations_column(profiles)
+            # Title first
+            st.markdown("#### Personality-Cognitive Correlations")
+            # Add animated GIF header
+            gif_path = Path("assets/Design_Preferences_and_Cognitive_Correlations_Analysis/Personality_Cognitive_Correlations.gif")
+            if gif_path.exists():
+                st.image(str(gif_path), use_container_width=True)
+            # Content after GIF
+            self._render_cognitive_correlations_content(profiles)
     
-    def _render_architectural_preferences_column(self, profiles: List[PersonalityProfile]):
-        """Render architectural preferences in column format"""
-        st.markdown("#### Architectural Design Preferences")
+    def _render_architectural_preferences_content(self, profiles: List[PersonalityProfile]):
+        """Render architectural preferences content only (without title)"""
         
         # Trait-preference associations
         trait_preferences = {
@@ -788,9 +1203,8 @@ class PersonalityDashboard:
                 st.markdown(f"• {pref}")
             st.markdown("")  # Add spacing
     
-    def _render_session_design_insights_column(self, profiles: List[PersonalityProfile]):
-        """Render session-specific design insights in column format"""
-        st.markdown("#### Session-Specific Design Insights")
+    def _render_session_design_insights_content(self, profiles: List[PersonalityProfile]):
+        """Render session-specific design insights content only (without title)"""
         
         if profiles:
             for profile in profiles[:3]:  # Show first 3 sessions
@@ -819,9 +1233,8 @@ class PersonalityDashboard:
         else:
             st.markdown("No session data available")
     
-    def _render_cognitive_correlations_column(self, profiles: List[PersonalityProfile]):
-        """Render cognitive correlations in column format"""
-        st.markdown("#### Personality-Cognitive Correlations")
+    def _render_cognitive_correlations_content(self, profiles: List[PersonalityProfile]):
+        """Render cognitive correlations content only (without title)"""
         
         # Load correlation data if available
         corr_file = self.results_dir / "personality_cognitive_correlations.json"
