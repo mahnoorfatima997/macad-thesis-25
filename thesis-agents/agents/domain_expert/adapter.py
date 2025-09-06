@@ -195,8 +195,19 @@ class DomainExpertAgent:
 
                 if len(relevant_results) >= 2:
                     print(f"   📚 Using {len(relevant_results)} relevant database results for synthesis")
-                    knowledge_text = await self._synthesize_knowledge_with_llm(
-                        user_topic, relevant_results, building_type, synthesis_type="knowledge", user_input=user_input
+                    print(f"🎓 DOMAIN_EXPERT: Using knowledge synthesis processor with _generate_educational_response")
+
+                    # FIXED: Use knowledge synthesis processor instead of direct LLM synthesis
+                    # This will call _generate_educational_response with the structured 6-section format
+                    knowledge_data = [{"content": result.get('content', ''), "title": result.get('title', ''), "source": result} for result in relevant_results]
+                    context = {
+                        'user_question': user_input,
+                        'building_type': building_type,
+                        'project_context': f"{building_type} project"
+                    }
+
+                    knowledge_text = await self.synthesis_processor.generate_response_internal(
+                        user_topic, knowledge_data, context, delivery_style='educational'
                     )
 
                     response_metadata = {
@@ -274,8 +285,17 @@ class DomainExpertAgent:
             # Step 4: Use AI generation as final fallback
             if agent_response is None:
                 print(f"   🤖 Database and web search insufficient - using AI generation as final fallback")
-                ai_response = await self._generate_contextual_knowledge_response(
-                    user_input, building_type, project_context, gap_type, state
+                print(f"🎓 DOMAIN_EXPERT: Using knowledge synthesis processor for AI fallback with _generate_educational_response")
+
+                # FIXED: Use knowledge synthesis processor for AI fallback too
+                context = {
+                    'user_question': user_input,
+                    'building_type': building_type,
+                    'project_context': f"{building_type} project"
+                }
+
+                ai_response = await self.synthesis_processor.generate_response_internal(
+                    user_topic, [], context, delivery_style='educational'  # Empty knowledge_data for AI generation
                 )
 
                 response_metadata = {
@@ -2355,7 +2375,6 @@ What questions do you have about your design?"""
 
         AFTER THE EXAMPLES, you MUST add:
         - A brief conclusion that identifies the common themes or key insights from these specific examples
-        - ONE thought-provoking question that connects these examples to the user's community center project and encourages deeper thinking about application
 
         CRITICAL INSTRUCTIONS:
         - You MUST provide REAL PROJECT NAMES, not strategy names
@@ -2372,7 +2391,10 @@ What questions do you have about your design?"""
         - The conclusion should synthesize what these examples reveal about {user_topic}
         - The question should be specific to these examples and inspire application to the user's project
         """
-        
+        #   AFTER THE EXAMPLES, you MUST add:
+        # - A brief conclusion that identifies the common themes or key insights from these specific examples
+        # - ONE thought-provoking question that connects these examples to the user's community center project and encourages deeper thinking about application
+      
         try:
             # Use OpenAI client directly like the old repository
             from openai import OpenAI
@@ -2575,11 +2597,7 @@ AVAILABLE KNOWLEDGE SOURCES:
 
 CRITICAL REQUIREMENTS FOR COMPREHENSIVE RESPONSE:
 
-1. **THEORETICAL GROUNDING**: Reference specific architectural theories, design principles, and established methodologies relevant to their confusion. Connect to:
-   - Relevant design theory (e.g., Christopher Alexander, Kevin Lynch, Jane Jacobs, etc.)
-   - Environmental psychology and behavioral design principles
-   - Contemporary architectural discourse and practice frameworks
-   - Established design methodologies and analytical tools
+1. **THEORETICAL GROUNDING**: Research and reference the most appropriate architectural theories, design principles, and methodologies that specifically address their confusion. Select from the full range of architectural theory - historical, contemporary, and emerging - choosing only those that directly illuminate their particular challenge. Avoid generic theory references.
 
 2. **ADVANCED CONTENT DEPTH**: Provide sophisticated architectural analysis including:
    - Specific design strategies with proper architectural terminology
@@ -2627,11 +2645,7 @@ PROJECT CONTEXT: {project_context}
 
 CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
 
-1. **THEORETICAL GROUNDING**: Reference established architectural theories and design principles relevant to {user_topic}. Examples:
-   - For spatial/green issues: Biophilic design principles (E.O. Wilson), landscape urbanism theory, therapeutic environments
-   - For circulation: Kevin Lynch's wayfinding principles, space syntax theory, movement systems
-   - For programming: Activity-based design, behavioral mapping, social space theory (Henri Lefebvre)
-   - For adaptive reuse: Preservation theory, building lifecycle concepts, heritage integration
+1. **THEORETICAL GROUNDING**: Research and reference the most relevant architectural theories and design principles that specifically address {user_topic}. Select theories that directly relate to their question rather than using generic examples. Choose from the full spectrum of architectural theory, contemporary research, and established methodologies that best illuminate their specific challenge.
 
 2. **ADVANCED CONTENT DEPTH**: Provide specific architectural strategies with proper terminology:
    - Technical considerations (structural implications, environmental systems, lighting requirements)

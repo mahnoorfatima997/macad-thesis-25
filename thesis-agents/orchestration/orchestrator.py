@@ -238,20 +238,22 @@ class LangGraphOrchestrator:
         )
 
         # ENHANCEMENT: Apply route-specific shaping before quality controls
-        try:
-            from .synthesis import shape_by_route
-            user_message_count = len([m for m in state.get("messages", []) if m.get("role") == "user"])
-            context_analysis = state.get("context_analysis", {})
-            final_response = shape_by_route(
-                text=final_response,
-                routing_path=routing_path,
-                classification=classification,
-                ordered_results=agent_results,
-                user_message_count=user_message_count,
-                context_analysis=context_analysis,
-            )
-        except Exception as e:
-            self.logger.warning(f"Route shaping failed: {e}")
+        # FIXED: Skip synthesis shaping for routes that should preserve natural formatting
+        if routing_path not in ["socratic_exploration", "socratic_clarification", "knowledge_only"]:
+            try:
+                from .synthesis import shape_by_route
+                user_message_count = len([m for m in state.get("messages", []) if m.get("role") == "user"])
+                context_analysis = state.get("context_analysis", {})
+                final_response = shape_by_route(
+                    text=final_response,
+                    routing_path=routing_path,
+                    classification=classification,
+                    ordered_results=agent_results,
+                    user_message_count=user_message_count,
+                    context_analysis=context_analysis,
+                )
+            except Exception as e:
+                self.logger.warning(f"Route shaping failed: {e}")
 
         # Apply response quality controls similar to legacy logic
         agent_type_map = {
@@ -383,12 +385,26 @@ class LangGraphOrchestrator:
             else:
                 return self._synthesize_example_response(domain_result, user_input, classification), "knowledge_only"
 
-        # ENHANCED: For knowledge_only routes, add thoughtful questions to domain expert responses
+        # ENHANCED: For knowledge_only routes, preserve structured responses from domain expert
         if domain_result and domain_result.get('response_text'):
             domain_text = domain_result.get('response_text', '')
-            enhanced_text = self._enhance_knowledge_response_with_questions(domain_text, user_input, classification)
-            formatted_text = self._format_response_for_readability(enhanced_text)
-            return formatted_text, "knowledge_only"
+
+            # DEBUG: Log what we're getting from domain expert
+            print(f"🔍 KNOWLEDGE_ONLY DEBUG: Domain response length: {len(domain_text)}")
+            print(f"🔍 KNOWLEDGE_ONLY DEBUG: Has structured format: {'**Key Concepts and Principles**' in domain_text}")
+
+            # Check if this is already a structured response (from enhanced _generate_educational_response)
+            if "**Key Concepts and Principles**" in domain_text or "**Closing Questions**" in domain_text:
+                print(f"✅ KNOWLEDGE_ONLY: Using structured response directly")
+                # This is our enhanced structured response - use it directly without modification
+                return domain_text, "knowledge_only"
+            else:
+                print(f"⚠️ KNOWLEDGE_ONLY: Legacy response detected, enhancing with questions")
+                # This is a legacy response - enhance it
+                enhanced_text = self._enhance_knowledge_response_with_questions(domain_text, user_input, classification)
+                formatted_text = self._format_response_for_readability(enhanced_text)
+                return formatted_text, "knowledge_only"
+
         elif socratic_result and socratic_result.get('response_text'):
             socratic_text = socratic_result.get('response_text', '')
             enhanced_text = self._enhance_knowledge_response_with_questions(socratic_text, user_input, classification)
@@ -740,21 +756,30 @@ class LangGraphOrchestrator:
             # Both agents provided responses - create intelligent synthesis
             try:
                 synthesis_prompt = f"""
-                You are synthesizing comprehensive clarification for a confused student.
+                You are a distinguished architecture professor providing sophisticated guidance to a student experiencing conceptual confusion. Your response should demonstrate the intellectual rigor and theoretical depth expected in advanced architectural education.
 
-                STUDENT'S CONFUSION: "{user_input}"
+                STUDENT'S COMPLEX CHALLENGE: "{user_input}"
 
                 SOCRATIC GUIDANCE: {socratic_text}
                 DOMAIN KNOWLEDGE: {domain_text}
 
-                Create a cohesive response that:
-                1. Maintains the theoretical grounding and architectural depth from the domain knowledge
-                2. Preserves the Socratic questioning approach and educational structure
-                3. Combines both perspectives into a seamless, comprehensive clarification
-                4. Ensures proper flow and avoids repetition
-                5. Maintains professor-level architectural education quality
+                PROFESSOR-LEVEL CLARIFICATION REQUIREMENTS:
 
-                Generate a unified, comprehensive clarification response:
+                **THEORETICAL GROUNDING**: Ground your response in established architectural theory, referencing specific theorists, methodologies, and frameworks. Connect the student's confusion to broader disciplinary discourse.
+
+                **SYSTEMATIC BREAKDOWN**: Decompose the complex challenge into manageable conceptual components, each with its own theoretical foundation and practical implications.
+
+                **PRECEDENT INTEGRATION**: Reference specific built projects, architects, and case studies that illuminate different approaches to similar challenges.
+
+                **METHODOLOGICAL GUIDANCE**: Provide concrete research methodologies, design processes, and analytical frameworks the student can employ.
+
+                **CRITICAL THINKING PROVOCATION**: Pose sophisticated questions that push the student to examine assumptions, consider multiple perspectives, and develop nuanced understanding.
+
+                **PROFESSIONAL CONTEXT**: Connect the discussion to real-world professional practice, ethical considerations, and contemporary architectural discourse.
+
+                FORMATTING: Use clear paragraph structure with **bold key concepts** and *italicized* important considerations. Integrate questions naturally throughout the text to maintain Socratic engagement.
+
+                Generate a comprehensive, intellectually rigorous clarification that transforms confusion into structured understanding:
                 """
 
                 import openai
@@ -865,12 +890,21 @@ class LangGraphOrchestrator:
                     4. CREATES NATURAL PARAGRAPHS: Break into 3-4 well-structured paragraphs
                     5. MAINTAINS SCHOLARLY TONE: Write like an architecture professor teaching advanced concepts
 
+                    CREATIVITY AND DIVERSITY REQUIREMENTS:
+                    - BE INTELLECTUALLY ADVENTUROUS: Draw from unexpected sources, movements, and disciplines
+                    - AVOID CLICHÉD REFERENCES: Don't default to Christopher Alexander, Kevin Lynch, or other overused theorists
+                    - EXPLORE GLOBAL PERSPECTIVES: Include non-Western architecture, vernacular traditions, and cross-cultural approaches
+                    - REFERENCE CONTEMPORARY INNOVATIONS: Cite recent projects, emerging technologies, and current research
+                    - CONNECT TO OTHER FIELDS: Link to psychology, sociology, environmental science, digital technology, or art
+                    - HIGHLIGHT DIVERSE VOICES: Reference women architects, architects of color, and underrepresented practitioners
+                    - CHALLENGE CONVENTIONS: Present alternative viewpoints and question traditional assumptions
+
                     FORMATTING REQUIREMENTS:
                     - Use **bold** for architectural concepts and key terms
                     - Use *italics* for emphasis and important considerations
                     - Structure in clear paragraphs with natural breaks
                     - Integrate questions within paragraphs, not as separate sections
-                    - Include specific techniques, precedents, or theoretical approaches where relevant
+                    - Include specific, diverse, and unexpected precedents and theoretical approaches
 
                     Write a comprehensive educational response that teaches advanced architectural knowledge while challenging their thinking throughout.
                     """
@@ -1023,8 +1057,48 @@ class LangGraphOrchestrator:
         return enhanced_text
 
     def _format_response_for_readability(self, response_text: str) -> str:
-        """DISABLED: Return text as-is to restore original formatting."""
-        return response_text
+        # """Format response text with proper paragraph breaks for better readability."""
+        # if not response_text or not response_text.strip():
+            return response_text
+
+        # Split into sentences and group into logical paragraphs
+        # import re
+
+        # # Clean up the text first
+        # text = response_text.strip()
+
+        # # Split by existing paragraph breaks (double newlines) if they exist
+        # if '\n\n' in text:
+        #     paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+        # else:
+        #     # Split into sentences and group logically
+        #     sentences = re.split(r'(?<=[.!?])\s+', text)
+        #     paragraphs = []
+        #     current_paragraph = []
+
+        #     for sentence in sentences:
+        #         sentence = sentence.strip()
+        #         if not sentence:
+        #             continue
+
+        #         current_paragraph.append(sentence)
+
+        #         # Start new paragraph after 2-4 sentences or at logical breaks
+        #         if (len(current_paragraph) >= 3 or
+        #             any(phrase in sentence.lower() for phrase in [
+        #                 'second,', 'first,', 'additionally,', 'furthermore,', 'however,',
+        #                 'for example,', 'in contrast,', 'on the other hand,', 'meanwhile,'
+        #             ])):
+        #             if len(current_paragraph) >= 2:  # Only create paragraph if it has substance
+        #                 paragraphs.append(' '.join(current_paragraph))
+        #                 current_paragraph = []
+
+        #     # Add remaining sentences as final paragraph
+        #     if current_paragraph:
+        #         paragraphs.append(' '.join(current_paragraph))
+
+        # # Join paragraphs with double line breaks
+        # return '\n\n'.join(paragraphs)
 
 
 
@@ -1812,14 +1886,23 @@ class LangGraphOrchestrator:
             return True
 
     def _enhance_knowledge_response_with_questions(self, response_text: str, user_input: str, classification: Dict[str, Any]) -> str:
-        """Enhance knowledge-only responses with thoughtful questions that provoke deeper thinking."""
+        """Enhanced method for knowledge-only responses - now handles structured responses with built-in questions."""
 
-        # Check if response already has questions
+        # Check if response already has questions (new structured responses include questions)
         if '?' in response_text:
+            # For structured responses that already include questions, return as-is
+            if "**Questions for Further Exploration**" in response_text or "**Closing Questions**" in response_text:
+                return response_text
+            # For other responses with questions, also return as-is
+            return response_text
+
+        # Only enhance responses that don't have the new structured format
+        if "**Key Concepts and Principles**" in response_text:
+            # This is a structured response that should already have questions - return as-is
             return response_text
 
         try:
-            # Generate contextual follow-up question based on the content provided
+            # For legacy responses without structure, add a contextual question
             prompt = f"""
 You are an expert architectural mentor. You just provided this knowledge to a student:
 
@@ -1877,7 +1960,7 @@ STUDENT'S ORIGINAL REQUEST: "{user_input}"
 
 Add a synthesis section that:
 1. Identifies 2-3 key design strategies or principles that emerge from these examples
-2. Explains how these strategies could inspire or inform the student's own warehouse-to-community-center project
+2. Explains how these strategies could inspire or inform the student's own project
 3. Connects the examples to broader architectural concepts or approaches
 4. Ends with ONE thoughtful question that encourages the student to think about how these precedents could influence their specific design decisions
 
