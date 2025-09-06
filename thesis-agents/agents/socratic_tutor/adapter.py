@@ -1736,7 +1736,9 @@ Generate a contextual response that builds on their input:
         building_type = self._extract_building_type_from_context(state)
         user_messages = [msg['content'] for msg in state.messages if msg.get('role') == 'user']
         user_input = user_messages[-1] if user_messages else ""
+
         design_brief = getattr(state, 'current_design_brief', '') or ''
+
         print(f"🔍 DEBUG: Generating socratic clarification for building_type: {building_type}")
         print(f"🔍 DEBUG: User input: {user_input[:100]}...")
 
@@ -1747,12 +1749,15 @@ You are a distinguished architectural professor providing comprehensive guidance
 
 STUDENT'S CONFUSION: "{user_input}"
 BUILDING TYPE: {building_type}
+
 PROJECT CONTEXT: {design_brief}
+
 GAP TYPE: {gap_type}
 
 CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
 
 1. **THEORETICAL GROUNDING**: Reference established architectural theories, design principles, and methodologies that are SPECIFICALLY relevant to their confusion topic. Choose theories that directly address their question - don't use generic examples. Research and select the most appropriate theoretical framework for their specific architectural challenge.
+
 
 2. **ADVANCED CONTENT DEPTH**: Provide specific architectural strategies with proper terminology:
    - Technical considerations (structural implications, environmental systems, lighting requirements)
@@ -1766,6 +1771,7 @@ CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
    - Reference relevant theory or precedents
    - Provide technical considerations specific to warehouse-to-community-center adaptive reuse
    - Connect to established design principles
+
 
 4. **CONTEXT-SPECIFIC APPLICATION**: Tailor advice specifically to user's {building_type} project and user`s {user_input}, considering:
    - Existing structural systems and spatial qualities
@@ -1795,6 +1801,7 @@ CRITICAL FORMATTING REQUIREMENTS:
 - Write as natural, conversational prose with proper paragraph structure
 - Integrate questions naturally within the text flow, not as separate bullet points
 - Use **bold** for key architectural concepts and *italics* for emphasis
+
 
 Generate comprehensive, theory-grounded guidance (4-5 substantial sentences + targeted questions):
 """

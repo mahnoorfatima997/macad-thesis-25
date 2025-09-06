@@ -405,6 +405,7 @@ class LangGraphOrchestrator:
                 formatted_text = self._format_response_for_readability(enhanced_text)
                 return formatted_text, "knowledge_only"
 
+
         elif socratic_result and socratic_result.get('response_text'):
             socratic_text = socratic_result.get('response_text', '')
             enhanced_text = self._enhance_knowledge_response_with_questions(socratic_text, user_input, classification)
@@ -756,12 +757,15 @@ class LangGraphOrchestrator:
             # Both agents provided responses - create intelligent synthesis
             try:
                 synthesis_prompt = f"""
+
                 You are a distinguished architecture professor providing sophisticated guidance to a student experiencing conceptual confusion. Your response should demonstrate the intellectual rigor and theoretical depth expected in advanced architectural education.
 
                 STUDENT'S COMPLEX CHALLENGE: "{user_input}"
 
+
                 SOCRATIC GUIDANCE: {socratic_text}
                 DOMAIN KNOWLEDGE: {domain_text}
+
 
                 PROFESSOR-LEVEL CLARIFICATION REQUIREMENTS:
 
@@ -780,6 +784,7 @@ class LangGraphOrchestrator:
                 FORMATTING: Use clear paragraph structure with **bold key concepts** and *italicized* important considerations. Integrate questions naturally throughout the text to maintain Socratic engagement.
 
                 Generate a comprehensive, intellectually rigorous clarification that transforms confusion into structured understanding:
+
                 """
 
                 import openai
@@ -890,6 +895,7 @@ class LangGraphOrchestrator:
                     4. CREATES NATURAL PARAGRAPHS: Break into 3-4 well-structured paragraphs
                     5. MAINTAINS SCHOLARLY TONE: Write like an architecture professor teaching advanced concepts
 
+
                     CREATIVITY AND DIVERSITY REQUIREMENTS:
                     - BE INTELLECTUALLY ADVENTUROUS: Draw from unexpected sources, movements, and disciplines
                     - AVOID CLICHÉD REFERENCES: Don't default to Christopher Alexander, Kevin Lynch, or other overused theorists
@@ -899,12 +905,15 @@ class LangGraphOrchestrator:
                     - HIGHLIGHT DIVERSE VOICES: Reference women architects, architects of color, and underrepresented practitioners
                     - CHALLENGE CONVENTIONS: Present alternative viewpoints and question traditional assumptions
 
+
                     FORMATTING REQUIREMENTS:
                     - Use **bold** for architectural concepts and key terms
                     - Use *italics* for emphasis and important considerations
                     - Structure in clear paragraphs with natural breaks
                     - Integrate questions within paragraphs, not as separate sections
+
                     - Include specific, diverse, and unexpected precedents and theoretical approaches
+
 
                     Write a comprehensive educational response that teaches advanced architectural knowledge while challenging their thinking throughout.
                     """
@@ -1057,6 +1066,7 @@ class LangGraphOrchestrator:
         return enhanced_text
 
     def _format_response_for_readability(self, response_text: str) -> str:
+
         # """Format response text with proper paragraph breaks for better readability."""
         # if not response_text or not response_text.strip():
             return response_text
@@ -1099,6 +1109,7 @@ class LangGraphOrchestrator:
 
         # # Join paragraphs with double line breaks
         # return '\n\n'.join(paragraphs)
+
 
 
 
@@ -1886,6 +1897,7 @@ class LangGraphOrchestrator:
             return True
 
     def _enhance_knowledge_response_with_questions(self, response_text: str, user_input: str, classification: Dict[str, Any]) -> str:
+
         """Enhanced method for knowledge-only responses - now handles structured responses with built-in questions."""
 
         # Check if response already has questions (new structured responses include questions)
@@ -1903,6 +1915,7 @@ class LangGraphOrchestrator:
 
         try:
             # For legacy responses without structure, add a contextual question
+
             prompt = f"""
 You are an expert architectural mentor. You just provided this knowledge to a student:
 
@@ -1960,7 +1973,9 @@ STUDENT'S ORIGINAL REQUEST: "{user_input}"
 
 Add a synthesis section that:
 1. Identifies 2-3 key design strategies or principles that emerge from these examples
+
 2. Explains how these strategies could inspire or inform the student's own project
+
 3. Connects the examples to broader architectural concepts or approaches
 4. Ends with ONE thoughtful question that encourages the student to think about how these precedents could influence their specific design decisions
 

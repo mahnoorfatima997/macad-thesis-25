@@ -195,6 +195,7 @@ class DomainExpertAgent:
 
                 if len(relevant_results) >= 2:
                     print(f"   📚 Using {len(relevant_results)} relevant database results for synthesis")
+
                     print(f"🎓 DOMAIN_EXPERT: Using knowledge synthesis processor with _generate_educational_response")
 
                     # FIXED: Use knowledge synthesis processor instead of direct LLM synthesis
@@ -208,6 +209,7 @@ class DomainExpertAgent:
 
                     knowledge_text = await self.synthesis_processor.generate_response_internal(
                         user_topic, knowledge_data, context, delivery_style='educational'
+
                     )
 
                     response_metadata = {
@@ -1969,11 +1971,13 @@ What questions do you have about your design?"""
             prompt = f"""
             STUDENT QUESTION: "{user_input}"
 
+
             CRITICAL INSTRUCTIONS:
             - DO NOT write "Key Concepts and Principles" sections
             - DO NOT provide general {building_type} overviews
             - DO NOT use generic textbook language
             - DIRECTLY address their specific question about: {user_input}
+
 
             Based on these knowledge sources:
             {chr(10).join(knowledge_content)}
@@ -2597,7 +2601,9 @@ AVAILABLE KNOWLEDGE SOURCES:
 
 CRITICAL REQUIREMENTS FOR COMPREHENSIVE RESPONSE:
 
+
 1. **THEORETICAL GROUNDING**: Research and reference the most appropriate architectural theories, design principles, and methodologies that specifically address their confusion. Select from the full range of architectural theory - historical, contemporary, and emerging - choosing only those that directly illuminate their particular challenge. Avoid generic theory references.
+
 
 2. **ADVANCED CONTENT DEPTH**: Provide sophisticated architectural analysis including:
    - Specific design strategies with proper architectural terminology
@@ -2645,7 +2651,9 @@ PROJECT CONTEXT: {project_context}
 
 CRITICAL REQUIREMENTS FOR PROFESSOR-LEVEL RESPONSE:
 
+
 1. **THEORETICAL GROUNDING**: Research and reference the most relevant architectural theories and design principles that specifically address {user_topic}. Select theories that directly relate to their question rather than using generic examples. Choose from the full spectrum of architectural theory, contemporary research, and established methodologies that best illuminate their specific challenge.
+
 
 2. **ADVANCED CONTENT DEPTH**: Provide specific architectural strategies with proper terminology:
    - Technical considerations (structural implications, environmental systems, lighting requirements)

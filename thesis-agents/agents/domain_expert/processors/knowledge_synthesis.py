@@ -538,6 +538,7 @@ class KnowledgeSynthesisProcessor:
             building_type = context.get('building_type', 'architectural project') if context else 'architectural project'
             project_context = context.get('project_context', '') if context else ''
 
+
             # Extract knowledge sources for citations
             knowledge_sources = knowledge.get('sources', []) if knowledge else []
             knowledge_summary = knowledge.get('summary', 'General architectural knowledge') if knowledge else 'General architectural knowledge'
@@ -603,6 +604,7 @@ class KnowledgeSynthesisProcessor:
             - Questions should provoke critical thinking and deeper exploration
             - Use proper formatting with **bold headers** for each section
             - Demonstrate intellectual rigor while remaining accessible and engaging
+
             """
 
             response = await self.client.generate_completion([
