@@ -3554,7 +3554,18 @@ class EnhancedGamificationRenderer:
                             "content": f"I completed the storytelling challenge with 3 chapters! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
                         })
                     else:
+                        # CRITICAL FIX: Complete current chapter with completion bar (like other games)
+                        current_chapter = len(story_state['narrative_choices'])
 
+                        # Show completion bar instead of text notifications
+                        self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
+
+                        # CRITICAL FIX: Mark chapter as complete to stop rendering
+                        story_state['show_feedback'] = False
+                        story_state['chapter_complete'] = True  # Flag to stop rendering
+                        story_state['last_completed_chapter'] = current_chapter  # Track completed chapter
+                        # CRITICAL FIX: Don't advance chapter automatically - stay at current chapter until next trigger
+                        # story_state['chapter'] = current_chapter + 1  # REMOVED: Don't auto-advance
 
                         # Trigger message processing for follow-up
                         st.session_state.should_process_message = True
@@ -3562,28 +3573,12 @@ class EnhancedGamificationRenderer:
                             "role": "user",
                             "content": f"I completed the storytelling challenge with 3 chapters! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
                         })
-                    else:
-
-                            # CRITICAL FIX: Complete current chapter with completion bar (like other games)
-                            current_chapter = len(story_state['narrative_choices'])
-
-                            # Show completion bar instead of text notifications
-                            self._show_contextual_progress("Storytelling Challenge", story_state['story_points'], 100)
-
-                            # CRITICAL FIX: Mark chapter as complete to stop rendering
-                            story_state['show_feedback'] = False
-                            story_state['chapter_complete'] = True  # Flag to stop rendering
-                            story_state['last_completed_chapter'] = current_chapter  # Track completed chapter
-                            # CRITICAL FIX: Don't advance chapter automatically - stay at current chapter until next trigger
-                            # story_state['chapter'] = current_chapter + 1  # REMOVED: Don't auto-advance
-
 
                     # Update session state
                     st.session_state[storytelling_key] = story_state
 
-
-                        # CRITICAL FIX: Don't rerun after chapter completion - let user continue conversation
-                        # Only rerun if showing feedback (which we now don't do for chapter completion)
+                    # CRITICAL FIX: Don't rerun after chapter completion - let user continue conversation
+                    # Only rerun if showing feedback (which we now don't do for chapter completion)
 
         except Exception as e:
             print(f"🎮 ERROR in storytelling game: {e}")
