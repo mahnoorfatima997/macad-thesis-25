@@ -15,7 +15,10 @@
       "Bash(mkdir:*)",
       "WebFetch(domain:www.researchgate.net)",
       "Bash(curl:*)",
-      "Bash(streamlit run:*)"
+      "Bash(streamlit run:*)",
+      "WebSearch",
+      "WebFetch(domain:arxiv.org)",
+      "WebFetch(domain:www.designsociety.org)"
     ],
     "deny": []
   }

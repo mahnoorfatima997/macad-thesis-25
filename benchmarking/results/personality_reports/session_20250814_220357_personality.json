@@ -1,0 +1,37 @@
+{
+  "session_id": "20250814_220357",
+  "timestamp": "2025-09-06T16:00:43.321467",
+  "traits": {
+    "openness": 0.2158859521150589,
+    "conscientiousness": 0.16146771609783173,
+    "extraversion": 0.20444203913211823,
+    "agreeableness": 0.1640940010547638,
+    "emotionality": 0.25411030650138855,
+    "honesty_humility": 0.4156376123428345
+  },
+  "levels": {
+    "openness": "low",
+    "conscientiousness": "low",
+    "extraversion": "low",
+    "agreeableness": "low",
+    "emotionality": "low",
+    "honesty_humility": "medium"
+  },
+  "confidence": {
+    "openness": 0.5682281255722046,
+    "conscientiousness": 0.6770645380020142,
+    "extraversion": 0.5911159515380859,
+    "agreeableness": 0.6718119978904724,
+    "emotionality": 0.4917793869972229,
+    "honesty_humility": 0.16872477531433105
+  },
+  "text_length": 6046,
+  "analysis_method": "HEXACO-BERT",
+  "reliability_score": 0.5259166359901428,
+  "dominant_traits": [
+    "honesty_humility",
+    "emotionality",
+    "openness"
+  ],
+  "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Emotionality: Fearless, independent, tough, emotionally detached."
+}

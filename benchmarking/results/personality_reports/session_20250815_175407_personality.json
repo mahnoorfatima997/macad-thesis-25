@@ -1,0 +1,37 @@
+{
+  "session_id": "20250815_175407",
+  "timestamp": "2025-09-06T16:00:45.929269",
+  "traits": {
+    "openness": 0.3066515028476715,
+    "conscientiousness": 0.2099299281835556,
+    "extraversion": 0.13852152228355408,
+    "agreeableness": 0.06965318322181702,
+    "emotionality": 0.275243878364563,
+    "honesty_humility": 0.3278612792491913
+  },
+  "levels": {
+    "openness": "low",
+    "conscientiousness": "low",
+    "extraversion": "low",
+    "agreeableness": "low",
+    "emotionality": "low",
+    "honesty_humility": "low"
+  },
+  "confidence": {
+    "openness": 0.386696994304657,
+    "conscientiousness": 0.5801401138305664,
+    "extraversion": 0.7229569554328918,
+    "agreeableness": 0.860693633556366,
+    "emotionality": 0.449512243270874,
+    "honesty_humility": 0.34427744150161743
+  },
+  "text_length": 2112,
+  "analysis_method": "HEXACO-BERT",
+  "reliability_score": 0.5559734106063843,
+  "dominant_traits": [
+    "honesty_humility",
+    "openness",
+    "emotionality"
+  ],
+  "personality_summary": "Low Honesty-Humility: Manipulative, greedy, entitled, boastful; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+}

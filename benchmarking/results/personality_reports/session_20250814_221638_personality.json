@@ -1,0 +1,37 @@
+{
+  "session_id": "20250814_221638",
+  "timestamp": "2025-09-06T16:00:43.627558",
+  "traits": {
+    "openness": 0.30510345101356506,
+    "conscientiousness": 0.17634917795658112,
+    "extraversion": 0.14501841366291046,
+    "agreeableness": 0.08559967577457428,
+    "emotionality": 0.28792932629585266,
+    "honesty_humility": 0.38423988223075867
+  },
+  "levels": {
+    "openness": "low",
+    "conscientiousness": "low",
+    "extraversion": "low",
+    "agreeableness": "low",
+    "emotionality": "low",
+    "honesty_humility": "medium"
+  },
+  "confidence": {
+    "openness": 0.3897930979728699,
+    "conscientiousness": 0.6473016738891602,
+    "extraversion": 0.7099632024765015,
+    "agreeableness": 0.8288006782531738,
+    "emotionality": 0.4241413474082947,
+    "honesty_humility": 0.23152023553848267
+  },
+  "text_length": 9008,
+  "analysis_method": "HEXACO-BERT",
+  "reliability_score": 0.5368296504020691,
+  "dominant_traits": [
+    "honesty_humility",
+    "openness",
+    "emotionality"
+  ],
+  "personality_summary": "Medium Honesty-Humility: Balanced fairness, moderate modesty; Low Openness to Experience: Conventional, practical, traditional, prefers routine."
+}

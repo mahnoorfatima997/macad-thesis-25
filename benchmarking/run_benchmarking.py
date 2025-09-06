@@ -123,9 +123,14 @@ class BenchmarkingPipeline:
             self._generate_visualizations(graphs, benchmarks, evaluation_results, linkography_results)
             print("[OK] Visualizations generated")
         
-        # Step 9: Export comprehensive report
+        # Step 9: Personality Analysis
+        print("\nStep 9: Performing personality analysis...")
+        personality_results = self._perform_personality_analysis(session_files)
+        print(f"[OK] Personality analysis complete for {len(personality_results)} sessions")
+        
+        # Step 10: Export comprehensive report
         if export_report:
-            print("\nStep 9: Generating final report...")
+            print("\nStep 10: Generating final report...")
             self._export_comprehensive_report()
             print("[OK] Report exported")
         
@@ -617,6 +622,132 @@ class BenchmarkingPipeline:
         }
         
         return aggregate
+    
+    def _perform_personality_analysis(self, session_files: List[Path]) -> List[Any]:
+        """Perform personality analysis on session data"""
+        
+        # First, run personality analysis validation
+        print("  Running personality analysis validation...")
+        validation_success = self._validate_personality_setup()
+        
+        if not validation_success:
+            print("  [!] Personality analysis validation failed - skipping analysis")
+            return []
+        
+        try:
+            # Import personality analysis modules
+            from personality_processor import PersonalityProcessor
+            
+            print("  Initializing personality analyzer...")
+            processor = PersonalityProcessor()
+            
+            # Find session files and process them
+            session_file_map = processor.find_session_files()
+            
+            if not session_file_map:
+                print("  [!] No session files found for personality analysis")
+                return []
+            
+            personality_profiles = []
+            total_sessions = len(session_file_map)
+            
+            for i, (session_id, files) in enumerate(session_file_map.items()):
+                print(f"  Analyzing personality for session {i+1}/{total_sessions}: {session_id}...", end='\r')
+                
+                try:
+                    profile = processor.process_single_session(session_id, files)
+                    if profile:
+                        personality_profiles.append(profile)
+                        # Save individual profile
+                        processor.save_personality_profile(profile)
+                        
+                except Exception as e:
+                    print(f"\n  [!] Failed to analyze session {session_id}: {e}")
+                    continue
+            
+            # Generate batch summary and correlations
+            if personality_profiles:
+                print(f"\n  Generating personality analysis summary...")
+                processor.save_batch_summary(personality_profiles)
+                processor.correlate_with_cognitive_metrics(personality_profiles)
+                
+                # Validate results
+                validation = processor.validate_data_quality(personality_profiles)
+                mean_reliability = validation['quality_metrics'].get('mean_reliability', 0)
+                
+                print(f"  [INFO] Mean analysis reliability: {mean_reliability:.2f}")
+                
+                if mean_reliability < 0.6:
+                    print(f"  [!] Warning: Low average reliability score")
+                
+            return personality_profiles
+            
+        except ImportError:
+            print("  [!] Personality analysis modules not available")
+            print("      Make sure you installed all requirements: pip install -r requirements.txt")
+            return []
+        except Exception as e:
+            print(f"  [ERROR] Personality analysis failed: {e}")
+            return []
+    
+    def _validate_personality_setup(self) -> bool:
+        """Validate personality analysis setup and dependencies"""
+        
+        try:
+            # Test imports
+            from personality_models import PersonalityProfile, HEXACOModel
+            from personality_analyzer import PersonalityAnalyzer, create_analyzer_with_fallback
+            from personality_processor import PersonalityProcessor
+            from personality_visualizer import PersonalityVisualizer
+            from personality_dashboard import PersonalityDashboard
+            print("    [OK] All personality modules imported successfully")
+            
+            # Test analyzer initialization
+            analyzer = create_analyzer_with_fallback()
+            print(f"    [OK] Analyzer initialized: BERT={analyzer.is_available}, Fallback={analyzer.use_fallback}")
+            
+            # Test basic text analysis
+            sample_text = """I enjoy working on creative projects that explore new possibilities. 
+            I prefer to work systematically and organize my thoughts carefully. I like collaborating 
+            with others and value different perspectives. I try to be thorough in my analysis."""
+            
+            profile = analyzer.analyze_text(sample_text)
+            if profile.traits:
+                print(f"    [OK] Text analysis working: {len(profile.traits)} traits analyzed")
+            else:
+                print("    [WARN] Text analysis returned no traits")
+                return False
+            
+            # Test data directories
+            results_dir = Path("benchmarking/results/personality_reports")
+            results_dir.mkdir(parents=True, exist_ok=True)
+            
+            viz_dir = Path("benchmarking/results/personality_visualizations")  
+            viz_dir.mkdir(parents=True, exist_ok=True)
+            
+            print("    [OK] Data directories ready")
+            
+            # Test color integration
+            from personality_models import PersonalityColorMapper
+            from thesis_colors import THESIS_COLORS
+            
+            color_mapper = PersonalityColorMapper()
+            trait_color = color_mapper.get_trait_color("openness")
+            if trait_color in THESIS_COLORS.values():
+                print("    [OK] Color scheme integration working")
+            else:
+                print("    [WARN] Color scheme integration issue")
+            
+            print("    [OK] Personality analysis validation passed")
+            return True
+            
+        except ImportError as e:
+            print(f"    [ERROR] Import failed: {e}")
+            print("    [!] Install missing dependencies: pip install -r requirements.txt")
+            return False
+        except Exception as e:
+            print(f"    [ERROR] Validation failed: {e}")
+            return False
     
     def _export_comprehensive_report(self):
         """Export comprehensive benchmarking report"""

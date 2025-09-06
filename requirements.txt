@@ -33,6 +33,7 @@ torchvision
 torch-geometric
 tokenizers
 tiktoken
+accelerate
 
 # =============================================================================
 # COMPUTER VISION & IMAGE PROCESSING
@@ -75,6 +76,7 @@ spacy
 textblob
 nltk
 regex
+textstat
 
 # =============================================================================
 # FILE HANDLING & DOCUMENT PROCESSING
@@ -339,6 +341,7 @@ zstandard
 # - Linkography Analysis (Design process visualization)
 # - Graph ML Visualizations (Interactive graphs)
 # - Anthropomorphism Analysis (AI interaction patterns)
+# - Personality Analysis (HEXACO personality trait extraction)
 # - Data Collection & Export (Comprehensive logging)
 # - All supporting utilities and tools
 #
