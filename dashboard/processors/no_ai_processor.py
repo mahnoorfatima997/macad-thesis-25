@@ -85,9 +85,13 @@ class NoAIProcessor:
         questions = self.phase_questions[phase_key]
         current_index = self.question_counters[counter_key]
         
-        # If we've asked all questions, cycle back or provide a generic prompt
+        # If we've asked all questions in this phase, provide a generic prompt
+        # The phase transition logic will handle moving to the next phase
         if current_index >= len(questions):
-            return "What other aspects of your design would you like to explore further?"
+            if phase_key == "materialization":
+                return "What other aspects of your final design would you like to explore or refine?"
+            else:
+                return "What other aspects of your design would you like to explore further?"
         
         # Get the current question and increment counter
         question = questions[current_index]
@@ -99,34 +103,32 @@ class NoAIProcessor:
                                   session_id: str) -> Dict[str, Any]:
         """
         Process user input and return the next hardcoded question.
-        Uses unified phase progression system for consistent phase tracking.
+        Uses simple question-count based phase progression for no AI mode.
         This simulates the control group experience with no AI assistance.
         """
 
-        # Use unified phase progression system for consistent tracking
-        if session_id:
-            # Ensure session exists in phase system
-            if session_id not in self.phase_system.sessions:
-                self.phase_system.create_session(session_id)
-
-            # Process the user message to update phase progression
-            # Note: For No AI mode, we don't use the returned question, just track progression
-            self.phase_system.process_user_message(session_id, user_input)
-
-            # Get phase info from unified system
-            phase_summary = self.phase_system.get_session_summary(session_id)
-            current_phase = phase_summary.get('current_phase', 'ideation')
-            phase_info = {
-                "current_phase": current_phase,
-                "phase_completion": phase_summary.get('phase_summaries', {}).get(current_phase, {}).get('completion_percent', 0.0)
-            }
-        else:
-            # Fallback to phase calculator
-            phase_info = phase_calculator.calculate_current_phase(messages, session_id)
-            current_phase = phase_info["current_phase"]
+        # For No AI mode, use simple question-count based phase progression
+        current_phase = self._determine_current_phase_by_questions(session_id)
 
         # Get the next hardcoded question for this phase
         next_question = self.get_next_question(current_phase, session_id)
+
+        # Create phase info compatible with existing dashboard systems
+        phase_completion = self._calculate_phase_completion(current_phase, session_id)
+        phase_info = {
+            "current_phase": current_phase,
+            "phase_completion": phase_completion,
+            "phase_progression": phase_completion / 100.0  # Convert to 0-1 scale for compatibility
+        }
+
+        # Update session state for dashboard integration
+        import streamlit as st
+        if hasattr(st, 'session_state'):
+            st.session_state.test_current_phase = current_phase.title()  # Ideation, Visualization, Materialization
+            st.session_state.phase_completion_percent = phase_completion
+            # Store phase info for dashboard to access
+            st.session_state.no_ai_phase_info = phase_info
+            print(f"🔄 NO_AI: Stored phase info in session state: {phase_info}")
 
         # Create a simple acknowledgment + next question response
         response = f"Thank you for sharing your thoughts. {next_question}"
@@ -157,12 +159,43 @@ class NoAIProcessor:
             "phase_info": phase_info
         }
     
+    def _determine_current_phase_by_questions(self, session_id: str) -> str:
+        """Determine current phase based on question count progression."""
+        # Get current question counts for each phase
+        ideation_count = self.question_counters.get(f"{session_id}_ideation", 0)
+        visualization_count = self.question_counters.get(f"{session_id}_visualization", 0)
+        materialization_count = self.question_counters.get(f"{session_id}_materialization", 0)
+
+        # Phase progression logic: move to next phase after asking all questions in current phase
+        ideation_total = len(self.phase_questions["ideation"])
+        visualization_total = len(self.phase_questions["visualization"])
+
+        if ideation_count < ideation_total:
+            return "ideation"
+        elif visualization_count < visualization_total:
+            return "visualization"
+        else:
+            return "materialization"
+
+    def _calculate_phase_completion(self, phase: str, session_id: str) -> float:
+        """Calculate phase completion percentage based on questions asked."""
+        counter_key = f"{session_id}_{phase.lower()}"
+        questions_asked = self.question_counters.get(counter_key, 0)
+        total_questions = len(self.phase_questions.get(phase.lower(), []))
+
+        if total_questions == 0:
+            return 0.0
+
+        # Cap at 100% completion
+        completion = min((questions_asked / total_questions) * 100, 100.0)
+        return completion
+
     def reset_session_counters(self, session_id: str):
         """Reset question counters for a specific session."""
         keys_to_remove = [key for key in self.question_counters.keys() if key.startswith(session_id)]
         for key in keys_to_remove:
             del self.question_counters[key]
-    
+
     def get_session_progress(self, session_id: str) -> Dict[str, int]:
         """Get the current question progress for each phase in a session."""
         progress = {}
@@ -180,15 +213,7 @@ async def get_no_ai_response(user_input: str, messages: List[Dict[str, Any]] = N
                             session_id: str = None, image_path: str = None) -> Dict[str, Any]:
     """
     Get a hardcoded response for the no AI control group.
-
-    Args:
-        user_input: The user's input (acknowledged but not processed)
-        messages: Conversation history for phase calculation
-        session_id: Session identifier for tracking question progression
-        image_path: Optional path to uploaded image (acknowledged but not analyzed)
-
-    Returns:
-        Dict containing the hardcoded response and metadata
+    Simple: just get the next question from the hardcoded list.
     """
     if not session_id:
         session_id = st.session_state.get("session_id", "default_session")
@@ -196,7 +221,7 @@ async def get_no_ai_response(user_input: str, messages: List[Dict[str, Any]] = N
     if messages is None:
         messages = []
 
-    # For No AI mode, we acknowledge the image but don't analyze it
+    # Use the basic no AI processor - it already has the question cycling logic
     response = no_ai_processor.get_response_to_user_input(user_input, messages, session_id)
 
     # Add image acknowledgment if image was provided
@@ -204,6 +229,5 @@ async def get_no_ai_response(user_input: str, messages: List[Dict[str, Any]] = N
         original_response = response.get("response", "")
         image_acknowledgment = "Thank you for sharing the image. "
         response["response"] = image_acknowledgment + original_response
-        print(f"📷 NO_AI: Acknowledged image upload without analysis")
 
     return response
