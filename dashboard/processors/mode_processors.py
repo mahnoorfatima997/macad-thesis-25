@@ -122,27 +122,20 @@ class ModeProcessor:
             else:
                 print("🎯 TASK_UI: Task manager successfully initialized")
 
-        # Render task UI only in Test Mode
+        # Render task UI only in Test Mode - SIDEBAR SHOWS SUMMARY ONLY
         try:
             active_tasks = self.task_manager.get_active_tasks()
             print(f"🔍 RENDER_ACTIVE_TASKS: Found {len(active_tasks)} active tasks: {[t.task_type.value for t in active_tasks]}")
 
             if active_tasks:
                 st.markdown("### 🎯 Active Tasks")
+                # FIXED: Only show task summary in sidebar, not full UI components
+                # Full task UI components should only appear in chat interface
                 for task in active_tasks:
-                    print(f"🔍 RENDERING_TASK: {task.task_type.value} for {task.test_group}")
+                    print(f"🔍 SIDEBAR_TASK_SUMMARY: {task.task_type.value} for {task.test_group}")
 
-                    # CRITICAL FIX: Render the actual task UI component, not just expander
-                    from dashboard.ui.chat_components import _render_single_task_component
-                    task_entry = {
-                        'task': task,
-                        'task_id': f"{task.task_type.value}_{id(task)}",
-                        'guidance_type': 'socratic'
-                    }
-                    _render_single_task_component(task_entry)
-
-                    # Also show basic info in expander for debugging
-                    with st.expander(f"Task Info: {task.task_type.value.replace('_', ' ').title()}", expanded=False):
+                    # Show basic task info in sidebar (not full UI component)
+                    with st.expander(f"📋 {task.task_type.value.replace('_', ' ').title()}", expanded=False):
                         st.write(f"**Test Group**: {task.test_group}")
                         st.write(f"**Phase**: {task.current_phase}")
                         # Fix format error - triggered_at_completion might be string or float
