@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2025-09-06T15:57:52.241112",
+    "timestamp": "2025-09-06T19:16:05.673712",
     "total_sessions": 11,
     "analysis_type": "aggregated_linkography"
   },
@@ -22,8 +22,8 @@
     "0b8cee5c-ec09-4d10-8c22-fb932d815219": {
       "session_id": "0b8cee5c-ec09-4d10-8c22-fb932d815219",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.435682",
-      "end_time": "2025-09-06T16:01:06.435682",
+      "start_time": "2025-09-06T19:16:04.893224",
+      "end_time": "2025-09-06T19:19:19.893224",
       "num_linkographs": 3,
       "total_moves": 4,
       "total_links": 2,
@@ -51,8 +51,8 @@
     "0bb1d410-484f-4f9d-bd16-851fa8ef9306": {
       "session_id": "0bb1d410-484f-4f9d-bd16-851fa8ef9306",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.463528",
-      "end_time": "2025-09-06T15:58:59.863528",
+      "start_time": "2025-09-06T19:16:04.911017",
+      "end_time": "2025-09-06T19:17:13.311017",
       "num_linkographs": 3,
       "total_moves": 3,
       "total_links": 0,
@@ -75,8 +75,8 @@
     "2f042b32-2ff5-449b-a7be-b3d2993cd27b": {
       "session_id": "2f042b32-2ff5-449b-a7be-b3d2993cd27b",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.477007",
-      "end_time": "2025-09-06T16:01:17.877007",
+      "start_time": "2025-09-06T19:16:04.921960",
+      "end_time": "2025-09-06T19:19:31.321960",
       "num_linkographs": 3,
       "total_moves": 5,
       "total_links": 4,
@@ -106,8 +106,8 @@
     "445b9186-5fdd-466d-b659-ad7ac346e64b": {
       "session_id": "445b9186-5fdd-466d-b659-ad7ac346e64b",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.486667",
-      "end_time": "2025-09-06T15:57:51.486667",
+      "start_time": "2025-09-06T19:16:04.932992",
+      "end_time": "2025-09-06T19:16:04.932992",
       "num_linkographs": 1,
       "total_moves": 1,
       "total_links": 0,
@@ -130,8 +130,8 @@
     "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954": {
       "session_id": "4c6d62c5-04ce-4870-afc2-bfe5bfb8e954",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.496699",
-      "end_time": "2025-09-06T16:03:40.696699",
+      "start_time": "2025-09-06T19:16:04.941646",
+      "end_time": "2025-09-06T19:21:54.141646",
       "num_linkographs": 3,
       "total_moves": 8,
       "total_links": 14,
@@ -167,8 +167,8 @@
     "66c03479-fbc3-4ef8-98ee-d1a36936d997": {
       "session_id": "66c03479-fbc3-4ef8-98ee-d1a36936d997",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.508252",
-      "end_time": "2025-09-06T17:07:51.508252",
+      "start_time": "2025-09-06T19:16:04.954602",
+      "end_time": "2025-09-06T20:26:04.954602",
       "num_linkographs": 3,
       "total_moves": 15,
       "total_links": 60,
@@ -218,8 +218,8 @@
     "70e4aea8-435f-49b9-916e-ce81e31b689b": {
       "session_id": "70e4aea8-435f-49b9-916e-ce81e31b689b",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.526177",
-      "end_time": "2025-09-06T15:57:51.526177",
+      "start_time": "2025-09-06T19:16:04.967624",
+      "end_time": "2025-09-06T19:16:04.967624",
       "num_linkographs": 1,
       "total_moves": 1,
       "total_links": 0,
@@ -242,8 +242,8 @@
     "833c4065-db34-4198-a3f7-310dee537175": {
       "session_id": "833c4065-db34-4198-a3f7-310dee537175",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.535860",
-      "end_time": "2025-09-06T15:57:51.535860",
+      "start_time": "2025-09-06T19:16:04.975377",
+      "end_time": "2025-09-06T19:16:04.975377",
       "num_linkographs": 1,
       "total_moves": 1,
       "total_links": 0,
@@ -266,8 +266,8 @@
     "b4fe582e-83e0-4519-ba37-6a3518ca0287": {
       "session_id": "b4fe582e-83e0-4519-ba37-6a3518ca0287",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.540377",
-      "end_time": "2025-09-06T15:57:51.540377",
+      "start_time": "2025-09-06T19:16:04.975377",
+      "end_time": "2025-09-06T19:16:04.975377",
       "num_linkographs": 1,
       "total_moves": 1,
       "total_links": 0,
@@ -290,8 +290,8 @@
     "c868d31a-58fc-4abb-897f-8fe8273f6b70": {
       "session_id": "c868d31a-58fc-4abb-897f-8fe8273f6b70",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.550103",
-      "end_time": "2025-09-06T15:57:51.550103",
+      "start_time": "2025-09-06T19:16:04.993167",
+      "end_time": "2025-09-06T19:16:04.993167",
       "num_linkographs": 1,
       "total_moves": 1,
       "total_links": 0,
@@ -314,8 +314,8 @@
     "eefa0c66-c924-4814-af28-f05443efaa4d": {
       "session_id": "eefa0c66-c924-4814-af28-f05443efaa4d",
       "user_id": "unknown",
-      "start_time": "2025-09-06T15:57:51.553444",
-      "end_time": "2025-09-06T15:58:34.753444",
+      "start_time": "2025-09-06T19:16:04.999401",
+      "end_time": "2025-09-06T19:16:48.199401",
       "num_linkographs": 2,
       "total_moves": 2,
       "total_links": 0,

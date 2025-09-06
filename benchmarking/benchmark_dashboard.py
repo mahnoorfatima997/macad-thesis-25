@@ -1,9 +1,10 @@
 """
-MEGA Architectural Mentor - Cognitive Benchmarking Dashboard
+Mentor - Cognitive Benchmarking Dashboard
 A comprehensive Streamlit dashboard for visualizing and analyzing cognitive benchmarking results
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -70,7 +71,7 @@ except ImportError:
 
 # Page configuration
 st.set_page_config(
-    page_title="MEGA Cognitive Benchmarking Dashboard",
+    page_title="Mentor Cognitive Benchmarking Dashboard",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -847,7 +848,7 @@ class BenchmarkDashboard:
     
     def render_header(self):
         """Render dashboard header"""
-        st.markdown('<h1 class="main-header">Cognitive Benchmarking Dashboard</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="main-header">Mentor Cognitive Benchmarking Dashboard</h1>', unsafe_allow_html=True)
     
     def render_key_metrics(self):
         """Render key performance metrics with enhanced visualizations"""
@@ -1554,7 +1555,7 @@ class BenchmarkDashboard:
             # Explanation
             st.markdown("#### Reading the Radar Chart")
             st.markdown("""
-            This radar chart compares the MEGA system's performance (blue) against traditional teaching 
+            This radar chart compares the Mentor system's performance (blue) against traditional teaching 
             methods (orange) across five key cognitive dimensions. The further from the center, the better 
             the performance. Our system shows significant improvements in cognitive offloading prevention 
             and deep thinking engagement.
@@ -5374,7 +5375,7 @@ class BenchmarkDashboard:
             #### 3. Improvement Calculation
             
             ```python
-            improvement = ((MEGA_score - Baseline_score) / Baseline_score) × 100
+            improvement = ((Mentor_score - Baseline_score) / Baseline_score) × 100
             
             # Weighted improvement across dimensions
             overall_improvement = Σ(dimension_weight × dimension_improvement)
@@ -5679,7 +5680,7 @@ class BenchmarkDashboard:
             st.markdown("""
             Our metrics directly address findings from the anthropomorphism research:
             
-            | Research Finding | MEGA Prevention |
+            | Research Finding | Mentor Prevention |
             |-----------------|-----------------|
             | 55% neural connectivity reduction | NES maintains >50% engagement |
             | 75% AI dependency rate | CAI ensures <40% dependency |
@@ -6229,7 +6230,7 @@ class BenchmarkDashboard:
             
             The benchmarking system seamlessly integrates with:
             
-            - **MEGA Architectural Mentor**: Real-time metric calculation
+            - **Mentor**: Real-time metric calculation
             - **Multi-Agent System**: Agent performance tracking
             - **Knowledge Base**: Concept coverage analysis
             - **Visualization Dashboard**: Live updates and historical views
@@ -6638,7 +6639,7 @@ class BenchmarkDashboard:
             
             st.info("""
             **Note**: These baselines represent typical performance of traditional intelligent tutoring systems. 
-            The MEGA system aims to exceed these baselines through multi-agent coordination and architectural 
+            The Mentor system aims to exceed these baselines through multi-agent coordination and architectural 
             domain expertise.
             """)
             
@@ -7553,6 +7554,40 @@ class BenchmarkDashboard:
         
         selected_section = st.sidebar.radio("Select Section", sections)
         
+        # Auto-scroll to top when section changes
+        if 'previous_section' not in st.session_state:
+            st.session_state.previous_section = selected_section
+        
+        if st.session_state.previous_section != selected_section:
+            # Force page refresh to scroll to top using Streamlit components
+            components.html("""
+            <script>
+                // Multiple approaches to ensure scrolling works
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+                
+                // Try parent window if in iframe
+                if (window.parent && window.parent !== window) {
+                    window.parent.scrollTo(0, 0);
+                    try {
+                        window.parent.document.documentElement.scrollTop = 0;
+                        window.parent.document.body.scrollTop = 0;
+                    } catch(e) {}
+                }
+                
+                // Force immediate scroll
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                }, 10);
+            </script>
+            """, height=0)
+            st.session_state.previous_section = selected_section
+            # Force a rerun to ensure the scroll takes effect
+            st.rerun()
+        
         # Use a placeholder to ensure clean section switching
         section_container = st.empty()
         
@@ -7591,7 +7626,7 @@ class BenchmarkDashboard:
         st.markdown("---")
         st.markdown("""
         <div style="text-align: center; color: #666;">
-        <p>MEGA Architectural Mentor - Cognitive Benchmarking System v1.0</p>
+        <p>Mentor - Cognitive Benchmarking System v1.0</p>
         <p>MaCAD Thesis Project 2025</p>
         </div>
         """, unsafe_allow_html=True)
