@@ -1095,9 +1095,11 @@ class UnifiedArchitecturalDashboard:
             print(f"\n🎯 DASHBOARD: Processing user message for phase progression")
             print(f"📝 Input: {user_input[:100]}...")
 
-            # Check if we're in No AI mode - use simplified phase tracking
+            # Check if we're in modes that need simplified phase tracking
             current_mode = st.session_state.get('current_mode', 'MENTOR')
-            print(f"🔍 DASHBOARD_MODE_CHECK: current_mode = '{current_mode}'")
+            test_group = st.session_state.get('test_group', 'MENTOR')
+            print(f"🔍 DASHBOARD_MODE_CHECK: current_mode = '{current_mode}', test_group = '{test_group}'")
+
             if current_mode in ["NO_AI", "No AI", "CONTROL"]:
                 print(f"🎯 NO_AI_PHASE: Using simplified phase tracking for No AI mode")
                 # For No AI mode, get phase info from the no AI processor
@@ -1116,8 +1118,59 @@ class UnifiedArchitecturalDashboard:
                     'nudge': None
                 }
                 print(f"🎯 NO_AI_PHASE: Phase={current_phase}, Completion={phase_completion:.1f}%")
+            elif current_mode in ["RAW_GPT", "Raw GPT"] or test_group == "GENERIC_AI":
+                print(f"🎯 RAW_GPT_PHASE: Using manual phase tracking for Raw GPT/Generic AI mode")
+                # For Raw GPT and Generic AI modes, use manual phase from session state
+                current_phase = st.session_state.get('test_current_phase', 'Ideation').lower()
+
+                # Get and update phase completion from unified system
+                phase_completion = 0.0
+                if st.session_state.phase_session_id in self.phase_system.sessions:
+                    session = self.phase_system.sessions[st.session_state.phase_session_id]
+
+                    # Ensure unified system current phase matches manual phase selection
+                    from phase_progression_system import DesignPhase
+                    phase_enum_map = {
+                        'ideation': DesignPhase.IDEATION,
+                        'visualization': DesignPhase.VISUALIZATION,
+                        'materialization': DesignPhase.MATERIALIZATION
+                    }
+                    target_phase_enum = phase_enum_map.get(current_phase, DesignPhase.IDEATION)
+                    if session.current_phase != target_phase_enum:
+                        session.current_phase = target_phase_enum
+                        print(f"🎯 RAW_GPT_PHASE: Synced unified system phase to {current_phase}")
+
+                    current_progress = session.phase_progress.get(target_phase_enum)
+                    if not current_progress:
+                        # Initialize phase progress if it doesn't exist
+                        from phase_progression_system import PhaseProgress, SocraticStep
+                        current_progress = PhaseProgress(
+                            phase=target_phase_enum,
+                            current_step=SocraticStep.INITIAL_CONTEXT_REASONING,
+                            completion_percent=0.0
+                        )
+                        session.phase_progress[target_phase_enum] = current_progress
+                        print(f"🎯 RAW_GPT_PHASE: Initialized progress for {current_phase}")
+
+                    # Update phase progression by small increment per interaction
+                    old_completion = current_progress.completion_percent
+                    current_progress.completion_percent = min(100.0, old_completion + 10.0)
+                    phase_completion = current_progress.completion_percent
+                    print(f"🎯 RAW_GPT_PHASE: Updated completion: {old_completion:.1f}% → {phase_completion:.1f}%")
+
+                # Create a simplified phase result compatible with the dashboard
+                phase_result = {
+                    'session_id': st.session_state.phase_session_id,
+                    'current_phase': current_phase,
+                    'phase_progress': {'completion_percent': phase_completion},
+                    'phase_complete': phase_completion >= 100.0,
+                    'session_complete': False,
+                    'question_answered': False,
+                    'nudge': None
+                }
+                print(f"🎯 RAW_GPT_PHASE: Phase={current_phase}, Completion={phase_completion:.1f}%")
             else:
-                # Use the complex AI-driven phase progression system for other modes
+                # Use the complex AI-driven phase progression system for MENTOR mode only
                 phase_result = self.phase_system.process_user_message(st.session_state.phase_session_id, user_input)
 
             if "error" in phase_result:

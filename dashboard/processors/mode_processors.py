@@ -482,7 +482,7 @@ class ModeProcessor:
     def advance_phase_manually(self, reason: str = "Manual advancement"):
         """Manually advance to the next phase using unified phase progression system"""
 
-        session_id = st.session_state.get('session_id', 'manual_session')
+        session_id = st.session_state.get('phase_session_id', st.session_state.get('session_id', 'manual_session'))
 
         # Ensure session exists in unified phase system
         if session_id not in self.phase_system.sessions:
