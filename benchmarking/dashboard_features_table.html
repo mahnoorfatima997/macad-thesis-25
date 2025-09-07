@@ -78,6 +78,7 @@
             .section-anthropomorphism { background-color: #cd766d; color: white; }
             .section-linkography { background-color: #d99c66; }
             .section-proficiency { background-color: #dcc188; }
+            .section-personality { background-color: #9c6fa3; color: white; }
             .section-graphml { background-color: #4f3a3e; color: white; }
             .section-scientific { background-color: #8b7355; color: white; }
             .type-metric { font-weight: bold; color: #784c80; }
@@ -145,6 +146,7 @@
                     <option value="Anthropomorphism">Anthropomorphism</option>
                     <option value="Linkography">Linkography</option>
                     <option value="Proficiency Analysis">Proficiency Analysis</option>
+                    <option value="Personality Analysis">Personality Analysis</option>
                     <option value="Graph ML">Graph ML</option>
                     <option value="Scientific Baselines">Scientific Baselines</option>
                 </select>
@@ -482,6 +484,72 @@
                 </tr>
         
                 <tr>
+                    <td class="section-personality">Personality Analysis</td>
+                    <td>HEXACO Assessment</td>
+                    <td><strong>Personality Trait Extraction</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Hugging Face Transformers: BERT model processes text and outputs personality scores">transformers.AutoModelForSequenceClassification('Minej/bert-base-personality')</td>
+                    <td class="tooltip-cell" data-tooltip="User conversation text analyzed for personality traits"><code>session_conversations.text_content</code></td>
+                    <td class="tooltip-cell" data-tooltip="Original BERT paper introducing bidirectional transformer architecture"><a href="https://arxiv.org/abs/1810.04805" target="_blank" class="reference-link" title="Click to view source">Devlin et al. (2019) BERT: Pre-training of Deep Bidirectional Transformers</a></td>
+                    <td><code>personality_analyzer.py:45-85</code></td>
+                    <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
+                </tr>
+
+                <tr>
+                    <td class="section-personality">Personality Analysis</td>
+                    <td>HEXACO Scoring</td>
+                    <td><strong>Six-Factor Personality Model</strong></td>
+                    <td class="tooltip-cell" data-tooltip="HEXACO dimensions: Honesty-Humility, Emotionality, eXtraversion, Agreeableness, Conscientiousness, Openness">hexaco_scores = {H, E, X, A, C, O}</td>
+                    <td class="tooltip-cell" data-tooltip="Computed personality trait scores from BERT model"><code>personality_traits.hexaco_scores</code></td>
+                    <td class="tooltip-cell" data-tooltip="Foundational paper establishing the six-factor HEXACO personality model"><a href="https://pubmed.ncbi.nlm.nih.gov/18453460/" target="_blank" class="reference-link" title="Click to view source">Ashton & Lee (2007) HEXACO Model Advantages</a></td>
+                    <td><code>personality_analyzer.py:120-165</code></td>
+                    <td class="type-model tooltip-cell" data-tooltip="A machine learning or statistical model">Model</td>
+                </tr>
+
+                <tr>
+                    <td class="section-personality">Personality Analysis</td>
+                    <td>Big Five Conversion</td>
+                    <td><strong>Honesty-Humility Estimation</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Algorithm to estimate missing HEXACO trait from Big Five output">base_score + linguistic_markers_adjustment</td>
+                    <td class="tooltip-cell" data-tooltip="Text analysis of honesty/dishonesty linguistic markers"><code>text_pattern_analysis</code></td>
+                    <td class="tooltip-cell" data-tooltip="Meta-analysis examining correlations between Big Five and HEXACO models"><a href="https://osf.io/x24pj/" target="_blank" class="reference-link" title="Click to view source">Thielmann et al. (2022) Big Five vs HEXACO Meta-Analysis</a></td>
+                    <td><code>personality_analyzer.py:95-115</code></td>
+                    <td class="type-algorithm tooltip-cell" data-tooltip="A computational procedure for analysis">Algorithm</td>
+                </tr>
+
+                <tr>
+                    <td class="section-personality">Personality Analysis</td>
+                    <td>Reliability Assessment</td>
+                    <td><strong>Confidence Scoring</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Multi-factor reliability: text length + prediction confidence + trait consistency">0.4 * length_factor + 0.35 * confidence_factor + 0.25 * consistency_factor</td>
+                    <td class="tooltip-cell" data-tooltip="Statistical confidence in personality predictions"><code>personality_confidence.reliability_score</code></td>
+                    <td class="tooltip-cell" data-tooltip="Critical analysis of psychometric properties in automated personality assessment"><a href="https://osf.io/cgpmz/" target="_blank" class="reference-link" title="Click to view source">Hickman et al. (2020) Automated Personality Assessment Validity</a></td>
+                    <td><code>personality_analyzer.py:200-235</code></td>
+                    <td class="type-metric tooltip-cell" data-tooltip="A measured value or calculated score">Metric</td>
+                </tr>
+
+                <tr>
+                    <td class="section-personality">Personality Analysis</td>
+                    <td>Trait Classification</td>
+                    <td><strong>Personality Levels</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Adaptive thresholds: Very Low (<0.2), Low (0.2-0.35), Medium (0.35-0.65), High (0.65-0.8), Very High (>0.8)">adaptive_threshold_classification(trait_scores)</td>
+                    <td class="tooltip-cell" data-tooltip="Categorical levels based on population distributions"><code>personality_levels.{trait}_level</code></td>
+                    <td class="tooltip-cell" data-tooltip="Validation study of the 100-item HEXACO personality inventory"><a href="https://pubmed.ncbi.nlm.nih.gov/27411678/" target="_blank" class="reference-link" title="Click to view source">Lee & Ashton (2018) HEXACO-100 Psychometric Properties</a></td>
+                    <td><code>personality_analyzer.py:170-195</code></td>
+                    <td class="type-process tooltip-cell" data-tooltip="A systematic procedure or workflow">Process</td>
+                </tr>
+
+                <tr>
+                    <td class="section-personality">Personality Analysis</td>
+                    <td>Session Tracking</td>
+                    <td><strong>Personality Evolution</strong></td>
+                    <td class="tooltip-cell" data-tooltip="Temporal analysis: Track personality stability across multiple sessions">personality_stability_analysis(session_history)</td>
+                    <td class="tooltip-cell" data-tooltip="Historical personality assessments across sessions"><code>personality_history.temporal_data</code></td>
+                    <td class="tooltip-cell" data-tooltip="Empirical validation of automated personality assessment reliability"><a href="https://pubmed.ncbi.nlm.nih.gov/34110849/" target="_blank" class="reference-link" title="Click to view source">Hickman et al. (2021) Automated Video Interview Personality Assessments</a></td>
+                    <td><code>personality_dashboard.py:425-455</code></td>
+                    <td class="type-analysis tooltip-cell" data-tooltip="In-depth examination of patterns or relationships">Analysis</td>
+                </tr>
+        
+                <tr>
                     <td class="section-graphml">Graph ML</td>
                     <td>Construction</td>
                     <td><strong>Graph Building</strong></td>
@@ -635,6 +703,41 @@
                     <p style="margin: 15px 0;">
                         <strong style="color: #d99c66; display: block; margin-bottom: 8px;">Neural Engagement Score (NES):</strong>
                         <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">NES = (unique_concepts_count / total_interactions) + technical_vocabulary_ratio</code>
+                    </p>
+                </div>
+            </details>
+            
+            <details style="background-color: #e0ceb5; border-radius: 5px; padding: 10px; margin-top: 15px; box-shadow: 0 2px 4px rgba(79, 58, 62, 0.1);">
+                <summary style="cursor: pointer; padding: 10px; font-size: 16px; font-weight: bold; color: #4f3a3e;">Personality Analysis Metrics (Click to expand)</summary>
+                <div style="margin-top: 15px; background-color: white; padding: 15px; border-radius: 3px; font-family: monospace; font-size: 14px;">
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #9c6fa3; display: block; margin-bottom: 8px;">HEXACO Personality Traits (6-Factor Model):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">traits = {Honesty-Humility, Emotionality, eXtraversion, Agreeableness, Conscientiousness, Openness}</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #784c80; display: block; margin-bottom: 8px;">Honesty-Humility Estimation Algorithm:</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">H = base_score + linguistic_markers_adjustment = 0.3 + (agreeableness * 0.4) + marker_weight</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #cd766d; display: block; margin-bottom: 8px;">Confidence Reliability Score:</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">reliability = 0.4 × length_factor + 0.35 × confidence_factor + 0.25 × consistency_factor</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #5c4f73; display: block; margin-bottom: 8px;">Personality Level Classification:</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">levels = {Very Low: <0.2, Low: 0.2-0.35, Medium: 0.35-0.65, High: 0.65-0.8, Very High: >0.8}</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #d99c66; display: block; margin-bottom: 8px;">Learning Style Adaptation:</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">adaptations = trait_correlations × learning_preferences × pedagogical_strategies</code>
+                    </p>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong style="color: #b87189; display: block; margin-bottom: 8px;">Personality Stability (Temporal):</strong>
+                        <code style="background-color: #faf8f5; padding: 5px; border-radius: 3px; display: block;">stability = 1 - (std_dev(trait_scores_over_time) / mean(trait_scores))</code>
                     </p>
                 </div>
             </details>

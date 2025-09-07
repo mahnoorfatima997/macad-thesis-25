@@ -18,7 +18,14 @@
       "Bash(streamlit run:*)",
       "WebSearch",
       "WebFetch(domain:arxiv.org)",
-      "WebFetch(domain:www.designsociety.org)"
+      "WebFetch(domain:www.designsociety.org)",
+      "WebFetch(domain:aclanthology.org)",
+      "WebFetch(domain:journals.sagepub.com)",
+      "WebFetch(domain:link.springer.com)",
+      "WebFetch(domain:www.frontiersin.org)",
+      "WebFetch(domain:pubmed.ncbi.nlm.nih.gov)",
+      "WebFetch(domain:osf.io)",
+      "WebFetch(domain:projects.ori.org)"
     ],
     "deny": []
   }

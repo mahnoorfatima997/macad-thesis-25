@@ -130,10 +130,19 @@ class InteractionLogger:
                        metadata: Dict[str, Any] = None):
         """Log each interaction for thesis analysis with enhanced phase and move tracking"""
         
-        # Extract phase information from metadata
+        # Extract phase information from metadata (handle both formats)
         phase_analysis = metadata.get("phase_analysis", {}) if metadata else {}
-        current_phase = phase_analysis.get("phase", "unknown")
-        phase_confidence = phase_analysis.get("confidence", 0.5)
+        phase_info = metadata.get("phase_info", {}) if metadata else {}
+        
+        # Check for phase in both possible locations due to inconsistent metadata keys across processors
+        current_phase = (phase_analysis.get("phase") or 
+                        phase_info.get("current_phase") or 
+                        "unknown")
+        
+        # Get confidence from either source
+        phase_confidence = (phase_analysis.get("confidence") or 
+                           phase_info.get("phase_confidence") or 
+                           0.5)
         
         # Extract scientific metrics and cognitive state from metadata
         scientific_metrics = metadata.get("scientific_metrics", {}) if metadata else {}
