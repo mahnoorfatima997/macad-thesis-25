@@ -289,16 +289,66 @@ class PersonalityDashboard:
         st.markdown("### Individual User Personality Profile")
         st.markdown("Select a session to view detailed personality analysis for system improvement and user-specific adaptation.")
         
-        # Create session options with better labeling
+        # Create session options with clear session ID and timestamp
         session_options = []
         for p in profiles:
-            reliability_label = "High" if p.reliability_score > 0.6 else "Medium" if p.reliability_score > 0.4 else "Low"
-            session_options.append(f"{p.session_id} (Reliability: {reliability_label})")
+            # Try to get original session timestamp, not analysis timestamp
+            original_timestamp = None
+            
+            # Method 1: Extract from session_id if it contains timestamp (YYYYMMDD_HHMMSS)
+            import re
+            timestamp_match = re.search(r'(\d{8}_\d{6})', p.session_id)
+            if timestamp_match:
+                try:
+                    from datetime import datetime
+                    timestamp_str = timestamp_match.group(1)
+                    original_timestamp = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+                except:
+                    pass
+            
+            # Method 2: Look for corresponding session file in thesis_data
+            if not original_timestamp:
+                session_file_patterns = [
+                    f"thesis_data/session_{p.session_id}.json",
+                    f"thesis_data/session_unified_session_{p.session_id}.json"
+                ]
+                for pattern in session_file_patterns:
+                    session_file = Path(pattern)
+                    if session_file.exists():
+                        try:
+                            import json
+                            with open(session_file, 'r') as f:
+                                session_data = json.load(f)
+                            if 'start_time' in session_data:
+                                original_timestamp = datetime.fromisoformat(session_data['start_time'].replace('Z', '+00:00'))
+                                break
+                        except:
+                            continue
+            
+            # Method 3: Fallback to analysis timestamp
+            if not original_timestamp and hasattr(p, 'timestamp') and p.timestamp:
+                try:
+                    if isinstance(p.timestamp, str):
+                        original_timestamp = datetime.fromisoformat(p.timestamp.replace('Z', '+00:00'))
+                    else:
+                        original_timestamp = p.timestamp
+                except:
+                    pass
+            
+            # Format the display - clean and confident
+            if original_timestamp:
+                formatted_time = original_timestamp.strftime("%Y-%m-%d %H:%M")
+                session_display = f"{p.session_id} | {formatted_time}"
+            else:
+                session_display = p.session_id
+            
+            session_options.append(session_display)
         
         selected_option = st.selectbox("Select session for detailed analysis:", session_options)
         
         if selected_option:
-            session_id = selected_option.split(" (")[0]
+            # Parse session_id from the new format: "session_id | timestamp | Reliability: label"
+            session_id = selected_option.split(" | ")[0] if " | " in selected_option else selected_option.split(" (")[0]
             selected_profile = next((p for p in profiles if p.session_id == session_id), None)
             
             if selected_profile:
