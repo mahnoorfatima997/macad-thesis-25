@@ -116,13 +116,12 @@ class EnhancedLinkographVisualizer:
             if significant_nodes:
                 self._draw_intersection_nodes(fig, significant_nodes)
         
-        # Identify and highlight critical moves
-        critical_moves = {}
-        if show_critical_moves:
-            critical_moves = self._identify_critical_moves(linkograph)
+        # Identify critical moves (always calculate for statistics, highlight only if requested)
+        critical_moves = self._identify_critical_moves(linkograph)
         
-        # Draw design moves with critical move highlighting
-        self._draw_enhanced_moves(fig, moves, links, critical_moves)
+        # Draw design moves with critical move highlighting (only if requested)
+        critical_moves_for_display = critical_moves if show_critical_moves else {}
+        self._draw_enhanced_moves(fig, moves, links, critical_moves_for_display)
         
         # Highlight patterns if requested
         if show_patterns and patterns:
@@ -171,7 +170,7 @@ class EnhancedLinkographVisualizer:
         )
         
         # Add critical move and intersection statistics annotation
-        self._add_statistics_annotation(fig, critical_moves, intersection_nodes, n_moves)
+        self._add_statistics_annotation(fig, critical_moves, intersection_nodes, n_moves, linkograph)
         
         return fig
     
@@ -526,18 +525,22 @@ class EnhancedLinkographVisualizer:
                     phase_start = i
     
     def _add_statistics_annotation(self, fig: go.Figure, critical_moves: Dict[str, str], 
-                                  intersection_nodes: List[IntersectionNode], n_moves: int):
+                                  intersection_nodes: List[IntersectionNode], n_moves: int, linkograph):
         """Add statistics box with key metrics"""
-        forward_critical = len([m for m in critical_moves.values() if m == 'forward'])
-        backward_critical = len([m for m in critical_moves.values() if m == 'backward'])
-        bidirectional_critical = len([m for m in critical_moves.values() if m == 'bidirectional'])
+        # CALCULATE CRITICAL MOVES DIRECTLY HERE - FUCK THE BROKEN FLOW
+        actual_critical_moves = self._identify_critical_moves(linkograph)
+        
+        forward_critical = len([m for m in actual_critical_moves.values() if m == 'forward'])
+        backward_critical = len([m for m in actual_critical_moves.values() if m == 'backward'])
+        bidirectional_critical = len([m for m in actual_critical_moves.values() if m == 'bidirectional'])
+        
         total_intersections = len(intersection_nodes)
         avg_complexity = np.mean([n.complexity for n in intersection_nodes]) if intersection_nodes else 0
         
         stats_text = (
             f"<b>Linkograph Statistics</b><br>" +
             f"Total Moves: {n_moves}<br>" +
-            f"Critical Moves: {len(critical_moves)} ({len(critical_moves)/n_moves*100:.1f}%)<br>" +
+            f"Critical Moves: {len(actual_critical_moves)} ({len(actual_critical_moves)/n_moves*100:.1f}%)<br>" +
             f"  • Forward: {forward_critical}<br>" +
             f"  • Backward: {backward_critical}<br>" +
             f"  • Bidirectional: {bidirectional_critical}<br>" +
