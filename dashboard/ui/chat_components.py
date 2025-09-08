@@ -598,7 +598,7 @@ def _render_gamified_message(message: Dict[str, Any], mentor_label: str):
 
         # STEP 5: Add conversation continuity prompt
         st.markdown("---")
-        st.markdown("**Continue the conversation by sharing your thoughts, questions or insights.**")
+        st.markdown("**Continue the conversation by sharing your thoughts, questions, or insights from this challenge.**")
 
         # Add timestamp
         st.markdown(
@@ -1141,16 +1141,6 @@ def _clean_agent_response(agent_response: str) -> str:
 
     # Remove HTML comments
     clean_content = re.sub(r'<!--.*?-->', '', agent_response, flags=re.DOTALL)
-
-    # CRITICAL FIX: Remove specific gamification HTML blocks that shouldn't be in text content
-    # Remove storytelling completion HTML blocks (with newlines and exact structure)
-    clean_content = re.sub(r'<h4[^>]*>◈ Chapter Complete</h4>\s*\n\s*<p[^>]*>Story continues.*?</p>', '', clean_content, flags=re.DOTALL)
-    # Remove transformation completion HTML blocks
-    clean_content = re.sub(r'<h3[^>]*>◈ Transformation Challenge Complete</h3>\s*\n\s*<p[^>]*>✔ Creative solution.*?</p>', '', clean_content, flags=re.DOTALL)
-    # Remove any gamification completion HTML blocks with newlines
-    clean_content = re.sub(r'<h[3-4][^>]*>◈.*?Complete[^<]*</h[3-4]>\s*\n\s*<p[^>]*>.*?</p>', '', clean_content, flags=re.DOTALL)
-    # Remove the exact pattern you're seeing
-    clean_content = re.sub(r'<h4 style="color: #ffffff; margin-bottom: 5px;">◈ Chapter Complete</h4>\s*\n\s*<p style="color: #ffffff; font-size: 14px; margin: 0;">Story continues.*?</p>', '', clean_content, flags=re.DOTALL)
 
     # Remove HTML tags
     clean_content = re.sub(r'<[^>]+>', '', clean_content)

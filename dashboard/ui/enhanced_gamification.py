@@ -2307,7 +2307,7 @@ class EnhancedGamificationRenderer:
             """, unsafe_allow_html=True)
 
             # Response area - frozen state if completed
-            if is_completed:
+            if is_game_completed:
                 # Show submitted response in disabled state
                 st.text_area(
                     "Your submitted insight:",
@@ -4106,8 +4106,11 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
                 is_permanently_completed = True
                 print(f"🎮 EARLY_COMPLETION_CHECK: Persona game {permanent_game_id} is permanently completed")
         elif challenge_type == 'wheel_challenge':
-            # CRITICAL FIX: Use hash() to match the key used in game rendering (line 2155)
-            wheel_key = f"wheel_{challenge_data.get('building_type', 'unknown')}_{hash(challenge_data.get('challenge_text', ''))}"
+            # CRITICAL FIX: Use hash() to match the key used in game rendering (line 2172)
+            # CONSISTENCY FIX: Use same parameter names as in completion
+            building_type = challenge_data.get('building_type', 'unknown')
+            challenge_text = challenge_data.get('challenge_text', '')
+            wheel_key = f"wheel_{building_type}_{hash(challenge_text)}"
             permanent_game_id = f"wheel_challenge_{wheel_key}"
             if permanent_game_id in st.session_state.get('permanently_completed_games', set()):
                 is_permanently_completed = True
@@ -4246,8 +4249,10 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
             # CRITICAL FIX: Check completion using instance-specific state
             # Generate the same instance ID that would be used in _render_storytelling_game
             import hashlib
-            challenge_signature = str(challenge_data.get('generation_timestamp', '')) + str(challenge_data.get('challenge_text', '')[:50])
-            instance_hash = hashlib.md5(challenge_signature.encode()).hexdigest()[:8]
+            # CONSISTENCY FIX: Use same stable identifier as in completion (line 3154)
+            building_type = challenge_data.get('building_type', 'community_center')
+            stable_identifier = f"{building_type}_storytelling"
+            instance_hash = hashlib.md5(stable_identifier.encode()).hexdigest()[:8]
 
             # Look for the specific storytelling instance
             storytelling_key = f"storytelling_instance_{instance_hash}"
@@ -4323,7 +4328,9 @@ def render_enhanced_gamified_challenge(challenge_data: Dict[str, Any]) -> None:
         if challenge_type == 'spatial_storytelling':
             # CRITICAL FIX: Use stable identifier that doesn't depend on regenerated challenge text
             import hashlib
-            stable_identifier = f"{challenge_data.get('building_type', 'community_center')}_storytelling"
+            # CONSISTENCY FIX: Use same building_type format as in completion (line 3154)
+            building_type = challenge_data.get('building_type', 'community_center')
+            stable_identifier = f"{building_type}_storytelling"
             instance_hash = hashlib.md5(stable_identifier.encode()).hexdigest()[:8]
 
             # Use consistent permanent game ID format: storytelling_challenge_
