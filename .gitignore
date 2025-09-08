@@ -132,6 +132,37 @@ logs/
 sessions/
 *.session
 
-# Thesis data (if contains sensitive information)
+# Thesis data and benchmarking results (local development data)
 thesis_docs/
+thesis_data/
+benchmarking/results/
+benchmarking/results/**
+*.session
+session_summary_*.json
+interactions_*.csv
+
+# Specific benchmarking result files
+benchmark_report.json
+calculation_log.json
+master_aggregate_metrics.csv
+master_session_metrics.csv
+comprehensive_benchmark_report.json
+benchmark_summary.md
+
+# Evaluation and personality reports
+evaluation_reports/
+personality_reports/
+linkography_reports/
+
+# Generated visualizations (usually too large for git)
+visualizations/
+*.html
+pyvis/
+interactive_graph_ml/
+
+# Model files (usually large)
+*.pkl
+gnn_model.pkl
+proficiency_classifier.pkl
+
 nul
