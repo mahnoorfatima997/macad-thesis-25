@@ -1645,8 +1645,9 @@ class UnifiedArchitecturalDashboard:
         # Check if we're in No AI mode and use appropriate data source
         current_mode = st.session_state.get('current_mode', 'MENTOR')
         test_group = st.session_state.get('test_group_selection', 'MENTOR')
+        test_group_enum = st.session_state.get('test_group', None)
 
-        if current_mode in ["NO_AI", "No AI", "CONTROL", "RAW_GPT", "Raw GPT"] or test_group == "CONTROL" or test_group_enum == "GENERIC_AI":
+        if current_mode in ["NO_AI", "No AI", "CONTROL", "RAW_GPT", "Raw GPT"] or test_group == "CONTROL" or (test_group_enum and test_group_enum.value == "GENERIC_AI"):
             # For simplified modes (No AI, Raw GPT, Generic AI), use unified simplified phase circles
             self._render_simplified_phase_circles()
         else:

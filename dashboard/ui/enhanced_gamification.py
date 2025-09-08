@@ -2668,7 +2668,7 @@ class EnhancedGamificationRenderer:
             <h3 style="color: white; margin: 0 0 10px 0; font-weight: 600; font-size: 1.4em;">
                 Constraint Challenge
             </h3>
-            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.95em;">
+            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.95em">
                 Select constraints and create innovative solutions
             </p>
         </div>
@@ -2717,7 +2717,6 @@ class EnhancedGamificationRenderer:
             margin: 15px 0;
             border: 1px solid rgba(255,255,255,0.1);
             {'opacity: 0.7;' if is_completed else 'opacity: 1.0;'}
-
         ">
             <h4 style="color: {theme['primary']}; margin: 0 0 15px 0; font-size: 1.1em;">
                 {theme['symbol']} {header_text}
@@ -3423,23 +3422,12 @@ class EnhancedGamificationRenderer:
 
 
 
-                # Show completion status
+                # Show completion status using Streamlit components instead of raw HTML
                 current_chapter = story_state.get('last_completed_chapter', 1)
                 narrative_count = len(narrative_choices)
-                st.markdown(f"""
-                <div style="
-                    background: linear-gradient(135deg, #d99c66 0%, #dcc188 50%, #e0ceb5 100%);
-                    border-radius: 15px;
-                    padding: 15px;
-                    margin: 10px 0;
-                    text-align: center;
-                ">
 
-                    <h4 style="color: #ffffff; margin-bottom: 5px;">◈ Chapter Complete</h4>
-                    <p style="color: #ffffff; font-size: 14px; margin: 0;">Story continues... ({narrative_count}/3 chapters done)</p>
-
-                </div>
-                """, unsafe_allow_html=True)
+                # Use Streamlit success message instead of HTML to prevent content capture
+                st.success(f"◈ Chapter Complete - Story continues... ({narrative_count}/3 chapters done)")
 
                 return  # Don't render interactive elements for frozen state
 
@@ -3513,6 +3501,9 @@ class EnhancedGamificationRenderer:
                         # Update the instance state in session
                         st.session_state[storytelling_key] = story_state
 
+                        # PERMANENT COMPLETION SYSTEM: Define permanent_game_id for this instance
+                        permanent_game_id = f"storytelling_challenge_{current_instance_id}"
+
                         # ISSUE 3 FIX: Complete storytelling after 3 submissions
                         if len(story_state['narrative_choices']) >= 3:
                             # Story completion after 3 submissions - show immediate feedback with balloons
@@ -3525,15 +3516,11 @@ class EnhancedGamificationRenderer:
                                 for i, choice in enumerate(story_state['narrative_choices'], 1):
                                     st.write(f"**Chapter {i}:** {choice}")
 
-                            # PERMANENT COMPLETION SYSTEM: Mark this instance as permanently completed
-                            permanent_game_id = f"storytelling_challenge_{current_instance_id}"
+                            # Mark this instance as permanently completed
                             if 'permanently_completed_games' not in st.session_state:
                                 st.session_state.permanently_completed_games = set()
                             st.session_state.permanently_completed_games.add(permanent_game_id)
                             print(f"🎮 STORYTELLING_PERMANENTLY_COMPLETED: Added {permanent_game_id} to permanent completion")
-
-                            # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
-                            _update_message_completion_status(permanent_game_id)
 
                         # CRITICAL FIX: Update the message's gamification data to mark it as permanently completed
                         _update_message_completion_status(permanent_game_id)
@@ -3567,11 +3554,11 @@ class EnhancedGamificationRenderer:
                         # CRITICAL FIX: Don't advance chapter automatically - stay at current chapter until next trigger
                         # story_state['chapter'] = current_chapter + 1  # REMOVED: Don't auto-advance
 
-                        # Trigger message processing for follow-up
+                        # Trigger message processing for follow-up with correct chapter-specific message
                         st.session_state.should_process_message = True
                         st.session_state.messages.append({
                             "role": "user",
-                            "content": f"I completed the storytelling challenge with 3 chapters! Here's my narrative: {' '.join(story_state['narrative_choices'])}"
+                            "content": f"I completed chapter {current_chapter} of the storytelling challenge! My narrative choice: {story_state['narrative_choices'][-1]}"
                         })
 
                     # Update session state
@@ -3841,16 +3828,14 @@ class EnhancedGamificationRenderer:
             st.markdown(f"""
             <div style="
                 background: linear-gradient(45deg, {theme['primary']}12, {theme['secondary']}12);
-
-                border: 2px solid #784c80;   
-
+                border: 2px solid #784c80;
                 border-radius: 15px;
                 padding: 20px;
                 margin: 15px 0;
                 text-align: center;
             ">
-                <h3 style="color:  #784c80; margin: 0;"> Transformation Challenge Complete </h4>
-                <p style="color:  #784c80; font-size: 16px; margin: 0;">✔ Creative solution submitted! +30 points</p>
+                <h3 style="color: #784c80; margin: 0;">▲ Transformation Challenge Complete</h3>
+                <p style="color: #784c80; font-size: 16px; margin: 0;">✔ Creative solution submitted! +30 points</p>
             </div>
             """, unsafe_allow_html=True)
 
