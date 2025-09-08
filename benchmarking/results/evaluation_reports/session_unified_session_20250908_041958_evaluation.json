@@ -1,0 +1,127 @@
+{
+  "evaluation_timestamp": "2025-09-08T19:56:17.705776",
+  "session_metrics": {
+    "session_id": "unified_session_20250908_041958",
+    "timestamp": "2025-09-08T19:56:17.643940",
+    "duration_minutes": 6.91,
+    "total_interactions": 50,
+    "cognitive_offloading_prevention": {
+      "overall_rate": 0.68,
+      "in_direct_questions": 0.667,
+      "temporal_improvement": 0.0,
+      "consistency": 0.529
+    },
+    "deep_thinking_engagement": {
+      "overall_rate": 0.16,
+      "avg_response_length": 16.8,
+      "question_complexity": 1.0,
+      "sustained_rate": 0.746
+    },
+    "scaffolding_effectiveness": {
+      "overall_rate": 0.0,
+      "by_skill_level": {
+        "beginner": 0,
+        "intermediate": 0.0,
+        "advanced": 0
+      },
+      "adaptive_score": 0.833,
+      "gap_coverage": 0.0
+    },
+    "knowledge_integration": {
+      "integration_rate": 0.0,
+      "avg_sources_per_interaction": 0.0,
+      "source_diversity": 0,
+      "unique_sources_used": 0
+    },
+    "skill_progression": {
+      "initial_level": "intermediate",
+      "final_level": "intermediate",
+      "progression_score": 0.0,
+      "level_changes": 0,
+      "stability": 1.0
+    },
+    "conceptual_understanding": {
+      "overall_score": 0.0,
+      "indicator_distribution": {
+        "spatial_reasoning": 0,
+        "design_principles": 0,
+        "theoretical_connection": 0,
+        "precedent_awareness": 0,
+        "contextual_understanding": 0
+      },
+      "depth_score": 0.513
+    },
+    "metacognitive_development": {
+      "reflection_rate": 0.0,
+      "confidence_progression": 0.004,
+      "self_awareness_score": 0.3
+    },
+    "sustained_engagement": {
+      "overall_rate": 0.68,
+      "avg_streak_length": 2.0,
+      "max_streak_length": 2,
+      "engagement_decay": 0.0
+    },
+    "question_quality": {
+      "quality_score": 1.0,
+      "complexity": 94.0,
+      "specificity": 1.0
+    },
+    "reflection_depth": {
+      "depth_score": 0.4,
+      "elaboration": 75.0
+    },
+    "agent_coordination_score": 0.0,
+    "routing_appropriateness": {
+      "overall_appropriateness": 0.34,
+      "routing_diversity": 0.04,
+      "by_context": {
+        "general_statement": 0.342,
+        "overconfident_statement": 0.333,
+        "improvement_seeking": 0.333,
+        "direct_question": 0.333
+      }
+    },
+    "improvement_over_baseline": {
+      "cognitive_offloading_rate_improvement": 38.5,
+      "deep_thinking_engagement_improvement": -50,
+      "knowledge_retention_improvement": -50,
+      "metacognitive_awareness_improvement": -50,
+      "creative_problem_solving_improvement": -4.1,
+      "critical_thinking_development_improvement": 31.5,
+      "overall_improvement": -14.0
+    }
+  },
+  "comparative_analysis": {
+    "vs_baseline": {
+      "cognitive_offloading_rate_improvement": 38.5,
+      "deep_thinking_engagement_improvement": -50,
+      "knowledge_retention_improvement": -50,
+      "metacognitive_awareness_improvement": -50,
+      "creative_problem_solving_improvement": -4.1,
+      "critical_thinking_development_improvement": 31.5,
+      "overall_improvement": -14.0
+    },
+    "effectiveness_summary": {
+      "cognitive_offloading_prevention": "Needs Improvement",
+      "deep_thinking_engagement": "Needs Improvement",
+      "scaffolding": "Needs Improvement",
+      "knowledge_integration": "Needs Improvement",
+      "overall_rating": "Needs Significant Improvement"
+    }
+  },
+  "recommendations": [
+    "Increase use of Socratic questioning to prevent direct answer-seeking behavior",
+    "Incorporate more complex, open-ended questions that require critical analysis",
+    "Diversify knowledge sources to provide richer contextual understanding",
+    "Enhance multi-agent coordination for more coherent responses"
+  ],
+  "strengths": [
+    "Successfully maintains deep thinking engagement"
+  ],
+  "areas_for_improvement": [
+    "Limited skill progression observed",
+    "Student reflections lack depth",
+    "Agent routing decisions could be more accurate"
+  ]
+}

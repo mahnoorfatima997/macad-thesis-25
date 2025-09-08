@@ -1,0 +1,1569 @@
+{
+  "session_id": "3464dc9b-b1b0-4fe4-9fa8-4be8889bb878",
+  "timestamp": "2025-09-08T16:48:50.704233",
+  "linkograph": {
+    "id": "a200e5ab-3e67-41b8-9323-81d24d162fce",
+    "session_id": "3464dc9b-b1b0-4fe4-9fa8-4be8889bb878",
+    "phase": "mixed",
+    "generated_at": "2025-09-08T16:48:50.706650",
+    "move_count": 18,
+    "link_count": 198,
+    "moves": [
+      {
+        "id": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "timestamp": 1757349314.554025,
+        "content": "Users: Families, youth, seniors, recent immigrants, veterans, small business owners, artists/makers, and local service providers.\nBig Idea: Keep the \u201cbig room\u201d character\u2014use tall volume for a central indoor \u201cstreet/market hall,\u201d then nest flexible program blocks along it. Low-cost fit-out, high adaptability.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "timestamp": 1757349314.580781,
+        "content": "Hello there!\n\nYour project sounds intriguing with its diverse range of users and your desire to maintain the \u201cbig room\u201d character. It\u2019s great to see your enthusiasm for creating an adaptable space that can serve multiple functions. There's so much opportunity for interesting design in projects like this!\n\nLet's consider some architectural elements that might help to create a sense of unity in a multifunctional space. Have you thought about how lighting, acoustics, or circulation pathways may sha",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "timestamp": 1757349314.607477,
+        "content": "Users: Families, youth, seniors, recent immigrants, veterans, small business owners, artists/makers, and local service providers.\nBig Idea: Keep the \u201cbig room\u201d character\u2014use tall volume for a central indoor \u201cstreet/market hall,\u201d then nest flexible program blocks along it. Low-cost fit-out, high adaptability.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "timestamp": 1757349314.627398,
+        "content": "Hello there!\n\nYour project sounds intriguing with its diverse range of users and your desire to maintain the \u201cbig room\u201d character. It\u2019s great to see your enthusiasm for creating an adaptable space that can serve multiple functions. There's so much opportunity for interesting design in projects like this!\n\nLet's consider some architectural elements that might help to create a sense of unity in a multifunctional space. Have you thought about how lighting, acoustics, or circulation pathways may shape your space? \n\nI'm also curious, when you mention 'program blocks', could you expand on what kind of activities or facilities you envision these blocks accommodating?\n\nYour project certainly opens up a fascinating design exploration! Looking forward to learning more about your ideas and embarking on this journey together. \n\nTo help us explore this together, I'd love to hear your thoughts on: \n1. What is the primary purpose of your design? \n2. Who are the main users and what do they need? \n3. What do you think is the most important function this space needs to serve? \n\n**How we'll work together:** I'm here to guide you through a progressive learning journey. We'll start by understanding your interests and then explore the design space together, building your knowledge step by step. \n**Next steps:** \u2022 Share your thoughts on the questions above \u2022 Tell me more about what interests you most \u2022 Ask about any concepts you'd like to explore further \nI'm excited to explore this architectural journey with you! What would you like to start with?",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "timestamp": 1757349489.796519,
+        "content": "1. primary purpose is inclusion ,  2. people with disabilities, 3. accessibility ",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "e13cc051-2a1d-4f4b-905f-7d9614af22e1",
+        "timestamp": 1757349489.819342,
+        "content": "Processing...",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "timestamp": 1757349508.416173,
+        "content": "1. primary purpose is inclusion ,  2. people with disabilities, 3. accessibility ",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "caeccf11-4f84-4272-8138-be8afb502034",
+        "timestamp": 1757349508.435277,
+        "content": "Your emphasis on inclusion and accessibility, particularly for people with disabilities, is a crucial foundation for creating a market that serves the entire community. By prioritizing these aspects, you're not only addressing the diverse needs of users but also paving the way for a more enriching shopping experience. Considering the specific challenges faced by people with disabilities, how might the layout, signage, and vendor placement within your market ensure ease of navigation and interact",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "timestamp": 1757349508.460092,
+        "content": "1. primary purpose is inclusion ,  2. people with disabilities, 3. accessibility ",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "timestamp": 1757349508.476203,
+        "content": "Your emphasis on inclusion and accessibility, particularly for people with disabilities, is a crucial foundation for creating a market that serves the entire community. By prioritizing these aspects, you're not only addressing the diverse needs of users but also paving the way for a more enriching shopping experience. Considering the specific challenges faced by people with disabilities, how might the layout, signage, and vendor placement within your market ensure ease of navigation and interaction, thereby enhancing accessibility and supporting local vendors effectively?",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "timestamp": 1757349688.910102,
+        "content": "Users: Families, youth, seniors, recent immigrants, veterans, small business owners, artists/makers, and local service providers.\nBig Idea: Keep the \u201cbig room\u201d character\u2014use tall volume for a central indoor \u201cstreet/market hall,\u201d then nest flexible program blocks along it. Low-cost fit-out, high adaptability.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "timestamp": 1757349691.394502,
+        "content": "Your project concept is truly inspiring, aiming to serve a diverse group of users while maintaining a flexible, inclusive, and adaptable space. Let\u2019s delve into some ideas and considerations that might help you realize this vision:\n\n### Design Considerations:\n\n1. **Inclusion and Accessibility:**\n   - **Universal Design:** Ensure all areas are accessible to people with disabilities. This includes wide corridors, ramps, elevators, and accessible restrooms.\n   - **Clear Signage:** Use symbols and m",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "timestamp": 1757349695.868907,
+        "content": "Users: Families, youth, seniors, recent immigrants, veterans, small business owners, artists/makers, and local service providers.\nBig Idea: Keep the \u201cbig room\u201d character\u2014use tall volume for a central indoor \u201cstreet/market hall,\u201d then nest flexible program blocks along it. Low-cost fit-out, high adaptability.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "timestamp": 1757349698.286534,
+        "content": "Your project concept is truly inspiring, aiming to serve a diverse group of users while maintaining a flexible, inclusive, and adaptable space. Let\u2019s delve into some ideas and considerations that might help you realize this vision:\n\n### Design Considerations:\n\n1. **Inclusion and Accessibility:**\n   - **Universal Design:** Ensure all areas are accessible to people with disabilities. This includes wide corridors, ramps, elevators, and accessible restrooms.\n   - **Clear Signage:** Use symbols and multiple languages to cater to diverse linguistic backgrounds, ensuring everyone can navigate the space easily.\n   - **Sensory-Friendly Spaces:** Create quiet zones or areas with softer lighting and acoustics for individuals who might be sensitive to sensory input.\n\n2. **Central Indoor \u201cStreet/Market Hall\u201d:**\n   - **Flexible Layout:** Use movable partitions or modular furniture that can be reconfigured to host different events, markets, or community gatherings.\n   - **Natural Light:** Incorporate skylights or large windows to enhance the sense of openness and reduce the need for artificial lighting.\n   - **Community Art and Installations:** Involve artists/makers in creating installations or murals that reflect the community\u2019s diversity and spirit.\n\n3. **Program Blocks:**\n   - **Diverse Program Offerings:** Include spaces for workshops, small business pop-ups, art exhibitions, and community services.\n   - **Adaptive Use:** Design these blocks to be multifunctional, allowing them to transition between uses such as classrooms, meeting rooms, or gallery spaces.\n   - **Technology-Equipped Spaces:** Consider integrating technology to facilitate virtual meetings, workshops, or hybrid events.\n\n4. **Low-Cost Fit-Out and Sustainability:**\n   - **Recycled and Local Materials:** Use sustainable materials to reduce costs and environmental impact.\n   - **Energy Efficiency:** Implement energy-efficient lighting, heating, and cooling systems to minimize operational costs.\n   - **Green Spaces:** Incorporate indoor plants or small green areas to improve air quality and provide a calming environment.\n\n5. **Community Engagement:**\n   - **Participatory Design Process:** Involve community members in the design process to ensure the space meets their needs and fosters a sense of ownership.\n   - **Feedback Mechanisms:** Establish channels for ongoing feedback and suggestions to continually adapt and improve the space.\n\n### Next Steps:\n\n- **Stakeholder Workshops:** Organize sessions with representatives from each user group to gather insights and refine your design.\n- **Prototype and Testing:** Develop a small-scale prototype of a program block to test its functionality and adaptability.\n- **Funding and Partnerships:** Explore partnerships with local businesses, government bodies, and non-profits for funding and support.\n\nYour project has the potential to become a vibrant community hub that celebrates diversity and fosters inclusivity. If you have specific areas you'd like to explore further or need assistance with, feel free to share!",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "timestamp": 1757349924.631085,
+        "content": "Users: Families, youth, seniors, recent immigrants, veterans, small business owners, artists/makers, and local service providers.\nBig Idea: Keep the \u201cbig room\u201d character\u2014use tall volume for a central indoor \u201cstreet/market hall,\u201d then nest flexible program blocks along it. Low-cost fit-out, high adaptability.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "timestamp": 1757349924.66511,
+        "content": "This concept revolves around creating a dynamic, inclusive community space that caters to a diverse group of users while maintaining the architectural integrity and charm of the existing structure. Here's how you can develop this idea further:\n\n### Central Indoor \"Street/Market Hall\"\n- **Design Elements**: Utilize the tall volume of the space to create an open, airy environment reminiscent of a bustling street or market hall. Incorporate natural light through skylights or large windows to enhanc",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "timestamp": 1757349924.700361,
+        "content": "Users: Families, youth, seniors, recent immigrants, veterans, small business owners, artists/makers, and local service providers.\nBig Idea: Keep the \u201cbig room\u201d character\u2014use tall volume for a central indoor \u201cstreet/market hall,\u201d then nest flexible program blocks along it. Low-cost fit-out, high adaptability.",
+        "move_type": "analysis",
+        "phase": "ideation",
+        "modality": "text"
+      },
+      {
+        "id": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "timestamp": 1757349924.730159,
+        "content": "This concept revolves around creating a dynamic, inclusive community space that caters to a diverse group of users while maintaining the architectural integrity and charm of the existing structure. Here's how you can develop this idea further:\n\n### Central Indoor \"Street/Market Hall\"\n- **Design Elements**: Utilize the tall volume of the space to create an open, airy environment reminiscent of a bustling street or market hall. Incorporate natural light through skylights or large windows to enhance the ambiance.\n- **Flexibility**: Design the space to be easily reconfigurable with movable partitions, modular furniture, and adaptable infrastructure to accommodate various activities and events.\n\n### Program Blocks\n- **Flexible Spaces**: Create a series of modular, multifunctional spaces along the central hall. These could include meeting rooms, workshops, art studios, and pop-up retail spaces that can be easily adapted to different uses.\n- **Community Focus**: Offer spaces for community gatherings, classes, and workshops that cater to the needs of families, youth, seniors, recent immigrants, veterans, small business owners, artists, and local service providers.\n\n### Low-Cost Fit-Out\n- **Sustainable Materials**: Use cost-effective and eco-friendly materials for construction and interior design, such as reclaimed wood, recycled metal, and natural textiles.\n- **DIY and Volunteer Involvement**: Encourage community involvement in the fit-out process through volunteer programs or DIY workshops, fostering a sense of ownership and pride in the space.\n\n### High Adaptability\n- **Technology Integration**: Equip the space with modern technology that supports a variety of uses, such as high-speed internet, audio-visual equipment, and smart lighting systems.\n- **Scalable Design**: Ensure that the infrastructure can scale up or down depending on the community's needs, allowing for future growth or modification.\n\n### Engagement and Support\n- **Community Partnerships**: Collaborate with local organizations, businesses, and artists to curate programming and services that reflect community interests and needs.\n- **Support Systems**: Provide resources and support for recent immigrants, veterans, and small business owners, such as mentorship programs, language classes, and business development workshops.\n\n### Activation and Events\n- **Regular Programming**: Host regular events like farmers markets, art exhibitions, cultural festivals, and business expos to keep the space vibrant and engaging.\n- **Seasonal Themes**: Adapt the space to reflect seasonal changes and holidays, creating a dynamic environment that continually attracts visitors.\n\nBy embracing this concept, the space can serve as a vibrant community hub that fosters creativity, collaboration, and inclusivity, while also being economically and environmentally sustainable.",
+        "move_type": "synthesis",
+        "phase": "ideation",
+        "modality": "text"
+      }
+    ],
+    "links": [
+      {
+        "id": "03a9b406-54a2-4d8d-b202-46ec32eb0c1e",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.4734628200531006,
+        "link_type": "forward"
+      },
+      {
+        "id": "1832c99d-125f-46c6-a8c9-b33cb0130ae6",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "ee7d4207-76a9-4d8d-9537-66797e382d84",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.5206023454666138,
+        "link_type": "forward"
+      },
+      {
+        "id": "660a363d-5857-4b1c-9914-abb2bad08249",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.42725449800491333,
+        "link_type": "forward"
+      },
+      {
+        "id": "b65bc5f1-5476-434c-a988-5daf9d01ef27",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.43366390466690063,
+        "link_type": "forward"
+      },
+      {
+        "id": "156c132d-6af8-495e-bf01-c9aca7583c48",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "40efb5a3-7509-40a0-9b45-811fb2c29f04",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5246919393539429,
+        "link_type": "forward"
+      },
+      {
+        "id": "499d518f-25a7-4abd-a043-cdbf0d43757f",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "99dd4351-9ddb-45a6-ad78-3b2b798d4f73",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.634088933467865,
+        "link_type": "forward"
+      },
+      {
+        "id": "5f3ee275-ae45-4903-8e3f-59fa36cde868",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "0f8a7fcc-bd27-450e-85f2-8aaec058770c",
+        "source_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.6925198435783386,
+        "link_type": "forward"
+      },
+      {
+        "id": "6c34b92d-e985-4de3-95f3-1344fd275312",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.4734628200531006,
+        "link_type": "backward"
+      },
+      {
+        "id": "1df5a868-6657-4c70-bdf4-8f1c7237e21a",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.4734628200531006,
+        "link_type": "forward"
+      },
+      {
+        "id": "736dd70a-7f00-4926-a03b-a1be0b2f3b22",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.802656888961792,
+        "link_type": "lateral"
+      },
+      {
+        "id": "52165574-0f7b-4f17-96f1-32f114bba4d4",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.4734628200531006,
+        "link_type": "forward"
+      },
+      {
+        "id": "a72a5e34-3f04-4ea5-89d4-f9527adf39c0",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5730738639831543,
+        "link_type": "forward"
+      },
+      {
+        "id": "fdaa8851-dd1f-4967-9808-4445b1a5d3b1",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.4734628200531006,
+        "link_type": "forward"
+      },
+      {
+        "id": "75ce84a4-d1a7-42f3-81c4-bdeef8d4b69b",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.6320958137512207,
+        "link_type": "forward"
+      },
+      {
+        "id": "b502d247-0218-4d2e-b4f9-baffa2073b3d",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.4734628200531006,
+        "link_type": "forward"
+      },
+      {
+        "id": "e427f305-82ab-4b19-a863-2a31cacb2da6",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.5674271583557129,
+        "link_type": "forward"
+      },
+      {
+        "id": "d436c549-3084-4e9e-a6f4-1cfaa458506e",
+        "source_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.4734628200531006,
+        "link_type": "forward"
+      },
+      {
+        "id": "2df9079f-c1e6-4e00-b71f-4f06bf70ed0c",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "96a52da1-bc96-4bce-b726-695acdbe7332",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.4734628200531006,
+        "link_type": "backward"
+      },
+      {
+        "id": "8f6753e7-16d7-466d-82a8-6b5d49624169",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.5206023454666138,
+        "link_type": "forward"
+      },
+      {
+        "id": "4dd8bc46-3f7d-4682-9a55-11e58cde8d45",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.42725449800491333,
+        "link_type": "forward"
+      },
+      {
+        "id": "aadd7c73-08ec-4b6d-bf9b-c3aa5bed5970",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.43366390466690063,
+        "link_type": "forward"
+      },
+      {
+        "id": "16d0a30a-0651-4728-8ecb-16c9ce1409d3",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "d4a78952-120a-44b6-aa6d-444438e1dc3a",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5246919393539429,
+        "link_type": "forward"
+      },
+      {
+        "id": "463bb664-47d8-4779-af0f-0fcee734bcc2",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "e3e685a3-d9db-43ee-961c-3ebc00690840",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.634088933467865,
+        "link_type": "forward"
+      },
+      {
+        "id": "fdd661bf-4fdf-457a-8cf5-7aadcc0d034c",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "4d5691a0-cef9-4bd8-ae4a-7aedbdd830c2",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.6925198435783386,
+        "link_type": "forward"
+      },
+      {
+        "id": "734bbcd6-20e8-41fd-ad85-15433c1c004d",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "d03ce1cd-8605-48e7-9b96-c452358e4c93",
+        "source_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.7439452409744263,
+        "link_type": "forward"
+      },
+      {
+        "id": "02d1d5cc-6db7-4b9f-b14b-7186e223f7bc",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.5206023454666138,
+        "link_type": "backward"
+      },
+      {
+        "id": "925172dc-0ac6-4e3d-9a03-cfa3f928707f",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.802656888961792,
+        "link_type": "lateral"
+      },
+      {
+        "id": "fb053845-6884-4c85-878b-7d853ec28b1b",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.5206023454666138,
+        "link_type": "backward"
+      },
+      {
+        "id": "4afb3c36-9695-4105-8e67-eec67f537981",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.5206023454666138,
+        "link_type": "forward"
+      },
+      {
+        "id": "e0be9291-2073-4588-ae4b-5ce642ef1612",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5985681414604187,
+        "link_type": "forward"
+      },
+      {
+        "id": "3d4e5644-7b34-49e9-8101-e3e69edcd102",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.5206023454666138,
+        "link_type": "forward"
+      },
+      {
+        "id": "99a1cd7b-1759-4f21-8099-a87ebb759fab",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.6747308969497681,
+        "link_type": "forward"
+      },
+      {
+        "id": "da3163fc-5afc-41f2-8581-2e7d06da3176",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.5206023454666138,
+        "link_type": "forward"
+      },
+      {
+        "id": "dd378e99-1cb9-4bf1-a241-55eaaae204a8",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.561623215675354,
+        "link_type": "forward"
+      },
+      {
+        "id": "09f46b35-b708-4423-90ea-20c10319745a",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.5206023454666138,
+        "link_type": "forward"
+      },
+      {
+        "id": "c1024b2e-823c-477a-b1a3-3fdf8fe961fc",
+        "source_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.6462751626968384,
+        "link_type": "forward"
+      },
+      {
+        "id": "334d1f25-f721-4964-9a3b-bb3f3fdecc4e",
+        "source_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "target_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "strength": 1.0,
+        "link_type": "lateral"
+      },
+      {
+        "id": "7d2d8783-cf0e-4f2b-94d8-92631711d211",
+        "source_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.5993404388427734,
+        "link_type": "forward"
+      },
+      {
+        "id": "4626614c-8aa4-45ec-a8ae-a39793591758",
+        "source_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "target_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "strength": 1.0,
+        "link_type": "forward"
+      },
+      {
+        "id": "5f2824df-2aad-4d1d-9076-cc836f2d08bb",
+        "source_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.5816007852554321,
+        "link_type": "forward"
+      },
+      {
+        "id": "f1f877cc-ea9b-41ed-8cc6-c170cfeaa516",
+        "source_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5806432962417603,
+        "link_type": "forward"
+      },
+      {
+        "id": "e474064e-e25c-4c9c-82fb-939844c7a174",
+        "source_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.436972439289093,
+        "link_type": "forward"
+      },
+      {
+        "id": "64acbeb0-1556-44db-9085-94d6f82ee0cb",
+        "source_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "target_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "strength": 1.0,
+        "link_type": "lateral"
+      },
+      {
+        "id": "65b17b6d-2b51-4963-8483-0827a9a09eec",
+        "source_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.5993404388427734,
+        "link_type": "forward"
+      },
+      {
+        "id": "cd84c373-0087-428d-8067-4d62cfb5b709",
+        "source_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "target_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "strength": 1.0,
+        "link_type": "lateral"
+      },
+      {
+        "id": "26daa31f-f0a7-4104-9e0e-4a1dd6ea6c59",
+        "source_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.5816007852554321,
+        "link_type": "forward"
+      },
+      {
+        "id": "41d0e4d5-ebb6-468f-bc2a-d58e6d5e45e7",
+        "source_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5806432962417603,
+        "link_type": "forward"
+      },
+      {
+        "id": "07b912c2-3d93-48e8-8f91-715bca82fe7f",
+        "source_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.436972439289093,
+        "link_type": "forward"
+      },
+      {
+        "id": "ad7b1c2a-4009-44f2-9177-3f5170323c37",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.42725449800491333,
+        "link_type": "backward"
+      },
+      {
+        "id": "035d7859-aca3-4abe-92cd-2ea34083a0c2",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.42725449800491333,
+        "link_type": "backward"
+      },
+      {
+        "id": "147e1ee9-f4d7-40a5-b656-a06b03a031b6",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "strength": 0.5993404388427734,
+        "link_type": "backward"
+      },
+      {
+        "id": "2d82e1cf-df70-461a-ba89-994f46db467d",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "strength": 0.5993404388427734,
+        "link_type": "backward"
+      },
+      {
+        "id": "bb747470-deeb-4337-a15a-efeed9788452",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "strength": 0.5993404388427734,
+        "link_type": "forward"
+      },
+      {
+        "id": "cf8959d5-5d31-4fe8-af45-26639ce83667",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.98171067237854,
+        "link_type": "lateral"
+      },
+      {
+        "id": "99c94b86-64d9-4fbf-876e-44eec60bfd8e",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.42725449800491333,
+        "link_type": "forward"
+      },
+      {
+        "id": "5509f45b-120b-4619-a3b9-86556321fc9c",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.6637685298919678,
+        "link_type": "forward"
+      },
+      {
+        "id": "11b33a84-eaa8-4c51-96df-8025f73344df",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.42725449800491333,
+        "link_type": "forward"
+      },
+      {
+        "id": "f7617ad2-164d-43ef-bb17-c369b69a6f73",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.5222439765930176,
+        "link_type": "forward"
+      },
+      {
+        "id": "6570b25e-956b-43a7-923f-c380a4e111a7",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.42725449800491333,
+        "link_type": "forward"
+      },
+      {
+        "id": "8f67c2a6-8889-4344-bcb8-868b591d4ed0",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.38419604301452637,
+        "link_type": "forward"
+      },
+      {
+        "id": "697ac639-9662-4e4a-a64b-427e475cffd4",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.42725449800491333,
+        "link_type": "forward"
+      },
+      {
+        "id": "9524ea4c-d9ab-4dbe-b160-e64428dd3805",
+        "source_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.4139013886451721,
+        "link_type": "forward"
+      },
+      {
+        "id": "8f31c066-aad2-4522-a885-6dcfd7cc908c",
+        "source_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "target_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "strength": 1.0,
+        "link_type": "backward"
+      },
+      {
+        "id": "9cad0fdf-f0dc-4bdd-b926-23a84b499afc",
+        "source_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "target_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "strength": 1.0,
+        "link_type": "lateral"
+      },
+      {
+        "id": "5abdef85-89c2-4802-bb8e-b2c481f2d54a",
+        "source_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.5993404388427734,
+        "link_type": "backward"
+      },
+      {
+        "id": "3ec60f97-748c-46d9-a7b8-dbfa3bb10a57",
+        "source_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.5816007852554321,
+        "link_type": "forward"
+      },
+      {
+        "id": "f0d6b995-e5f0-49e1-aece-c09ef824d94e",
+        "source_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5806432962417603,
+        "link_type": "forward"
+      },
+      {
+        "id": "5346b209-d8b4-413e-a28e-5d317b03cebb",
+        "source_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.436972439289093,
+        "link_type": "forward"
+      },
+      {
+        "id": "c5a8c11e-3ff7-41cf-9a47-8f050e39e393",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.43366390466690063,
+        "link_type": "backward"
+      },
+      {
+        "id": "9dfb6c6b-0ca9-446b-89b3-9548abb12c96",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.43366390466690063,
+        "link_type": "backward"
+      },
+      {
+        "id": "4c3c5dd9-ae95-4f60-8a26-2444ebbcaf9a",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "strength": 0.5816007852554321,
+        "link_type": "backward"
+      },
+      {
+        "id": "2087a4df-12f2-4d7c-a618-571ef8bcfe7b",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "strength": 0.5816007852554321,
+        "link_type": "backward"
+      },
+      {
+        "id": "29264c4b-af19-4b7c-ad28-1942240c0371",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.98171067237854,
+        "link_type": "lateral"
+      },
+      {
+        "id": "d8e85bec-185b-4a57-9258-6f3e0f9c9d62",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "strength": 0.5816007852554321,
+        "link_type": "backward"
+      },
+      {
+        "id": "51875a26-9751-4f2f-a68b-58a69d172498",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.43366390466690063,
+        "link_type": "forward"
+      },
+      {
+        "id": "fd3d5051-ef08-44bf-a685-f46146993983",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.6585739850997925,
+        "link_type": "forward"
+      },
+      {
+        "id": "23644a70-3b38-46dd-a0ad-5365d404766d",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.43366390466690063,
+        "link_type": "forward"
+      },
+      {
+        "id": "272c7320-5bcd-44f3-b19f-b77e583fa0e9",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.524944543838501,
+        "link_type": "forward"
+      },
+      {
+        "id": "cee55e95-071d-4dc9-8218-bd9ceacee2ea",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.43366390466690063,
+        "link_type": "forward"
+      },
+      {
+        "id": "f4f8cefc-8c64-4e0f-a4d5-22572f88c649",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.39579176902770996,
+        "link_type": "forward"
+      },
+      {
+        "id": "7e24d6a0-50e2-40f5-8ef6-b405d224918c",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.43366390466690063,
+        "link_type": "forward"
+      },
+      {
+        "id": "b8c9cddb-ee8a-4e02-952d-afeee91534a5",
+        "source_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.42363935708999634,
+        "link_type": "forward"
+      },
+      {
+        "id": "6d2faa56-7dda-42f2-8821-bb82f6ecc6dd",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "c17f518a-8f7c-4ebb-a4a3-248416df7c8b",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.4734628200531006,
+        "link_type": "backward"
+      },
+      {
+        "id": "6d762d25-dc2e-46b9-9e37-39643ad0e217",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "c6f60fcb-83ad-4d89-81b2-34425732b7e3",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.5206023454666138,
+        "link_type": "backward"
+      },
+      {
+        "id": "01ead2cf-89fd-4369-b9f3-eccefbdab558",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.42725449800491333,
+        "link_type": "backward"
+      },
+      {
+        "id": "6b5468c7-53fc-43be-9252-487e23224b47",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.43366390466690063,
+        "link_type": "backward"
+      },
+      {
+        "id": "f4d3942f-c7a8-4843-9e5b-78a6445db920",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5246919393539429,
+        "link_type": "forward"
+      },
+      {
+        "id": "50f0f787-ad11-4a4b-88c5-1c3ba191c71c",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "7c3eaa2d-b14a-4a10-98a5-3b693c05d111",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.634088933467865,
+        "link_type": "forward"
+      },
+      {
+        "id": "306544a7-feb3-4f03-ae92-ca98d9a1efb8",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "e1dcb80c-27be-47b9-9ebf-917467c26900",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.6925198435783386,
+        "link_type": "forward"
+      },
+      {
+        "id": "3e2965dd-c58a-4b38-9275-abad493a92f2",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "b0025c8e-f221-41bd-9088-8988f3e5d995",
+        "source_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.7439452409744263,
+        "link_type": "forward"
+      },
+      {
+        "id": "1db5c248-34e3-444a-b4ea-e577e2227e78",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.5246919393539429,
+        "link_type": "backward"
+      },
+      {
+        "id": "b77485e6-e682-44c1-9c95-f5536d394b61",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.5730738639831543,
+        "link_type": "backward"
+      },
+      {
+        "id": "430cd8b6-6cac-4d30-8a7a-3b64b1e001f0",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.5246919393539429,
+        "link_type": "backward"
+      },
+      {
+        "id": "4012a880-0bc9-4faa-a9dd-4792ba999742",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.5985681414604187,
+        "link_type": "backward"
+      },
+      {
+        "id": "458aadde-d40f-470a-bce7-eaf635b75d8a",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "strength": 0.5806432962417603,
+        "link_type": "backward"
+      },
+      {
+        "id": "e00cf0a3-11ee-4a3a-9df9-4851e5bcfe91",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "strength": 0.5806432962417603,
+        "link_type": "backward"
+      },
+      {
+        "id": "812ac263-cd62-45d3-8a35-dec69f386982",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.6637685298919678,
+        "link_type": "backward"
+      },
+      {
+        "id": "a54ede76-8df4-4f00-8268-793d8ff54cf7",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "strength": 0.5806432962417603,
+        "link_type": "backward"
+      },
+      {
+        "id": "f57266c7-1aa9-4a9b-96c1-86b9f80b3717",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.6585739850997925,
+        "link_type": "backward"
+      },
+      {
+        "id": "161aa316-643d-46db-acfe-96857e2ffbd7",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.5246919393539429,
+        "link_type": "backward"
+      },
+      {
+        "id": "c1902e93-2115-44a9-bff3-2e9d236928ba",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.5246919393539429,
+        "link_type": "forward"
+      },
+      {
+        "id": "93ad0326-d79a-4e7d-9238-8d544eceadd1",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.802951455116272,
+        "link_type": "lateral"
+      },
+      {
+        "id": "8a5ba018-016a-4e00-88ad-67e09ce9de73",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.5246919393539429,
+        "link_type": "forward"
+      },
+      {
+        "id": "dcb2af8e-f8c0-4724-b274-dc4c416ebe44",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.5744408965110779,
+        "link_type": "forward"
+      },
+      {
+        "id": "e6dc84f1-cac5-4ade-b579-08f0f4fb9077",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.5246919393539429,
+        "link_type": "forward"
+      },
+      {
+        "id": "66f67869-771a-4e3b-8ce8-c18eba026599",
+        "source_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.6456559300422668,
+        "link_type": "forward"
+      },
+      {
+        "id": "f0d5bb5a-225e-4b79-b89e-1f8f79acb61c",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "182e76f5-9ab4-4d4b-96a6-f545f1abd323",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.4734628200531006,
+        "link_type": "backward"
+      },
+      {
+        "id": "4eb0abd0-8e2c-4fc2-9b66-1d7eb871986b",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "0a941c42-10ae-4d49-91b3-875af464247b",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.5206023454666138,
+        "link_type": "backward"
+      },
+      {
+        "id": "698c02ef-83a6-497f-9453-d8fedb8f59d5",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.42725449800491333,
+        "link_type": "backward"
+      },
+      {
+        "id": "1c1f2781-a838-429c-9acf-96d5156f6492",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.43366390466690063,
+        "link_type": "backward"
+      },
+      {
+        "id": "3802a559-3248-43b9-8d7a-cad8a2d23146",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "5433504c-1657-44c1-9dd6-5c1c741fdb18",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5246919393539429,
+        "link_type": "backward"
+      },
+      {
+        "id": "74e78dce-f896-4f8c-ab88-3605a247cfba",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.634088933467865,
+        "link_type": "forward"
+      },
+      {
+        "id": "98900f2b-a293-478a-bd97-1b4f2135c227",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "557e5b0b-a023-421c-89b1-6e2226f5d15b",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.6925198435783386,
+        "link_type": "forward"
+      },
+      {
+        "id": "d52c46c4-acc9-407c-b1e7-4267ba30aaf9",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.9999998807907104,
+        "link_type": "forward"
+      },
+      {
+        "id": "0ed92bd7-8df5-4588-842d-bc8061ca6b8b",
+        "source_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.7439452409744263,
+        "link_type": "forward"
+      },
+      {
+        "id": "6d83aa40-6242-4e18-b45e-4c7e18fa8e21",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.634088933467865,
+        "link_type": "backward"
+      },
+      {
+        "id": "c44829da-1495-4f4a-890e-c52769f07b37",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.6320958137512207,
+        "link_type": "backward"
+      },
+      {
+        "id": "a53a6d4d-1619-47a1-8f27-0ad6472bbdd6",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.634088933467865,
+        "link_type": "backward"
+      },
+      {
+        "id": "1e489d51-7f87-4757-b5ee-b1f9e1b02f86",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.6747308969497681,
+        "link_type": "backward"
+      },
+      {
+        "id": "f5f47335-9c04-4042-bcdb-2f55d2d1780a",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "de888321-522d-42b6-ac07-dd44ab6115bd",
+        "strength": 0.436972439289093,
+        "link_type": "backward"
+      },
+      {
+        "id": "6f6b20e7-7000-4d94-b19d-3111af2aee50",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "b24d6bc0-b0d2-4e0b-b757-a69fb9c4ad73",
+        "strength": 0.436972439289093,
+        "link_type": "backward"
+      },
+      {
+        "id": "4b6c0e14-fa9c-4d4c-baae-8cfc9c7baf0e",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.5222439765930176,
+        "link_type": "backward"
+      },
+      {
+        "id": "1021c9ac-cdbd-408b-9906-9a9da144f2c3",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "b0d87ca9-bcbc-4899-9f15-8436534e9aab",
+        "strength": 0.436972439289093,
+        "link_type": "backward"
+      },
+      {
+        "id": "e9cdd5eb-7775-4cfc-8789-ec56862da7c8",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.524944543838501,
+        "link_type": "backward"
+      },
+      {
+        "id": "85d5882f-9a90-461b-992a-cd1ac9971bcf",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.634088933467865,
+        "link_type": "backward"
+      },
+      {
+        "id": "8a4d8a51-20f3-4fda-8b07-533f6f2b2c09",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.802951455116272,
+        "link_type": "lateral"
+      },
+      {
+        "id": "e101073d-21a4-4cd2-8dc1-dd409da9264f",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.634088933467865,
+        "link_type": "backward"
+      },
+      {
+        "id": "174bba96-8030-46a4-aa8c-c307f8017056",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.634088933467865,
+        "link_type": "forward"
+      },
+      {
+        "id": "6b251cb5-018a-4623-ab38-2e1b3f133373",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.8187623023986816,
+        "link_type": "lateral"
+      },
+      {
+        "id": "72868448-1b1e-4745-99b4-ec343a7948af",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.634088933467865,
+        "link_type": "forward"
+      },
+      {
+        "id": "7499c12f-b52f-4b99-aee1-d6401eeffda1",
+        "source_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.8422971367835999,
+        "link_type": "forward"
+      },
+      {
+        "id": "48e0a7ec-9d93-4d75-bb5a-5fac96417472",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "8b59277d-7e80-4204-becc-b9eccef8bcc5",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.4734628200531006,
+        "link_type": "backward"
+      },
+      {
+        "id": "3f3eab37-a812-4903-824a-50a1717147b0",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "95b4caff-f071-462a-aff6-350070439ca5",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.5206023454666138,
+        "link_type": "backward"
+      },
+      {
+        "id": "ff79ae69-fa12-40c9-a07a-9d8fd30c484c",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.42725449800491333,
+        "link_type": "backward"
+      },
+      {
+        "id": "efc61c62-a157-4c7f-a423-4bb3001d2fc4",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.43366390466690063,
+        "link_type": "backward"
+      },
+      {
+        "id": "c6250235-deaa-49be-a9a0-a686d1134aaf",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "ce7a0d8b-225c-4975-b91e-6182ebc9a84c",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5246919393539429,
+        "link_type": "backward"
+      },
+      {
+        "id": "b1f8664b-ff26-49e5-b617-5af11fea43bc",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "e5a8c889-f6cc-479a-a38e-8eb959540940",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.634088933467865,
+        "link_type": "backward"
+      },
+      {
+        "id": "80640096-bdee-40f0-9fe2-6323813cf319",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.6925198435783386,
+        "link_type": "forward"
+      },
+      {
+        "id": "ac3c71c7-082a-47e2-a190-37282db8f61c",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "9cb57deb-a0ec-4324-8a81-5abb9779139d",
+        "source_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.7439452409744263,
+        "link_type": "lateral"
+      },
+      {
+        "id": "73596c77-022a-44cb-88e4-676569bf2c6f",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "fd21353e-53be-43da-a427-eed31ceb0ba2",
+        "strength": 0.6925198435783386,
+        "link_type": "backward"
+      },
+      {
+        "id": "02995b7b-c7ff-42cb-9a7f-71e8a7280425",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.5674271583557129,
+        "link_type": "backward"
+      },
+      {
+        "id": "4ca7c153-0cd2-4a58-bc5c-1a375a77e1e1",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.6925198435783386,
+        "link_type": "backward"
+      },
+      {
+        "id": "a54ac82c-aa2f-4396-a94c-050d3ebe46aa",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.561623215675354,
+        "link_type": "backward"
+      },
+      {
+        "id": "438ec4eb-26c9-416d-94da-0276e8853e07",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.38419604301452637,
+        "link_type": "backward"
+      },
+      {
+        "id": "94c86574-1352-46f6-89e5-f383c589a819",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.39579176902770996,
+        "link_type": "backward"
+      },
+      {
+        "id": "b3aaaccd-1b33-466c-ac92-a3ec2741d77c",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.6925198435783386,
+        "link_type": "backward"
+      },
+      {
+        "id": "e2c04967-9fb6-4d2f-8e79-cd0affee85be",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5744408965110779,
+        "link_type": "backward"
+      },
+      {
+        "id": "688fdce6-9c68-45b4-85aa-6e81272abd21",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.6925198435783386,
+        "link_type": "backward"
+      },
+      {
+        "id": "6fbfee10-e23b-4e6e-bea6-02cc43c93c26",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.8187623023986816,
+        "link_type": "lateral"
+      },
+      {
+        "id": "ef73de58-95c4-427f-bd50-81e1e6d3c9ea",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.6925198435783386,
+        "link_type": "backward"
+      },
+      {
+        "id": "2fd0b5fe-7731-485e-ab6c-91cdbb942188",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.6925198435783386,
+        "link_type": "forward"
+      },
+      {
+        "id": "d3a97d6b-c16e-43cc-b67c-db7b173129ff",
+        "source_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.8770841360092163,
+        "link_type": "lateral"
+      },
+      {
+        "id": "0fcb1a8d-654a-48a3-bf6f-0711f09566ce",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "3ec8f1ab-9d3e-482a-9250-ba5ae5becf2c",
+        "strength": 0.4734628200531006,
+        "link_type": "backward"
+      },
+      {
+        "id": "f537b803-209b-49d5-9f6f-94240d7ee76a",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "b41083d9-217a-4849-83c3-6b8212ba8ddd",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.5206023454666138,
+        "link_type": "backward"
+      },
+      {
+        "id": "9ee1d080-a995-4e96-85c4-db2e83d27f2c",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.42725449800491333,
+        "link_type": "backward"
+      },
+      {
+        "id": "1ea1a54d-3fb6-4bf0-ad80-0e3e517421fa",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.43366390466690063,
+        "link_type": "backward"
+      },
+      {
+        "id": "6f5d8d20-7acd-4071-bdc6-c973418375d3",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "b17bc197-1b5d-460d-bd16-60738bab6087",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.5246919393539429,
+        "link_type": "backward"
+      },
+      {
+        "id": "6de81f7c-71b4-4a62-92e2-62473a6c63fb",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.9999998807907104,
+        "link_type": "backward"
+      },
+      {
+        "id": "1eab595e-effb-48bd-bfcd-071a37dff3f5",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.634088933467865,
+        "link_type": "backward"
+      },
+      {
+        "id": "e805b612-23e7-42bc-a1af-fc10168c18b9",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.9999998807907104,
+        "link_type": "lateral"
+      },
+      {
+        "id": "ac44d087-b762-4666-9258-bd6ff8d4d4ab",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.6925198435783386,
+        "link_type": "backward"
+      },
+      {
+        "id": "ac6c9ac5-2b12-4b32-92cb-272c806b8125",
+        "source_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "target_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "strength": 0.7439452409744263,
+        "link_type": "lateral"
+      },
+      {
+        "id": "07a76d85-5649-43bf-a52a-f75bb46f3179",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "55cfb0b6-177a-427e-bd92-c1bfcd19831d",
+        "strength": 0.7439452409744263,
+        "link_type": "backward"
+      },
+      {
+        "id": "67968821-56b3-42a2-85b6-2eb4d048261e",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "088f8e0f-0dfb-4cdb-b56b-2a54e2b1e74a",
+        "strength": 0.6462751626968384,
+        "link_type": "backward"
+      },
+      {
+        "id": "9c697226-fa1d-4d18-88c8-a9ce81899c84",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "caeccf11-4f84-4272-8138-be8afb502034",
+        "strength": 0.4139013886451721,
+        "link_type": "backward"
+      },
+      {
+        "id": "ca464f44-a729-4150-97e2-d2388e4d7cc0",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "4838259b-e4a6-470b-946b-40fd06f980d9",
+        "strength": 0.42363935708999634,
+        "link_type": "backward"
+      },
+      {
+        "id": "8dcb3a91-b6f8-48d7-9831-f6a34786549e",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "c4f91059-558b-4799-90cd-2564c26691ec",
+        "strength": 0.7439452409744263,
+        "link_type": "backward"
+      },
+      {
+        "id": "8185e47e-89e4-44e2-9c2a-403759e8775b",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "c050e94c-d6bd-48fa-9c7e-b4cc9a5bf1d0",
+        "strength": 0.6456559300422668,
+        "link_type": "backward"
+      },
+      {
+        "id": "1fa90d7a-8382-40bf-88f8-3b4867ec06e5",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "3c561022-7ada-4f08-a6f0-afa816ebf016",
+        "strength": 0.7439452409744263,
+        "link_type": "backward"
+      },
+      {
+        "id": "ccea0628-7321-4bb2-93a3-4958bf0507c5",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "1a4d49ba-88c2-49c4-97bf-d75d350bda5d",
+        "strength": 0.8422971367835999,
+        "link_type": "backward"
+      },
+      {
+        "id": "1917d843-3be4-4531-95ee-90bf04024b80",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "bde947fa-e7fc-416e-9052-b8530ce5c90b",
+        "strength": 0.7439452409744263,
+        "link_type": "lateral"
+      },
+      {
+        "id": "f446b28c-4497-4fab-8ab0-71b304ad2603",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "b8b1acd1-dfbb-448d-9c0d-e6c7cc54fb3f",
+        "strength": 0.8770841360092163,
+        "link_type": "lateral"
+      },
+      {
+        "id": "640824cc-5853-414d-98e0-91ed6fde1433",
+        "source_move": "529e5a07-f050-4c6d-8ff8-b74cbe7766d3",
+        "target_move": "bcbcb127-f2d0-4954-ae2c-088994469c91",
+        "strength": 0.7439452409744263,
+        "link_type": "lateral"
+      }
+    ]
+  },
+  "metrics": {
+    "link_density": 7.126612709628211,
+    "critical_move_ratio": 0.9444444444444444,
+    "entropy": 0.9916202491953992,
+    "orphan_move_ratio": 0.05555555555555555,
+    "avg_link_strength": 0.6478738826934738,
+    "chunk_count": 11,
+    "web_count": 17,
+    "sawtooth_count": 1
+  },
+  "move_count": 18,
+  "link_count": 198,
+  "patterns": {
+    "chunks": 11,
+    "webs": 17,
+    "sawteeth": 1
+  },
+  "phase_distribution": {
+    "ideation": 1.0,
+    "visualization": 0.0,
+    "materialization": 0.0
+  },
+  "benchmarking_available": true
+}

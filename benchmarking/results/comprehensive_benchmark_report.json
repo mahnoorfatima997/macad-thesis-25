@@ -1,24 +1,78 @@
 {
   "metadata": {
-    "generated_at": "2025-09-08T19:34:46.163307",
+    "generated_at": "2025-09-08T19:57:11.831166",
     "system_version": "1.0.0",
-    "sessions_analyzed": 13
+    "sessions_analyzed": 21
   },
   "executive_summary": {
     "key_findings": [
-      "Analyzed 13 tutoring sessions",
-      "Cognitive offloading prevention rate: 72.1%",
-      "Deep thinking engagement: 46.1%",
-      "Average improvement over baseline: 22.8%"
+      "Analyzed 21 tutoring sessions",
+      "Cognitive offloading prevention rate: 69.7%",
+      "Deep thinking engagement: 47.8%",
+      "Average improvement over baseline: 16.2%"
     ],
     "system_effectiveness": "Moderately Effective - Room for improvement",
     "primary_strengths": [],
     "areas_for_improvement": [
       "Scaffolding effectiveness needs enhancement",
+      "Knowledge integration could be improved",
       "Skill progression tracking needs refinement"
     ]
   },
   "benchmarks": {
+    "intermediate": {
+      "proficiency_level": "intermediate",
+      "target_metrics": {
+        "cognitive_load_range": [
+          0.0020000000000000295,
+          0.30200000000000005
+        ],
+        "learning_effectiveness_min": 0.5,
+        "engagement_min": 0.5555555555555555,
+        "cognitive_offloading_prevention_min": 0.2333333333333333,
+        "deep_thinking_rate_min": 0.5666666666666667,
+        "scaffolding_effectiveness_min": 0.6333333333333333
+      },
+      "recommended_strategies": [
+        "Increase Socratic questioning to prevent direct answer seeking"
+      ],
+      "progression_indicators": {
+        "next_level": "advanced",
+        "requirements": {
+          "sustained_deep_thinking": 0.8,
+          "reduced_cognitive_offloading": 0.85,
+          "independent_problem_solving": 0.7,
+          "conceptual_connections": 0.7
+        }
+      }
+    },
+    "beginner": {
+      "proficiency_level": "beginner",
+      "target_metrics": {
+        "cognitive_load_range": [
+          0.33000000000000007,
+          0.63
+        ],
+        "learning_effectiveness_min": 0.20000000000000004,
+        "engagement_min": 0.65,
+        "cognitive_offloading_prevention_min": 0.9,
+        "deep_thinking_rate_min": 0,
+        "scaffolding_effectiveness_min": 0
+      },
+      "recommended_strategies": [
+        "Incorporate more 'why' and 'how' questions to encourage reflection",
+        "Provide more structured guidance with progressive complexity"
+      ],
+      "progression_indicators": {
+        "next_level": "intermediate",
+        "requirements": {
+          "sustained_deep_thinking": 0.6,
+          "reduced_cognitive_offloading": 0.7,
+          "independent_problem_solving": 0.5,
+          "conceptual_connections": 0.4
+        }
+      }
+    },
     "advanced": {
       "proficiency_level": "advanced",
       "target_metrics": {
@@ -44,66 +98,44 @@
           "conceptual_connections": 0.85
         }
       }
-    },
-    "beginner": {
-      "proficiency_level": "beginner",
-      "target_metrics": {
-        "cognitive_load_range": [
-          0.2426883116883117,
-          0.5426883116883117
-        ],
-        "learning_effectiveness_min": 0.31948051948051936,
-        "engagement_min": 0.6054834054834055,
-        "cognitive_offloading_prevention_min": 0.3588744588744589,
-        "deep_thinking_rate_min": 0.48658008658008656,
-        "scaffolding_effectiveness_min": 0.28614718614718615
-      },
-      "recommended_strategies": [
-        "Increase Socratic questioning to prevent direct answer seeking",
-        "Incorporate more 'why' and 'how' questions to encourage reflection",
-        "Provide more structured guidance with progressive complexity"
-      ],
-      "progression_indicators": {
-        "next_level": "intermediate",
-        "requirements": {
-          "sustained_deep_thinking": 0.6,
-          "reduced_cognitive_offloading": 0.7,
-          "independent_problem_solving": 0.5,
-          "conceptual_connections": 0.4
-        }
-      }
     }
   },
   "evaluation_metrics": {
-    "total_sessions": 13,
-    "total_interactions": 126,
-    "avg_session_duration": 9.17,
-    "avg_cognitive_offloading_prevention": 0.7208461538461539,
-    "avg_deep_thinking_engagement": 0.4611538461538461,
-    "avg_scaffolding_effectiveness": 0.16476923076923075,
-    "avg_knowledge_integration": 0.5128461538461538,
-    "avg_improvement_over_baseline": 22.846153846153847,
+    "total_sessions": 21,
+    "total_interactions": 583,
+    "avg_session_duration": 17.26666666666667,
+    "avg_cognitive_offloading_prevention": 0.6967142857142856,
+    "avg_deep_thinking_engagement": 0.47819047619047617,
+    "avg_scaffolding_effectiveness": 0.11880952380952381,
+    "avg_knowledge_integration": 0.31747619047619047,
+    "avg_improvement_over_baseline": 16.214285714285715,
     "sessions_with_progression": 0,
-    "avg_agent_coordination": 0.5025384615384615
+    "avg_agent_coordination": 0.48333333333333334
   },
   "proficiency_analysis": {
     "distribution": {
-      "intermediate": 8,
+      "intermediate": 12,
       "expert": 2,
       "advanced": 1,
-      "beginner": 2
+      "beginner": 6
     },
     "percentages": {
-      "intermediate": 61.53846153846154,
-      "expert": 15.384615384615385,
-      "advanced": 7.6923076923076925,
-      "beginner": 15.384615384615385
+      "intermediate": 57.14285714285714,
+      "expert": 9.523809523809524,
+      "advanced": 4.761904761904762,
+      "beginner": 28.57142857142857
     },
     "insights": [
       "Majority at intermediate level shows effective skill building"
     ]
   },
   "recommendations": [
+    {
+      "area": "Socratic Questioning",
+      "recommendation": "Enhance Socratic agent to better prevent cognitive offloading",
+      "priority": "high",
+      "implementation": "Improve question generation algorithms and response patterns"
+    },
     {
       "area": "Critical Thinking",
       "recommendation": "Develop more sophisticated prompts for deep thinking",
@@ -119,12 +151,12 @@
   ],
   "thesis_insights": {
     "cognitive_offloading_prevention": {
-      "effectiveness": 0.7208461538461539,
+      "effectiveness": 0.6967142857142856,
       "interpretation": "Good - Most interactions encourage self-directed learning",
-      "thesis_implication": "System successfully encourages independent thinking"
+      "thesis_implication": "Further development needed to prevent cognitive dependency"
     },
     "multi_agent_effectiveness": {
-      "coordination_score": 0.5025384615384615,
+      "coordination_score": 0.48333333333333334,
       "interpretation": "Agent coordination needs improvement",
       "thesis_implication": "Multi-agent approach shows promise for educational AI"
     },

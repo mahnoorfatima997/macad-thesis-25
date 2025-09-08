@@ -1,6 +1,59 @@
 {
-  "generated_at": "2025-09-08T19:34:03.658842",
+  "generated_at": "2025-09-08T19:56:17.399553",
   "benchmark_profiles": {
+    "intermediate": {
+      "proficiency_level": "intermediate",
+      "target_metrics": {
+        "cognitive_load_range": [
+          0.0020000000000000295,
+          0.30200000000000005
+        ],
+        "learning_effectiveness_min": 0.5,
+        "engagement_min": 0.5555555555555555,
+        "cognitive_offloading_prevention_min": 0.2333333333333333,
+        "deep_thinking_rate_min": 0.5666666666666667,
+        "scaffolding_effectiveness_min": 0.6333333333333333
+      },
+      "recommended_strategies": [
+        "Increase Socratic questioning to prevent direct answer seeking"
+      ],
+      "progression_indicators": {
+        "next_level": "advanced",
+        "requirements": {
+          "sustained_deep_thinking": 0.8,
+          "reduced_cognitive_offloading": 0.85,
+          "independent_problem_solving": 0.7,
+          "conceptual_connections": 0.7
+        }
+      }
+    },
+    "beginner": {
+      "proficiency_level": "beginner",
+      "target_metrics": {
+        "cognitive_load_range": [
+          0.33000000000000007,
+          0.63
+        ],
+        "learning_effectiveness_min": 0.20000000000000004,
+        "engagement_min": 0.65,
+        "cognitive_offloading_prevention_min": 0.9,
+        "deep_thinking_rate_min": 0,
+        "scaffolding_effectiveness_min": 0
+      },
+      "recommended_strategies": [
+        "Incorporate more 'why' and 'how' questions to encourage reflection",
+        "Provide more structured guidance with progressive complexity"
+      ],
+      "progression_indicators": {
+        "next_level": "intermediate",
+        "requirements": {
+          "sustained_deep_thinking": 0.6,
+          "reduced_cognitive_offloading": 0.7,
+          "independent_problem_solving": 0.5,
+          "conceptual_connections": 0.4
+        }
+      }
+    },
     "advanced": {
       "proficiency_level": "advanced",
       "target_metrics": {
@@ -26,46 +79,20 @@
           "conceptual_connections": 0.85
         }
       }
-    },
-    "beginner": {
-      "proficiency_level": "beginner",
-      "target_metrics": {
-        "cognitive_load_range": [
-          0.2426883116883117,
-          0.5426883116883117
-        ],
-        "learning_effectiveness_min": 0.31948051948051936,
-        "engagement_min": 0.6054834054834055,
-        "cognitive_offloading_prevention_min": 0.3588744588744589,
-        "deep_thinking_rate_min": 0.48658008658008656,
-        "scaffolding_effectiveness_min": 0.28614718614718615
-      },
-      "recommended_strategies": [
-        "Increase Socratic questioning to prevent direct answer seeking",
-        "Incorporate more 'why' and 'how' questions to encourage reflection",
-        "Provide more structured guidance with progressive complexity"
-      ],
-      "progression_indicators": {
-        "next_level": "intermediate",
-        "requirements": {
-          "sustained_deep_thinking": 0.6,
-          "reduced_cognitive_offloading": 0.7,
-          "independent_problem_solving": 0.5,
-          "conceptual_connections": 0.4
-        }
-      }
     }
   },
   "cluster_analysis": {
-    "n_clusters": 2,
+    "n_clusters": 3,
     "proficiency_distribution": {
-      "advanced": 1,
-      "beginner": 1
+      "intermediate": 1,
+      "beginner": 1,
+      "advanced": 1
     }
   },
   "recommendations": {
     "system_improvements": [
-      "Strengthen Socratic agent to better prevent cognitive offloading"
+      "Strengthen Socratic agent to better prevent cognitive offloading",
+      "Enhance question generation to promote deeper critical thinking"
     ],
     "pedagogical_strategies": [
       "Implement adaptive difficulty based on proficiency level",

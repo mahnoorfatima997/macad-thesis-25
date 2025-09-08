@@ -436,7 +436,319 @@
       "source": "linkography data not found"
     }
   },
+  "unified_session_20250901_201125": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
+  "unified_session_20250903_204352": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
   "unified_session_20250907_074929": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
+  "unified_session_20250907_194747": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
+  "unified_session_20250908_023754": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
+  "unified_session_20250908_031440": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
+  "unified_session_20250908_041958": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
+  "unified_session_20250908_141305": {
+    "prevention_rate": {
+      "method": "direct",
+      "source": "prevents_cognitive_offloading column"
+    },
+    "deep_thinking_rate": {
+      "method": "direct",
+      "source": "encourages_deep_thinking column"
+    },
+    "improvement_score": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking vs baseline"
+    },
+    "proficiency_level": {
+      "method": "calculated",
+      "source": "from prevention and deep thinking thresholds"
+    },
+    "question_quality": {
+      "method": "calculated",
+      "source": "from cognitive_flags_count and input_length"
+    },
+    "concept_integration": {
+      "method": "direct",
+      "source": "knowledge_integrated column"
+    },
+    "critical_thinking": {
+      "method": "calculated",
+      "source": "from problem_solving, reflection, confidence"
+    },
+    "agent_coordination": {
+      "method": "direct",
+      "source": "multi_agent_coordination column"
+    },
+    "test_group_source": "inferred_from_routing",
+    "linkography_metrics": {
+      "method": "default",
+      "source": "linkography data not found"
+    }
+  },
+  "unified_session_20250908_164513": {
     "prevention_rate": {
       "method": "direct",
       "source": "prevents_cognitive_offloading column"
