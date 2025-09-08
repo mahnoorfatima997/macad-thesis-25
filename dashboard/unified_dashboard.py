@@ -1100,27 +1100,9 @@ class UnifiedArchitecturalDashboard:
             test_group = st.session_state.get('test_group', 'MENTOR')
             print(f"🔍 DASHBOARD_MODE_CHECK: current_mode = '{current_mode}', test_group = '{test_group}'")
 
-            if current_mode in ["NO_AI", "No AI", "CONTROL"]:
-                print(f"🎯 NO_AI_PHASE: Using simplified phase tracking for No AI mode")
-                # For No AI mode, get phase info from the no AI processor
-                phase_info = st.session_state.get('no_ai_phase_info', {})
-                current_phase = phase_info.get('current_phase', 'ideation')
-                phase_completion = phase_info.get('phase_completion', 0.0)
-
-                # Create a simplified phase result compatible with the dashboard
-                phase_result = {
-                    'session_id': st.session_state.phase_session_id,
-                    'current_phase': current_phase,
-                    'phase_progress': {'completion_percent': phase_completion},
-                    'phase_complete': phase_completion >= 100.0,
-                    'session_complete': False,
-                    'question_answered': False,
-                    'nudge': None
-                }
-                print(f"🎯 NO_AI_PHASE: Phase={current_phase}, Completion={phase_completion:.1f}%")
-            elif current_mode in ["RAW_GPT", "Raw GPT"] or test_group == "GENERIC_AI":
-                print(f"🎯 RAW_GPT_PHASE: Using manual phase tracking for Raw GPT/Generic AI mode")
-                # For Raw GPT and Generic AI modes, use manual phase from session state
+            if current_mode in ["NO_AI", "No AI", "CONTROL"] or current_mode in ["RAW_GPT", "Raw GPT"] or test_group == "GENERIC_AI":
+                print(f"🎯 SIMPLIFIED_PHASE: Using manual phase tracking for {current_mode}/Generic AI mode")
+                # For No AI, Raw GPT and Generic AI modes, use manual phase from session state
                 current_phase = st.session_state.get('test_current_phase', 'Ideation').lower()
 
                 # Get and update phase completion from unified system
@@ -1138,7 +1120,7 @@ class UnifiedArchitecturalDashboard:
                     target_phase_enum = phase_enum_map.get(current_phase, DesignPhase.IDEATION)
                     if session.current_phase != target_phase_enum:
                         session.current_phase = target_phase_enum
-                        print(f"🎯 RAW_GPT_PHASE: Synced unified system phase to {current_phase}")
+                        print(f"🎯 SIMPLIFIED_PHASE: Synced unified system phase to {current_phase}")
 
                     current_progress = session.phase_progress.get(target_phase_enum)
                     if not current_progress:
@@ -1150,13 +1132,13 @@ class UnifiedArchitecturalDashboard:
                             completion_percent=0.0
                         )
                         session.phase_progress[target_phase_enum] = current_progress
-                        print(f"🎯 RAW_GPT_PHASE: Initialized progress for {current_phase}")
+                        print(f"🎯 SIMPLIFIED_PHASE: Initialized progress for {current_phase}")
 
                     # Update phase progression by small increment per interaction
                     old_completion = current_progress.completion_percent
                     current_progress.completion_percent = min(100.0, old_completion + 10.0)
                     phase_completion = current_progress.completion_percent
-                    print(f"🎯 RAW_GPT_PHASE: Updated completion: {old_completion:.1f}% → {phase_completion:.1f}%")
+                    print(f"🎯 SIMPLIFIED_PHASE: Updated completion: {old_completion:.1f}% → {phase_completion:.1f}%")
 
                 # Create a simplified phase result compatible with the dashboard
                 phase_result = {
@@ -1168,7 +1150,8 @@ class UnifiedArchitecturalDashboard:
                     'question_answered': False,
                     'nudge': None
                 }
-                print(f"🎯 RAW_GPT_PHASE: Phase={current_phase}, Completion={phase_completion:.1f}%")
+                print(f"🎯 SIMPLIFIED_PHASE: Phase={current_phase}, Completion={phase_completion:.1f}%")
+
             else:
                 # Use the complex AI-driven phase progression system for MENTOR mode only
                 phase_result = self.phase_system.process_user_message(st.session_state.phase_session_id, user_input)
@@ -1663,21 +1646,34 @@ class UnifiedArchitecturalDashboard:
         current_mode = st.session_state.get('current_mode', 'MENTOR')
         test_group = st.session_state.get('test_group_selection', 'MENTOR')
 
-        if current_mode in ["NO_AI", "No AI", "CONTROL"] or test_group == "CONTROL":
-            # For No AI mode, use the phase info from the no AI processor
-            self._render_no_ai_phase_circles()
+        if current_mode in ["NO_AI", "No AI", "CONTROL", "RAW_GPT", "Raw GPT"] or test_group == "CONTROL" or test_group_enum == "GENERIC_AI":
+            # For simplified modes (No AI, Raw GPT, Generic AI), use unified simplified phase circles
+            self._render_simplified_phase_circles()
         else:
-            # For other modes, use the complex phase system
+            # For MENTOR mode, use the complex phase system
             render_phase_circles(self.phase_system, st.session_state.phase_session_id)
 
-    def _render_no_ai_phase_circles(self):
-        """Render phase circles for No AI mode using no AI processor data."""
-        # Get phase info from no AI processor stored in session state
-        no_ai_phase_info = st.session_state.get('no_ai_phase_info', {})
-        current_phase = no_ai_phase_info.get('current_phase', 'ideation')
-        current_completion = no_ai_phase_info.get('phase_completion', 0.0)
+    def _render_simplified_phase_circles(self):
+        """Render phase circles for simplified modes (No AI, Raw GPT, Generic AI) using unified phase system."""
+        # Get current phase from manual controls (test_current_phase) for proper display
+        current_phase = st.session_state.get('test_current_phase', 'Ideation').lower()
 
-        print(f"🎯 NO_AI_CIRCLES: current_phase={current_phase}, completion={current_completion:.1f}%")
+        # Get phase completion from unified phase system (same as other simplified modes)
+        current_completion = 0.0
+        if st.session_state.phase_session_id in self.phase_system.sessions:
+            session = self.phase_system.sessions[st.session_state.phase_session_id]
+            from phase_progression_system import DesignPhase
+            phase_enum_map = {
+                'ideation': DesignPhase.IDEATION,
+                'visualization': DesignPhase.VISUALIZATION,
+                'materialization': DesignPhase.MATERIALIZATION
+            }
+            target_phase_enum = phase_enum_map.get(current_phase, DesignPhase.IDEATION)
+            current_progress = session.phase_progress.get(target_phase_enum)
+            if current_progress:
+                current_completion = current_progress.completion_percent
+
+        print(f"🎯 SIMPLIFIED_CIRCLES: current_phase={current_phase}, completion={current_completion:.1f}%")
 
         # Calculate completion for each phase based on current phase and progress
         if current_phase == 'ideation':

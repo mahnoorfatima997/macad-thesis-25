@@ -107,8 +107,15 @@ class NoAIProcessor:
         This simulates the control group experience with no AI assistance.
         """
 
-        # For No AI mode, use simple question-count based phase progression
-        current_phase = self._determine_current_phase_by_questions(session_id)
+        # For No AI mode, check for manual phase advancement first, then fall back to question-count based
+        import streamlit as st
+        manual_phase = st.session_state.get('test_current_phase', '').lower() if hasattr(st, 'session_state') else ''
+        if manual_phase in ['ideation', 'visualization', 'materialization']:
+            current_phase = manual_phase
+            print(f"🔄 NO_AI: Using manually set phase: {current_phase}")
+        else:
+            current_phase = self._determine_current_phase_by_questions(session_id)
+            print(f"🔄 NO_AI: Using automatic phase determination: {current_phase}")
 
         # Get the next hardcoded question for this phase
         next_question = self.get_next_question(current_phase, session_id)
@@ -122,9 +129,14 @@ class NoAIProcessor:
         }
 
         # Update session state for dashboard integration
-        import streamlit as st
         if hasattr(st, 'session_state'):
-            st.session_state.test_current_phase = current_phase.title()  # Ideation, Visualization, Materialization
+            # Only update test_current_phase if we're using automatic phase determination
+            if not manual_phase:
+                st.session_state.test_current_phase = current_phase.title()  # Ideation, Visualization, Materialization
+                print(f"🔄 NO_AI: Updated test_current_phase to {current_phase.title()}")
+            else:
+                print(f"🔄 NO_AI: Keeping manual phase: {st.session_state.test_current_phase}")
+
             st.session_state.phase_completion_percent = phase_completion
             # Store phase info for dashboard to access
             st.session_state.no_ai_phase_info = phase_info
