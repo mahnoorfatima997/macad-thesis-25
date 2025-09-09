@@ -693,5 +693,3 @@ Results demonstrate that well-designed multi-agent systems can enhance education
 The following chapter examines the broader implications of these findings for educational technology development, discusses current limitations and future potential, and provides projections for the evolution of AI-enhanced design education.
 
 ---
-
-*Word Count: approximately 9,800 words*

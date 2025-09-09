@@ -348,5 +348,3 @@ The Mentor system system represents one step toward a future where artificial in
 In conclusion, this research contributes to a fundamental reimagining of AI's role in human learning and development. By demonstrating that sophisticated AI systems can enhance rather than replace human cognitive capabilities, the work opens new possibilities for human-AI collaboration that preserve human agency while realizing the full potential of artificial intelligence for human flourishing. The implications extend far beyond the immediate educational context to fundamental questions about the kind of future we want to create with artificial intelligence—one that enhances human cognitive capabilities and preserves human agency, or one that replaces human thinking with artificial processing. This research provides evidence that the choice is ours to make, and demonstrates a path toward AI that truly serves human cognitive development.
 
 ---
-
-*Total Thesis Word Count: approximately 58,500 words across all chapters*
