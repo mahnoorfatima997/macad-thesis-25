@@ -104,39 +104,91 @@ def render_enhanced_graph_ml_section(dashboard):
                 # Reverse session list to show most recent first
                 reversed_sessions = list(reversed(session_list))
                 
-                # Session selector - default to most recent (index 0)
+                # Fast lightweight node estimation without building full graphs
+                @st.cache_data(ttl=3600)  # Cache for 1 hour
+                def get_session_node_info_fast(session_id, moves_count, links_count):
+                    """Fast estimation of node count and complexity based on session statistics"""
+                    # Estimate concept count based on moves and content
+                    # Typically 1-3 concepts per move, adjusted by move complexity
+                    estimated_nodes = min(moves_count * 2, moves_count + links_count // 2)
+                    
+                    # Classify complexity based on estimated node count
+                    if estimated_nodes == 0:
+                        complexity = "No data"
+                    elif estimated_nodes <= 10:
+                        complexity = "Low computing time"
+                    elif estimated_nodes <= 30:
+                        complexity = "Medium computing time" 
+                    else:
+                        complexity = "Heavy computing time expected"
+                    
+                    return estimated_nodes, complexity
+                
+                # Quick calculation for all sessions using cached function
+                session_info = {}
+                for i, session in enumerate(reversed_sessions):
+                    moves_count = sum(len(lg.moves) for lg in session.linkographs)
+                    links_count = sum(len(lg.links) for lg in session.linkographs)
+                    session_info[i] = get_session_node_info_fast(
+                        session.session_id, moves_count, links_count
+                    )
+                
+                # Session selector with no default selection
                 selected_session_idx = st.selectbox(
                     "Select a session to view its concept network:",
-                    range(len(reversed_sessions)),
-                    index=0,  # Default to most recent
-                    format_func=lambda i: f"Session {reversed_sessions[i].session_id[:8]} - {len(session_list)-i} sessions ago" if i > 0 else f"Session {reversed_sessions[i].session_id[:8]} - Most Recent"
+                    options=[None] + list(range(len(reversed_sessions))),
+                    index=0,  # First option is None (no selection)
+                    format_func=lambda i: "-- Select a session --" if i is None else (
+                        f"Session {reversed_sessions[i].session_id[:8]} - {len(session_list)-i} sessions ago - "
+                        f"~{session_info[i][0]} nodes - {session_info[i][1]}" if i > 0 else
+                        f"Session {reversed_sessions[i].session_id[:8]} - Most Recent - "
+                        f"~{session_info[i][0]} nodes - {session_info[i][1]}"
+                    )
                 )
                 
-                # Build and display knowledge graph for selected session
-                session = reversed_sessions[selected_session_idx]
-                G = kg_builder.build_session_knowledge_graph(session)
-                
-                # Display the 3D graph
-                fig = kg_builder.visualize_session_knowledge_graph_3d(G, session.session_id)
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # Show statistics
-                if len(G.nodes()) > 0:
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        st.metric("Unique Concepts", len(G.nodes()))
-                    with col2:
-                        st.metric("Concept Links", len(G.edges()))
-                    with col3:
-                        # Most connected concept
-                        degrees = dict(G.degree())
-                        if degrees:
-                            max_node = max(degrees, key=degrees.get)
-                            st.metric("Most Connected", G.nodes[max_node]['label'])
-                    with col4:
-                        # Average connections
-                        avg_degree = sum(degrees.values()) / len(degrees) if degrees else 0
-                        st.metric("Avg Connections", f"{avg_degree:.1f}")
+                # Only build and display if a session is selected
+                if selected_session_idx is not None:
+                    # Build and display knowledge graph for selected session
+                    session = reversed_sessions[selected_session_idx]
+                    G = kg_builder.build_session_knowledge_graph(session)
+                    
+                    # Display the 3D graph
+                    fig = kg_builder.visualize_session_knowledge_graph_3d(G, session.session_id)
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    # Show statistics
+                    if len(G.nodes()) > 0:
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            st.metric("Unique Concepts", len(G.nodes()))
+                        with col2:
+                            st.metric("Concept Links", len(G.edges()))
+                        with col3:
+                            # Most connected concept
+                            degrees = dict(G.degree())
+                            if degrees:
+                                max_node = max(degrees, key=degrees.get)
+                                st.metric("Most Connected", G.nodes[max_node]['label'])
+                        with col4:
+                            # Average connections
+                            avg_degree = sum(degrees.values()) / len(degrees) if degrees else 0
+                            st.metric("Avg Connections", f"{avg_degree:.1f}")
+                else:
+                    # Show a preview of available sessions
+                    st.markdown("### Available Sessions Preview")
+                    preview_data = []
+                    for i, session in enumerate(reversed_sessions[:5]):  # Show first 5
+                        node_count, complexity = session_info[i]
+                        preview_data.append({
+                            "Session": f"{session.session_id[:8]}",
+                            "Status": "Most Recent" if i == 0 else f"{len(session_list)-i} sessions ago",
+                            "Est. Nodes": f"~{node_count}",
+                            "Complexity": complexity
+                        })
+                    
+                    import pandas as pd
+                    preview_df = pd.DataFrame(preview_data)
+                    st.dataframe(preview_df, use_container_width=True)
                 
                 # Always show concept evolution
                 if len(reversed_sessions) > 1:
@@ -219,45 +271,97 @@ def render_enhanced_graph_ml_section(dashboard):
                 # Reverse session list to show most recent first
                 reversed_sessions = list(reversed(session_list))
                 
-                # Session selector - default to most recent (index 0)
+                # Fast lightweight trajectory estimation 
+                @st.cache_data(ttl=3600)  # Cache for 1 hour
+                def get_trajectory_node_info_fast(session_id, moves_count, patterns_count):
+                    """Fast estimation of trajectory skills based on session statistics"""
+                    # Estimate skill demonstrations based on moves and detected patterns
+                    # Usually fewer skills than concepts, roughly 1 skill per 3-5 moves
+                    estimated_skills = max(1, moves_count // 4 + patterns_count)
+                    
+                    # Classify complexity based on estimated skill count
+                    if estimated_skills == 0:
+                        complexity = "No trajectory data"
+                    elif estimated_skills <= 5:
+                        complexity = "Low computing time"
+                    elif estimated_skills <= 15:
+                        complexity = "Medium computing time"
+                    else:
+                        complexity = "Heavy computing time expected"
+                    
+                    return estimated_skills, complexity
+                
+                # Quick calculation for trajectories
+                trajectory_info = {}
+                for i, session in enumerate(reversed_sessions):
+                    moves_count = sum(len(lg.moves) for lg in session.linkographs)
+                    patterns_count = len(session.patterns_detected)
+                    trajectory_info[i] = get_trajectory_node_info_fast(
+                        session.session_id, moves_count, patterns_count
+                    )
+                
+                # Session selector with no default selection
                 selected_session_idx = st.selectbox(
                     "Select a session to view its learning trajectory:",
-                    range(len(reversed_sessions)),
-                    index=0,
-                    format_func=lambda i: f"Session {reversed_sessions[i].session_id[:8]} - {len(session_list)-i} sessions ago" if i > 0 else f"Session {reversed_sessions[i].session_id[:8]} - Most Recent"
+                    options=[None] + list(range(len(reversed_sessions))),
+                    index=0,  # First option is None (no selection)
+                    format_func=lambda i: "-- Select a session --" if i is None else (
+                        f"Session {reversed_sessions[i].session_id[:8]} - {len(session_list)-i} sessions ago - "
+                        f"~{trajectory_info[i][0]} skills - {trajectory_info[i][1]}" if i > 0 else
+                        f"Session {reversed_sessions[i].session_id[:8]} - Most Recent - "
+                        f"~{trajectory_info[i][0]} skills - {trajectory_info[i][1]}"
+                    )
                 )
                 
-                # Build and display trajectory for selected session
-                session = reversed_sessions[selected_session_idx]
-                G = trajectory_builder.build_session_trajectory_graph(session)
-                
-                # Display the trajectory graph
-                fig = trajectory_builder.visualize_session_trajectory(G, session.session_id)
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # Show session statistics
-                if len(G.nodes()) > 0:
-                    col1, col2, col3, col4 = st.columns(4)
+                # Only build and display if a session is selected
+                if selected_session_idx is not None:
+                    # Build and display trajectory for selected session
+                    session = reversed_sessions[selected_session_idx]
+                    G = trajectory_builder.build_session_trajectory_graph(session)
                     
-                    # Count skills demonstrated
-                    skill_counts = Counter(G.nodes[n]['skill'] for n in G.nodes())
+                    # Display the trajectory graph
+                    fig = trajectory_builder.visualize_session_trajectory(G, session.session_id)
+                    st.plotly_chart(fig, use_container_width=True)
                     
-                    with col1:
-                        st.metric("Skills Demonstrated", len(skill_counts))
-                    with col2:
-                        st.metric("Skill Instances", len(G.nodes()))
-                    with col3:
-                        # Most developed skill
-                        if skill_counts:
-                            top_skill = max(skill_counts, key=skill_counts.get)
-                            st.metric("Most Developed", top_skill.replace('_', ' ').title())
-                    with col4:
-                        # Highest proficiency
-                        proficiencies = [G.nodes[n]['proficiency'] for n in G.nodes()]
-                        if proficiencies:
-                            prof_levels = trajectory_builder.proficiency_levels
-                            highest_idx = max(prof_levels.index(p) for p in proficiencies)
-                            st.metric("Peak Proficiency", prof_levels[highest_idx])
+                    # Show session statistics
+                    if len(G.nodes()) > 0:
+                        col1, col2, col3, col4 = st.columns(4)
+                        
+                        # Count skills demonstrated
+                        skill_counts = Counter(G.nodes[n]['skill'] for n in G.nodes())
+                        
+                        with col1:
+                            st.metric("Skills Demonstrated", len(skill_counts))
+                        with col2:
+                            st.metric("Skill Instances", len(G.nodes()))
+                        with col3:
+                            # Most developed skill
+                            if skill_counts:
+                                top_skill = max(skill_counts, key=skill_counts.get)
+                                st.metric("Most Developed", top_skill.replace('_', ' ').title())
+                        with col4:
+                            # Highest proficiency
+                            proficiencies = [G.nodes[n]['proficiency'] for n in G.nodes()]
+                            if proficiencies:
+                                prof_levels = trajectory_builder.proficiency_levels
+                                highest_idx = max(prof_levels.index(p) for p in proficiencies)
+                                st.metric("Peak Proficiency", prof_levels[highest_idx])
+                else:
+                    # Show a preview of available sessions
+                    st.markdown("### Available Sessions Preview")
+                    trajectory_preview_data = []
+                    for i, session in enumerate(reversed_sessions[:5]):  # Show first 5
+                        skill_count, complexity = trajectory_info[i]
+                        trajectory_preview_data.append({
+                            "Session": f"{session.session_id[:8]}",
+                            "Status": "Most Recent" if i == 0 else f"{len(session_list)-i} sessions ago",
+                            "Est. Skills": f"~{skill_count}",
+                            "Complexity": complexity
+                        })
+                    
+                    import pandas as pd
+                    trajectory_preview_df = pd.DataFrame(trajectory_preview_data)
+                    st.dataframe(trajectory_preview_df, use_container_width=True)
                 
                 # Proficiency progression chart
                 if len(reversed_sessions) > 1:

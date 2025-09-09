@@ -25,7 +25,9 @@
       "WebFetch(domain:www.frontiersin.org)",
       "WebFetch(domain:pubmed.ncbi.nlm.nih.gov)",
       "WebFetch(domain:osf.io)",
-      "WebFetch(domain:projects.ori.org)"
+      "WebFetch(domain:projects.ori.org)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
